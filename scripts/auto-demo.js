@@ -10,6 +10,9 @@ const QUESTION_COUNT = Math.max(5, Number(process.env.DEMO_QUESTIONS || 5));
 const TIMER_SECONDS = Math.max(8, Number(process.env.DEMO_TIMER || 8));
 const MODE = process.env.DEMO_MODE || "classic";
 const ACCURACY = Math.min(1, Math.max(0, Number(process.env.DEMO_ACCURACY || 0.78)));
+const DEMO_CODE = String(process.env.DEMO_CODE || "")
+  .trim()
+  .toUpperCase();
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -322,6 +325,8 @@ async function run() {
   let serverProcess = null;
   const sockets = [];
   const bots = [];
+  let host = null;
+  let code = DEMO_CODE;
 
   try {
     const healthyBefore = await healthcheck();
@@ -343,25 +348,30 @@ async function run() {
     }
 
     const blookIds = await loadBlookIds();
-    const host = await connectSocket("host-bot");
-    sockets.push(host);
 
-    const created = await emitAck(host, "host:create", {
-      hostName: "AutoDemoHost",
-      mode: MODE,
-      questionSet: "multiplication_1_digit",
-      timerSeconds: TIMER_SECONDS,
-      questionCount: QUESTION_COUNT
-    });
+    if (!code) {
+      host = await connectSocket("host-bot");
+      sockets.push(host);
 
-    const code = created.code;
+      const created = await emitAck(host, "host:create", {
+        hostName: "AutoDemoHost",
+        mode: MODE,
+        questionSet: "multiplication_1_digit",
+        timerSeconds: TIMER_SECONDS,
+        questionCount: QUESTION_COUNT
+      });
+
+      code = created.code;
+    }
+
     console.log(`\nDEMO ROOM READY`);
     console.log(`- Base URL: ${BASE_URL}`);
     console.log(`- Code: ${code}`);
     console.log(`- Students: ${STUDENT_COUNT}`);
-    console.log(`- Questions: ${QUESTION_COUNT}`);
+    if (!DEMO_CODE) {
+      console.log(`- Questions: ${QUESTION_COUNT}`);
+    }
     console.log(`- Mini-game rotation: soccer -> tap -> sequence -> precision`);
-    console.log(`- Watch host screen: ${BASE_URL}/host.html`);
     console.log(`- Watch student screen: ${BASE_URL}/play.html?code=${code}\n`);
 
     let finishedResolve;
@@ -369,26 +379,28 @@ async function run() {
       finishedResolve = resolve;
     });
 
-    host.on("question:start", (payload) => {
-      console.log(`Q${payload?.questionIndex}/${payload?.totalQuestions}: ${payload?.question?.prompt || "Question"}`);
-    });
+    if (host) {
+      host.on("question:start", (payload) => {
+        console.log(`Q${payload?.questionIndex}/${payload?.totalQuestions}: ${payload?.question?.prompt || "Question"}`);
+      });
 
-    host.on("minigame:start", (payload) => {
-      console.log(`Mini-game: ${payload?.type || "unknown"} (${payload?.eligiblePlayerIds?.length || 0} players)`);
-    });
+      host.on("minigame:start", (payload) => {
+        console.log(`Mini-game: ${payload?.type || "unknown"} (${payload?.eligiblePlayerIds?.length || 0} players)`);
+      });
 
-    host.on("round:summary", (payload) => {
-      console.log(`Round complete: ${payload?.questionIndex}/${payload?.totalQuestions}`);
-    });
+      host.on("round:summary", (payload) => {
+        console.log(`Round complete: ${payload?.questionIndex}/${payload?.totalQuestions}`);
+      });
 
-    host.on("game:finished", () => {
-      console.log("\nDEMO COMPLETE: game finished.\n");
-      finishedResolve();
-    });
+      host.on("game:finished", () => {
+        console.log("\nDEMO COMPLETE: game finished.\n");
+        finishedResolve();
+      });
 
-    host.on("game:ended", () => {
-      finishedResolve();
-    });
+      host.on("game:ended", () => {
+        finishedResolve();
+      });
+    }
 
     for (let i = 0; i < STUDENT_COUNT; i += 1) {
       const socket = await connectSocket(`bot-${i + 1}`);
@@ -405,11 +417,45 @@ async function run() {
       const bot = makeBot(name, socket, code);
       wireBotGameplay(bot);
       bots.push(bot);
+
+      if (i === 0) {
+        socket.on("question:start", (payload) => {
+          if (!host) {
+            console.log(`Q${payload?.questionIndex}/${payload?.totalQuestions}: ${payload?.question?.prompt || "Question"}`);
+          }
+        });
+        socket.on("minigame:yourData", (payload) => {
+          if (!host) {
+            console.log(`Mini-game: ${payload?.type || "unknown"}`);
+          }
+        });
+        socket.on("round:summary", (payload) => {
+          if (!host) {
+            console.log(`Round complete: ${payload?.questionIndex}/${payload?.totalQuestions}`);
+          }
+        });
+        socket.on("game:finished", () => {
+          if (!host) {
+            console.log("\nDEMO COMPLETE: game finished.\n");
+            finishedResolve();
+          }
+        });
+        socket.on("game:ended", () => {
+          if (!host) {
+            finishedResolve();
+          }
+        });
+      }
     }
 
-    console.log(`Joined ${bots.length} bots. Starting in 2 seconds...`);
-    await sleep(2000);
-    await emitAck(host, "host:start", { code });
+    if (host) {
+      console.log(`Joined ${bots.length} bots. Starting in 2 seconds...`);
+      await sleep(2000);
+      await emitAck(host, "host:start", { code });
+    } else {
+      console.log(`Joined ${bots.length} bots to room ${code}.`);
+      console.log("Start the game from your host dashboard to watch realtime autoplay.");
+    }
 
     await finishedPromise;
     await sleep(800);

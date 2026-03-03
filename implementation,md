@@ -1,0 +1,114 @@
+# Implementation
+
+## Goal
+Build and harden a classroom-ready, Blooket-style realtime quiz platform that runs locally first, supports Chromebook students, and includes fast mini-game testing workflows.
+
+## Current Snapshot
+- Core realtime host/student flow exists.
+- Quiz + scoring + leaderboard exist.
+- Blook selection before join exists.
+- Mini-games exist and run between questions.
+- Soccer mini-game has animated fussball-style UI.
+- Host can run mini-game tests without quiz answers.
+- Auto demo and smoke test scripts exist.
+
+## Priority Roadmap
+
+### Phase 1: Stabilize Core (Now)
+- [x] Add a comprehensive implementation tracker file (`implementation,md`).
+- [x] Keep documentation 100% aligned with actual behavior (README + UI labels).
+- [x] Replace placeholder `npm test` with a real validation command.
+- [x] Add a single command to run static syntax checks (`npm run check`).
+- [x] Verify all critical scripts pass locally (`check`, `smoke`, `demo`).
+
+### Phase 2: Host and Student UX
+- [x] Add clear phase banners for lobby/question/minigame/summary/finished.
+- [x] Improve mobile/chromebook layout for host control panel.
+- [x] Add "mini-game currently running" prominent indicator for host + students.
+- [x] Add reconnect messaging if a student temporarily disconnects.
+- [x] Add "student waiting room ready count" on host.
+- [x] Add host-side "copy room code" one-click button.
+- [x] Add preload hints for game assets to reduce first-round lag.
+
+### Phase 3: Mini-Game Expansion
+- [ ] Add at least 3 more mini-games (reaction duel, obstacle dodge, word scramble).
+- [ ] Add mini-game difficulty scaling by round number.
+- [x] Add host option for mini-game rotation mode:
+- [x] `Fixed order`, `Random order`, `Soccer only`, `Disable mini-games`.
+- [x] Add optional mini-game duration control in host settings.
+- [ ] Add per-mini-game tutorial overlays for first-time players.
+- [ ] Add sound toggle + simple SFX events (goal, save, timer warning).
+
+### Phase 4: Quiz Content System
+- [ ] Add quiz import/export (`.json`) for teacher-made sets.
+- [ ] Add host UI for creating/editing question sets in browser.
+- [ ] Add categories/tags and quick filter search.
+- [ ] Add per-question image support.
+- [ ] Add optional explanation reveal duration control.
+- [ ] Add question randomization controls (shuffle options, no repeats).
+
+### Phase 5: Classroom Controls
+- [ ] Add lock join toggle after class starts.
+- [ ] Add manual start countdown (3..2..1).
+- [ ] Add per-student mute/kick/rejoin approvals.
+- [ ] Add temporary pause/resume game button.
+- [ ] Add "skip current mini-game" button.
+- [ ] Add "force next question now" button.
+- [ ] Add classroom-safe nickname filtering.
+
+### Phase 6: Profiles and Blooks
+- [ ] Normalize all blook/player icon text encoding (remove mojibake everywhere).
+- [ ] Add richer blook metadata (theme, rarity color, animation flags).
+- [ ] Add host option to allow/deny specific packs.
+- [ ] Add random blook mode toggle as optional classroom setting.
+- [ ] Add local persistence of last selected blook on student browser.
+
+### Phase 7: Networking and Reliability
+- [ ] Improve graceful reconnect handling preserving player state.
+- [ ] Add heartbeat/ping quality indicators in UI.
+- [ ] Add rate limiting for sensitive socket events.
+- [ ] Add room capacity + performance tuning for 60+ students.
+- [ ] Add safer error telemetry logs (server-side event traces).
+- [ ] Add idle cleanup metrics endpoint for host diagnostics.
+
+### Phase 8: Data Persistence
+- [ ] Move from in-memory game state to persistent storage.
+- [ ] Add SQLite-based local persistence mode.
+- [ ] Persist question sets, game history, and settings templates.
+- [ ] Add optional "resume interrupted game" support.
+- [ ] Add local backups and restore command.
+
+### Phase 9: Security and Safety
+- [ ] Add input validation hardening for all socket payloads.
+- [ ] Add server-side sanitization for all user-generated strings.
+- [ ] Add CSRF/basic auth option for host route in shared networks.
+- [ ] Add classroom code expiration rules.
+- [ ] Add privacy-safe logs with no unnecessary student data retention.
+
+### Phase 10: Testing and CI
+- [ ] Expand smoke test to cover all mini-game types in one run.
+- [ ] Add deterministic mode tests for scoring and streak math.
+- [ ] Add regression tests for host mini-game test feature.
+- [ ] Add end-to-end browser automation for host + student flows.
+- [ ] Add CI pipeline (lint/check/smoke) on every push.
+
+### Phase 11: Deployment and Operations
+- [ ] Add Windows service script for auto-start on teacher PC.
+- [ ] Add Docker setup for easy LAN hosting.
+- [ ] Add production env config (`PORT`, `HOST`, `LOG_LEVEL`).
+- [ ] Add one-click LAN startup script with firewall guidance.
+- [ ] Add release checklist and versioning strategy.
+
+### Phase 12: Product Polish
+- [ ] Add polished onboarding/tutorial mode.
+- [ ] Add achievements and end-of-game badges.
+- [ ] Add class report export (CSV/PDF scoreboard).
+- [ ] Add theme presets (sports/anime/arcade/classic classroom).
+- [ ] Add accessibility pass (keyboard nav, high contrast, reduced motion).
+
+## Execution Log
+- [x] Phase 1 started.
+- [x] Phase 1.1 completed: aligned README/scripts and verified `npm run check` + `npm test`.
+- [x] Phase 1.2 completed: smoke now verifies all mini-game types plus normal quiz flow.
+- [x] Phase 2.1 completed: phase banners + mini-game live indicator + reconnect state + ready count + preload hints.
+- [x] Phase 3.1 completed: host can choose mini-game rotation mode and mini-game duration.

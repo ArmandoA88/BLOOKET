@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run smoke",
     "dev": "node server.js",
     "start": "node server.js",
+    "check": "node --check server.js && node --check public/host.js && node --check public/play.js && node --check scripts/auto-demo.js && node --check scripts/smoke-test.js",
     "smoke": "node scripts/smoke-test.js",
     "demo": "node scripts/auto-demo.js"
   },

@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quiz Arena Host</title>
+    <link rel="preload" as="image" href="/assets/games/question.svg" />
+    <link rel="preload" as="image" href="/assets/games/soccer.svg" />
+    <link rel="preload" as="image" href="/assets/games/tap.svg" />
+    <link rel="preload" as="image" href="/assets/games/sequence.svg" />
+    <link rel="preload" as="image" href="/assets/games/precision.svg" />
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
@@ -48,6 +53,19 @@
             <label for="count">Question Count</label>
             <input id="count" type="number" min="5" max="30" value="10" />
           </div>
+          <div>
+            <label for="miniRotation">Mini-Game Rotation</label>
+            <select id="miniRotation">
+              <option value="fixed">Fixed Order</option>
+              <option value="random">Random Order</option>
+              <option value="soccer_only">Soccer Only</option>
+              <option value="off">Disable Mini-Games</option>
+            </select>
+          </div>
+          <div>
+            <label for="miniDuration">Mini-Game Duration (sec)</label>
+            <input id="miniDuration" type="number" min="5" max="30" value="10" />
+          </div>
         </div>
         <div class="button-row" style="margin-top: 12px">
           <button id="createBtn">Create Room</button>
@@ -61,11 +79,53 @@
             <div class="topbar" style="margin-bottom: 8px">
               <div>
                 <h2 class="title" style="margin-bottom: 2px">Room <span id="roomCode" class="mono">------</span></h2>
+                <div class="button-row" style="margin-bottom: 4px">
+                  <button id="copyCodeBtn" class="ghost">Copy Room Code</button>
+                </div>
                 <div class="sub" id="modeLabel">Mode: Classic</div>
                 <div class="sub" id="quizLabel">Quiz: Multiplication 1-Digit</div>
               </div>
-              <div class="badge">Phase: <span id="phaseText">Lobby</span></div>
+              <div class="topbar-phase">
+                <div class="badge">Phase: <span id="phaseText">Lobby</span></div>
+                <span id="hostConnectionPill" class="status-pill">Connecting...</span>
+              </div>
             </div>
+
+            <section id="phaseBanner" class="phase-banner phase-lobby" aria-live="polite">
+              <div class="phase-banner-row">
+                <div class="phase-banner-title-wrap">
+                  <span class="phase-banner-kicker">Game State</span>
+                  <strong id="phaseBannerTitle">Lobby Open</strong>
+                </div>
+                <span id="miniGameActiveFlag" class="phase-banner-flag hidden">Mini-Game Running</span>
+              </div>
+              <div id="phaseBannerDetail" class="phase-banner-detail">Students can join and pick blooks.</div>
+            </section>
+
+            <section id="lobbyBoard" class="lobby-board">
+              <div class="lobby-board-top">
+                <div class="lobby-qr-wrap">
+                  <img id="lobbyJoinQr" class="lobby-qr" alt="Student join QR code" />
+                  <div class="help">Scan to join</div>
+                </div>
+                <div class="lobby-headline">
+                  Go to <span id="lobbyJoinHost" class="mono">localhost:3000/play.html</span><br />
+                  and enter Game ID:
+                </div>
+                <div id="lobbyCodeBig" class="lobby-code mono">------</div>
+                <div class="lobby-actions">
+                  <button id="copyJoinLinkBigBtn" class="ghost">Copy Join Link</button>
+                  <button id="lobbyStartBtn">Start</button>
+                </div>
+              </div>
+              <div class="lobby-board-main">
+                <div class="lobby-player-title"><span id="lobbyPlayerCount">0</span> students joined - <span id="lobbyReadyCount">0</span> ready</div>
+                <div class="help" style="margin-bottom: 10px">Blook pick stays open until the host starts.</div>
+                <div id="lobbyPlayers" class="lobby-player-grid">
+                  <div class="help">No students joined yet.</div>
+                </div>
+              </div>
+            </section>
 
             <div class="kpis" style="margin-bottom: 12px">
               <div class="kpi"><div id="kpiPlayers" class="v">0</div><div class="l">Players</div></div>
@@ -81,6 +141,12 @@
               <div class="ticker" id="questionTimer">Time left: --</div>
               <div class="question" id="questionText">Question text appears here.</div>
               <div id="answerStats" class="answers"></div>
+            </div>
+
+            <div id="miniGameDashboardPanel" class="card hidden" style="margin-top: 12px">
+              <h3 id="miniGameDashboardTitle" class="title">Mini-Game Dashboard</h3>
+              <div id="miniGameDashboardMeta" class="help">Live student progress will appear here.</div>
+              <div id="miniGameDashboardBody" style="margin-top: 10px"></div>
             </div>
 
             <div id="feedPanel" class="card" style="margin-top: 12px">
@@ -99,7 +165,7 @@
             </div>
           </article>
 
-          <aside class="card strong">
+          <aside id="hostControlsCard" class="card strong">
             <h2 class="title">Host Controls</h2>
             <div class="button-row" style="margin-bottom: 12px">
               <button id="startBtn">Start Game</button>
@@ -133,9 +199,40 @@
                 <label for="liveCount">Question Count</label>
                 <input id="liveCount" type="number" min="5" max="30" value="10" />
               </div>
+              <div>
+                <label for="liveMiniRotation">Mini-Game Rotation</label>
+                <select id="liveMiniRotation">
+                  <option value="fixed">Fixed Order</option>
+                  <option value="random">Random Order</option>
+                  <option value="soccer_only">Soccer Only</option>
+                  <option value="off">Disable Mini-Games</option>
+                </select>
+              </div>
+              <div>
+                <label for="liveMiniDuration">Mini-Game Duration (sec)</label>
+                <input id="liveMiniDuration" type="number" min="5" max="30" value="10" />
+              </div>
             </div>
             <div class="button-row" style="margin-top: 8px">
               <button id="saveSettingsBtn" class="ghost">Save Lobby Settings</button>
+            </div>
+
+            <div id="miniGameTestPanel" class="card" style="margin-top: 12px">
+              <h3 class="title">Mini-Game Test</h3>
+              <div>
+                <label for="testMiniGameType">Mini-game</label>
+                <select id="testMiniGameType">
+                  <option value="soccer_shootout">Soccer Shootout</option>
+                  <option value="tap_rush">Tap Rush</option>
+                  <option value="sequence_memory">Sequence Memory</option>
+                  <option value="precision_stop">Precision Stop</option>
+                </select>
+              </div>
+              <div class="button-row" style="margin-top: 8px">
+                <button id="testMiniGameBtn" class="secondary">Play Mini-Game Only</button>
+              </div>
+              <div id="miniGameTestNotice" class="notice hidden" style="margin-top: 8px"></div>
+              <p class="help" style="margin-top: 8px">Runs for all joined students without needing a question answer.</p>
             </div>
 
             <h3 class="title" style="margin-top: 16px">Student Join Links</h3>

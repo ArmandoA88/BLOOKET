@@ -5,6 +5,7 @@ const { io } = require("socket.io-client");
 const ROOT = path.resolve(__dirname, "..");
 const PORT = Number(process.env.SMOKE_PORT || 3100);
 const BASE_URL = `http://127.0.0.1:${PORT}`;
+const MINI_GAME_TYPES = ["soccer_shootout", "tap_rush", "sequence_memory", "precision_stop"];
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -15,10 +16,10 @@ async function waitForHealth(timeoutMs = 15000) {
 
   while (Date.now() < deadline) {
     try {
-      const res = await fetch(`${BASE_URL}/health`);
-      if (res.ok) {
-        const body = await res.json();
-        if (body?.ok) {
+      const response = await fetch(`${BASE_URL}/health`);
+      if (response.ok) {
+        const payload = await response.json();
+        if (payload?.ok) {
           return;
         }
       }
@@ -29,7 +30,7 @@ async function waitForHealth(timeoutMs = 15000) {
     await sleep(250);
   }
 
-  throw new Error(`Server did not become healthy at ${BASE_URL}/health within ${timeoutMs}ms`);
+  throw new Error(`Server did not become healthy at ${BASE_URL}/health`);
 }
 
 function waitForEvent(socket, eventName, options = {}) {
@@ -43,9 +44,9 @@ function waitForEvent(socket, eventName, options = {}) {
     }, timeoutMs);
 
     const onEvent = (payload) => {
-      let ok = false;
+      let match = false;
       try {
-        ok = predicate(payload);
+        match = predicate(payload);
       } catch (error) {
         clearTimeout(timer);
         socket.off(eventName, onEvent);
@@ -53,7 +54,7 @@ function waitForEvent(socket, eventName, options = {}) {
         return;
       }
 
-      if (!ok) {
+      if (!match) {
         return;
       }
 
@@ -76,8 +77,7 @@ function emitAck(socket, eventName, payload, timeoutMs = 10000) {
       clearTimeout(timer);
 
       if (!ack || ack.ok === false) {
-        const message = ack?.message || `Unknown error for ${eventName}`;
-        reject(new Error(message));
+        reject(new Error(ack?.message || `Ack failed for '${eventName}'`));
         return;
       }
 
@@ -95,7 +95,7 @@ async function connectSocket(label) {
 
   await new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
-      reject(new Error(`Socket connect timeout for ${label}`));
+      reject(new Error(`Socket connect timeout: ${label}`));
     }, 9000);
 
     socket.once("connect", () => {
@@ -103,9 +103,9 @@ async function connectSocket(label) {
       resolve();
     });
 
-    socket.once("connect_error", (err) => {
+    socket.once("connect_error", (error) => {
       clearTimeout(timer);
-      reject(new Error(`Socket connect_error (${label}): ${err?.message || "unknown"}`));
+      reject(new Error(`Socket connect_error (${label}): ${error?.message || "unknown"}`));
     });
   });
 
@@ -115,18 +115,110 @@ async function connectSocket(label) {
 function solveMultiplication(questionPayload) {
   const prompt = questionPayload?.question?.prompt || "";
   const options = questionPayload?.question?.options || [];
-
   const match = prompt.match(/What is\s+(\d+)\s+x\s+(\d+)\?/i);
+
   if (!match) {
     return 0;
   }
 
-  const left = Number(match[1]);
-  const right = Number(match[2]);
-  const answer = String(left * right);
-  const answerIndex = options.findIndex((opt) => String(opt) === answer);
+  const answer = String(Number(match[1]) * Number(match[2]));
+  const index = options.findIndex((option) => String(option) === answer);
+  return index >= 0 ? index : 0;
+}
 
-  return answerIndex >= 0 ? answerIndex : 0;
+async function playMiniGameActions(type, code, studentA, studentB, dataA, dataB) {
+  if (type === "soccer_shootout") {
+    for (let shot = 0; shot < 5; shot += 1) {
+      await emitAck(studentA, "player:minigameAction", {
+        code,
+        action: "shoot",
+        value: { lane: shot % 3, power: 2 }
+      });
+      await emitAck(studentB, "player:minigameAction", {
+        code,
+        action: "shoot",
+        value: { lane: (shot + 1) % 3, power: 2 }
+      });
+    }
+    return;
+  }
+
+  if (type === "tap_rush") {
+    const deadline = Date.now() + 2300;
+    while (Date.now() < deadline) {
+      await emitAck(studentA, "player:minigameAction", { code, action: "tap" });
+      await emitAck(studentB, "player:minigameAction", { code, action: "tap" });
+      await sleep(80);
+    }
+    return;
+  }
+
+  if (type === "sequence_memory") {
+    const sequenceA = Array.isArray(dataA?.sequence) ? dataA.sequence : [];
+    const sequenceB = Array.isArray(dataB?.sequence) ? dataB.sequence : [];
+    const total = Math.max(sequenceA.length, sequenceB.length);
+
+    for (let i = 0; i < total; i += 1) {
+      if (sequenceA[i] !== undefined) {
+        await emitAck(studentA, "player:minigameAction", {
+          code,
+          action: "step",
+          value: sequenceA[i]
+        });
+      }
+      if (sequenceB[i] !== undefined) {
+        await emitAck(studentB, "player:minigameAction", {
+          code,
+          action: "step",
+          value: sequenceB[i]
+        });
+      }
+    }
+    return;
+  }
+
+  if (type === "precision_stop") {
+    const valueA = Number.isFinite(Number(dataA?.target)) ? Number(dataA.target) : 50;
+    const valueB = Number.isFinite(Number(dataB?.target)) ? Number(dataB.target) : 50;
+    await emitAck(studentA, "player:minigameAction", { code, action: "stop", value: valueA });
+    await emitAck(studentB, "player:minigameAction", { code, action: "stop", value: valueB });
+  }
+}
+
+async function runMiniGameTestRound(type, code, host, studentA, studentB) {
+  const miniStart = waitForEvent(host, "minigame:start", {
+    timeoutMs: 15000,
+    predicate: (payload) => payload?.type === type
+  });
+  const lobbyBack = waitForEvent(host, "lobby:update", {
+    timeoutMs: 25000,
+    predicate: (payload) => payload?.code === code
+  });
+  const aDataPromise = waitForEvent(studentA, "minigame:yourData", {
+    timeoutMs: 15000,
+    predicate: (payload) => payload?.type === type
+  });
+  const bDataPromise = waitForEvent(studentB, "minigame:yourData", {
+    timeoutMs: 15000,
+    predicate: (payload) => payload?.type === type
+  });
+  const aResolved = waitForEvent(studentA, "minigame:resolved", { timeoutMs: 25000 });
+  const bResolved = waitForEvent(studentB, "minigame:resolved", { timeoutMs: 25000 });
+
+  await emitAck(host, "host:startMiniGameTest", {
+    code,
+    type,
+    durationMs: 3500
+  });
+
+  await miniStart;
+  const aData = await aDataPromise;
+  const bData = await bDataPromise;
+
+  await playMiniGameActions(type, code, studentA, studentB, aData?.data, bData?.data);
+  await aResolved;
+  await bResolved;
+  await lobbyBack;
 }
 
 async function run() {
@@ -160,9 +252,9 @@ async function run() {
 
     const created = await emitAck(host, "host:create", {
       hostName: "SmokeHost",
-      mode: "gold",
+      mode: "classic",
       questionSet: "multiplication_1_digit",
-      timerSeconds: 12,
+      timerSeconds: 10,
       questionCount: 5
     });
 
@@ -171,59 +263,76 @@ async function run() {
     await emitAck(studentA, "player:join", { code, name: "Ava" });
     await emitAck(studentB, "player:join", { code, name: "Ben" });
 
-    const hostMiniStart = waitForEvent(host, "minigame:start", { timeoutMs: 20000 });
-    const aMiniData = waitForEvent(studentA, "minigame:yourData", { timeoutMs: 20000 });
-    const bMiniData = waitForEvent(studentB, "minigame:yourData", { timeoutMs: 20000 });
-    const aMiniResolved = waitForEvent(studentA, "minigame:resolved", { timeoutMs: 25000 });
-    const bMiniResolved = waitForEvent(studentB, "minigame:resolved", { timeoutMs: 25000 });
+    for (const type of MINI_GAME_TYPES) {
+      await runMiniGameTestRound(type, code, host, studentA, studentB);
+    }
 
     const aQuestion = waitForEvent(studentA, "question:start", { timeoutMs: 12000 });
     const bQuestion = waitForEvent(studentB, "question:start", { timeoutMs: 12000 });
+    const hostMiniStart = waitForEvent(host, "minigame:start", {
+      timeoutMs: 20000,
+      predicate: (payload) => payload?.type === "soccer_shootout"
+    });
 
     await emitAck(host, "host:start", { code });
 
-    const qA = await aQuestion;
+    const questionPayload = await aQuestion;
     await bQuestion;
 
-    const correctIndex = solveMultiplication(qA);
+    const correctIndex = solveMultiplication(questionPayload);
     await emitAck(studentA, "player:answer", { code, answerIndex: correctIndex });
     await emitAck(studentB, "player:answer", { code, answerIndex: correctIndex });
-
-    const miniStart = await hostMiniStart;
-    if (miniStart.type !== "soccer_shootout") {
-      throw new Error(`Expected soccer_shootout first, got ${miniStart.type}`);
-    }
-
-    const miniA = await aMiniData;
-    const miniB = await bMiniData;
-
-    if (miniA.type !== "soccer_shootout" || miniB.type !== "soccer_shootout") {
-      throw new Error("Students did not receive soccer_shootout data");
-    }
-
-    for (let shot = 0; shot < 5; shot += 1) {
-      await emitAck(studentA, "player:minigameAction", {
-        code,
-        action: "shoot",
-        value: { lane: shot % 3, power: 2 }
-      });
-
-      await emitAck(studentB, "player:minigameAction", {
-        code,
-        action: "shoot",
-        value: { lane: (shot + 1) % 3, power: 2 }
-      });
-    }
-
-    await aMiniResolved;
-    await bMiniResolved;
+    await hostMiniStart;
 
     await emitAck(host, "host:end", { code });
 
+    const createdNoMini = await emitAck(host, "host:create", {
+      hostName: "SmokeHost2",
+      mode: "classic",
+      questionSet: "multiplication_1_digit",
+      timerSeconds: 10,
+      questionCount: 5,
+      miniGameRotationMode: "off",
+      miniGameDurationSec: 6
+    });
+
+    const noMiniCode = createdNoMini.code;
+    await emitAck(studentA, "player:join", { code: noMiniCode, name: "Ava2" });
+    await emitAck(studentB, "player:join", { code: noMiniCode, name: "Ben2" });
+
+    const noMiniQuestionA = waitForEvent(studentA, "question:start", { timeoutMs: 12000 });
+    const noMiniQuestionB = waitForEvent(studentB, "question:start", { timeoutMs: 12000 });
+    const noMiniRoundSummary = waitForEvent(host, "round:summary", { timeoutMs: 12000 });
+    const noMiniStart = waitForEvent(host, "minigame:start", { timeoutMs: 4500 });
+
+    await emitAck(host, "host:start", { code: noMiniCode });
+
+    const noMiniQuestionPayload = await noMiniQuestionA;
+    await noMiniQuestionB;
+
+    const noMiniAnswer = solveMultiplication(noMiniQuestionPayload);
+    await emitAck(studentA, "player:answer", { code: noMiniCode, answerIndex: noMiniAnswer });
+    await emitAck(studentB, "player:answer", { code: noMiniCode, answerIndex: noMiniAnswer });
+
+    await noMiniRoundSummary;
+    try {
+      await noMiniStart;
+      throw new Error("Mini-game fired even though mini-game rotation mode is off.");
+    } catch (error) {
+      const message = String(error?.message || error);
+      if (!message.includes("Timed out waiting for 'minigame:start'")) {
+        throw error;
+      }
+    }
+
+    await emitAck(host, "host:end", { code: noMiniCode });
+
     console.log("\nSMOKE TEST PASSED");
     console.log(`- server: ${BASE_URL}`);
-    console.log("- quiz: multiplication_1_digit");
-    console.log("- mini-game verified: soccer_shootout");
+    console.log("- quiz flow verified: host:start + student answers");
+    console.log(`- mini-game test verified: ${MINI_GAME_TYPES.join(", ")}`);
+    console.log("- default round mini-game verified: soccer_shootout");
+    console.log("- mini-game rotation mode off verified: question goes straight to round summary");
     console.log("- multiplayer flow: host + 2 students");
   } finally {
     if (host) host.close();

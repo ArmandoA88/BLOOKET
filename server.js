@@ -397,6 +397,7 @@ const MINI_GAME_CATALOG = [
 ];
 
 const MINI_GAME_LOOKUP = new Map(MINI_GAME_CATALOG.map((game) => [game.id, game]));
+const MINI_GAME_ROTATION_MODES = new Set(["fixed", "random", "soccer_only", "off"]);
 
 function publicMiniGameCatalog() {
   return MINI_GAME_CATALOG.map((game) => ({
@@ -412,6 +413,15 @@ function normalizeMode(mode) {
   }
 
   return MODE_CONFIG[mode] ? mode : "classic";
+}
+
+function normalizeMiniGameRotationMode(mode) {
+  if (typeof mode !== "string") {
+    return "fixed";
+  }
+
+  const normalized = mode.trim().toLowerCase();
+  return MINI_GAME_ROTATION_MODES.has(normalized) ? normalized : "fixed";
 }
 
 function getModeConfig(mode) {
@@ -648,8 +658,22 @@ function broadcastLobby(game) {
 
 function broadcastHostStatus(game) {
   const totalPlayers = game.players.size;
-  const answers = game.submissions.size;
-  const correctAnswers = Array.from(game.submissions.values()).filter((entry) => entry.correct).length;
+  let answers = game.submissions.size;
+  let correctAnswers = Array.from(game.submissions.values()).filter((entry) => entry.correct).length;
+
+  if (game.phase === "question" && game.questionEligiblePlayerIds instanceof Set && game.questionEligiblePlayerIds.size > 0) {
+    answers = 0;
+    correctAnswers = 0;
+    for (const submission of game.submissions.values()) {
+      if (!game.questionEligiblePlayerIds.has(submission.playerId)) {
+        continue;
+      }
+      answers += 1;
+      if (submission.correct) {
+        correctAnswers += 1;
+      }
+    }
+  }
 
   io.to(game.hostId).emit("host:status", {
     phase: game.phase,
@@ -660,6 +684,75 @@ function broadcastHostStatus(game) {
     currentQuestionIndex: game.currentQuestionIndex + 1,
     totalQuestions: game.questions.length
   });
+}
+
+function syncPlayerToCurrentPhase(game, socketId) {
+  if (!game || !socketId) {
+    return;
+  }
+
+  const leaderboard = sortedPlayers(game);
+  io.to(socketId).emit("players:update", {
+    players: leaderboard
+  });
+
+  if (game.phase === "question") {
+    const question = game.questions[game.currentQuestionIndex];
+    if (!question) {
+      return;
+    }
+
+    io.to(socketId).emit("question:start", {
+      questionIndex: game.currentQuestionIndex + 1,
+      totalQuestions: game.questions.length,
+      endsAt: game.questionEndsAt || Date.now() + 1000,
+      question: {
+        prompt: question.prompt,
+        options: question.options
+      }
+    });
+    return;
+  }
+
+  if (game.phase === "minigame") {
+    const eligiblePlayerIds = Array.from(game.chestPhase.keys());
+    const meta = miniGameMeta(game.minigameType);
+
+    io.to(socketId).emit("minigame:start", {
+      eligiblePlayerIds,
+      type: game.minigameType,
+      endsAt: game.minigameEndsAt || Date.now() + 1000,
+      eventName: meta?.name || "Mini Game",
+      feedTitle: "Mini-game Feed"
+    });
+
+    if (game.chestPhase.has(socketId)) {
+      const state = game.chestPhase.get(socketId);
+      io.to(socketId).emit("minigame:yourData", {
+        type: state.type,
+        endsAt: game.minigameEndsAt || Date.now() + 1000,
+        eventName: meta?.name || "Mini Game",
+        actionLabel: "Play",
+        data: miniGamePublicData(state)
+      });
+    }
+    return;
+  }
+
+  if (game.phase === "round_summary") {
+    io.to(socketId).emit("round:summary", {
+      questionIndex: game.currentQuestionIndex + 1,
+      totalQuestions: game.questions.length,
+      leaderboard
+    });
+    return;
+  }
+
+  if (game.phase === "finished") {
+    io.to(socketId).emit("game:finished", {
+      leaderboard
+    });
+  }
 }
 
 function clearTimers(game) {
@@ -726,9 +819,21 @@ function applyPenalty(target, amount) {
 }
 
 function pickMiniGameType(game) {
+  const rotationMode = normalizeMiniGameRotationMode(game.settings.miniGameRotationMode);
+  if (rotationMode === "off") {
+    return null;
+  }
+  if (rotationMode === "soccer_only") {
+    return "soccer_shootout";
+  }
+
   const options = MODE_MINI_GAMES[normalizeMode(game.settings.mode)] || [];
   if (options.length === 0) {
     return null;
+  }
+
+  if (rotationMode === "random") {
+    return options[randomInt(0, options.length - 1)];
   }
 
   const index = game.minigameRotationIndex % options.length;
@@ -738,6 +843,140 @@ function pickMiniGameType(game) {
 
 function miniGameMeta(type) {
   return MINI_GAME_LOOKUP.get(type) || MINI_GAME_LOOKUP.get("soccer_shootout");
+}
+
+function isMiniGameType(type) {
+  if (typeof type !== "string") {
+    return false;
+  }
+
+  return MINI_GAME_LOOKUP.has(type.trim());
+}
+
+function miniGameHostGoal(game, type) {
+  if (type === "tap_rush") {
+    return Math.max(40, Math.round((Number(game?.minigameDurationMs) || 10000) / 130));
+  }
+  if (type === "soccer_shootout") {
+    return 5;
+  }
+  if (type === "sequence_memory") {
+    return 5;
+  }
+  if (type === "precision_stop") {
+    return 100;
+  }
+  return 0;
+}
+
+function hostMiniGameProgressRow(state) {
+  if (state.type === "tap_rush") {
+    return {
+      metric: Number(state.taps || 0),
+      progress: Number(state.taps || 0),
+      completed: false
+    };
+  }
+
+  if (state.type === "soccer_shootout") {
+    const goals = Number(state.goals || 0);
+    const shotsTaken = Number(state.shotsTaken || 0);
+    const totalShots = Number(state.totalShots || 5);
+    return {
+      metric: goals * 100 - shotsTaken,
+      progress: goals,
+      goals,
+      shotsTaken,
+      totalShots,
+      completed: shotsTaken >= totalShots
+    };
+  }
+
+  if (state.type === "sequence_memory") {
+    const progress = Number(state.progress || 0);
+    const total = Array.isArray(state.sequence) ? state.sequence.length : 5;
+    return {
+      metric: (state.completedAt ? 1000 : 0) + progress,
+      progress,
+      total,
+      completed: state.completedAt !== null
+    };
+  }
+
+  if (state.type === "precision_stop") {
+    const submitted = state.submitted === true;
+    const target = Number(state.target || 0);
+    const value = submitted ? Number(state.value || 0) : null;
+    const diff = submitted ? Math.abs(value - target) : null;
+    return {
+      metric: submitted ? 1000 - diff : 0,
+      progress: submitted ? 100 - diff : 0,
+      submitted,
+      target,
+      value,
+      diff,
+      completed: submitted
+    };
+  }
+
+  return {
+    metric: 0,
+    progress: 0,
+    completed: false
+  };
+}
+
+function buildMiniGameProgressPayload(game) {
+  if (!game || game.phase !== "minigame" || !game.minigameType) {
+    return null;
+  }
+
+  const type = game.minigameType;
+  const meta = miniGameMeta(type);
+  const goal = miniGameHostGoal(game, type);
+  const rows = [];
+
+  for (const [playerId, state] of game.chestPhase.entries()) {
+    const player = game.players.get(playerId);
+    if (!player || !state) {
+      continue;
+    }
+
+    const progressRow = hostMiniGameProgressRow(state);
+    rows.push({
+      id: player.id,
+      name: player.name,
+      blook: player.blook,
+      score: player.score,
+      ...progressRow
+    });
+  }
+
+  rows.sort((a, b) => b.metric - a.metric || b.score - a.score || a.name.localeCompare(b.name));
+  rows.forEach((row, index) => {
+    row.rank = index + 1;
+  });
+
+  return {
+    type,
+    eventName: meta?.name || "Mini-game",
+    goal,
+    endsAt: game.minigameEndsAt || Date.now() + 1000,
+    players: rows
+  };
+}
+
+function broadcastMiniGameProgress(game) {
+  if (!game || game.phase !== "minigame") {
+    return;
+  }
+
+  const payload = buildMiniGameProgressPayload(game);
+  if (!payload) {
+    return;
+  }
+
+  io.to(game.hostId).emit("minigame:progress", payload);
 }
 
 function createMiniGameState(type) {
@@ -942,23 +1181,49 @@ function finalizeMiniGamePhase(game) {
   game.minigameType = null;
   game.minigameStartedAt = null;
   game.minigameEndsAt = null;
+  const returnPhase = game.minigameReturnPhase === "lobby" ? "lobby" : "round_summary";
+  game.minigameReturnPhase = "round_summary";
+
+  if (returnPhase === "lobby") {
+    game.phase = "lobby";
+    game.submissions.clear();
+    game.feed = [];
+    game.updatedAt = Date.now();
+    broadcastLobby(game);
+    broadcastHostStatus(game);
+    return;
+  }
+
   startRoundSummary(game);
 }
 
-function startMiniGamePhase(game, eligiblePlayerIds) {
-  const miniGameType = pickMiniGameType(game);
+function startMiniGamePhase(game, eligiblePlayerIds, options = {}) {
+  const requestedType = typeof options.type === "string" ? options.type.trim() : "";
+  const miniGameType = isMiniGameType(requestedType) ? requestedType : pickMiniGameType(game);
   const meta = miniGameMeta(miniGameType);
+  const returnPhase = options.returnPhase === "lobby" ? "lobby" : "round_summary";
+  const settingsDurationMs = clamp(Number(game.settings?.miniGameDurationSec) || 10, 5, 30) * 1000;
+  const durationMs = clamp(Number(options.durationMs) || settingsDurationMs, 5000, 30000);
+  const allowEmpty = options.allowEmpty === true;
 
-  if (!miniGameType || !meta || !Array.isArray(eligiblePlayerIds) || eligiblePlayerIds.length === 0) {
+  if (!miniGameType || !meta || !Array.isArray(eligiblePlayerIds) || (eligiblePlayerIds.length === 0 && !allowEmpty)) {
+    if (returnPhase === "lobby") {
+      game.phase = "lobby";
+      game.updatedAt = Date.now();
+      broadcastLobby(game);
+      broadcastHostStatus(game);
+      return false;
+    }
     startRoundSummary(game);
-    return;
+    return false;
   }
 
   game.phase = "minigame";
   game.feed = [];
   game.chestPhase.clear();
   game.minigameType = miniGameType;
-  game.minigameDurationMs = 10000;
+  game.minigameDurationMs = durationMs;
+  game.minigameReturnPhase = returnPhase;
   game.minigameStartedAt = Date.now();
   game.minigameEndsAt = game.minigameStartedAt + game.minigameDurationMs;
 
@@ -988,6 +1253,8 @@ function startMiniGamePhase(game, eligiblePlayerIds) {
   }, game.minigameDurationMs + 120);
 
   broadcastHostStatus(game);
+  broadcastMiniGameProgress(game);
+  return true;
 }
 
 function handleMiniGameAction(game, socketId, action, value) {
@@ -1010,6 +1277,7 @@ function handleMiniGameAction(game, socketId, action, value) {
       type: state.type,
       taps: state.taps
     });
+    broadcastMiniGameProgress(game);
     return { ok: true };
   }
 
@@ -1062,6 +1330,7 @@ function handleMiniGameAction(game, socketId, action, value) {
       lastShot: state.shots[state.shots.length - 1],
       completed: state.shotsTaken >= state.totalShots
     });
+    broadcastMiniGameProgress(game);
 
     if (allMiniGamesResolved(game)) {
       finalizeMiniGamePhase(game);
@@ -1100,6 +1369,7 @@ function handleMiniGameAction(game, socketId, action, value) {
       total: state.sequence.length,
       completed: state.completedAt !== null
     });
+    broadcastMiniGameProgress(game);
 
     if (allMiniGamesResolved(game)) {
       finalizeMiniGamePhase(game);
@@ -1127,6 +1397,7 @@ function handleMiniGameAction(game, socketId, action, value) {
       value: state.value,
       target: state.target
     });
+    broadcastMiniGameProgress(game);
 
     if (allMiniGamesResolved(game)) {
       finalizeMiniGamePhase(game);
@@ -1150,6 +1421,7 @@ function closeQuestion(game) {
 
   const question = game.questions[game.currentQuestionIndex];
   const submissions = Array.from(game.submissions.values());
+  game.questionEligiblePlayerIds = new Set();
 
   io.to(game.code).emit("question:result", {
     correctAnswer: question.answerIndex,
@@ -1167,8 +1439,10 @@ function closeQuestion(game) {
 
   if (game.players.size > 0) {
     const eligible = Array.from(game.players.keys());
-    startMiniGamePhase(game, eligible);
-    return;
+    const started = startMiniGamePhase(game, eligible);
+    if (started) {
+      return;
+    }
   }
 
   startRoundSummary(game);
@@ -1200,6 +1474,7 @@ function startQuestion(game) {
   game.phase = "question";
   game.currentQuestionIndex += 1;
   game.submissions.clear();
+  game.questionEligiblePlayerIds = new Set(game.players.keys());
   game.chestPhase.clear();
   game.minigameType = null;
   game.minigameStartedAt = null;
@@ -1264,6 +1539,9 @@ function removePlayerFromGame(game, socketId) {
   game.players.delete(socketId);
   socketToGame.delete(socketId);
   game.submissions.delete(socketId);
+  if (game.questionEligiblePlayerIds instanceof Set) {
+    game.questionEligiblePlayerIds.delete(socketId);
+  }
   game.chestPhase.delete(socketId);
 
   io.to(game.code).emit("player:left", {
@@ -1280,13 +1558,32 @@ function removePlayerFromGame(game, socketId) {
   }
   broadcastHostStatus(game);
 
-  if (game.phase === "question" && game.players.size > 0 && game.submissions.size >= game.players.size) {
-    closeQuestion(game);
+  if (game.phase === "question") {
+    const requiredAnswers =
+      game.questionEligiblePlayerIds instanceof Set && game.questionEligiblePlayerIds.size > 0
+        ? game.questionEligiblePlayerIds.size
+        : game.players.size;
+    let submittedAnswers = 0;
+    for (const submission of game.submissions.values()) {
+      if (!(game.questionEligiblePlayerIds instanceof Set) || game.questionEligiblePlayerIds.size === 0) {
+        submittedAnswers += 1;
+        continue;
+      }
+      if (game.questionEligiblePlayerIds.has(submission.playerId)) {
+        submittedAnswers += 1;
+      }
+    }
+
+    if (requiredAnswers === 0 || submittedAnswers >= requiredAnswers) {
+      closeQuestion(game);
+    }
   }
 
   if (game.phase === "minigame") {
     if (game.chestPhase.size === 0 || (game.minigameType !== "tap_rush" && allMiniGamesResolved(game))) {
       finalizeMiniGamePhase(game);
+    } else {
+      broadcastMiniGameProgress(game);
     }
   }
 }
@@ -1298,6 +1595,8 @@ io.on("connection", (socket) => {
     const questionSet = normalizeQuestionSet(payload?.questionSet);
     const timerSeconds = clamp(Number(payload?.timerSeconds) || 15, 8, 45);
     const questionCount = clamp(Number(payload?.questionCount) || 10, 5, 30);
+    const miniGameRotationMode = normalizeMiniGameRotationMode(payload?.miniGameRotationMode);
+    const miniGameDurationSec = clamp(Number(payload?.miniGameDurationSec) || 10, 5, 30);
 
     const code = createGameCode();
     const game = {
@@ -1311,12 +1610,15 @@ io.on("connection", (socket) => {
         mode,
         questionSet,
         timerSeconds,
-        questionCount
+        questionCount,
+        miniGameRotationMode,
+        miniGameDurationSec
       },
       players: new Map(),
       questions: pickQuestions(questionCount, questionSet),
       currentQuestionIndex: -1,
       submissions: new Map(),
+      questionEligiblePlayerIds: new Set(),
       chestPhase: new Map(),
       feed: [],
       questionTimer: null,
@@ -1328,6 +1630,7 @@ io.on("connection", (socket) => {
       minigameDurationMs: 0,
       minigameStartedAt: null,
       minigameEndsAt: null,
+      minigameReturnPhase: "round_summary",
       minigameRotationIndex: 0
     };
 
@@ -1363,6 +1666,14 @@ io.on("connection", (socket) => {
     game.settings.questionSet = normalizeQuestionSet(settings?.questionSet ?? game.settings.questionSet);
     game.settings.timerSeconds = clamp(Number(settings?.timerSeconds) || game.settings.timerSeconds, 8, 45);
     game.settings.questionCount = clamp(Number(settings?.questionCount) || game.settings.questionCount, 5, 30);
+    game.settings.miniGameRotationMode = normalizeMiniGameRotationMode(
+      settings?.miniGameRotationMode ?? game.settings.miniGameRotationMode
+    );
+    game.settings.miniGameDurationSec = clamp(
+      Number(settings?.miniGameDurationSec) || game.settings.miniGameDurationSec || 10,
+      5,
+      30
+    );
     game.questions = pickQuestions(game.settings.questionCount, game.settings.questionSet);
     game.minigameRotationIndex = 0;
     game.updatedAt = Date.now();
@@ -1387,9 +1698,9 @@ io.on("connection", (socket) => {
       return;
     }
 
-    if (game.phase !== "lobby") {
+    if (game.phase === "finished") {
       if (typeof ack === "function") {
-        ack({ ok: false, message: "Game already started." });
+        ack({ ok: false, message: "Game already finished." });
       }
       return;
     }
@@ -1432,7 +1743,14 @@ io.on("connection", (socket) => {
 
     game.updatedAt = Date.now();
 
-    broadcastLobby(game);
+    if (game.phase === "lobby") {
+      broadcastLobby(game);
+    } else {
+      io.to(game.code).emit("players:update", {
+        players: sortedPlayers(game)
+      });
+      syncPlayerToCurrentPhase(game, socket.id);
+    }
     broadcastHostStatus(game);
 
     io.to(game.hostId).emit("host:playerJoined", {
@@ -1447,7 +1765,8 @@ io.on("connection", (socket) => {
         code: game.code,
         mode: game.settings.mode,
         hostName: game.hostName,
-        blook: selectedBlook
+        blook: selectedBlook,
+        phase: game.phase
       });
     }
   });
@@ -1509,6 +1828,48 @@ io.on("connection", (socket) => {
 
     if (typeof ack === "function") {
       ack({ ok: true });
+    }
+  });
+
+  socket.on("host:startMiniGameTest", ({ code, type }, ack) => {
+    const game = games.get((code || "").toUpperCase());
+    if (!canHost(socket, game)) {
+      if (typeof ack === "function") {
+        ack({ ok: false, message: "Not allowed." });
+      }
+      return;
+    }
+
+    if (game.phase !== "lobby" && game.phase !== "round_summary") {
+      if (typeof ack === "function") {
+        ack({ ok: false, message: "Mini-game test can only run from lobby or round summary." });
+      }
+      return;
+    }
+
+    if (!isMiniGameType(type || "")) {
+      if (typeof ack === "function") {
+        ack({ ok: false, message: "Unknown mini-game type." });
+      }
+      return;
+    }
+
+    if (game.roundTimer) {
+      clearTimeout(game.roundTimer);
+      game.roundTimer = null;
+    }
+
+    const playerIds = Array.from(game.players.keys());
+    const previewMode = playerIds.length === 0;
+    startMiniGamePhase(game, playerIds, {
+      type,
+      returnPhase: "lobby",
+      durationMs: 12000,
+      allowEmpty: previewMode
+    });
+
+    if (typeof ack === "function") {
+      ack({ ok: true, previewMode });
     }
   });
 
@@ -1615,7 +1976,22 @@ io.on("connection", (socket) => {
       leaderboard: sortedPlayers(game)
     });
 
-    if (game.submissions.size >= game.players.size) {
+    const requiredAnswers =
+      game.questionEligiblePlayerIds instanceof Set && game.questionEligiblePlayerIds.size > 0
+        ? game.questionEligiblePlayerIds.size
+        : game.players.size;
+    let submittedAnswers = 0;
+    for (const submission of game.submissions.values()) {
+      if (!(game.questionEligiblePlayerIds instanceof Set) || game.questionEligiblePlayerIds.size === 0) {
+        submittedAnswers += 1;
+        continue;
+      }
+      if (game.questionEligiblePlayerIds.has(submission.playerId)) {
+        submittedAnswers += 1;
+      }
+    }
+
+    if (requiredAnswers > 0 && submittedAnswers >= requiredAnswers) {
       closeQuestion(game);
     }
   });

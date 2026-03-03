@@ -26,6 +26,55 @@ const GAME_IMAGE_MAP = {
   sequence_memory: "/assets/games/sequence.svg",
   precision_stop: "/assets/games/precision.svg"
 };
+const PHASE_BANNER_COPY = {
+  join: {
+    title: "Join Screen",
+    detail: "Enter game code and nickname."
+  },
+  lobby: {
+    title: "Lobby",
+    detail: "Waiting for host to start the game."
+  },
+  question: {
+    title: "Question Live",
+    detail: "Answer fast for more points."
+  },
+  question_result: {
+    title: "Answer Reveal",
+    detail: "Round score updates are in progress."
+  },
+  minigame: {
+    title: "Mini-Game Running",
+    detail: "Complete actions for bonus points."
+  },
+  round_summary: {
+    title: "Round Summary",
+    detail: "Leaderboard updated."
+  },
+  finished: {
+    title: "Game Finished",
+    detail: "Final rankings are locked."
+  },
+  kicked: {
+    title: "Removed",
+    detail: "You were removed from this room."
+  },
+  ended: {
+    title: "Game Ended",
+    detail: "The host ended the game."
+  }
+};
+const PHASE_CLASS_CANDIDATES = [
+  "phase-join",
+  "phase-lobby",
+  "phase-question",
+  "phase-question-result",
+  "phase-minigame",
+  "phase-round-summary",
+  "phase-finished",
+  "phase-kicked",
+  "phase-ended"
+];
 
 const joinCard = document.getElementById("joinCard");
 const playCard = document.getElementById("playCard");
@@ -41,6 +90,11 @@ const pickedBlook = document.getElementById("pickedBlook");
 const roomCodeEl = document.getElementById("roomCode");
 const playerNameEl = document.getElementById("playerName");
 const phaseText = document.getElementById("phaseText");
+const phaseBanner = document.getElementById("phaseBanner");
+const phaseBannerTitle = document.getElementById("phaseBannerTitle");
+const phaseBannerDetail = document.getElementById("phaseBannerDetail");
+const miniGameActiveFlag = document.getElementById("miniGameActiveFlag");
+const playerConnectionPill = document.getElementById("playerConnectionPill");
 const mainNotice = document.getElementById("mainNotice");
 
 const questionSection = document.getElementById("questionSection");
@@ -65,11 +119,56 @@ const miniGamesList = document.getElementById("miniGamesList");
 
 const MINI_STEP_LABELS = ["Red", "Blue", "Green", "Yellow"];
 const SOCCER_LANE_LABELS = ["Left", "Center", "Right"];
+const SOCCER_LANE_POSITIONS = ["22%", "50%", "78%"];
+const SOCCER_STAR_PLAYERS = [
+  {
+    id: "messi",
+    name: "Messi",
+    title: "Dribble Wizard",
+    image: "/assets/players/messi.svg"
+  },
+  {
+    id: "ronaldo",
+    name: "Cristiano",
+    title: "Power Rocket",
+    image: "/assets/players/ronaldo.svg"
+  },
+  {
+    id: "kylian",
+    name: "Kylian",
+    title: "Speed Flash",
+    image: "/assets/players/mbappe.svg"
+  }
+];
+const SOCCER_COMMENTARY = {
+  goal: [
+    "GOOOAL! {player} sends the keeper to another ZIP code.",
+    "{player} scores and the crowd goes wild.",
+    "{player} buries it. Net is still shaking."
+  ],
+  saved: [
+    "Huge save by the keeper. {player} wants that one back.",
+    "Denied. The keeper read {player} like a book.",
+    "{player} is smiling, but that save was serious."
+  ],
+  miss: [
+    "{player} sends it wide. A fan just got a souvenir ball.",
+    "Missed target. That ball is heading to the parking lot.",
+    "Overcooked shot. Even the mascot ducked."
+  ]
+};
 
 let activeMiniGameType = "";
 let miniPrecisionValue = 0;
 let miniPrecisionDirection = 1;
 let miniPrecisionTicker = null;
+let reconnecting = false;
+let reconnectJoinPending = false;
+let reconnectRetryCount = 0;
+let selectedSoccerStarId = SOCCER_STAR_PLAYERS[0].id;
+let miniSoccerSavedCount = 0;
+let miniSoccerMissCount = 0;
+let miniSoccerHypeCount = 0;
 
 const FALLBACK_BLOOKS = [
   {
@@ -123,6 +222,52 @@ function phaseLabel(value) {
     .replace(/\b\w/g, (ch) => ch.toUpperCase());
 }
 
+function phaseClassName(value) {
+  const slug = String(value || "lobby")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return `phase-${slug || "lobby"}`;
+}
+
+function setConnectionPill(label, tone = "") {
+  if (!playerConnectionPill) {
+    return;
+  }
+
+  playerConnectionPill.classList.remove("ok", "warn");
+  if (tone) {
+    playerConnectionPill.classList.add(tone);
+  }
+  playerConnectionPill.textContent = label;
+}
+
+function setPhaseBanner(nextPhase, detailOverride = "") {
+  if (!phaseBanner) {
+    return;
+  }
+
+  const phaseValue = String(nextPhase || "lobby");
+  const copy = PHASE_BANNER_COPY[phaseValue] || {
+    title: phaseLabel(phaseValue),
+    detail: "Game status updated."
+  };
+
+  if (phaseBannerTitle) {
+    phaseBannerTitle.textContent = copy.title;
+  }
+  if (phaseBannerDetail) {
+    phaseBannerDetail.textContent = detailOverride || copy.detail;
+  }
+
+  phaseBanner.classList.remove(...PHASE_CLASS_CANDIDATES);
+  phaseBanner.classList.add(phaseClassName(phaseValue));
+
+  if (miniGameActiveFlag) {
+    miniGameActiveFlag.classList.toggle("hidden", phaseValue !== "minigame");
+  }
+}
+
 function setNotice(message, type = "") {
   mainNotice.classList.remove("good", "bad");
   if (type) {
@@ -139,9 +284,10 @@ function setJoinNotice(message, type = "") {
   joinNotice.textContent = message;
 }
 
-function setPhase(nextPhase) {
+function setPhase(nextPhase, detail = "") {
   phase = nextPhase;
   phaseText.textContent = phaseLabel(nextPhase);
+  setPhaseBanner(nextPhase, detail);
 }
 
 function startTicker(targetEl, endsAt, label) {
@@ -196,16 +342,183 @@ function setGameIllustration(element, type, altText) {
   element.classList.remove("hidden");
 }
 
+function soccerStarById(starId) {
+  return SOCCER_STAR_PLAYERS.find((player) => player.id === starId) || SOCCER_STAR_PLAYERS[0];
+}
+
+function randomSoccerStarId() {
+  return SOCCER_STAR_PLAYERS[Math.floor(Math.random() * SOCCER_STAR_PLAYERS.length)].id;
+}
+
+function randomSoccerStar() {
+  return soccerStarById(randomSoccerStarId());
+}
+
+function soccerLanePosition(lane) {
+  return SOCCER_LANE_POSITIONS[lane] || "50%";
+}
+
+function soccerCommentary(outcome, playerName) {
+  const key = outcome === "goal" ? "goal" : outcome === "saved" ? "saved" : "miss";
+  const lines = SOCCER_COMMENTARY[key] || SOCCER_COMMENTARY.goal;
+  const line = lines[Math.floor(Math.random() * lines.length)];
+  return line.replace("{player}", playerName);
+}
+
+function updateSoccerHud(goals, shots) {
+  const goalsChip = document.getElementById("miniSoccerChipGoals");
+  const savesChip = document.getElementById("miniSoccerChipSaves");
+  const hypeChip = document.getElementById("miniSoccerChipHype");
+  const shotsChip = document.getElementById("miniSoccerChipShots");
+
+  if (goalsChip) goalsChip.textContent = String(goals || 0);
+  if (savesChip) savesChip.textContent = String(miniSoccerSavedCount + miniSoccerMissCount);
+  if (hypeChip) hypeChip.textContent = String(miniSoccerHypeCount);
+  if (shotsChip) shotsChip.textContent = String(shots || 0);
+}
+
+function burstSoccerConfetti() {
+  const container = document.getElementById("soccerConfetti");
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = "";
+  for (let i = 0; i < 16; i += 1) {
+    const piece = document.createElement("span");
+    piece.style.setProperty("--tx", `${Math.round((Math.random() - 0.5) * 250)}px`);
+    piece.style.setProperty("--ty", `${Math.round(-95 - Math.random() * 90)}px`);
+    piece.style.setProperty("--rz", `${Math.round(Math.random() * 540)}deg`);
+    piece.style.setProperty("--delay", `${Math.round(Math.random() * 120)}ms`);
+    piece.style.background = ["#ffd447", "#34d7c6", "#ff6e63", "#9fd3ff"][Math.floor(Math.random() * 4)];
+    container.appendChild(piece);
+  }
+
+  setTimeout(() => {
+    if (container) {
+      container.innerHTML = "";
+    }
+  }, 1100);
+}
+
+function setSoccerStarSelection(starId) {
+  const star = soccerStarById(starId);
+  selectedSoccerStarId = star.id;
+
+  const strikerImage = document.getElementById("soccerStrikerImage");
+  const strikerName = document.getElementById("soccerStrikerName");
+  if (strikerImage) {
+    strikerImage.src = star.image;
+    strikerImage.alt = `${star.name} striker card`;
+  }
+  if (strikerName) {
+    strikerName.textContent = `${star.name} - ${star.title}`;
+  }
+
+  document.querySelectorAll("button[data-soccer-star]").forEach((button) => {
+    button.classList.toggle("selected", button.getAttribute("data-soccer-star") === star.id);
+  });
+}
+
+function animateSoccerShot(lastShot) {
+  const ball = document.getElementById("soccerBall");
+  const goalie = document.getElementById("soccerGoalie");
+  const stage = document.getElementById("soccerGoalFrame");
+  const strikerImage = document.getElementById("soccerStrikerImage");
+  if (!ball || !goalie || !lastShot) {
+    return;
+  }
+
+  const lane = Number(lastShot.lane);
+  const goalieLane = Number(lastShot.goalieLane);
+  goalie.style.left = soccerLanePosition(goalieLane);
+
+  ball.style.setProperty("--shot-x", soccerLanePosition(lane));
+  ball.classList.remove("shoot-goal", "shoot-saved", "shoot-miss");
+  void ball.offsetWidth;
+  if (stage) {
+    stage.classList.remove("goal-flash", "save-flash", "miss-flash");
+  }
+  if (strikerImage) {
+    strikerImage.classList.remove("powered", "frustrated");
+    void strikerImage.offsetWidth;
+  }
+
+  if (lastShot.outcome === "goal") {
+    ball.classList.add("shoot-goal");
+    stage?.classList.add("goal-flash");
+    strikerImage?.classList.add("powered");
+    burstSoccerConfetti();
+  } else if (lastShot.outcome === "saved") {
+    ball.classList.add("shoot-saved");
+    stage?.classList.add("save-flash");
+    strikerImage?.classList.add("frustrated");
+  } else {
+    ball.classList.add("shoot-miss");
+    stage?.classList.add("miss-flash");
+    strikerImage?.classList.add("frustrated");
+  }
+}
+
 function renderMiniGame(type, data, actionLabel) {
   stopMiniPrecisionTicker();
   activeMiniGameType = type;
 
   if (type === "soccer_shootout") {
     const totalShots = Number(data?.totalShots ?? 5);
+    const startingStar = soccerStarById(randomSoccerStarId());
+    const runnerA = randomSoccerStar();
+    const runnerB = randomSoccerStar();
+    const runnerC = randomSoccerStar();
+    miniSoccerSavedCount = 0;
+    miniSoccerMissCount = 0;
+    miniSoccerHypeCount = 0;
     chests.innerHTML = `
-      <div class="chest">
+      <div class="chest soccer-chest">
         <h4>Soccer Shootout</h4>
-        <p class="help">Pick lane + power. Beat the goalkeeper in ${totalShots} shots.</p>
+        <p class="help">Fussball mode: pick a star, shoot penalties, and farm crowd hype in ${totalShots} shots.</p>
+        <div class="soccer-stage">
+          <div class="soccer-crowd">Stadium noise: OLE OLE OLE</div>
+          <div id="soccerGoalFrame" class="soccer-goal-frame">
+            <img class="soccer-field-bg" src="/assets/games/fussball-field.svg" alt="Fussball field" />
+            <div class="fussball-runners">
+              <img class="fussball-runner runner-a" src="${escapeHtml(runnerA.image)}" alt="${escapeHtml(runnerA.name)} runner" />
+              <img class="fussball-runner runner-b" src="${escapeHtml(runnerB.image)}" alt="${escapeHtml(runnerB.name)} runner" />
+              <img class="fussball-runner runner-c" src="${escapeHtml(runnerC.image)}" alt="${escapeHtml(runnerC.name)} runner" />
+            </div>
+            <div class="soccer-lane-mark left"></div>
+            <div class="soccer-lane-mark center"></div>
+            <div class="soccer-lane-mark right"></div>
+            <img id="soccerGoalie" class="soccer-goalie" src="/assets/players/goalie-bot.svg" alt="Goalkeeper" />
+            <div id="soccerBall" class="soccer-ball"></div>
+            <div id="soccerConfetti" class="soccer-confetti"></div>
+          </div>
+          <div class="soccer-striker-row">
+            <img id="soccerStrikerImage" class="soccer-striker" src="${escapeHtml(startingStar.image)}" alt="${escapeHtml(
+      startingStar.name
+    )} striker card" />
+            <div class="help">Striker: <span id="soccerStrikerName">${escapeHtml(startingStar.name)} - ${escapeHtml(
+      startingStar.title
+    )}</span></div>
+          </div>
+        </div>
+        <div class="soccer-stars">
+          ${SOCCER_STAR_PLAYERS.map(
+            (star) => `
+            <button type="button" class="soccer-star-card ${star.id === startingStar.id ? "selected" : ""}" data-soccer-star="${escapeHtml(
+              star.id
+            )}">
+              <img src="${escapeHtml(star.image)}" alt="${escapeHtml(star.name)} card" />
+              <span>${escapeHtml(star.name)}</span>
+            </button>`
+          ).join("")}
+        </div>
+        <div class="fussball-hud">
+          <div class="fussball-chip blue"><span>Hero Goals</span><strong id="miniSoccerChipGoals">0</strong></div>
+          <div class="fussball-chip red"><span>Keeper Stops</span><strong id="miniSoccerChipSaves">0</strong></div>
+          <div class="fussball-chip green"><span>Crowd Hype</span><strong id="miniSoccerChipHype">0</strong></div>
+          <div class="fussball-chip amber"><span>Shots</span><strong id="miniSoccerChipShots">0</strong></div>
+        </div>
         <div class="notice">Goals: <span id="miniSoccerGoals">0</span> | Shots: <span id="miniSoccerShots">0</span>/${totalShots}</div>
         <div style="margin-top:8px;">
           <label for="miniSoccerPower">Power</label>
@@ -217,8 +530,12 @@ function renderMiniGame(type, data, actionLabel) {
           <button class="answer" data-mini-action="shoot" data-mini-lane="1">${escapeHtml(actionLabel || "Shoot")} Center</button>
           <button class="answer" data-mini-action="shoot" data-mini-lane="2">${escapeHtml(actionLabel || "Shoot")} Right</button>
         </div>
-        <div id="miniSoccerLast" class="help" style="margin-top: 8px;">Take your first shot.</div>
+        <div id="miniSoccerLast" class="help" style="margin-top: 8px;">${escapeHtml(
+          startingStar.name
+        )} enters fussball mode. Take your first shot.</div>
       </div>`;
+    setSoccerStarSelection(startingStar.id);
+    updateSoccerHud(0, 0);
     return;
   }
 
@@ -465,6 +782,40 @@ function renderQuestion(payload) {
   startTicker(timerText, payload.endsAt, "Time left");
 }
 
+function attemptAutoRejoin() {
+  if (!roomCode || !playerName || reconnectJoinPending) {
+    return;
+  }
+
+  reconnectJoinPending = true;
+  socket.emit("player:join", { code: roomCode, name: playerName, blookId: selectedBlookId }, (res) => {
+    reconnectJoinPending = false;
+    if (!res?.ok) {
+      const message = res?.message || "Reconnect failed.";
+      if (/taken/i.test(message) && reconnectRetryCount < 2) {
+        reconnectRetryCount += 1;
+        setNotice("Reconnecting to room...", "bad");
+        setTimeout(() => {
+          attemptAutoRejoin();
+        }, 450);
+        return;
+      }
+
+      reconnecting = false;
+      setNotice(`${message} Rejoin from the join screen if needed.`, "bad");
+      setPhaseBanner(phase, "Reconnect failed. Rejoin if sync does not recover.");
+      return;
+    }
+
+    reconnecting = false;
+    reconnectRetryCount = 0;
+    const activeBlook = res.blook || { icon: "?", name: "Random Blook" };
+    playerNameEl.textContent = `${activeBlook.icon || "?"} ${playerName}`;
+    setPhase(res.phase || phase || "lobby", "Reconnected. Syncing live state...");
+    setNotice("Reconnected to room.", "good");
+  });
+}
+
 joinBtn.addEventListener("click", () => {
   const code = codeInput.value.trim().toUpperCase();
   const name = nameInput.value.trim();
@@ -490,9 +841,16 @@ joinBtn.addEventListener("click", () => {
     joinCard.classList.add("hidden");
     playCard.classList.remove("hidden");
 
-    setPhase("lobby");
+    const joinedPhase = res.phase || "lobby";
+    const phaseDetail =
+      joinedPhase === "lobby" ? "Joined lobby. Waiting for host to start." : "Joined in progress. Syncing live phase now.";
+    setPhase(joinedPhase, phaseDetail);
     setJoinNotice(`Locked blook: ${activeBlook.icon || "?"} ${activeBlook.name || "Blook"}.`, "good");
-    setNotice(`Joined room ${roomCode}. Waiting for host to start.`, "good");
+    if (joinedPhase === "lobby") {
+      setNotice(`Joined room ${roomCode}. Waiting for host to start.`, "good");
+    } else {
+      setNotice(`Joined room ${roomCode} in progress. Syncing to current phase...`, "good");
+    }
   });
 });
 
@@ -572,6 +930,15 @@ chests.addEventListener("click", (event) => {
     return;
   }
 
+  const starButton = target.closest("button[data-soccer-star]");
+  if (starButton) {
+    const starId = starButton.getAttribute("data-soccer-star");
+    if (starId) {
+      setSoccerStarSelection(starId);
+    }
+    return;
+  }
+
   const button = target.closest("button[data-mini-action]");
   if (!button || !roomCode) {
     return;
@@ -587,7 +954,7 @@ chests.addEventListener("click", (event) => {
     const lane = Number(button.dataset.miniLane);
     const powerInput = document.getElementById("miniSoccerPower");
     const power = Number(powerInput?.value || 2);
-    payload.value = { lane, power };
+    payload.value = { lane, power, starId: selectedSoccerStarId };
   }
   if (action === "step") {
     payload.value = Number(button.dataset.miniValue);
@@ -612,7 +979,7 @@ socket.on("lobby:update", (payload) => {
     return;
   }
 
-  setPhase("lobby");
+  setPhase("lobby", `${payload.players.length} students connected. Waiting for host.`);
   showSection(null);
   renderLeaderboard(payload.players);
   const modeText = payload.modeName || MODE_LABELS[payload.mode] || payload.mode || "Classic Quiz";
@@ -627,7 +994,7 @@ socket.on("players:update", ({ players }) => {
 });
 
 socket.on("question:start", (payload) => {
-  setPhase("question");
+  setPhase("question", `Question ${payload.questionIndex}/${payload.totalQuestions} is live.`);
   renderQuestion(payload);
   setNotice(`Question ${payload.questionIndex} of ${payload.totalQuestions}. Answer quickly for bonuses.`);
 });
@@ -640,7 +1007,7 @@ socket.on("player:locked", ({ leaderboard }) => {
 });
 
 socket.on("question:result", (payload) => {
-  setPhase("question_result");
+  setPhase("question_result", "Answer revealed. Score update in progress.");
   canAnswer = false;
   lockAnswerButtons();
 
@@ -670,7 +1037,7 @@ socket.on("question:result", (payload) => {
 });
 
 socket.on("minigame:start", ({ eligiblePlayerIds, eventName, feedTitle: nextFeedTitle, type }) => {
-  setPhase("minigame");
+  setPhase("minigame", `${eventName || miniGameTypeLabel(type)} is running.`);
   activeMiniGameType = type || "";
   activeEventName = eventName || "Mini-game";
   if (nextFeedTitle) {
@@ -687,7 +1054,7 @@ socket.on("minigame:start", ({ eligiblePlayerIds, eventName, feedTitle: nextFeed
 });
 
 socket.on("minigame:yourData", ({ type, endsAt, eventName, actionLabel, data }) => {
-  setPhase("minigame");
+  setPhase("minigame", `${miniGameTypeLabel(type)} live. Play for bonus points.`);
   showSection(chestSection);
   activeEventName = eventName || "Mini-game";
   activeActionLabel = actionLabel || "Play";
@@ -703,23 +1070,37 @@ socket.on("minigame:state", (payload) => {
     const goalsEl = document.getElementById("miniSoccerGoals");
     const shotsEl = document.getElementById("miniSoccerShots");
     const lastEl = document.getElementById("miniSoccerLast");
-    if (goalsEl) goalsEl.textContent = String(payload.goals || 0);
-    if (shotsEl) shotsEl.textContent = String(payload.shotsTaken || 0);
+    const goals = Number(payload.goals || 0);
+    const shotsTaken = Number(payload.shotsTaken || 0);
+    if (goalsEl) goalsEl.textContent = String(goals);
+    if (shotsEl) shotsEl.textContent = String(shotsTaken);
 
     if (lastEl && payload.lastShot) {
+      animateSoccerShot(payload.lastShot);
+      const striker = soccerStarById(selectedSoccerStarId);
       const laneText = SOCCER_LANE_LABELS[payload.lastShot.lane] || "?";
       const goalieText = SOCCER_LANE_LABELS[payload.lastShot.goalieLane] || "?";
-      if (payload.lastShot.outcome === "goal") {
-        lastEl.textContent = `GOAL! Shot ${laneText} beat keeper at ${goalieText}.`;
-      } else if (payload.lastShot.outcome === "saved") {
-        lastEl.textContent = `Saved. You shot ${laneText}, keeper was ${goalieText}.`;
+      const call = soccerCommentary(payload.lastShot.outcome, striker.name);
+
+      if (payload.lastShot.outcome === "saved") {
+        miniSoccerSavedCount += 1;
+        miniSoccerHypeCount += 1;
+      } else if (payload.lastShot.outcome === "miss") {
+        miniSoccerMissCount += 1;
+        miniSoccerHypeCount += 1;
       } else {
-        lastEl.textContent = `Missed wide. You hit ${laneText} with too much risk.`;
+        miniSoccerHypeCount += 3;
       }
+      updateSoccerHud(goals, shotsTaken);
+
+      lastEl.textContent = `${call} Shot: ${laneText}. Keeper: ${goalieText}.`;
     }
 
     if (payload.completed) {
       chests.querySelectorAll("button[data-mini-action='shoot']").forEach((btn) => {
+        btn.disabled = true;
+      });
+      chests.querySelectorAll("button[data-soccer-star]").forEach((btn) => {
         btn.disabled = true;
       });
       setNotice("Shootout complete. Waiting for others...", "good");
@@ -775,7 +1156,7 @@ socket.on("minigame:feed", ({ feed, leaderboard }) => {
 
 socket.on("round:summary", ({ questionIndex, totalQuestions, leaderboard }) => {
   stopMiniPrecisionTicker();
-  setPhase("round_summary");
+  setPhase("round_summary", `Round ${questionIndex}/${totalQuestions} complete.`);
   showSection(resultSection);
   resultText.textContent = `Round ${questionIndex}/${totalQuestions} complete. Next question starts shortly.`;
   setNotice("Leaderboard updated.", "good");
@@ -784,7 +1165,7 @@ socket.on("round:summary", ({ questionIndex, totalQuestions, leaderboard }) => {
 
 socket.on("game:finished", ({ leaderboard }) => {
   stopMiniPrecisionTicker();
-  setPhase("finished");
+  setPhase("finished", "Final rankings locked.");
   showSection(resultSection);
   resultText.textContent = "Game finished. Final rankings are locked.";
   setNotice("Match complete.", "good");
@@ -793,7 +1174,7 @@ socket.on("game:finished", ({ leaderboard }) => {
 
 socket.on("kicked", ({ reason }) => {
   stopMiniPrecisionTicker();
-  setPhase("kicked");
+  setPhase("kicked", reason || "You were removed by the host.");
   setNotice(reason || "You were removed from this room.", "bad");
   showSection(resultSection);
   resultText.textContent = "Disconnected from game.";
@@ -801,16 +1182,46 @@ socket.on("kicked", ({ reason }) => {
 
 socket.on("game:ended", ({ reason }) => {
   stopMiniPrecisionTicker();
-  setPhase("ended");
+  setPhase("ended", reason || "Game ended by host.");
   showSection(resultSection);
   resultText.textContent = reason || "Host ended the game.";
   setNotice(reason || "Game ended.", "bad");
+});
+
+socket.on("connect", () => {
+  setConnectionPill("Connected", "ok");
+  if (reconnecting && roomCode && playerName && !playCard.classList.contains("hidden")) {
+    attemptAutoRejoin();
+    return;
+  }
+  reconnecting = false;
+});
+
+socket.on("disconnect", () => {
+  setConnectionPill("Reconnecting...", "warn");
+  reconnecting = true;
+  reconnectRetryCount = 0;
+  if (roomCode && playerName && !playCard.classList.contains("hidden")) {
+    setNotice("Connection lost. Reconnecting...", "bad");
+    setPhaseBanner(phase, "Connection lost. Reconnecting...");
+  } else {
+    setJoinNotice("Connection lost. Reconnecting...", "bad");
+  }
+});
+
+socket.io.on("reconnect_attempt", () => {
+  setConnectionPill("Reconnecting...", "warn");
 });
 
 loadBlooks();
 loadMiniGames();
 
 socket.on("connect_error", () => {
-  setJoinNotice("Cannot connect to server. Check localhost process.", "bad");
+  setConnectionPill("Offline", "warn");
+  if (!playCard.classList.contains("hidden")) {
+    setNotice("Cannot reach server. Trying to reconnect...", "bad");
+  } else {
+    setJoinNotice("Cannot connect to server. Check localhost process.", "bad");
+  }
 });
 

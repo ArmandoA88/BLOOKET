@@ -4,6 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quiz Arena Player</title>
+    <link rel="preload" as="image" href="/assets/games/question.svg" />
+    <link rel="preload" as="image" href="/assets/games/soccer.svg" />
+    <link rel="preload" as="image" href="/assets/games/tap.svg" />
+    <link rel="preload" as="image" href="/assets/games/sequence.svg" />
+    <link rel="preload" as="image" href="/assets/games/precision.svg" />
+    <link rel="preload" as="image" href="/assets/games/fussball-field.svg" />
+    <link rel="preload" as="image" href="/assets/players/messi.svg" />
+    <link rel="preload" as="image" href="/assets/players/ronaldo.svg" />
+    <link rel="preload" as="image" href="/assets/players/mbappe.svg" />
+    <link rel="preload" as="image" href="/assets/players/goalie-bot.svg" />
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
@@ -51,11 +61,24 @@
             <div class="topbar" style="margin-bottom: 8px">
               <div>
                 <h2 class="title" style="margin-bottom: 2px">Room <span id="roomCode" class="mono">------</span></h2>
-                <div class="sub">Playing as <span id="playerName">🙂 Player</span></div>
+                <div class="sub">Playing as <span id="playerName">Player</span></div>
               </div>
-              <div class="badge">Phase: <span id="phaseText">Lobby</span></div>
+              <div class="topbar-phase">
+                <div class="badge">Phase: <span id="phaseText">Lobby</span></div>
+                <span id="playerConnectionPill" class="status-pill">Connecting...</span>
+              </div>
             </div>
 
+            <section id="phaseBanner" class="phase-banner phase-lobby" aria-live="polite">
+              <div class="phase-banner-row">
+                <div class="phase-banner-title-wrap">
+                  <span class="phase-banner-kicker">Your Phase</span>
+                  <strong id="phaseBannerTitle">Lobby</strong>
+                </div>
+                <span id="miniGameActiveFlag" class="phase-banner-flag hidden">Mini-Game Running</span>
+              </div>
+              <div id="phaseBannerDetail" class="phase-banner-detail">Waiting for the host to start.</div>
+            </section>
             <div id="mainNotice" class="notice">Waiting in lobby for host to start.</div>
 
             <section id="questionSection" class="hidden" style="margin-top: 12px">

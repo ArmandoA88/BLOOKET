@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <rect width="1200" height="600" rx="24" fill="#262d70"/>
+  <g opacity="0.2" fill="#ffffff">
+    <rect x="80" y="80" width="120" height="120" rx="12"/>
+    <rect x="1000" y="80" width="120" height="120" rx="12"/>
+    <rect x="80" y="400" width="120" height="120" rx="12"/>
+    <rect x="1000" y="400" width="120" height="120" rx="12"/>
+  </g>
+  <rect x="260" y="120" width="680" height="360" rx="24" fill="#0f173f" stroke="#7dc3ff" stroke-width="5"/>
+  <text x="600" y="210" text-anchor="middle" fill="#ffffff" font-size="58" font-family="Verdana" font-weight="700">SEQUENCE MEMORY</text>
+  <rect x="360" y="260" width="110" height="110" rx="16" fill="#ff6e63"/>
+  <rect x="500" y="260" width="110" height="110" rx="16" fill="#5ea0ff"/>
+  <rect x="640" y="260" width="110" height="110" rx="16" fill="#58d98d"/>
+  <rect x="780" y="260" width="110" height="110" rx="16" fill="#ffd447"/>
+  <text x="600" y="435" text-anchor="middle" fill="#9fd3ff" font-size="30" font-family="Verdana">Repeat the right color order</text>
+</svg>

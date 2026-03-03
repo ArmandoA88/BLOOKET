@@ -19,6 +19,13 @@ const MODE_LABELS = {
   fishing: "Fishing Frenzy",
   brawl: "Monster Brawl"
 };
+const GAME_IMAGE_MAP = {
+  question: "/assets/games/question.svg",
+  soccer_shootout: "/assets/games/soccer.svg",
+  tap_rush: "/assets/games/tap.svg",
+  sequence_memory: "/assets/games/sequence.svg",
+  precision_stop: "/assets/games/precision.svg"
+};
 
 const joinCard = document.getElementById("joinCard");
 const playCard = document.getElementById("playCard");
@@ -37,11 +44,13 @@ const phaseText = document.getElementById("phaseText");
 const mainNotice = document.getElementById("mainNotice");
 
 const questionSection = document.getElementById("questionSection");
+const questionIllustration = document.getElementById("questionIllustration");
 const timerText = document.getElementById("timerText");
 const questionText = document.getElementById("questionText");
 const answers = document.getElementById("answers");
 
 const chestSection = document.getElementById("chestSection");
+const chestIllustration = document.getElementById("chestIllustration");
 const chestTimer = document.getElementById("chestTimer");
 const chests = document.getElementById("chests");
 const eventTitle = document.getElementById("eventTitle");
@@ -52,6 +61,15 @@ const resultText = document.getElementById("resultText");
 const leaderboardBody = document.getElementById("leaderboardBody");
 const feedList = document.getElementById("feedList");
 const feedTitle = document.getElementById("feedTitle");
+const miniGamesList = document.getElementById("miniGamesList");
+
+const MINI_STEP_LABELS = ["Red", "Blue", "Green", "Yellow"];
+const SOCCER_LANE_LABELS = ["Left", "Center", "Right"];
+
+let activeMiniGameType = "";
+let miniPrecisionValue = 0;
+let miniPrecisionDirection = 1;
+let miniPrecisionTicker = null;
 
 const FALLBACK_BLOOKS = [
   {
@@ -77,6 +95,18 @@ const FALLBACK_BLOOKS = [
     ]
   }
 ];
+
+const FALLBACK_MINI_GAMES = [
+  { id: "soccer_shootout", name: "Soccer Shootout", description: "Penalty kicks with lane + power choice." },
+  { id: "tap_rush", name: "Tap Rush", description: "Tap fast for bonus points." },
+  { id: "sequence_memory", name: "Sequence Memory", description: "Repeat the color order to score." },
+  { id: "precision_stop", name: "Precision Stop", description: "Stop the marker near the target zone." }
+];
+
+const prefilledCode = new URLSearchParams(window.location.search).get("code");
+if (prefilledCode) {
+  codeInput.value = String(prefilledCode).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+}
 
 function escapeHtml(value) {
   return String(value || "")
@@ -140,6 +170,126 @@ function showSection(section) {
   section?.classList.remove("hidden");
 }
 
+function stopMiniPrecisionTicker() {
+  if (miniPrecisionTicker) {
+    clearInterval(miniPrecisionTicker);
+    miniPrecisionTicker = null;
+  }
+}
+
+function miniGameTypeLabel(type) {
+  if (type === "soccer_shootout") return "Soccer Shootout";
+  if (type === "tap_rush") return "Tap Rush";
+  if (type === "sequence_memory") return "Sequence Memory";
+  if (type === "precision_stop") return "Precision Stop";
+  return "Mini-game";
+}
+
+function setGameIllustration(element, type, altText) {
+  if (!element) {
+    return;
+  }
+
+  const src = GAME_IMAGE_MAP[type] || GAME_IMAGE_MAP.question;
+  element.src = src;
+  element.alt = altText;
+  element.classList.remove("hidden");
+}
+
+function renderMiniGame(type, data, actionLabel) {
+  stopMiniPrecisionTicker();
+  activeMiniGameType = type;
+
+  if (type === "soccer_shootout") {
+    const totalShots = Number(data?.totalShots ?? 5);
+    chests.innerHTML = `
+      <div class="chest">
+        <h4>Soccer Shootout</h4>
+        <p class="help">Pick lane + power. Beat the goalkeeper in ${totalShots} shots.</p>
+        <div class="notice">Goals: <span id="miniSoccerGoals">0</span> | Shots: <span id="miniSoccerShots">0</span>/${totalShots}</div>
+        <div style="margin-top:8px;">
+          <label for="miniSoccerPower">Power</label>
+          <input id="miniSoccerPower" type="range" min="1" max="3" value="2" />
+          <div class="help">1 = safe, 3 = power strike</div>
+        </div>
+        <div class="answers">
+          <button class="answer" data-mini-action="shoot" data-mini-lane="0">${escapeHtml(actionLabel || "Shoot")} Left</button>
+          <button class="answer" data-mini-action="shoot" data-mini-lane="1">${escapeHtml(actionLabel || "Shoot")} Center</button>
+          <button class="answer" data-mini-action="shoot" data-mini-lane="2">${escapeHtml(actionLabel || "Shoot")} Right</button>
+        </div>
+        <div id="miniSoccerLast" class="help" style="margin-top: 8px;">Take your first shot.</div>
+      </div>`;
+    return;
+  }
+
+  if (type === "tap_rush") {
+    chests.innerHTML = `
+      <div class="chest">
+        <h4>Tap As Fast As You Can</h4>
+        <p class="help">Each tap sends a hit to the server.</p>
+        <div class="notice">Taps: <span id="miniTapCount">0</span></div>
+        <button data-mini-action="tap">${escapeHtml(actionLabel || "Tap")}</button>
+      </div>`;
+    return;
+  }
+
+  if (type === "sequence_memory") {
+    const sequence = Array.isArray(data?.sequence) ? data.sequence : [];
+    const sequenceText = sequence.map((step) => MINI_STEP_LABELS[step] || "?").join(" -> ");
+    chests.innerHTML = `
+      <div class="chest">
+        <h4>Follow The Sequence</h4>
+        <p class="help">Sequence: ${escapeHtml(sequenceText)}</p>
+        <div class="notice">Progress: <span id="miniSequenceProgress">0</span> / ${sequence.length}</div>
+        <div class="answers">
+          <button class="answer" data-mini-action="step" data-mini-value="0">Red</button>
+          <button class="answer" data-mini-action="step" data-mini-value="1">Blue</button>
+          <button class="answer" data-mini-action="step" data-mini-value="2">Green</button>
+          <button class="answer" data-mini-action="step" data-mini-value="3">Yellow</button>
+        </div>
+      </div>`;
+    return;
+  }
+
+  if (type === "precision_stop") {
+    miniPrecisionValue = 0;
+    miniPrecisionDirection = 1;
+    const target = Number(data?.target ?? 50);
+
+    chests.innerHTML = `
+      <div class="chest">
+        <h4>Stop Near Target</h4>
+        <p class="help">Target zone: ${target}</p>
+        <div style="position: relative; width: 100%; height: 18px; border-radius: 999px; background: rgba(255,255,255,0.1); border: 1px solid rgba(151,193,255,0.35); overflow: hidden;">
+          <div id="miniPrecisionTarget" style="position:absolute; left:${target}%; top:0; bottom:0; width:4px; transform: translateX(-50%); background:#ffd447;"></div>
+          <div id="miniPrecisionMarker" style="position:absolute; left:0%; top:0; bottom:0; width:10px; transform: translateX(-50%); background:#34d7c6;"></div>
+        </div>
+        <div class="notice" style="margin-top:8px;">Current: <span id="miniPrecisionValue">0</span></div>
+        <button data-mini-action="stop">${escapeHtml(actionLabel || "Stop")}</button>
+      </div>`;
+
+    miniPrecisionTicker = setInterval(() => {
+      miniPrecisionValue += miniPrecisionDirection * 2.4;
+      if (miniPrecisionValue >= 100) {
+        miniPrecisionValue = 100;
+        miniPrecisionDirection = -1;
+      } else if (miniPrecisionValue <= 0) {
+        miniPrecisionValue = 0;
+        miniPrecisionDirection = 1;
+      }
+
+      const marker = document.getElementById("miniPrecisionMarker");
+      const valueEl = document.getElementById("miniPrecisionValue");
+      if (marker) {
+        marker.style.left = `${miniPrecisionValue}%`;
+      }
+      if (valueEl) {
+        valueEl.textContent = String(Math.round(miniPrecisionValue));
+      }
+    }, 60);
+  }
+}
+
 function renderLeaderboard(players) {
   if (!Array.isArray(players) || players.length === 0) {
     leaderboardBody.innerHTML = `<tr><td colspan="4" class="help">No players yet.</td></tr>`;
@@ -148,11 +298,17 @@ function renderLeaderboard(players) {
 
   leaderboardBody.innerHTML = players
     .map((player) => {
-      const you = player.id === socket.id ? " (You)" : "";
+      const isYou = player.id === socket.id;
       return `
       <tr>
         <td>${player.rank}</td>
-        <td><span class="blook-mini">${escapeHtml(player.blook?.icon || "?")}</span> ${escapeHtml(player.name)}${you}</td>
+        <td>
+          <span class="blook-name-stack">
+            <span class="blook-top-icon">${escapeHtml(player.blook?.icon || "?")}</span>
+            <span class="player-label">${escapeHtml(player.name)}</span>
+            ${isYou ? `<span class="player-tag">You</span>` : ""}
+          </span>
+        </td>
         <td>${player.score}</td>
         <td>${player.streak}</td>
       </tr>`;
@@ -223,6 +379,40 @@ function renderBlookGrid() {
     .join("");
 }
 
+function renderMiniGameCatalog(games) {
+  if (!miniGamesList) {
+    return;
+  }
+
+  if (!Array.isArray(games) || games.length === 0) {
+    miniGamesList.innerHTML = `<div class="help">No mini-games loaded.</div>`;
+    return;
+  }
+
+  miniGamesList.innerHTML = games
+    .map(
+      (game, index) =>
+        `<div class="feed-item"><strong>${index + 1}. ${escapeHtml(game.name)}</strong><div class="help">${escapeHtml(
+          game.description || ""
+        )}</div></div>`
+    )
+    .join("");
+}
+
+async function loadMiniGames() {
+  try {
+    const response = await fetch("/api/minigames");
+    if (!response.ok) {
+      throw new Error("Mini-games API failed");
+    }
+
+    const payload = await response.json();
+    renderMiniGameCatalog(payload?.games);
+  } catch (_error) {
+    renderMiniGameCatalog(FALLBACK_MINI_GAMES);
+  }
+}
+
 async function loadBlooks() {
   try {
     const response = await fetch("/api/blooks");
@@ -253,11 +443,16 @@ function lockAnswerButtons() {
 }
 
 function renderQuestion(payload) {
+  stopMiniPrecisionTicker();
   currentQuestion = payload.question;
   myAnswerIndex = null;
   canAnswer = true;
 
   showSection(questionSection);
+  setGameIllustration(questionIllustration, "question", "Question round");
+  if (chestIllustration) {
+    chestIllustration.classList.add("hidden");
+  }
   questionText.textContent = payload.question.prompt;
 
   answers.innerHTML = payload.question.options
@@ -273,19 +468,13 @@ function renderQuestion(payload) {
 joinBtn.addEventListener("click", () => {
   const code = codeInput.value.trim().toUpperCase();
   const name = nameInput.value.trim();
-  const selectedBlook = getSelectedBlook();
 
   if (!code || !name) {
     setJoinNotice("Game code and nickname are required.", "bad");
     return;
   }
 
-  if (!selectedBlook) {
-    setJoinNotice("Choose a blook before joining.", "bad");
-    return;
-  }
-
-  socket.emit("player:join", { code, name, blookId: selectedBlook.id }, (res) => {
+  socket.emit("player:join", { code, name, blookId: selectedBlookId }, (res) => {
     if (!res?.ok) {
       setJoinNotice(res?.message || "Unable to join room.", "bad");
       return;
@@ -293,7 +482,7 @@ joinBtn.addEventListener("click", () => {
 
     roomCode = res.code;
     playerName = name;
-    const activeBlook = res.blook || selectedBlook;
+    const activeBlook = res.blook || { icon: "?", name: "Random Blook" };
 
     roomCodeEl.textContent = roomCode;
     playerNameEl.textContent = `${activeBlook.icon || "?"} ${playerName}`;
@@ -302,6 +491,7 @@ joinBtn.addEventListener("click", () => {
     playCard.classList.remove("hidden");
 
     setPhase("lobby");
+    setJoinNotice(`Locked blook: ${activeBlook.icon || "?"} ${activeBlook.name || "Blook"}.`, "good");
     setNotice(`Joined room ${roomCode}. Waiting for host to start.`, "good");
   });
 });
@@ -382,26 +572,37 @@ chests.addEventListener("click", (event) => {
     return;
   }
 
-  const button = target.closest("button[data-choice]");
+  const button = target.closest("button[data-mini-action]");
   if (!button || !roomCode) {
     return;
   }
 
-  const choiceId = button.dataset.choice;
-  if (!choiceId) {
+  const action = button.dataset.miniAction;
+  if (!action) {
     return;
   }
 
-  chests.querySelectorAll("button").forEach((item) => {
-    item.disabled = true;
-  });
+  const payload = { code: roomCode, action };
+  if (action === "shoot") {
+    const lane = Number(button.dataset.miniLane);
+    const powerInput = document.getElementById("miniSoccerPower");
+    const power = Number(powerInput?.value || 2);
+    payload.value = { lane, power };
+  }
+  if (action === "step") {
+    payload.value = Number(button.dataset.miniValue);
+  }
+  if (action === "stop") {
+    payload.value = Math.round(miniPrecisionValue);
+    button.disabled = true;
+  }
 
-  socket.emit("player:pickChest", { code: roomCode, choiceId }, (res) => {
+  socket.emit("player:minigameAction", payload, (res) => {
     if (!res?.ok) {
       setNotice(res?.message || "Event choice failed.", "bad");
-      chests.querySelectorAll("button").forEach((item) => {
-        item.disabled = false;
-      });
+      if (action === "stop") {
+        button.disabled = false;
+      }
     }
   });
 });
@@ -415,9 +616,10 @@ socket.on("lobby:update", (payload) => {
   showSection(null);
   renderLeaderboard(payload.players);
   const modeText = payload.modeName || MODE_LABELS[payload.mode] || payload.mode || "Classic Quiz";
+  const quizSetText = payload.questionSetLabel || payload.questionSet || "Quiz";
   feedTitle.textContent = payload.feedTitle || "Mode Feed";
   activeEventName = payload.eventName || "Event Card";
-  setNotice(`Lobby active. Host: ${payload.hostName}. Mode: ${modeText}.`);
+  setNotice(`Lobby active. Host: ${payload.hostName}. Mode: ${modeText}. Quiz: ${quizSetText}.`);
 });
 
 socket.on("players:update", ({ players }) => {
@@ -467,49 +669,100 @@ socket.on("question:result", (payload) => {
   renderLeaderboard(payload.leaderboard);
 });
 
-socket.on("chest:start", ({ eligiblePlayerIds, eventName, feedTitle: nextFeedTitle }) => {
-  setPhase("chest");
-  activeEventName = eventName || "Event Card";
+socket.on("minigame:start", ({ eligiblePlayerIds, eventName, feedTitle: nextFeedTitle, type }) => {
+  setPhase("minigame");
+  activeMiniGameType = type || "";
+  activeEventName = eventName || "Mini-game";
   if (nextFeedTitle) {
     feedTitle.textContent = nextFeedTitle;
   }
   const isEligible = eligiblePlayerIds.includes(socket.id);
 
   if (!isEligible) {
+    stopMiniPrecisionTicker();
     showSection(resultSection);
-    resultText.textContent = `Correct players are resolving ${activeEventName}. Hold on for the outcome.`;
-    setNotice("Waiting for event outcomes...");
+    resultText.textContent = `Other players are in ${activeEventName}. Hold on for results.`;
+    setNotice("Waiting for mini-game outcomes...");
   }
 });
 
-socket.on("chest:choices", ({ endsAt, choices, eventName, actionLabel }) => {
-  setPhase("chest");
+socket.on("minigame:yourData", ({ type, endsAt, eventName, actionLabel, data }) => {
+  setPhase("minigame");
   showSection(chestSection);
-  activeEventName = eventName || activeEventName;
-  activeActionLabel = actionLabel || "Open";
-  eventTitle.textContent = `Pick ${activeEventName}`;
-
-  chests.innerHTML = choices
-    .map(
-      (choice) => `
-      <div class="chest">
-        <h4>${escapeHtml(choice.title)}</h4>
-        <p class="help">${escapeHtml(choice.description)}</p>
-        <button data-choice="${choice.id}">${escapeHtml(activeActionLabel)}</button>
-      </div>`
-    )
-    .join("");
-
-  startTicker(chestTimer, endsAt, "Event closes in");
-  setNotice("Pick one event option before time expires.");
+  activeEventName = eventName || "Mini-game";
+  activeActionLabel = actionLabel || "Play";
+  eventTitle.textContent = `${activeEventName} - ${miniGameTypeLabel(type)}`;
+  setGameIllustration(chestIllustration, type || "", miniGameTypeLabel(type));
+  renderMiniGame(type, data, activeActionLabel);
+  startTicker(chestTimer, endsAt, "Mini-game ends in");
+  setNotice("Play the mini-game for bonus points.");
 });
 
-socket.on("chest:resolved", ({ text, leaderboard }) => {
+socket.on("minigame:state", (payload) => {
+  if (payload.type === "soccer_shootout") {
+    const goalsEl = document.getElementById("miniSoccerGoals");
+    const shotsEl = document.getElementById("miniSoccerShots");
+    const lastEl = document.getElementById("miniSoccerLast");
+    if (goalsEl) goalsEl.textContent = String(payload.goals || 0);
+    if (shotsEl) shotsEl.textContent = String(payload.shotsTaken || 0);
+
+    if (lastEl && payload.lastShot) {
+      const laneText = SOCCER_LANE_LABELS[payload.lastShot.lane] || "?";
+      const goalieText = SOCCER_LANE_LABELS[payload.lastShot.goalieLane] || "?";
+      if (payload.lastShot.outcome === "goal") {
+        lastEl.textContent = `GOAL! Shot ${laneText} beat keeper at ${goalieText}.`;
+      } else if (payload.lastShot.outcome === "saved") {
+        lastEl.textContent = `Saved. You shot ${laneText}, keeper was ${goalieText}.`;
+      } else {
+        lastEl.textContent = `Missed wide. You hit ${laneText} with too much risk.`;
+      }
+    }
+
+    if (payload.completed) {
+      chests.querySelectorAll("button[data-mini-action='shoot']").forEach((btn) => {
+        btn.disabled = true;
+      });
+      setNotice("Shootout complete. Waiting for others...", "good");
+    }
+    return;
+  }
+
+  if (payload.type === "tap_rush") {
+    const tapCount = document.getElementById("miniTapCount");
+    if (tapCount) {
+      tapCount.textContent = String(payload.taps || 0);
+    }
+    return;
+  }
+
+  if (payload.type === "sequence_memory") {
+    const progressEl = document.getElementById("miniSequenceProgress");
+    if (progressEl) {
+      progressEl.textContent = String(payload.progress || 0);
+    }
+    if (payload.completed) {
+      setNotice("Sequence complete. Waiting for others...", "good");
+      chests.querySelectorAll("button[data-mini-action='step']").forEach((button) => {
+        button.disabled = true;
+      });
+    }
+    return;
+  }
+
+  if (payload.type === "precision_stop" && payload.submitted) {
+    stopMiniPrecisionTicker();
+    setNotice(`Stopped at ${payload.value} vs target ${payload.target}.`, "good");
+  }
+});
+
+socket.on("minigame:resolved", ({ text, leaderboard }) => {
+  stopMiniPrecisionTicker();
   setNotice(text, "good");
   renderLeaderboard(leaderboard);
 });
 
-socket.on("chest:feed", ({ feed, leaderboard }) => {
+socket.on("minigame:feed", ({ feed, leaderboard }) => {
+  stopMiniPrecisionTicker();
   renderLeaderboard(leaderboard);
 
   if (!feed || feed.length === 0) {
@@ -521,6 +774,7 @@ socket.on("chest:feed", ({ feed, leaderboard }) => {
 });
 
 socket.on("round:summary", ({ questionIndex, totalQuestions, leaderboard }) => {
+  stopMiniPrecisionTicker();
   setPhase("round_summary");
   showSection(resultSection);
   resultText.textContent = `Round ${questionIndex}/${totalQuestions} complete. Next question starts shortly.`;
@@ -529,6 +783,7 @@ socket.on("round:summary", ({ questionIndex, totalQuestions, leaderboard }) => {
 });
 
 socket.on("game:finished", ({ leaderboard }) => {
+  stopMiniPrecisionTicker();
   setPhase("finished");
   showSection(resultSection);
   resultText.textContent = "Game finished. Final rankings are locked.";
@@ -537,6 +792,7 @@ socket.on("game:finished", ({ leaderboard }) => {
 });
 
 socket.on("kicked", ({ reason }) => {
+  stopMiniPrecisionTicker();
   setPhase("kicked");
   setNotice(reason || "You were removed from this room.", "bad");
   showSection(resultSection);
@@ -544,6 +800,7 @@ socket.on("kicked", ({ reason }) => {
 });
 
 socket.on("game:ended", ({ reason }) => {
+  stopMiniPrecisionTicker();
   setPhase("ended");
   showSection(resultSection);
   resultText.textContent = reason || "Host ended the game.";
@@ -551,6 +808,7 @@ socket.on("game:ended", ({ reason }) => {
 });
 
 loadBlooks();
+loadMiniGames();
 
 socket.on("connect_error", () => {
   setJoinNotice("Cannot connect to server. Check localhost process.", "bad");

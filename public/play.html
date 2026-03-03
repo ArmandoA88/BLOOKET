@@ -29,16 +29,16 @@
           </div>
         </div>
         <div style="margin-top: 12px">
-          <label>Choose Blook Pack</label>
+          <label>Blook Pack</label>
           <div id="packTabs" class="pack-tabs">
-            <span class="help">Loading packs...</span>
+            <span class="help">Pick a pack and blook before joining.</span>
           </div>
         </div>
         <div style="margin-top: 10px">
-          <label>Choose Your Blook</label>
+          <label>Available Blooks</label>
           <div id="blookGrid" class="blook-grid"></div>
         </div>
-        <div id="pickedBlook" class="notice" style="margin-top: 10px">Selected blook will appear here.</div>
+        <div id="pickedBlook" class="notice" style="margin-top: 10px">Your selected blook will be locked after you join.</div>
         <div class="button-row" style="margin-top: 12px">
           <button id="joinBtn">Join Game</button>
           <span id="joinNotice" class="notice hidden"></span>
@@ -59,14 +59,16 @@
             <div id="mainNotice" class="notice">Waiting in lobby for host to start.</div>
 
             <section id="questionSection" class="hidden" style="margin-top: 12px">
+              <img id="questionIllustration" class="game-illustration hidden" alt="Question round" />
               <div class="ticker" id="timerText">Time left: --</div>
               <div class="question" id="questionText">Question appears here.</div>
               <div id="answers" class="answers"></div>
             </section>
 
             <section id="chestSection" class="hidden" style="margin-top: 12px">
-              <h3 id="eventTitle" class="title">Pick An Event Card</h3>
-              <div class="sub" id="chestTimer">Event closes in --</div>
+              <img id="chestIllustration" class="game-illustration hidden" alt="Mini-game" />
+              <h3 id="eventTitle" class="title">Mini-game</h3>
+              <div class="sub" id="chestTimer">Mini-game ends in --</div>
               <div id="chests" class="chests" style="margin-top: 10px"></div>
             </section>
 
@@ -88,6 +90,11 @@
             <div class="card" style="margin-top: 12px">
               <h3 id="feedTitle" class="title">Mode Feed</h3>
               <div id="feedList" class="feed"><div class="help">Mode events show up here when active.</div></div>
+            </div>
+
+            <div class="card" style="margin-top: 12px">
+              <h3 class="title">Mini-Games</h3>
+              <div id="miniGamesList" class="feed"><div class="help">Loading mini-games...</div></div>
             </div>
           </aside>
         </div>

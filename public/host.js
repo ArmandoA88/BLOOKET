@@ -11,11 +11,23 @@ const MODE_LABELS = {
   fishing: "Fishing Frenzy",
   brawl: "Monster Brawl"
 };
+const GAME_IMAGE_MAP = {
+  question: "/assets/games/question.svg",
+  soccer_shootout: "/assets/games/soccer.svg",
+  tap_rush: "/assets/games/tap.svg",
+  sequence_memory: "/assets/games/sequence.svg",
+  precision_stop: "/assets/games/precision.svg"
+};
+const QUESTION_SET_LABELS = {
+  multiplication_1_digit: "Multiplication 1-Digit",
+  general_knowledge: "General Knowledge"
+};
 
 const setupCard = document.getElementById("setupCard");
 const gameCard = document.getElementById("gameCard");
 const hostNameInput = document.getElementById("hostName");
 const modeInput = document.getElementById("mode");
+const questionSetInput = document.getElementById("questionSet");
 const timerInput = document.getElementById("timer");
 const countInput = document.getElementById("count");
 const setupNotice = document.getElementById("setupNotice");
@@ -28,8 +40,10 @@ const saveSettingsBtn = document.getElementById("saveSettingsBtn");
 
 const roomCodeEl = document.getElementById("roomCode");
 const modeLabel = document.getElementById("modeLabel");
+const quizLabel = document.getElementById("quizLabel");
 const phaseText = document.getElementById("phaseText");
 const hostNotice = document.getElementById("hostNotice");
+const phaseIllustration = document.getElementById("phaseIllustration");
 
 const kpiPlayers = document.getElementById("kpiPlayers");
 const kpiAnswers = document.getElementById("kpiAnswers");
@@ -37,6 +51,7 @@ const kpiCorrect = document.getElementById("kpiCorrect");
 const kpiRound = document.getElementById("kpiRound");
 
 const liveMode = document.getElementById("liveMode");
+const liveQuestionSet = document.getElementById("liveQuestionSet");
 const liveTimer = document.getElementById("liveTimer");
 const liveCount = document.getElementById("liveCount");
 
@@ -49,8 +64,15 @@ const answerStats = document.getElementById("answerStats");
 const feedList = document.getElementById("feedList");
 const feedTitle = document.getElementById("feedTitle");
 const joinLinks = document.getElementById("joinLinks");
+const miniGamesList = document.getElementById("miniGamesList");
 
 let serverInfo = null;
+const FALLBACK_MINI_GAMES = [
+  { id: "soccer_shootout", name: "Soccer Shootout", description: "Penalty kicks with lane + power choice." },
+  { id: "tap_rush", name: "Tap Rush", description: "Tap fast for bonus points." },
+  { id: "sequence_memory", name: "Sequence Memory", description: "Repeat the color order to score." },
+  { id: "precision_stop", name: "Precision Stop", description: "Stop the marker near the target zone." }
+];
 
 function normalizePhase(value) {
   return String(value || "lobby")
@@ -77,7 +99,12 @@ function renderLeaderboard(players) {
       (player) => `
       <tr>
         <td>${player.rank}</td>
-        <td><span class="blook-mini">${escapeHtml(player.blook?.icon || "?")}</span> ${escapeHtml(player.name)}</td>
+        <td>
+          <span class="blook-name-stack">
+            <span class="blook-top-icon">${escapeHtml(player.blook?.icon || "?")}</span>
+            <span class="player-label">${escapeHtml(player.name)}</span>
+          </span>
+        </td>
         <td>${player.score}</td>
         <td>${player.streak}</td>
         <td>${player.correctCount}</td>
@@ -97,7 +124,10 @@ function renderPlayers(players) {
       (player) => `
       <li class="player">
         <div>
-          <strong><span class="blook-mini">${escapeHtml(player.blook?.icon || "?")}</span> ${escapeHtml(player.name)}</strong>
+          <div class="blook-name-stack">
+            <span class="blook-top-icon">${escapeHtml(player.blook?.icon || "?")}</span>
+            <strong class="player-label">${escapeHtml(player.name)}</strong>
+          </div>
           <div class="meta">
             <span>${escapeHtml(player.blook?.name || "Starter")} (${escapeHtml(player.blook?.packName || "Core")})</span>
             <span>Score ${player.score}</span>
@@ -118,6 +148,22 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function setPhaseIllustration(type, altText) {
+  if (!phaseIllustration) {
+    return;
+  }
+
+  if (!type) {
+    phaseIllustration.classList.add("hidden");
+    phaseIllustration.removeAttribute("src");
+    return;
+  }
+
+  phaseIllustration.src = GAME_IMAGE_MAP[type] || GAME_IMAGE_MAP.question;
+  phaseIllustration.alt = altText || "Game phase image";
+  phaseIllustration.classList.remove("hidden");
 }
 
 function startTicker(targetEl, endsAt, label) {
@@ -199,6 +245,26 @@ function renderJoinLinks() {
     .join("");
 }
 
+function renderMiniGameCatalog(games) {
+  if (!miniGamesList) {
+    return;
+  }
+
+  if (!Array.isArray(games) || games.length === 0) {
+    miniGamesList.innerHTML = `<div class="help">No mini-games loaded.</div>`;
+    return;
+  }
+
+  miniGamesList.innerHTML = games
+    .map(
+      (game, index) =>
+        `<div class="feed-item"><strong>${index + 1}. ${escapeHtml(game.name)}</strong><div class="help">${escapeHtml(
+          game.description || ""
+        )}</div></div>`
+    )
+    .join("");
+}
+
 async function loadServerInfo() {
   try {
     const response = await fetch("/api/server-info");
@@ -214,6 +280,20 @@ async function loadServerInfo() {
   renderJoinLinks();
 }
 
+async function loadMiniGames() {
+  try {
+    const response = await fetch("/api/minigames");
+    if (!response.ok) {
+      throw new Error("Failed to load mini-games");
+    }
+
+    const payload = await response.json();
+    renderMiniGameCatalog(payload?.games);
+  } catch (_error) {
+    renderMiniGameCatalog(FALLBACK_MINI_GAMES);
+  }
+}
+
 function ensureCreated() {
   if (!roomCode) {
     showNotice(setupNotice, "Create a room first.", "bad");
@@ -226,6 +306,7 @@ createBtn.addEventListener("click", () => {
   const payload = {
     hostName: hostNameInput.value,
     mode: modeInput.value,
+    questionSet: questionSetInput.value,
     timerSeconds: Number(timerInput.value),
     questionCount: Number(countInput.value)
   };
@@ -282,6 +363,7 @@ saveSettingsBtn.addEventListener("click", () => {
       code: roomCode,
       settings: {
         mode: liveMode.value,
+        questionSet: liveQuestionSet.value,
         timerSeconds: Number(liveTimer.value),
         questionCount: Number(liveCount.value)
       }
@@ -344,10 +426,15 @@ socket.on("lobby:update", (payload) => {
   }
 
   setPhase("lobby");
+  setPhaseIllustration("", "");
   const modeText = payload.modeName || MODE_LABELS[payload.mode] || payload.mode || "Classic Quiz";
+  const questionSetText =
+    payload.questionSetLabel || QUESTION_SET_LABELS[payload.settings.questionSet] || payload.settings.questionSet || "Quiz";
   modeLabel.textContent = `Mode: ${modeText}`;
+  quizLabel.textContent = `Quiz: ${questionSetText}`;
   feedTitle.textContent = payload.feedTitle || "Mode Feed";
   liveMode.value = payload.settings.mode;
+  liveQuestionSet.value = payload.settings.questionSet;
   liveTimer.value = payload.settings.timerSeconds;
   liveCount.value = payload.settings.questionCount;
 
@@ -384,6 +471,7 @@ socket.on("host:status", (payload) => {
 
 socket.on("question:start", (payload) => {
   setPhase("question");
+  setPhaseIllustration("question", "Question round");
   questionPanel.classList.remove("hidden");
   questionText.textContent = payload.question.prompt;
   currentQuestionOptions = payload.question.options;
@@ -421,16 +509,17 @@ socket.on("question:result", (payload) => {
   renderLeaderboard(payload.leaderboard);
 });
 
-socket.on("chest:start", ({ eligiblePlayerIds, endsAt, eventName, feedTitle: nextFeedTitle }) => {
-  setPhase("chest");
+socket.on("minigame:start", ({ eligiblePlayerIds, endsAt, eventName, feedTitle: nextFeedTitle, type }) => {
+  setPhase("minigame");
+  setPhaseIllustration(type || "question", `${eventName || "Mini-game"} visual`);
   if (nextFeedTitle) {
     feedTitle.textContent = nextFeedTitle;
   }
-  showNotice(hostNotice, `${eligiblePlayerIds.length} players are resolving ${eventName || "event cards"}.`);
-  startTicker(questionTimer, endsAt, "Event closes in");
+  showNotice(hostNotice, `${eligiblePlayerIds.length} players are playing ${eventName || "a mini-game"} (${type}).`);
+  startTicker(questionTimer, endsAt, "Mini-game ends in");
 });
 
-socket.on("chest:feed", ({ feed, leaderboard }) => {
+socket.on("minigame:feed", ({ feed, leaderboard }) => {
   if (!feed || feed.length === 0) {
     feedList.innerHTML = `<div class="help">No mode events yet.</div>`;
   } else {
@@ -444,12 +533,14 @@ socket.on("chest:feed", ({ feed, leaderboard }) => {
 
 socket.on("round:summary", (payload) => {
   setPhase("round_summary");
+  setPhaseIllustration("", "");
   renderLeaderboard(payload.leaderboard);
   showNotice(hostNotice, `Round ${payload.questionIndex}/${payload.totalQuestions} complete.`, "good");
 });
 
 socket.on("game:finished", ({ leaderboard }) => {
   setPhase("finished");
+  setPhaseIllustration("", "");
   renderLeaderboard(leaderboard);
   showNotice(hostNotice, "Game finished. Final standings locked.", "good");
   startBtn.disabled = true;
@@ -459,6 +550,7 @@ socket.on("game:finished", ({ leaderboard }) => {
 
 socket.on("game:ended", ({ reason }) => {
   setPhase("ended");
+  setPhaseIllustration("", "");
   showNotice(hostNotice, reason || "Game ended.", "bad");
   startBtn.disabled = true;
   nextBtn.disabled = true;
@@ -471,4 +563,5 @@ socket.on("connect_error", () => {
 });
 
 loadServerInfo();
+loadMiniGames();
 

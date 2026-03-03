@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#0b2a52"/>
+      <stop offset="100%" stop-color="#1d5fa7"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="600" rx="24" fill="url(#bg)"/>
+  <g fill="#ffffff" opacity="0.18">
+    <circle cx="150" cy="100" r="80"/>
+    <circle cx="1030" cy="510" r="110"/>
+    <circle cx="980" cy="120" r="55"/>
+  </g>
+  <rect x="300" y="150" width="600" height="300" rx="20" fill="#0c1e3f" stroke="#7dc3ff" stroke-width="4"/>
+  <text x="600" y="245" text-anchor="middle" fill="#ffd447" font-size="62" font-family="Verdana" font-weight="700">QUIZ TIME</text>
+  <text x="600" y="315" text-anchor="middle" fill="#ffffff" font-size="34" font-family="Verdana">Think fast and answer right</text>
+  <text x="600" y="370" text-anchor="middle" fill="#9fd3ff" font-size="28" font-family="Verdana">+ Speed bonus + Streak bonus</text>
+</svg>

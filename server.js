@@ -155,6 +155,17 @@ const QUESTION_BANK = [
   }
 ];
 
+const QUESTION_SET_CONFIG = {
+  multiplication_1_digit: {
+    id: "multiplication_1_digit",
+    label: "Multiplication 1-Digit"
+  },
+  general_knowledge: {
+    id: "general_knowledge",
+    label: "General Knowledge"
+  }
+};
+
 const BLOOK_PACKS = [
   {
     id: "sports",
@@ -249,6 +260,7 @@ for (const pack of BLOOK_PACKS) {
 }
 
 const DEFAULT_BLOOK = BLOOK_LOOKUP.get(BLOOK_PACKS[0].blooks[0].id);
+const ALL_BLOOKS = Array.from(BLOOK_LOOKUP.values());
 
 function publicBlookPacks() {
   return BLOOK_PACKS.map((pack) => ({
@@ -270,6 +282,14 @@ function resolveBlookById(blookId) {
   }
 
   return BLOOK_LOOKUP.get(blookId.trim()) || DEFAULT_BLOOK;
+}
+
+function randomBlook() {
+  if (!Array.isArray(ALL_BLOOKS) || ALL_BLOOKS.length === 0) {
+    return DEFAULT_BLOOK;
+  }
+
+  return ALL_BLOOKS[randomInt(0, ALL_BLOOKS.length - 1)];
 }
 
 const MODE_CONFIG = {
@@ -345,6 +365,47 @@ const MODE_CONFIG = {
   }
 };
 
+const MODE_MINI_GAMES = {
+  classic: ["soccer_shootout", "tap_rush", "sequence_memory", "precision_stop"],
+  gold: ["soccer_shootout", "tap_rush", "sequence_memory", "precision_stop"],
+  crypto: ["soccer_shootout", "tap_rush", "sequence_memory", "precision_stop"],
+  fishing: ["soccer_shootout", "tap_rush", "sequence_memory", "precision_stop"],
+  brawl: ["soccer_shootout", "tap_rush", "sequence_memory", "precision_stop"]
+};
+
+const MINI_GAME_CATALOG = [
+  {
+    id: "soccer_shootout",
+    name: "Soccer Shootout",
+    description: "Penalty kicks: choose lane and power against the goalkeeper."
+  },
+  {
+    id: "tap_rush",
+    name: "Tap Rush",
+    description: "Tap fast before the timer ends to build your bonus."
+  },
+  {
+    id: "sequence_memory",
+    name: "Sequence Memory",
+    description: "Repeat the color order as fast as possible."
+  },
+  {
+    id: "precision_stop",
+    name: "Precision Stop",
+    description: "Stop the moving marker near the target zone."
+  }
+];
+
+const MINI_GAME_LOOKUP = new Map(MINI_GAME_CATALOG.map((game) => [game.id, game]));
+
+function publicMiniGameCatalog() {
+  return MINI_GAME_CATALOG.map((game) => ({
+    id: game.id,
+    name: game.name,
+    description: game.description
+  }));
+}
+
 function normalizeMode(mode) {
   if (typeof mode !== "string") {
     return "classic";
@@ -364,7 +425,16 @@ const io = new Server(server);
 const games = new Map();
 const socketToGame = new Map();
 
-app.use(express.static(path.join(__dirname, "public")));
+app.use(
+  express.static(path.join(__dirname, "public"), {
+    setHeaders: (res, filePath) => {
+      const ext = path.extname(filePath).toLowerCase();
+      if (ext === ".html" || ext === ".js" || ext === ".css") {
+        res.setHeader("Cache-Control", "no-store, max-age=0");
+      }
+    }
+  })
+);
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true, games: games.size });
@@ -373,6 +443,12 @@ app.get("/health", (_req, res) => {
 app.get("/api/blooks", (_req, res) => {
   res.json({
     packs: publicBlookPacks()
+  });
+});
+
+app.get("/api/minigames", (_req, res) => {
+  res.json({
+    games: publicMiniGameCatalog()
   });
 });
 
@@ -468,9 +544,62 @@ function shuffle(list) {
   return arr;
 }
 
-function pickQuestions(count) {
+function normalizeQuestionSet(questionSet) {
+  if (typeof questionSet !== "string") {
+    return "multiplication_1_digit";
+  }
+
+  return QUESTION_SET_CONFIG[questionSet] ? questionSet : "multiplication_1_digit";
+}
+
+function questionSetLabel(questionSet) {
+  return QUESTION_SET_CONFIG[normalizeQuestionSet(questionSet)].label;
+}
+
+function buildMultiplicationOneDigitBank() {
+  const questions = [];
+
+  for (let left = 1; left <= 9; left += 1) {
+    for (let right = 1; right <= 9; right += 1) {
+      const correct = left * right;
+      const distractors = new Set();
+
+      while (distractors.size < 3) {
+        const drift = randomInt(-9, 9);
+        if (drift === 0) {
+          continue;
+        }
+        const candidate = Math.max(1, correct + drift);
+        if (candidate !== correct) {
+          distractors.add(candidate);
+        }
+      }
+
+      const options = shuffle([correct, ...distractors]).map((value) => String(value));
+      questions.push({
+        prompt: `What is ${left} x ${right}?`,
+        options,
+        answerIndex: options.indexOf(String(correct)),
+        explanation: `${left} x ${right} = ${correct}.`
+      });
+    }
+  }
+
+  return questions;
+}
+
+function questionPoolBySet(questionSet) {
+  const normalizedSet = normalizeQuestionSet(questionSet);
+  if (normalizedSet === "multiplication_1_digit") {
+    return buildMultiplicationOneDigitBank();
+  }
+
+  return QUESTION_BANK;
+}
+
+function pickQuestions(count, questionSet) {
   const safeCount = clamp(count, 5, 30);
-  const pool = shuffle(QUESTION_BANK);
+  const pool = shuffle(questionPoolBySet(questionSet));
 
   if (safeCount <= pool.length) {
     return pool.slice(0, safeCount);
@@ -478,7 +607,7 @@ function pickQuestions(count) {
 
   const extended = [];
   while (extended.length < safeCount) {
-    extended.push(...shuffle(QUESTION_BANK));
+    extended.push(...shuffle(questionPoolBySet(questionSet)));
   }
 
   return extended.slice(0, safeCount);
@@ -501,6 +630,7 @@ function sortedPlayers(game) {
 
 function broadcastLobby(game) {
   const modeConfig = getModeConfig(game.settings.mode);
+  const normalizedQuestionSet = normalizeQuestionSet(game.settings.questionSet);
 
   io.to(game.code).emit("lobby:update", {
     code: game.code,
@@ -510,6 +640,8 @@ function broadcastLobby(game) {
     modeName: modeConfig.label,
     eventName: modeConfig.eventName,
     feedTitle: modeConfig.feedTitle,
+    questionSet: normalizedQuestionSet,
+    questionSetLabel: questionSetLabel(normalizedQuestionSet),
     players: sortedPlayers(game)
   });
 }
@@ -593,264 +725,187 @@ function applyPenalty(target, amount) {
   return loss;
 }
 
-function applyEventChoice(game, player, choice) {
+function pickMiniGameType(game) {
+  const options = MODE_MINI_GAMES[normalizeMode(game.settings.mode)] || [];
+  if (options.length === 0) {
+    return null;
+  }
+
+  const index = game.minigameRotationIndex % options.length;
+  game.minigameRotationIndex += 1;
+  return options[index];
+}
+
+function miniGameMeta(type) {
+  return MINI_GAME_LOOKUP.get(type) || MINI_GAME_LOOKUP.get("soccer_shootout");
+}
+
+function createMiniGameState(type) {
+  if (type === "tap_rush") {
+    return { type, taps: 0 };
+  }
+
+  if (type === "soccer_shootout") {
+    return {
+      type,
+      goals: 0,
+      shotsTaken: 0,
+      totalShots: 5,
+      goaliePattern: Array.from({ length: 5 }, () => randomInt(0, 2)),
+      shots: []
+    };
+  }
+
+  if (type === "sequence_memory") {
+    return {
+      type,
+      sequence: Array.from({ length: 5 }, () => randomInt(0, 3)),
+      progress: 0,
+      completedAt: null
+    };
+  }
+
+  if (type === "precision_stop") {
+    return {
+      type,
+      target: randomInt(15, 85),
+      submitted: false,
+      value: null
+    };
+  }
+
+  return { type: "tap_rush", taps: 0 };
+}
+
+function miniGamePublicData(state) {
+  if (state.type === "tap_rush") {
+    return {
+      taps: 0
+    };
+  }
+
+  if (state.type === "soccer_shootout") {
+    return {
+      goals: state.goals,
+      shotsTaken: state.shotsTaken,
+      totalShots: state.totalShots,
+      shots: state.shots
+    };
+  }
+
+  if (state.type === "sequence_memory") {
+    return {
+      sequence: state.sequence,
+      total: state.sequence.length
+    };
+  }
+
+  if (state.type === "precision_stop") {
+    return {
+      target: state.target
+    };
+  }
+
+  return {};
+}
+
+function isMiniGameStateResolved(state) {
+  if (state.type === "tap_rush") {
+    return false;
+  }
+
+  if (state.type === "soccer_shootout") {
+    return state.shotsTaken >= state.totalShots;
+  }
+
+  if (state.type === "sequence_memory") {
+    return state.completedAt !== null;
+  }
+
+  if (state.type === "precision_stop") {
+    return state.submitted;
+  }
+
+  return false;
+}
+
+function allMiniGamesResolved(game) {
+  if (game.chestPhase.size === 0) {
+    return true;
+  }
+
+  for (const state of game.chestPhase.values()) {
+    if (!isMiniGameStateResolved(state)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function miniGameResult(game, player, state) {
   const modeConfig = getModeConfig(game.settings.mode);
   const unit = modeConfig.unit;
-  const feed = { playerId: player.id, playerName: player.name, text: "" };
 
-  if (choice.type === "gain") {
-    player.score += choice.value;
-    feed.text = `${player.name} gained +${choice.value} ${unit}.`;
-    return feed;
+  if (state.type === "tap_rush") {
+    const bonus = Math.max(80, Math.min(700, state.taps * 28) + randomInt(30, 120));
+    return {
+      bonus,
+      text: `${player.name} landed ${state.taps} taps for +${bonus} ${unit}.`
+    };
   }
 
-  if (choice.type === "double") {
-    const ratio = typeof choice.percent === "number" ? choice.percent : 0.35;
-    const bonus = Math.max(80, Math.round(player.score * ratio));
-    player.score += bonus;
-    feed.text = `${player.name} triggered a multiplier for +${bonus} ${unit}.`;
-    return feed;
+  if (state.type === "soccer_shootout") {
+    const perfectBonus = state.goals === state.totalShots ? 300 : 0;
+    const bonus = 120 + state.goals * 200 + perfectBonus;
+    return {
+      bonus,
+      text: `${player.name} scored ${state.goals}/${state.totalShots} goals for +${bonus} ${unit}.`
+    };
   }
 
-  if (choice.type === "lose") {
-    const lost = applyPenalty(player, choice.value);
-    feed.text = `${player.name} got hit and lost ${lost} ${unit}.`;
-    return feed;
-  }
-
-  const target = game.players.get(choice.targetId);
-
-  if (choice.type === "steal") {
-    if (!target || target.id === player.id) {
-      player.score += modeConfig.fallbackGain;
-      feed.text = `${player.name} found no target and still got +${modeConfig.fallbackGain} ${unit}.`;
-      return feed;
+  if (state.type === "sequence_memory") {
+    if (state.completedAt !== null) {
+      const elapsed = clamp(state.completedAt - game.minigameStartedAt, 0, game.minigameDurationMs);
+      const speedRatio = clamp(1 - elapsed / game.minigameDurationMs, 0, 1);
+      const bonus = 260 + Math.round(speedRatio * 460);
+      return {
+        bonus,
+        text: `${player.name} cleared memory sequence for +${bonus} ${unit}.`
+      };
     }
 
-    if (target.protectedTurns > 0) {
-      target.protectedTurns -= 1;
-      feed.text = `${player.name}'s steal on ${target.name} was blocked by shield.`;
-      return feed;
+    const bonus = state.progress * 85;
+    return {
+      bonus,
+      text: `${player.name} solved ${state.progress}/5 sequence steps for +${bonus} ${unit}.`
+    };
+  }
+
+  if (state.type === "precision_stop") {
+    if (state.submitted) {
+      const diff = Math.abs(state.value - state.target);
+      const bonus = Math.max(70, 620 - diff * 10 + (diff <= 5 ? 120 : 0));
+      return {
+        bonus,
+        text: `${player.name} stopped ${diff} away from target for +${bonus} ${unit}.`
+      };
     }
 
-    const stolen = applyPenalty(target, choice.value);
-    player.score += stolen;
-    feed.text = `${player.name} stole ${stolen} ${unit} from ${target.name}.`;
-    return feed;
+    return {
+      bonus: 70,
+      text: `${player.name} missed stop timing and got +70 ${unit}.`
+    };
   }
 
-  if (choice.type === "swap") {
-    if (!target || target.id === player.id) {
-      player.score += modeConfig.fallbackGain;
-      feed.text = `${player.name} missed the swap and gained +${modeConfig.fallbackGain} ${unit}.`;
-      return feed;
-    }
-
-    const temp = target.score;
-    target.score = player.score;
-    player.score = temp;
-    feed.text = `${player.name} swapped total ${unit} with ${target.name}.`;
-    return feed;
-  }
-
-  if (choice.type === "shield") {
-    player.protectedTurns += 1;
-    feed.text = `${player.name} gained a shield for one incoming steal.`;
-    return feed;
-  }
-
-  player.score += modeConfig.fallbackGain;
-  feed.text = `${player.name} gained a fallback +${modeConfig.fallbackGain} ${unit}.`;
-  return feed;
+  return {
+    bonus: modeConfig.fallbackGain,
+    text: `${player.name} received fallback +${modeConfig.fallbackGain} ${unit}.`
+  };
 }
 
-function generateChoices(game, playerId) {
-  const mode = normalizeMode(game.settings.mode);
-  const others = Array.from(game.players.values()).filter((item) => item.id !== playerId);
-  const randomTarget = others.length ? others[randomInt(0, others.length - 1)] : null;
-  let candidatePool = [];
-
-  if (mode === "crypto") {
-    candidatePool = [
-      {
-        id: `gain-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Bull Run",
-        description: "+280 to +620 coins",
-        type: "gain",
-        value: randomInt(280, 620)
-      },
-      {
-        id: `double-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Market Pump",
-        description: "Gain 30% of your current score",
-        type: "double",
-        percent: 0.3
-      },
-      {
-        id: `steal-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Wallet Hack",
-        description: randomTarget ? `Steal up to 480 from ${randomTarget.name}` : "Steal attempt",
-        type: "steal",
-        value: randomInt(200, 480),
-        targetId: randomTarget?.id
-      },
-      {
-        id: `lose-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Rug Pull",
-        description: "Lose 180 to 420 coins",
-        type: "lose",
-        value: randomInt(180, 420)
-      },
-      {
-        id: `shield-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Firewall",
-        description: "Block one incoming steal",
-        type: "shield"
-      },
-      {
-        id: `swap-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Market Swap",
-        description: randomTarget ? `Swap total coins with ${randomTarget.name}` : "Swap attempt",
-        type: "swap",
-        targetId: randomTarget?.id
-      }
-    ];
-  } else if (mode === "fishing") {
-    candidatePool = [
-      {
-        id: `gain-small-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Small Catch",
-        description: "+140 to +320 fish",
-        type: "gain",
-        value: randomInt(140, 320)
-      },
-      {
-        id: `gain-big-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Golden Catch",
-        description: "+420 to +760 fish",
-        type: "gain",
-        value: randomInt(420, 760)
-      },
-      {
-        id: `steal-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Net Raid",
-        description: randomTarget ? `Steal up to 360 from ${randomTarget.name}` : "Steal attempt",
-        type: "steal",
-        value: randomInt(120, 360),
-        targetId: randomTarget?.id
-      },
-      {
-        id: `lose-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Storm Surge",
-        description: "Lose 100 to 280 fish",
-        type: "lose",
-        value: randomInt(100, 280)
-      },
-      {
-        id: `double-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Lucky Map",
-        description: "Gain 25% of your current score",
-        type: "double",
-        percent: 0.25
-      },
-      {
-        id: `shield-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Harbor Shield",
-        description: "Block one incoming steal",
-        type: "shield"
-      }
-    ];
-  } else if (mode === "brawl") {
-    candidatePool = [
-      {
-        id: `steal-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Heavy Strike",
-        description: randomTarget ? `Hit ${randomTarget.name} for up to 430 power` : "Strike attempt",
-        type: "steal",
-        value: randomInt(180, 430),
-        targetId: randomTarget?.id
-      },
-      {
-        id: `gain-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Fury Boost",
-        description: "+220 to +500 power",
-        type: "gain",
-        value: randomInt(220, 500)
-      },
-      {
-        id: `lose-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Reckless Swing",
-        description: "Backfire: lose 120 to 260 power",
-        type: "lose",
-        value: randomInt(120, 260)
-      },
-      {
-        id: `shield-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Guard Stance",
-        description: "Block one incoming steal",
-        type: "shield"
-      },
-      {
-        id: `swap-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Chaos Rift",
-        description: randomTarget ? `Swap total power with ${randomTarget.name}` : "Swap attempt",
-        type: "swap",
-        targetId: randomTarget?.id
-      }
-    ];
-  } else {
-    candidatePool = [
-      {
-        id: `gain-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Gold Rush",
-        description: "+250 to +520 gold",
-        type: "gain",
-        value: randomInt(250, 520)
-      },
-      {
-        id: `double-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Multiplier",
-        description: "Gain 35% of your current score",
-        type: "double",
-        percent: 0.35
-      },
-      {
-        id: `steal-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Sneak Steal",
-        description: randomTarget ? `Steal up to 450 from ${randomTarget.name}` : "Steal attempt",
-        type: "steal",
-        value: randomInt(180, 450),
-        targetId: randomTarget?.id
-      },
-      {
-        id: `swap-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Score Swap",
-        description: randomTarget ? `Swap total gold with ${randomTarget.name}` : "Swap attempt",
-        type: "swap",
-        targetId: randomTarget?.id
-      },
-      {
-        id: `shield-${Math.random().toString(36).slice(2, 8)}`,
-        title: "Guardian",
-        description: "Block one steal attempt",
-        type: "shield"
-      }
-    ];
-  }
-
-  return shuffle(candidatePool).slice(0, 3).map((item) => ({
-    id: item.id,
-    title: item.title,
-    description: item.description,
-    type: item.type,
-    value: item.value,
-    percent: item.percent,
-    targetId: item.targetId
-  }));
-}
-
-function finalizeChestPhase(game) {
-  if (game.phase !== "chest") {
+function finalizeMiniGamePhase(game) {
+  if (game.phase !== "minigame") {
     return;
   }
 
@@ -859,64 +914,228 @@ function finalizeChestPhase(game) {
     game.chestTimer = null;
   }
 
-  for (const [playerId, chestData] of game.chestPhase.entries()) {
-    if (chestData.selected) {
+  for (const [playerId, state] of game.chestPhase.entries()) {
+    const player = game.players.get(playerId);
+    if (!player) {
       continue;
     }
 
-    const fallbackChoice = chestData.choices[randomInt(0, chestData.choices.length - 1)];
-    const player = game.players.get(playerId);
+    const result = miniGameResult(game, player, state);
+    player.score += result.bonus;
 
-    if (player) {
-      const feedEvent = applyEventChoice(game, player, fallbackChoice);
-      game.feed.push(feedEvent);
-    }
+    const feedEvent = { playerId: player.id, playerName: player.name, text: result.text };
+    game.feed.push(feedEvent);
 
-    chestData.selected = true;
+    io.to(playerId).emit("minigame:resolved", {
+      text: result.text,
+      bonus: result.bonus,
+      leaderboard: sortedPlayers(game)
+    });
   }
 
-  io.to(game.code).emit("chest:feed", {
+  io.to(game.code).emit("minigame:feed", {
     feed: game.feed.slice(-8),
     leaderboard: sortedPlayers(game)
   });
 
   game.chestPhase.clear();
+  game.minigameType = null;
+  game.minigameStartedAt = null;
+  game.minigameEndsAt = null;
   startRoundSummary(game);
 }
 
-function startChestPhase(game, eligiblePlayerIds) {
-  const modeConfig = getModeConfig(game.settings.mode);
-  game.phase = "chest";
+function startMiniGamePhase(game, eligiblePlayerIds) {
+  const miniGameType = pickMiniGameType(game);
+  const meta = miniGameMeta(miniGameType);
+
+  if (!miniGameType || !meta || !Array.isArray(eligiblePlayerIds) || eligiblePlayerIds.length === 0) {
+    startRoundSummary(game);
+    return;
+  }
+
+  game.phase = "minigame";
   game.feed = [];
+  game.chestPhase.clear();
+  game.minigameType = miniGameType;
+  game.minigameDurationMs = 10000;
+  game.minigameStartedAt = Date.now();
+  game.minigameEndsAt = game.minigameStartedAt + game.minigameDurationMs;
 
   for (const playerId of eligiblePlayerIds) {
-    const choices = generateChoices(game, playerId);
-    game.chestPhase.set(playerId, { choices, selected: false });
+    const state = createMiniGameState(miniGameType);
+    game.chestPhase.set(playerId, state);
 
-    io.to(playerId).emit("chest:choices", {
-      endsAt: Date.now() + 12000,
-      eventName: modeConfig.eventName,
-      actionLabel: modeConfig.actionLabel,
-      choices: choices.map((choice) => ({
-        id: choice.id,
-        title: choice.title,
-        description: choice.description
-      }))
+    io.to(playerId).emit("minigame:yourData", {
+      type: miniGameType,
+      endsAt: game.minigameEndsAt,
+      eventName: meta.name,
+      actionLabel: "Play",
+      data: miniGamePublicData(state)
     });
   }
 
-  io.to(game.code).emit("chest:start", {
+  io.to(game.code).emit("minigame:start", {
     eligiblePlayerIds,
-    endsAt: Date.now() + 12000,
-    eventName: modeConfig.eventName,
-    feedTitle: modeConfig.feedTitle
+    type: miniGameType,
+    endsAt: game.minigameEndsAt,
+    eventName: meta.name,
+    feedTitle: "Mini-game Feed"
   });
 
   game.chestTimer = setTimeout(() => {
-    finalizeChestPhase(game);
-  }, 12200);
+    finalizeMiniGamePhase(game);
+  }, game.minigameDurationMs + 120);
 
   broadcastHostStatus(game);
+}
+
+function handleMiniGameAction(game, socketId, action, value) {
+  if (!game || game.phase !== "minigame") {
+    return { ok: false, message: "Mini-game is not active." };
+  }
+
+  const state = game.chestPhase.get(socketId);
+  if (!state) {
+    return { ok: false, message: "You are not in this mini-game." };
+  }
+
+  if (state.type === "tap_rush") {
+    if (action !== "tap") {
+      return { ok: false, message: "Invalid action for tap rush." };
+    }
+
+    state.taps += 1;
+    io.to(socketId).emit("minigame:state", {
+      type: state.type,
+      taps: state.taps
+    });
+    return { ok: true };
+  }
+
+  if (state.type === "soccer_shootout") {
+    if (action !== "shoot") {
+      return { ok: false, message: "Invalid action for soccer shootout." };
+    }
+
+    if (state.shotsTaken >= state.totalShots) {
+      return { ok: true, completed: true };
+    }
+
+    const lane = Number(value?.lane);
+    const power = clamp(Number(value?.power) || 2, 1, 3);
+    if (!Number.isInteger(lane) || lane < 0 || lane > 2) {
+      return { ok: false, message: "Invalid shot lane." };
+    }
+
+    const goalieLane = state.goaliePattern[state.shotsTaken];
+    const roll = Math.random();
+    let outcome = "goal";
+
+    if (lane === goalieLane) {
+      const saveChance = power === 3 ? 0.42 : power === 2 ? 0.68 : 0.84;
+      outcome = roll < saveChance ? "saved" : "goal";
+    } else {
+      const missChance = power === 3 ? 0.18 : power === 2 ? 0.09 : 0.04;
+      outcome = roll < missChance ? "miss" : "goal";
+    }
+
+    const goal = outcome === "goal";
+
+    state.shotsTaken += 1;
+    if (goal) {
+      state.goals += 1;
+    }
+    state.shots.push({
+      lane,
+      goalieLane,
+      power,
+      goal,
+      outcome
+    });
+
+    io.to(socketId).emit("minigame:state", {
+      type: state.type,
+      goals: state.goals,
+      shotsTaken: state.shotsTaken,
+      totalShots: state.totalShots,
+      lastShot: state.shots[state.shots.length - 1],
+      completed: state.shotsTaken >= state.totalShots
+    });
+
+    if (allMiniGamesResolved(game)) {
+      finalizeMiniGamePhase(game);
+    }
+
+    return { ok: true };
+  }
+
+  if (state.type === "sequence_memory") {
+    if (action !== "step") {
+      return { ok: false, message: "Invalid action for sequence memory." };
+    }
+
+    const stepValue = Number(value);
+    if (!Number.isInteger(stepValue) || stepValue < 0 || stepValue > 3) {
+      return { ok: false, message: "Invalid sequence step." };
+    }
+
+    if (state.completedAt !== null) {
+      return { ok: true, completed: true };
+    }
+
+    const expected = state.sequence[state.progress];
+    if (stepValue === expected) {
+      state.progress += 1;
+      if (state.progress >= state.sequence.length) {
+        state.completedAt = Date.now();
+      }
+    } else {
+      state.progress = Math.max(0, state.progress - 1);
+    }
+
+    io.to(socketId).emit("minigame:state", {
+      type: state.type,
+      progress: state.progress,
+      total: state.sequence.length,
+      completed: state.completedAt !== null
+    });
+
+    if (allMiniGamesResolved(game)) {
+      finalizeMiniGamePhase(game);
+    }
+
+    return { ok: true };
+  }
+
+  if (state.type === "precision_stop") {
+    if (action !== "stop") {
+      return { ok: false, message: "Invalid action for precision stop." };
+    }
+
+    if (state.submitted) {
+      return { ok: true, submitted: true };
+    }
+
+    const safeValue = clamp(Number(value), 0, 100);
+    state.submitted = true;
+    state.value = Math.round(safeValue);
+
+    io.to(socketId).emit("minigame:state", {
+      type: state.type,
+      submitted: true,
+      value: state.value,
+      target: state.target
+    });
+
+    if (allMiniGamesResolved(game)) {
+      finalizeMiniGamePhase(game);
+    }
+
+    return { ok: true };
+  }
+
+  return { ok: false, message: "Unknown mini-game type." };
 }
 
 function closeQuestion(game) {
@@ -946,14 +1165,10 @@ function closeQuestion(game) {
     leaderboard: sortedPlayers(game)
   });
 
-  const modeConfig = getModeConfig(game.settings.mode);
-
-  if (modeConfig.eventPhase) {
-    const eligible = submissions.filter((item) => item.correct).map((item) => item.playerId);
-    if (eligible.length > 0) {
-      startChestPhase(game, eligible);
-      return;
-    }
+  if (game.players.size > 0) {
+    const eligible = Array.from(game.players.keys());
+    startMiniGamePhase(game, eligible);
+    return;
   }
 
   startRoundSummary(game);
@@ -986,6 +1201,9 @@ function startQuestion(game) {
   game.currentQuestionIndex += 1;
   game.submissions.clear();
   game.chestPhase.clear();
+  game.minigameType = null;
+  game.minigameStartedAt = null;
+  game.minigameEndsAt = null;
 
   const question = game.questions[game.currentQuestionIndex];
   const endsAt = Date.now() + game.settings.timerSeconds * 1000;
@@ -1066,17 +1284,9 @@ function removePlayerFromGame(game, socketId) {
     closeQuestion(game);
   }
 
-  if (game.phase === "chest") {
-    let allSelected = true;
-    for (const chestData of game.chestPhase.values()) {
-      if (!chestData.selected) {
-        allSelected = false;
-        break;
-      }
-    }
-
-    if (allSelected) {
-      finalizeChestPhase(game);
+  if (game.phase === "minigame") {
+    if (game.chestPhase.size === 0 || (game.minigameType !== "tap_rush" && allMiniGamesResolved(game))) {
+      finalizeMiniGamePhase(game);
     }
   }
 }
@@ -1085,6 +1295,7 @@ io.on("connection", (socket) => {
   socket.on("host:create", (payload, ack) => {
     const hostName = sanitizeName(payload?.hostName || "Teacher");
     const mode = normalizeMode(payload?.mode);
+    const questionSet = normalizeQuestionSet(payload?.questionSet);
     const timerSeconds = clamp(Number(payload?.timerSeconds) || 15, 8, 45);
     const questionCount = clamp(Number(payload?.questionCount) || 10, 5, 30);
 
@@ -1098,11 +1309,12 @@ io.on("connection", (socket) => {
       phase: "lobby",
       settings: {
         mode,
+        questionSet,
         timerSeconds,
         questionCount
       },
       players: new Map(),
-      questions: pickQuestions(questionCount),
+      questions: pickQuestions(questionCount, questionSet),
       currentQuestionIndex: -1,
       submissions: new Map(),
       chestPhase: new Map(),
@@ -1111,7 +1323,12 @@ io.on("connection", (socket) => {
       roundTimer: null,
       chestTimer: null,
       questionStartedAt: null,
-      questionEndsAt: null
+      questionEndsAt: null,
+      minigameType: null,
+      minigameDurationMs: 0,
+      minigameStartedAt: null,
+      minigameEndsAt: null,
+      minigameRotationIndex: 0
     };
 
     games.set(code, game);
@@ -1122,7 +1339,14 @@ io.on("connection", (socket) => {
     broadcastHostStatus(game);
 
     if (typeof ack === "function") {
-      ack({ ok: true, code, gameMode: mode, modeName: getModeConfig(mode).label });
+      ack({
+        ok: true,
+        code,
+        gameMode: mode,
+        modeName: getModeConfig(mode).label,
+        questionSet,
+        questionSetLabel: questionSetLabel(questionSet)
+      });
     }
   });
 
@@ -1136,9 +1360,11 @@ io.on("connection", (socket) => {
     }
 
     game.settings.mode = normalizeMode(settings?.mode ?? game.settings.mode);
+    game.settings.questionSet = normalizeQuestionSet(settings?.questionSet ?? game.settings.questionSet);
     game.settings.timerSeconds = clamp(Number(settings?.timerSeconds) || game.settings.timerSeconds, 8, 45);
     game.settings.questionCount = clamp(Number(settings?.questionCount) || game.settings.questionCount, 5, 30);
-    game.questions = pickQuestions(game.settings.questionCount);
+    game.questions = pickQuestions(game.settings.questionCount, game.settings.questionSet);
+    game.minigameRotationIndex = 0;
     game.updatedAt = Date.now();
 
     broadcastLobby(game);
@@ -1151,7 +1377,7 @@ io.on("connection", (socket) => {
   socket.on("player:join", (payload, ack) => {
     const code = String(payload?.code || "").toUpperCase().trim();
     const playerName = sanitizeName(payload?.name || "");
-    const selectedBlook = resolveBlookById(payload?.blookId);
+    const selectedBlook = { ...resolveBlookById(payload?.blookId) };
     const game = games.get(code);
 
     if (!game) {
@@ -1394,68 +1620,11 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("player:pickChest", ({ code, choiceId }, ack) => {
+  socket.on("player:minigameAction", ({ code, action, value }, ack) => {
     const game = games.get((code || "").toUpperCase());
-    if (!game || game.phase !== "chest") {
-      if (typeof ack === "function") {
-        ack({ ok: false, message: "Chest phase not active." });
-      }
-      return;
-    }
-
-    const chestData = game.chestPhase.get(socket.id);
-    const player = game.players.get(socket.id);
-
-    if (!chestData || !player) {
-      if (typeof ack === "function") {
-        ack({ ok: false, message: "You are not eligible for a chest this round." });
-      }
-      return;
-    }
-
-    if (chestData.selected) {
-      if (typeof ack === "function") {
-        ack({ ok: false, message: "Chest already opened." });
-      }
-      return;
-    }
-
-    const selectedChoice = chestData.choices.find((item) => item.id === choiceId);
-    if (!selectedChoice) {
-      if (typeof ack === "function") {
-        ack({ ok: false, message: "Invalid chest choice." });
-      }
-      return;
-    }
-
-    chestData.selected = true;
-    const feedEvent = applyEventChoice(game, player, selectedChoice);
-    game.feed.push(feedEvent);
-
-    io.to(socket.id).emit("chest:resolved", {
-      text: feedEvent.text,
-      leaderboard: sortedPlayers(game)
-    });
-
-    io.to(game.code).emit("chest:feed", {
-      feed: game.feed.slice(-8),
-      leaderboard: sortedPlayers(game)
-    });
-
-    let allSelected = true;
-    for (const data of game.chestPhase.values()) {
-      if (!data.selected) {
-        allSelected = false;
-        break;
-      }
-    }
-
-    if (allSelected) {
-      finalizeChestPhase(game);
-    }
-
+    const result = handleMiniGameAction(game, socket.id, action, value);
     if (typeof ack === "function") {
-      ack({ ok: true });
+      ack(result);
     }
   });
 

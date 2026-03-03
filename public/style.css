@@ -237,6 +237,12 @@ label {
   border-color: transparent;
 }
 
+.pack-tab .help {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 0.72rem;
+}
+
 .blook-grid {
   display: grid;
   gap: 8px;
@@ -259,6 +265,11 @@ label {
 .blook-tile.selected {
   border-color: rgba(255, 212, 71, 0.9);
   background: rgba(255, 212, 71, 0.18);
+}
+
+.blook-tile[data-locked-slot] {
+  opacity: 0.84;
+  border-style: dashed;
 }
 
 .blook-emoji {
@@ -547,6 +558,178 @@ th {
   font-size: 0.9rem;
 }
 
+.host-mini-player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.host-race-goal {
+  font-weight: 700;
+  color: #ffe7a8;
+  margin-bottom: 8px;
+}
+
+.host-race-list {
+  display: grid;
+  gap: 8px;
+}
+
+.host-race-row {
+  border: 1px solid rgba(151, 193, 255, 0.25);
+  background: rgba(3, 13, 28, 0.58);
+  border-radius: 10px;
+  padding: 8px;
+}
+
+.host-race-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.host-race-value {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.host-race-track {
+  position: relative;
+  height: 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(151, 193, 255, 0.35);
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.host-race-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, #2ec8c4, #ffd447);
+}
+
+.host-race-runner {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.05rem;
+}
+
+.host-soccer-grid,
+.host-progress-grid,
+.host-precision-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.host-reaction-grid,
+.host-scramble-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.host-soccer-card,
+.host-progress-card,
+.host-precision-card {
+  border: 1px solid rgba(151, 193, 255, 0.3);
+  background: rgba(4, 15, 32, 0.62);
+  border-radius: 12px;
+  padding: 10px;
+  display: grid;
+  gap: 7px;
+}
+
+.host-reaction-card,
+.host-scramble-card {
+  border: 1px solid rgba(151, 193, 255, 0.3);
+  background: rgba(4, 15, 32, 0.62);
+  border-radius: 12px;
+  padding: 10px;
+  display: grid;
+  gap: 7px;
+}
+
+.host-soccer-score {
+  font-weight: 700;
+}
+
+.host-shot-row {
+  display: flex;
+  gap: 6px;
+}
+
+.host-shot-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1px solid rgba(151, 193, 255, 0.45);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.host-shot-dot.taken {
+  background: rgba(255, 110, 99, 0.45);
+}
+
+.host-shot-dot.goal {
+  background: rgba(118, 225, 131, 0.8);
+}
+
+.host-progress-meter {
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(151, 193, 255, 0.35);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.host-progress-meter span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #4aa9ff, #34d7c6);
+}
+
+.host-precision-meta {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.host-precision-quality {
+  font-weight: 700;
+}
+
+.host-precision-card.perfect {
+  border-color: rgba(118, 225, 131, 0.7);
+}
+
+.host-precision-card.good {
+  border-color: rgba(255, 212, 71, 0.7);
+}
+
+.host-precision-card.wide {
+  border-color: rgba(255, 110, 99, 0.7);
+}
+
+.host-reaction-card.perfect,
+.host-scramble-card.perfect {
+  border-color: rgba(118, 225, 131, 0.7);
+}
+
+.host-reaction-card.wide,
+.host-scramble-card.wide {
+  border-color: rgba(255, 110, 99, 0.7);
+}
+
+.host-reaction-value,
+.host-scramble-status {
+  font-weight: 700;
+}
+
 .ticker {
   font-size: 1.05rem;
   font-weight: 700;
@@ -689,14 +872,149 @@ th {
 }
 
 .lobby-player-name {
-  font-size: clamp(1rem, 1.5vw, 1.8rem);
+  font-size: clamp(0.96rem, 1.2vw, 1.25rem);
   font-weight: 700;
   line-height: 1.05;
   word-break: break-word;
 }
 
+.lobby-player-details {
+  display: grid;
+  gap: 2px;
+  align-content: center;
+}
+
+.lobby-player-meta {
+  font-size: 0.78rem;
+  opacity: 0.95;
+}
+
+.lobby-player-status {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+}
+
 .soccer-chest {
   gap: 10px;
+}
+
+.mini-soccer-team-chest {
+  gap: 10px;
+}
+
+.mini-soccer-pitch {
+  position: relative;
+  height: 260px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(151, 193, 255, 0.35);
+  background:
+    radial-gradient(360px 160px at 50% 50%, rgba(41, 201, 130, 0.2), transparent 80%),
+    linear-gradient(180deg, #0f5a28, #0d4b22);
+}
+
+.mini-soccer-pitch::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.28);
+  border-radius: 10px;
+}
+
+.mini-soccer-pitch.goal-flash {
+  box-shadow: inset 0 0 0 2px rgba(59, 229, 126, 0.7);
+}
+
+.mini-soccer-pitch.save-flash {
+  box-shadow: inset 0 0 0 2px rgba(255, 212, 71, 0.7);
+}
+
+.mini-soccer-goal {
+  position: absolute;
+  top: 34%;
+  width: 16px;
+  height: 32%;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.mini-soccer-goal.left {
+  left: 8px;
+  border-left: none;
+}
+
+.mini-soccer-goal.right {
+  right: 8px;
+  border-right: none;
+}
+
+.mini-soccer-players-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.mini-soccer-player {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  pointer-events: none;
+}
+
+.mini-soccer-player-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  font-size: 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.mini-soccer-player.red .mini-soccer-player-icon {
+  background: #f35f69;
+}
+
+.mini-soccer-player.blue .mini-soccer-player-icon {
+  background: #35a5f5;
+}
+
+.mini-soccer-player-name {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: #f7fbff;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+}
+
+.mini-soccer-player-team {
+  font-size: 0.5rem;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.mini-soccer-ball-live {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background:
+    radial-gradient(circle at 30% 30%, #ffffff, #d8edf9 42%, #9bcce5 78%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+#miniSoccerYourTeam {
+  color: #ff6f6f;
+}
+
+#miniSoccerYourTeam.blue {
+  color: #67bbff;
 }
 
 .soccer-stage {
@@ -762,40 +1080,49 @@ th {
   filter: saturate(1.1) contrast(1.02);
 }
 
-.fussball-runners {
+.soccer-static-players {
   position: absolute;
   inset: 0;
   z-index: 2;
   pointer-events: none;
 }
 
-.fussball-runner {
+.soccer-static-player {
   position: absolute;
-  width: 42px;
-  height: 52px;
+  transform: translate(-50%, -50%);
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+}
+
+.soccer-static-player img {
+  width: 44px;
+  height: 54px;
   object-fit: cover;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.42);
   box-shadow: 0 6px 11px rgba(0, 0, 0, 0.3);
-  opacity: 0.9;
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.fussball-runner.runner-a {
-  left: -50px;
-  top: 96px;
-  animation: runnerLaneA 5.2s linear infinite;
+.soccer-static-player span {
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #f3f7ff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(3, 12, 26, 0.58);
 }
 
-.fussball-runner.runner-b {
-  left: -80px;
-  top: 124px;
-  animation: runnerLaneB 6.1s linear infinite;
+.soccer-static-player.ball-near img {
+  border-color: rgba(255, 212, 71, 0.95);
+  box-shadow: 0 0 0 3px rgba(255, 212, 71, 0.25), 0 8px 14px rgba(0, 0, 0, 0.32);
 }
 
-.fussball-runner.runner-c {
-  left: -120px;
-  top: 74px;
-  animation: runnerLaneC 7s linear infinite;
+.soccer-static-player.ball-near span {
+  border-color: rgba(255, 212, 71, 0.9);
+  color: #ffe9a9;
 }
 
 .soccer-lane-mark {
@@ -832,7 +1159,6 @@ th {
 }
 
 .soccer-ball {
-  --shot-x: 50%;
   position: absolute;
   bottom: 18px;
   left: 50%;
@@ -844,6 +1170,11 @@ th {
     radial-gradient(circle at 35% 30%, #ffffff 0%, #ffffff 54%, #202020 56%, #202020 72%, #ffffff 74%);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.34);
   z-index: 5;
+}
+
+.soccer-ball.energy-low {
+  filter: saturate(0.78);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.42), 0 0 0 4px rgba(255, 110, 99, 0.18);
 }
 
 .soccer-ball.shoot-goal {
@@ -891,7 +1222,7 @@ th {
   border-radius: 10px;
   border: 1px solid rgba(151, 193, 255, 0.45);
   box-shadow: 0 8px 14px rgba(0, 0, 0, 0.28);
-  animation: strikerBob 1.35s ease-in-out infinite;
+  animation: none;
 }
 
 .soccer-striker.powered {
@@ -978,6 +1309,31 @@ th {
 
 .fussball-chip.amber {
   background: rgba(255, 212, 71, 0.2);
+}
+
+.soccer-energy-meter {
+  display: grid;
+  gap: 5px;
+}
+
+.soccer-energy-track {
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(151, 193, 255, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.soccer-energy-track span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #33d6bf, #86e681);
+  transition: width 0.22s ease;
+}
+
+.soccer-energy-track span.low {
+  background: linear-gradient(90deg, #ff9761, #ff5d52);
 }
 
 @keyframes ballGoal {

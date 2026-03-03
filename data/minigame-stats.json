@@ -1,0 +1,47 @@
+{
+  "savedAt": "2026-03-03T18:14:31.507Z",
+  "stats": {
+    "soccer_shootout": {
+      "sessions": 17,
+      "playerEntries": 34,
+      "completions": 16,
+      "totalBonus": 8066
+    },
+    "tap_rush": {
+      "sessions": 8,
+      "playerEntries": 16,
+      "completions": 16,
+      "totalBonus": 12487
+    },
+    "reaction_duel": {
+      "sessions": 8,
+      "playerEntries": 16,
+      "completions": 16,
+      "totalBonus": 5104
+    },
+    "sequence_memory": {
+      "sessions": 8,
+      "playerEntries": 16,
+      "completions": 16,
+      "totalBonus": 11520
+    },
+    "obstacle_dodge": {
+      "sessions": 8,
+      "playerEntries": 16,
+      "completions": 16,
+      "totalBonus": 8045
+    },
+    "precision_stop": {
+      "sessions": 8,
+      "playerEntries": 16,
+      "completions": 16,
+      "totalBonus": 11840
+    },
+    "word_scramble": {
+      "sessions": 8,
+      "playerEntries": 16,
+      "completions": 16,
+      "totalBonus": 1440
+    }
+  }
+}

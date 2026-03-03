@@ -213,6 +213,24 @@ function autoPlayTapRush(bot) {
   }, 75 + randomInt(0, 55));
 }
 
+function autoPlayReaction(bot, goAt) {
+  const target = Number(goAt || Date.now() + 1400);
+  const waitMs = Math.max(80, target - Date.now() + randomInt(40, 180));
+  scheduleTimeout(bot, async () => {
+    if (bot.resolvedMiniGame) {
+      return;
+    }
+    try {
+      await emitAck(bot.socket, "player:minigameAction", {
+        code: bot.code,
+        action: "react"
+      });
+    } catch (_error) {
+      // Ignore action races when timer ends.
+    }
+  }, waitMs);
+}
+
 function autoPlaySequence(bot, sequence) {
   const seq = Array.isArray(sequence) ? sequence : [];
 
@@ -248,6 +266,33 @@ function autoPlaySequence(bot, sequence) {
   scheduleTimeout(bot, playStep, 220 + randomInt(10, 80));
 }
 
+function autoPlayObstacle(bot, totalTurns) {
+  const turns = Number(totalTurns) > 0 ? Number(totalTurns) : 8;
+  let step = 0;
+  const playTurn = async () => {
+    if (bot.resolvedMiniGame || step >= turns) {
+      return;
+    }
+
+    step += 1;
+    try {
+      await emitAck(bot.socket, "player:minigameAction", {
+        code: bot.code,
+        action: "dodge",
+        value: randomInt(0, 2)
+      });
+    } catch (_error) {
+      // Ignore action races when timer ends.
+    }
+
+    if (!bot.resolvedMiniGame && step < turns) {
+      scheduleTimeout(bot, playTurn, 220 + randomInt(30, 130));
+    }
+  };
+
+  scheduleTimeout(bot, playTurn, 180 + randomInt(10, 70));
+}
+
 function autoPlayPrecision(bot, target) {
   const t = Number.isFinite(Number(target)) ? Number(target) : 50;
   const attempt = Math.max(0, Math.min(100, t + randomInt(-8, 8)));
@@ -266,6 +311,35 @@ function autoPlayPrecision(bot, target) {
       // Ignore action races when timer ends.
     }
   }, 1500 + randomInt(150, 1900));
+}
+
+function autoPlayScramble(bot, maxAttempts) {
+  const attempts = Number(maxAttempts) > 0 ? Number(maxAttempts) : 4;
+  let used = 0;
+  const tryGuess = async () => {
+    if (bot.resolvedMiniGame || used >= attempts) {
+      return;
+    }
+
+    used += 1;
+    const samples = ["MATH", "CLASS", "BLOOK", "QUIZ", "CHROME"];
+    const guess = samples[randomInt(0, samples.length - 1)];
+    try {
+      await emitAck(bot.socket, "player:minigameAction", {
+        code: bot.code,
+        action: "guess",
+        value: guess
+      });
+    } catch (_error) {
+      // Ignore action races when timer ends.
+    }
+
+    if (!bot.resolvedMiniGame && used < attempts) {
+      scheduleTimeout(bot, tryGuess, 260 + randomInt(40, 130));
+    }
+  };
+
+  scheduleTimeout(bot, tryGuess, 280 + randomInt(20, 80));
 }
 
 function wireBotGameplay(bot) {
@@ -301,12 +375,24 @@ function wireBotGameplay(bot) {
       autoPlayTapRush(bot);
       return;
     }
+    if (type === "reaction_duel") {
+      autoPlayReaction(bot, payload?.data?.goAt);
+      return;
+    }
     if (type === "sequence_memory") {
       autoPlaySequence(bot, payload?.data?.sequence);
       return;
     }
+    if (type === "obstacle_dodge") {
+      autoPlayObstacle(bot, payload?.data?.totalTurns);
+      return;
+    }
     if (type === "precision_stop") {
       autoPlayPrecision(bot, payload?.data?.target);
+      return;
+    }
+    if (type === "word_scramble") {
+      autoPlayScramble(bot, payload?.data?.maxAttempts);
     }
   });
 

@@ -16,6 +16,15 @@
         <div class="badge"><span>Realtime</span><span class="mono">localhost</span></div>
       </section>
 
+      <section class="card strong fade-in" id="authCard" style="margin-bottom: 14px">
+        <h2 class="title">Account</h2>
+        <p id="authStatusText" class="help">Checking authentication...</p>
+        <div class="button-row" style="margin-top: 10px">
+          <a id="loginBtn" class="action hidden" href="/auth/google">Sign In With Google</a>
+          <a id="logoutBtn" class="action ghost hidden" href="/auth/logout">Sign Out</a>
+        </div>
+      </section>
+
       <section class="grid roles">
         <article class="card strong fade-in">
           <h2 class="title">Host A Game</h2>
@@ -49,5 +58,46 @@
         </div>
       </section>
     </main>
+    <script>
+      (async () => {
+        const authStatusText = document.getElementById("authStatusText");
+        const loginBtn = document.getElementById("loginBtn");
+        const logoutBtn = document.getElementById("logoutBtn");
+        const params = new URLSearchParams(window.location.search);
+
+        try {
+          const response = await fetch("/api/auth/status");
+          const auth = await response.json();
+          const enabled = auth && auth.authEnabled === true;
+          const loggedIn = auth && auth.authenticated === true;
+
+          if (!enabled) {
+            authStatusText.textContent =
+              "Google auth is not configured on this server. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to enable it.";
+            return;
+          }
+
+          if (params.get("login") === "required") {
+            authStatusText.textContent = "Login required. Sign in with Google to open host or student screens.";
+          }
+
+          if (params.get("error") === "google_auth_failed") {
+            authStatusText.textContent = "Google sign-in failed. Try again.";
+          }
+
+          if (loggedIn) {
+            const name = auth.user && auth.user.name ? auth.user.name : "Google User";
+            authStatusText.textContent = `Signed in as ${name}.`;
+            logoutBtn.classList.remove("hidden");
+            return;
+          }
+
+          authStatusText.textContent = "Sign in with Google to host or join games.";
+          loginBtn.classList.remove("hidden");
+        } catch (_error) {
+          authStatusText.textContent = "Could not read auth status from server.";
+        }
+      })();
+    </script>
   </body>
 </html>

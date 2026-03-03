@@ -31,16 +31,17 @@ Build and harden a classroom-ready, Blooket-style realtime quiz platform that ru
 - [x] Add preload hints for game assets to reduce first-round lag.
 
 ### Phase 3: Mini-Game Expansion
-- [ ] Add at least 3 more mini-games (reaction duel, obstacle dodge, word scramble).
-- [ ] Add mini-game difficulty scaling by round number.
+- [x] Add at least 3 more mini-games (reaction duel, obstacle dodge, word scramble).
+- [x] Add mini-game difficulty scaling by round number.
 - [x] Add host option for mini-game rotation mode:
-- [x] `Fixed order`, `Random order`, `Soccer only`, `Disable mini-games`.
+- [x] `Fixed order`, `Random order`, `Most Played First`, `Soccer only`, `Disable mini-games`.
 - [x] Add optional mini-game duration control in host settings.
 - [ ] Add per-mini-game tutorial overlays for first-time players.
 - [ ] Add sound toggle + simple SFX events (goal, save, timer warning).
 
 ### Phase 4: Quiz Content System
 - [ ] Add quiz import/export (`.json`) for teacher-made sets.
+- [x] Add quiz upload from CSV/Excel (`.csv`, `.xlsx`, `.xls`) to local database.
 - [ ] Add host UI for creating/editing question sets in browser.
 - [ ] Add categories/tags and quick filter search.
 - [ ] Add per-question image support.
@@ -112,3 +113,11 @@ Build and harden a classroom-ready, Blooket-style realtime quiz platform that ru
 - [x] Phase 1.2 completed: smoke now verifies all mini-game types plus normal quiz flow.
 - [x] Phase 2.1 completed: phase banners + mini-game live indicator + reconnect state + ready count + preload hints.
 - [x] Phase 3.1 completed: host can choose mini-game rotation mode and mini-game duration.
+- [x] Phase 3.2 completed: added Reaction Duel, Obstacle Dodge, and Word Scramble with host+student support.
+- [x] Phase 3.3 completed: per-mini-game host dashboards now render distinct live progress views.
+- [x] Phase 3.4 completed: round-based mini-game difficulty tiers now scale reaction windows, sequence length, dodge turns, and scramble attempts.
+- [x] Security/Auth update: optional Google OAuth login added for host and student entry routes.
+- [x] Security/Auth update: callback URL auto-detection added for non-localhost student access paths.
+- [x] Economy update: persistent student accounts with hidden blook unlocks, coin rewards, pack opening, and duplicate sellback.
+- [x] Quiz content update: host and student pages can upload CSV/Excel quiz files and persist them to `data/custom-quizzes.json`.
+- [x] Analytics update: mini-game stats endpoint now tracks and exposes most played + most matched mini-games.

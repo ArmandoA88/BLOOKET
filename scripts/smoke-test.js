@@ -5,7 +5,15 @@ const { io } = require("socket.io-client");
 const ROOT = path.resolve(__dirname, "..");
 const PORT = Number(process.env.SMOKE_PORT || 3100);
 const BASE_URL = `http://127.0.0.1:${PORT}`;
-const MINI_GAME_TYPES = ["soccer_shootout", "tap_rush", "sequence_memory", "precision_stop"];
+const MINI_GAME_TYPES = [
+  "soccer_shootout",
+  "tap_rush",
+  "reaction_duel",
+  "sequence_memory",
+  "obstacle_dodge",
+  "precision_stop",
+  "word_scramble"
+];
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -128,17 +136,34 @@ function solveMultiplication(questionPayload) {
 
 async function playMiniGameActions(type, code, studentA, studentB, dataA, dataB) {
   if (type === "soccer_shootout") {
-    for (let shot = 0; shot < 5; shot += 1) {
-      await emitAck(studentA, "player:minigameAction", {
-        code,
-        action: "shoot",
-        value: { lane: shot % 3, power: 2 }
-      });
-      await emitAck(studentB, "player:minigameAction", {
-        code,
-        action: "shoot",
-        value: { lane: (shot + 1) % 3, power: 2 }
-      });
+    const deadline = Date.now() + 2800;
+    while (Date.now() < deadline) {
+      try {
+        await emitAck(studentA, "player:minigameAction", {
+          code,
+          action: "shoot",
+          value: { power: 2, direction: 0 }
+        });
+      } catch (error) {
+        const message = String(error?.message || error);
+        if (!message.includes("Move closer to the ball")) {
+          throw error;
+        }
+      }
+
+      try {
+        await emitAck(studentB, "player:minigameAction", {
+          code,
+          action: "shoot",
+          value: { power: 2, direction: 0 }
+        });
+      } catch (error) {
+        const message = String(error?.message || error);
+        if (!message.includes("Move closer to the ball")) {
+          throw error;
+        }
+      }
+      await sleep(120);
     }
     return;
   }
@@ -150,6 +175,18 @@ async function playMiniGameActions(type, code, studentA, studentB, dataA, dataB)
       await emitAck(studentB, "player:minigameAction", { code, action: "tap" });
       await sleep(80);
     }
+    return;
+  }
+
+  if (type === "reaction_duel") {
+    const goAtA = Number(dataA?.goAt || Date.now() + 1500);
+    const goAtB = Number(dataB?.goAt || Date.now() + 1500);
+    const waitMs = Math.max(goAtA, goAtB) - Date.now() + 120;
+    if (waitMs > 0) {
+      await sleep(waitMs);
+    }
+    await emitAck(studentA, "player:minigameAction", { code, action: "react" });
+    await emitAck(studentB, "player:minigameAction", { code, action: "react" });
     return;
   }
 
@@ -177,11 +214,37 @@ async function playMiniGameActions(type, code, studentA, studentB, dataA, dataB)
     return;
   }
 
+  if (type === "obstacle_dodge") {
+    const totalTurns = Math.max(1, Number(dataA?.totalTurns || dataB?.totalTurns || 8));
+    for (let turn = 0; turn < totalTurns; turn += 1) {
+      await emitAck(studentA, "player:minigameAction", {
+        code,
+        action: "dodge",
+        value: turn % 3
+      });
+      await emitAck(studentB, "player:minigameAction", {
+        code,
+        action: "dodge",
+        value: (turn + 1) % 3
+      });
+    }
+    return;
+  }
+
   if (type === "precision_stop") {
     const valueA = Number.isFinite(Number(dataA?.target)) ? Number(dataA.target) : 50;
     const valueB = Number.isFinite(Number(dataB?.target)) ? Number(dataB.target) : 50;
     await emitAck(studentA, "player:minigameAction", { code, action: "stop", value: valueA });
     await emitAck(studentB, "player:minigameAction", { code, action: "stop", value: valueB });
+    return;
+  }
+
+  if (type === "word_scramble") {
+    const attempts = Math.max(1, Number(dataA?.maxAttempts || dataB?.maxAttempts || 4));
+    for (let i = 0; i < attempts; i += 1) {
+      await emitAck(studentA, "player:minigameAction", { code, action: "guess", value: "AAAAA" });
+      await emitAck(studentB, "player:minigameAction", { code, action: "guess", value: "BBBBB" });
+    }
   }
 }
 
@@ -189,6 +252,10 @@ async function runMiniGameTestRound(type, code, host, studentA, studentB) {
   const miniStart = waitForEvent(host, "minigame:start", {
     timeoutMs: 15000,
     predicate: (payload) => payload?.type === type
+  });
+  const hostProgress = waitForEvent(host, "minigame:progress", {
+    timeoutMs: 15000,
+    predicate: (payload) => payload?.type === type && Array.isArray(payload?.players)
   });
   const lobbyBack = waitForEvent(host, "lobby:update", {
     timeoutMs: 25000,
@@ -212,6 +279,7 @@ async function runMiniGameTestRound(type, code, host, studentA, studentB) {
   });
 
   await miniStart;
+  await hostProgress;
   const aData = await aDataPromise;
   const bData = await bDataPromise;
 

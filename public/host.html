@@ -4,11 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quiz Arena Host</title>
-    <link rel="preload" as="image" href="/assets/games/question.svg" />
-    <link rel="preload" as="image" href="/assets/games/soccer.svg" />
-    <link rel="preload" as="image" href="/assets/games/tap.svg" />
-    <link rel="preload" as="image" href="/assets/games/sequence.svg" />
-    <link rel="preload" as="image" href="/assets/games/precision.svg" />
+    <link rel="preload" as="image" href="/assets/minigames/shared/question.svg" />
+    <link rel="preload" as="image" href="/assets/minigames/soccer_shootout/soccer.svg" />
+    <link rel="preload" as="image" href="/assets/minigames/tap_rush/tap.svg" />
+    <link rel="preload" as="image" href="/assets/minigames/sequence_memory/sequence.svg" />
+    <link rel="preload" as="image" href="/assets/minigames/precision_stop/precision.svg" />
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
@@ -42,7 +42,6 @@
             <label for="questionSet">Quiz Set</label>
             <select id="questionSet">
               <option value="multiplication_1_digit">Multiplication 1-Digit</option>
-              <option value="general_knowledge">General Knowledge</option>
             </select>
           </div>
           <div>
@@ -58,6 +57,7 @@
             <select id="miniRotation">
               <option value="fixed">Fixed Order</option>
               <option value="random">Random Order</option>
+              <option value="popular">Most Played First</option>
               <option value="soccer_only">Soccer Only</option>
               <option value="off">Disable Mini-Games</option>
             </select>
@@ -188,7 +188,6 @@
                 <label for="liveQuestionSet">Quiz Set</label>
                 <select id="liveQuestionSet">
                   <option value="multiplication_1_digit">Multiplication 1-Digit</option>
-                  <option value="general_knowledge">General Knowledge</option>
                 </select>
               </div>
               <div>
@@ -204,6 +203,7 @@
                 <select id="liveMiniRotation">
                   <option value="fixed">Fixed Order</option>
                   <option value="random">Random Order</option>
+                  <option value="popular">Most Played First</option>
                   <option value="soccer_only">Soccer Only</option>
                   <option value="off">Disable Mini-Games</option>
                 </select>
@@ -217,6 +217,27 @@
               <button id="saveSettingsBtn" class="ghost">Save Lobby Settings</button>
             </div>
 
+            <div class="card" style="margin-top: 12px">
+              <h3 class="title">Quiz Upload</h3>
+              <div class="form-grid">
+                <div>
+                  <label for="quizUploadTitle">Quiz Title (optional)</label>
+                  <input id="quizUploadTitle" maxlength="64" placeholder="e.g. Multiplication Challenge" />
+                </div>
+                <div>
+                  <label for="quizUploadFile">CSV or Excel File</label>
+                  <input id="quizUploadFile" type="file" accept=".csv,.xlsx,.xls" />
+                </div>
+              </div>
+              <div class="button-row" style="margin-top: 8px">
+                <button id="uploadQuizBtn" class="secondary">Upload Quiz File</button>
+              </div>
+              <div id="quizUploadNotice" class="notice hidden" style="margin-top: 8px"></div>
+              <p class="help" style="margin-top: 8px">
+                Supported headers: question/prompt, optionA-optionD (or A-D), answer.
+              </p>
+            </div>
+
             <div id="miniGameTestPanel" class="card" style="margin-top: 12px">
               <h3 class="title">Mini-Game Test</h3>
               <div>
@@ -224,8 +245,11 @@
                 <select id="testMiniGameType">
                   <option value="soccer_shootout">Soccer Shootout</option>
                   <option value="tap_rush">Tap Rush</option>
+                  <option value="reaction_duel">Reaction Duel</option>
                   <option value="sequence_memory">Sequence Memory</option>
+                  <option value="obstacle_dodge">Obstacle Dodge</option>
                   <option value="precision_stop">Precision Stop</option>
+                  <option value="word_scramble">Word Scramble</option>
                 </select>
               </div>
               <div class="button-row" style="margin-top: 8px">
@@ -244,6 +268,7 @@
             <div id="miniGamesList" class="feed">
               <div class="help">Loading mini-games...</div>
             </div>
+            <div id="miniGamePopularity" class="notice" style="margin-top: 8px">Loading mini-game trends...</div>
 
             <h3 class="title" style="margin-top: 16px">Players</h3>
             <ul id="playersList" class="player-list"></ul>

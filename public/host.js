@@ -12,16 +12,23 @@ const MODE_LABELS = {
   brawl: "Monster Brawl"
 };
 const GAME_IMAGE_MAP = {
-  question: "/assets/games/question.svg",
-  soccer_shootout: "/assets/games/soccer.svg",
-  tap_rush: "/assets/games/tap.svg",
-  sequence_memory: "/assets/games/sequence.svg",
-  precision_stop: "/assets/games/precision.svg"
+  question: "/assets/minigames/shared/question.svg",
+  soccer_shootout: "/assets/minigames/soccer_shootout/soccer.svg",
+  tap_rush: "/assets/minigames/tap_rush/tap.svg",
+  reaction_duel: "/assets/minigames/reaction_duel/tap.svg",
+  sequence_memory: "/assets/minigames/sequence_memory/sequence.svg",
+  obstacle_dodge: "/assets/minigames/obstacle_dodge/sequence.svg",
+  precision_stop: "/assets/minigames/precision_stop/precision.svg",
+  word_scramble: "/assets/minigames/word_scramble/question.svg"
 };
-const QUESTION_SET_LABELS = {
-  multiplication_1_digit: "Multiplication 1-Digit",
-  general_knowledge: "General Knowledge"
-};
+const QUESTION_SET_LABELS = new Map([
+  ["multiplication_1_digit", "Multiplication 1-Digit"],
+  ["general_knowledge", "General Knowledge"]
+]);
+const FALLBACK_QUESTION_SETS = [
+  { id: "multiplication_1_digit", label: "Multiplication 1-Digit", source: "built_in", questionCount: 81 },
+  { id: "general_knowledge", label: "General Knowledge", source: "built_in", questionCount: 24 }
+];
 const PHASE_BANNER_COPY = {
   lobby: {
     title: "Lobby Open",
@@ -65,8 +72,11 @@ const PHASE_CLASS_CANDIDATES = [
 const MINI_GAME_LABELS = {
   soccer_shootout: "Soccer Shootout",
   tap_rush: "Tap Rush",
+  reaction_duel: "Reaction Duel",
   sequence_memory: "Sequence Memory",
-  precision_stop: "Precision Stop"
+  obstacle_dodge: "Obstacle Dodge",
+  precision_stop: "Precision Stop",
+  word_scramble: "Word Scramble"
 };
 
 const setupCard = document.getElementById("setupCard");
@@ -87,6 +97,10 @@ const endBtn = document.getElementById("endBtn");
 const saveSettingsBtn = document.getElementById("saveSettingsBtn");
 const testMiniGameBtn = document.getElementById("testMiniGameBtn");
 const testMiniGameType = document.getElementById("testMiniGameType");
+const uploadQuizBtn = document.getElementById("uploadQuizBtn");
+const quizUploadTitleInput = document.getElementById("quizUploadTitle");
+const quizUploadFileInput = document.getElementById("quizUploadFile");
+const quizUploadNotice = document.getElementById("quizUploadNotice");
 
 const roomCodeEl = document.getElementById("roomCode");
 const copyCodeBtn = document.getElementById("copyCodeBtn");
@@ -129,6 +143,7 @@ const feedList = document.getElementById("feedList");
 const feedTitle = document.getElementById("feedTitle");
 const joinLinks = document.getElementById("joinLinks");
 const miniGamesList = document.getElementById("miniGamesList");
+const miniGamePopularity = document.getElementById("miniGamePopularity");
 const miniGameTestPanel = document.getElementById("miniGameTestPanel");
 const miniGameTestNotice = document.getElementById("miniGameTestNotice");
 const lobbyBoard = document.getElementById("lobbyBoard");
@@ -141,12 +156,16 @@ const lobbyPlayers = document.getElementById("lobbyPlayers");
 
 let serverInfo = null;
 let activeMiniGameType = "";
+let availableQuestionSets = FALLBACK_QUESTION_SETS.slice();
 const quickMiniGameMode = new URLSearchParams(window.location.search).get("quick") === "minigame";
 const FALLBACK_MINI_GAMES = [
   { id: "soccer_shootout", name: "Soccer Shootout", description: "Penalty kicks with lane + power choice." },
   { id: "tap_rush", name: "Tap Rush", description: "Tap fast for bonus points." },
+  { id: "reaction_duel", name: "Reaction Duel", description: "Wait for GO and react fast." },
   { id: "sequence_memory", name: "Sequence Memory", description: "Repeat the color order to score." },
-  { id: "precision_stop", name: "Precision Stop", description: "Stop the marker near the target zone." }
+  { id: "obstacle_dodge", name: "Obstacle Dodge", description: "Pick safe lanes across turns." },
+  { id: "precision_stop", name: "Precision Stop", description: "Stop the marker near the target zone." },
+  { id: "word_scramble", name: "Word Scramble", description: "Unscramble words before attempts run out." }
 ];
 
 function normalizePhase(value) {
@@ -232,8 +251,91 @@ function showMiniGameNotice(message, type = "") {
   miniGameTestNotice.textContent = message;
 }
 
+function showQuizUploadNotice(message, type = "") {
+  if (!quizUploadNotice) {
+    return;
+  }
+  if (!message) {
+    quizUploadNotice.classList.add("hidden");
+    quizUploadNotice.classList.remove("good", "bad");
+    quizUploadNotice.textContent = "";
+    return;
+  }
+  quizUploadNotice.classList.remove("hidden", "good", "bad");
+  if (type) {
+    quizUploadNotice.classList.add(type);
+  }
+  quizUploadNotice.textContent = message;
+}
+
 function clampPercent(value) {
   return Math.max(0, Math.min(100, Number(value) || 0));
+}
+
+function questionSetLabelById(setId) {
+  return QUESTION_SET_LABELS.get(String(setId || "")) || String(setId || "Quiz");
+}
+
+function rememberQuestionSets(sets) {
+  const incoming = Array.isArray(sets) ? sets : [];
+  if (incoming.length === 0) {
+    availableQuestionSets = FALLBACK_QUESTION_SETS.slice();
+  } else {
+    availableQuestionSets = incoming.map((entry) => ({
+      id: String(entry?.id || ""),
+      label: String(entry?.label || entry?.id || "Quiz"),
+      source: String(entry?.source || "uploaded"),
+      questionCount: Math.max(0, Number(entry?.questionCount || 0))
+    }));
+  }
+  for (const set of availableQuestionSets) {
+    if (set.id) {
+      QUESTION_SET_LABELS.set(set.id, set.label);
+    }
+  }
+}
+
+function renderQuestionSetOptions(selectEl, selectedId) {
+  if (!selectEl) {
+    return;
+  }
+  const safeSelected = String(selectedId || "");
+  const sets = availableQuestionSets.length > 0 ? availableQuestionSets : FALLBACK_QUESTION_SETS;
+  selectEl.innerHTML = sets
+    .map((set) => {
+      const label = `${set.label}${set.source === "uploaded" ? " (Uploaded)" : ""}`;
+      const selected = set.id === safeSelected ? " selected" : "";
+      return `<option value="${escapeHtml(set.id)}"${selected}>${escapeHtml(label)}</option>`;
+    })
+    .join("");
+}
+
+function syncQuestionSetInputs(preferredId = "") {
+  const fallback = availableQuestionSets[0]?.id || "multiplication_1_digit";
+  const safePreferred = String(preferredId || "");
+  const selectedId = availableQuestionSets.some((set) => set.id === safePreferred) ? safePreferred : fallback;
+  renderQuestionSetOptions(questionSetInput, selectedId);
+  renderQuestionSetOptions(liveQuestionSet, selectedId);
+}
+
+function renderMiniGamePopularity(data = {}) {
+  if (!miniGamePopularity) {
+    return;
+  }
+  const mostPlayed = data.mostPlayed || null;
+  const mostMatched = data.mostMatched || null;
+  if (!mostPlayed && !mostMatched) {
+    miniGamePopularity.textContent = "Mini-game trends unavailable.";
+    return;
+  }
+
+  const playedText = mostPlayed
+    ? `Most Played: ${mostPlayed.name} (${Number(mostPlayed.playerEntries || 0)} entries)`
+    : "Most Played: N/A";
+  const matchedText = mostMatched
+    ? `Most Matched: ${mostMatched.name} (${Number(mostMatched.completionRate || 0)}% completion)`
+    : "Most Matched: N/A";
+  miniGamePopularity.textContent = `${playedText} | ${matchedText}`;
 }
 
 function hideMiniGameDashboard() {
@@ -264,6 +366,9 @@ function renderMiniGameDashboard(payload) {
   const type = String(payload.type || "");
   const eventName = payload.eventName || miniGameTypeLabel(type);
   const players = payload.players;
+  const difficultyTier = Math.max(1, Number(payload?.difficulty?.tier || 1));
+  const difficultyRound = Math.max(1, Number(payload?.difficulty?.roundNumber || 1));
+  const difficultyTotal = Math.max(difficultyRound, Number(payload?.difficulty?.totalQuestions || difficultyRound));
   activeMiniGameType = type;
 
   miniGameDashboardPanel.classList.remove("hidden");
@@ -271,7 +376,7 @@ function renderMiniGameDashboard(payload) {
     miniGameDashboardTitle.textContent = `${eventName} Dashboard`;
   }
   if (miniGameDashboardMeta) {
-    miniGameDashboardMeta.textContent = `${players.length} students in this mini-game.`;
+    miniGameDashboardMeta.textContent = `${players.length} students in this mini-game. Round ${difficultyRound}/${difficultyTotal}. Difficulty T${difficultyTier}.`;
   }
 
   if (players.length === 0) {
@@ -310,27 +415,52 @@ function renderMiniGameDashboard(payload) {
     return;
   }
 
-  if (type === "soccer_shootout") {
+  if (type === "reaction_duel") {
     miniGameDashboardBody.innerHTML = `
-      <div class="host-soccer-grid">
+      <div class="host-reaction-grid">
         ${players
           .map((player) => {
-            const goals = Number(player.goals || 0);
-            const shotsTaken = Number(player.shotsTaken || 0);
-            const totalShots = Number(player.totalShots || payload.goal || 5);
-            const pips = Array.from({ length: totalShots }, (_value, index) => {
-              const state = index < shotsTaken ? (index < goals ? "goal" : "taken") : "";
-              return `<span class="host-shot-dot ${state}"></span>`;
-            }).join("");
+            const reacted = player.reacted === true;
+            const falseStart = player.falseStart === true;
+            const reactionMs = reacted && !falseStart ? Number(player.reactionMs || 0) : null;
+            const toneClass = falseStart ? "wide" : reacted ? "perfect" : "";
+            const text = falseStart ? "False Start" : reacted ? `${reactionMs} ms` : "Waiting";
             return `
-            <article class="host-soccer-card">
+            <article class="host-reaction-card ${toneClass}">
               <div class="host-mini-player">
                 <span class="blook-top-icon">${escapeHtml(player.blook?.icon || "?")}</span>
                 <strong>${escapeHtml(player.name)}</strong>
               </div>
-              <div class="host-soccer-score">${goals}/${totalShots} goals</div>
-              <div class="host-shot-row">${pips}</div>
-              <div class="help">${shotsTaken}/${totalShots} shots taken</div>
+              <div class="host-reaction-value">${text}</div>
+            </article>`;
+          })
+          .join("")}
+      </div>`;
+    return;
+  }
+
+  if (type === "soccer_shootout") {
+    const redScore = Number(payload?.teamScores?.red || 0);
+    const blueScore = Number(payload?.teamScores?.blue || 0);
+    const redName = payload?.teamScores?.redName || "Red Team";
+    const blueName = payload?.teamScores?.blueName || "Blue Team";
+    miniGameDashboardBody.innerHTML = `
+      <div class="host-soccer-grid">
+        <div class="host-race-goal">${escapeHtml(redName)} ${redScore} - ${blueScore} ${escapeHtml(blueName)}</div>
+        ${players
+          .map((player) => {
+            const goals = Number(player.goals || 0);
+            const kicks = Number(player.kicks || 0);
+            const team = String(player.team || "red");
+            const teamLabel = team === "blue" ? blueName : redName;
+            return `
+            <article class="host-soccer-card ${team === "blue" ? "theme-cloud" : "theme-pink"}">
+              <div class="host-mini-player">
+                <span class="blook-top-icon">${escapeHtml(player.blook?.icon || "?")}</span>
+                <strong>${escapeHtml(player.name)}</strong>
+              </div>
+              <div class="host-soccer-score">${escapeHtml(teamLabel)} | ${goals} goals</div>
+              <div class="help">${kicks} kicks this round</div>
             </article>`;
           })
           .join("")}
@@ -363,6 +493,33 @@ function renderMiniGameDashboard(payload) {
     return;
   }
 
+  if (type === "obstacle_dodge") {
+    miniGameDashboardBody.innerHTML = `
+      <div class="host-progress-grid">
+        ${players
+          .map((player) => {
+            const step = Number(player.step || 0);
+            const totalTurns = Math.max(1, Number(player.totalTurns || payload.goal || 8));
+            const safeTurns = Number(player.safeTurns || 0);
+            const hits = Number(player.hits || 0);
+            const percent = clampPercent((step / totalTurns) * 100);
+            return `
+            <article class="host-progress-card">
+              <div class="host-mini-player">
+                <span class="blook-top-icon">${escapeHtml(player.blook?.icon || "?")}</span>
+                <strong>${escapeHtml(player.name)}</strong>
+              </div>
+              <div class="host-progress-meter">
+                <span style="width:${percent}%"></span>
+              </div>
+              <div class="help">Turn ${step}/${totalTurns} | Safe ${safeTurns} | Hits ${hits}</div>
+            </article>`;
+          })
+          .join("")}
+      </div>`;
+    return;
+  }
+
   if (type === "precision_stop") {
     miniGameDashboardBody.innerHTML = `
       <div class="host-precision-grid">
@@ -381,6 +538,30 @@ function renderMiniGameDashboard(payload) {
               </div>
               <div class="host-precision-meta">Target: ${Number(player.target || 0)} | Stop: ${stopValue}</div>
               <div class="host-precision-quality">${qualityText}${submitted ? ` (${diff} away)` : ""}</div>
+            </article>`;
+          })
+          .join("")}
+      </div>`;
+    return;
+  }
+
+  if (type === "word_scramble") {
+    miniGameDashboardBody.innerHTML = `
+      <div class="host-scramble-grid">
+        ${players
+          .map((player) => {
+            const solved = player.solved === true;
+            const attempts = Number(player.attempts || 0);
+            const maxAttempts = Math.max(1, Number(player.maxAttempts || 4));
+            const toneClass = solved ? "perfect" : attempts >= maxAttempts ? "wide" : "";
+            return `
+            <article class="host-scramble-card ${toneClass}">
+              <div class="host-mini-player">
+                <span class="blook-top-icon">${escapeHtml(player.blook?.icon || "?")}</span>
+                <strong>${escapeHtml(player.name)}</strong>
+              </div>
+              <div class="host-scramble-status">${solved ? "Solved" : attempts >= maxAttempts ? "Out of tries" : "Trying..."}</div>
+              <div class="help">Attempts ${attempts}/${maxAttempts}${player.lastGuess ? ` | Last: ${escapeHtml(player.lastGuess)}` : ""}</div>
             </article>`;
           })
           .join("")}
@@ -569,7 +750,13 @@ function renderLobbyPlayerCards(players) {
       (player, index) => `
       <div class="lobby-player-card ${themes[index % themes.length]}">
         <span class="lobby-player-blook">${escapeHtml(player.blook?.icon || "?")}</span>
-        <span class="lobby-player-name">${escapeHtml(player.name)}</span>
+        <div class="lobby-player-details">
+          <span class="lobby-player-name">${escapeHtml(player.name)}</span>
+          <span class="lobby-player-meta">${escapeHtml(player.blook?.name || "Starter")} (${escapeHtml(
+            player.blook?.packName || "Core"
+          )})</span>
+          <span class="lobby-player-status">Waiting</span>
+        </div>
       </div>`
     )
     .join("");
@@ -643,7 +830,7 @@ function renderJoinLinks() {
     .join("");
 }
 
-function renderMiniGameCatalog(games) {
+function renderMiniGameCatalog(games, stats = []) {
   if (!miniGamesList) {
     return;
   }
@@ -653,12 +840,26 @@ function renderMiniGameCatalog(games) {
     return;
   }
 
+  const statsById = new Map();
+  if (Array.isArray(stats)) {
+    for (const row of stats) {
+      if (row?.id) {
+        statsById.set(row.id, row);
+      }
+    }
+  }
+
   miniGamesList.innerHTML = games
     .map(
-      (game, index) =>
-        `<div class="feed-item"><strong>${index + 1}. ${escapeHtml(game.name)}</strong><div class="help">${escapeHtml(
+      (game, index) => {
+        const stats = statsById.get(game.id);
+        const statsText = stats
+          ? `Played ${Number(stats.playerEntries || 0)}x | Completion ${Number(stats.completionRate || 0)}%`
+          : "";
+        return `<div class="feed-item"><strong>${index + 1}. ${escapeHtml(game.name)}</strong><div class="help">${escapeHtml(
           game.description || ""
-        )}</div></div>`
+        )}</div>${statsText ? `<div class="help">${escapeHtml(statsText)}</div>` : ""}</div>`;
+      }
     )
     .join("");
 
@@ -670,6 +871,64 @@ function renderMiniGameCatalog(games) {
 
     const exists = games.some((game) => game.id === previous);
     testMiniGameType.value = exists ? previous : games[0].id;
+  }
+}
+
+async function loadQuestionSets() {
+  try {
+    const response = await fetch("/api/quizzes");
+    if (!response.ok) {
+      throw new Error("Failed to load quiz sets");
+    }
+    const payload = await response.json();
+    rememberQuestionSets(payload?.sets);
+  } catch (_error) {
+    rememberQuestionSets(FALLBACK_QUESTION_SETS);
+  }
+  syncQuestionSetInputs(questionSetInput?.value || liveQuestionSet?.value || "");
+}
+
+async function uploadQuizSetFile() {
+  if (!uploadQuizBtn || !quizUploadFileInput) {
+    return;
+  }
+
+  const file = quizUploadFileInput.files && quizUploadFileInput.files[0];
+  if (!file) {
+    showQuizUploadNotice("Pick a CSV or Excel file first.", "bad");
+    return;
+  }
+
+  uploadQuizBtn.disabled = true;
+  showQuizUploadNotice("Uploading quiz file...");
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("title", String(quizUploadTitleInput?.value || "").trim());
+  formData.append("uploadedBy", String(hostNameInput?.value || "Teacher").trim());
+
+  try {
+    const response = await fetch("/api/quizzes/upload", {
+      method: "POST",
+      body: formData
+    });
+    const payload = await response.json();
+    if (!response.ok || !payload?.ok) {
+      throw new Error(payload?.message || "Upload failed");
+    }
+
+    rememberQuestionSets(payload?.sets);
+    syncQuestionSetInputs(payload?.set?.id || "");
+    showQuizUploadNotice(
+      `Uploaded "${payload.set?.label || "Quiz"}" with ${Number(payload.set?.questionCount || 0)} questions.`,
+      "good"
+    );
+    if (quizUploadFileInput) {
+      quizUploadFileInput.value = "";
+    }
+  } catch (error) {
+    showQuizUploadNotice(error?.message || "Could not upload quiz file.", "bad");
+  } finally {
+    uploadQuizBtn.disabled = false;
   }
 }
 
@@ -697,9 +956,14 @@ async function loadMiniGames() {
     }
 
     const payload = await response.json();
-    renderMiniGameCatalog(payload?.games);
+    renderMiniGameCatalog(payload?.games, payload?.stats);
+    renderMiniGamePopularity({
+      mostPlayed: payload?.mostPlayed,
+      mostMatched: payload?.mostMatched
+    });
   } catch (_error) {
     renderMiniGameCatalog(FALLBACK_MINI_GAMES);
+    renderMiniGamePopularity({});
   }
 }
 
@@ -839,6 +1103,10 @@ saveSettingsBtn.addEventListener("click", () => {
   );
 });
 
+uploadQuizBtn?.addEventListener("click", () => {
+  uploadQuizSetFile();
+});
+
 testMiniGameBtn?.addEventListener("click", () => {
   if (!ensureCreated()) {
     showMiniGameNotice("Create a room first.", "bad");
@@ -920,8 +1188,19 @@ socket.on("lobby:update", (payload) => {
   setPhase("lobby", `${payload.players.length} students in lobby. Ready when you are.`);
   setPhaseIllustration("", "");
   const modeText = payload.modeName || MODE_LABELS[payload.mode] || payload.mode || "Classic Quiz";
-  const questionSetText =
-    payload.questionSetLabel || QUESTION_SET_LABELS[payload.settings.questionSet] || payload.settings.questionSet || "Quiz";
+  if (payload.settings?.questionSet && payload.questionSetLabel) {
+    QUESTION_SET_LABELS.set(payload.settings.questionSet, payload.questionSetLabel);
+    if (!availableQuestionSets.some((set) => set.id === payload.settings.questionSet)) {
+      availableQuestionSets.push({
+        id: payload.settings.questionSet,
+        label: payload.questionSetLabel,
+        source: "uploaded",
+        questionCount: 0
+      });
+    }
+  }
+  syncQuestionSetInputs(payload.settings?.questionSet || "");
+  const questionSetText = payload.questionSetLabel || questionSetLabelById(payload.settings.questionSet) || "Quiz";
   modeLabel.textContent = `Mode: ${modeText}`;
   quizLabel.textContent = `Quiz: ${questionSetText}`;
   feedTitle.textContent = payload.feedTitle || "Mode Feed";
@@ -1018,7 +1297,7 @@ socket.on("question:result", (payload) => {
   renderLeaderboard(payload.leaderboard);
 });
 
-socket.on("minigame:start", ({ eligiblePlayerIds, endsAt, eventName, feedTitle: nextFeedTitle, type }) => {
+socket.on("minigame:start", ({ eligiblePlayerIds, endsAt, eventName, feedTitle: nextFeedTitle, type, difficulty }) => {
   const miniGameName = eventName || miniGameTypeLabel(type);
   activeMiniGameType = type || "";
   const participantCount = Array.isArray(eligiblePlayerIds) ? eligiblePlayerIds.length : 0;
@@ -1038,7 +1317,10 @@ socket.on("minigame:start", ({ eligiblePlayerIds, endsAt, eventName, feedTitle: 
       miniGameDashboardTitle.textContent = `${miniGameName} Dashboard`;
     }
     if (miniGameDashboardMeta) {
-      miniGameDashboardMeta.textContent = `${participantCount} students in this mini-game.`;
+      const tier = Math.max(1, Number(difficulty?.tier || 1));
+      const round = Math.max(1, Number(difficulty?.roundNumber || 1));
+      const totalQuestions = Math.max(round, Number(difficulty?.totalQuestions || round));
+      miniGameDashboardMeta.textContent = `${participantCount} students in this mini-game. Round ${round}/${totalQuestions}. Difficulty T${tier}.`;
     }
     miniGameDashboardBody.innerHTML = `<div class="help">Collecting live progress...</div>`;
   }
@@ -1118,5 +1400,8 @@ socket.on("connect_error", () => {
 });
 
 loadServerInfo();
+loadQuestionSets();
 loadMiniGames();
+setInterval(loadQuestionSets, 30000);
+setInterval(loadMiniGames, 15000);
 

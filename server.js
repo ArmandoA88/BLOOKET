@@ -941,53 +941,28 @@ const MODE_CONFIG = {
 };
 
 const MODE_MINI_GAMES = {
-  classic: ["soccer_shootout", "tap_rush", "reaction_duel", "sequence_memory", "obstacle_dodge", "precision_stop", "word_scramble"],
-  gold: ["soccer_shootout", "tap_rush", "reaction_duel", "sequence_memory", "obstacle_dodge", "precision_stop", "word_scramble"],
-  crypto: ["soccer_shootout", "tap_rush", "reaction_duel", "sequence_memory", "obstacle_dodge", "precision_stop", "word_scramble"],
-  fishing: ["soccer_shootout", "tap_rush", "reaction_duel", "sequence_memory", "obstacle_dodge", "precision_stop", "word_scramble"],
-  brawl: ["soccer_shootout", "tap_rush", "reaction_duel", "sequence_memory", "obstacle_dodge", "precision_stop", "word_scramble"]
+  classic: ["soccer_shootout", "space_invaders"],
+  gold: ["soccer_shootout", "space_invaders"],
+  crypto: ["soccer_shootout", "space_invaders"],
+  fishing: ["soccer_shootout", "space_invaders"],
+  brawl: ["soccer_shootout", "space_invaders"]
 };
 
 const MINI_GAME_CATALOG = [
   {
     id: "soccer_shootout",
-    name: "Soccer Shootout",
+    name: "Fossball Arena",
     description: "Penalty kicks: choose lane and power against the goalkeeper."
   },
   {
-    id: "tap_rush",
-    name: "Tap Rush",
-    description: "Tap fast before the timer ends to build your bonus."
-  },
-  {
-    id: "reaction_duel",
-    name: "Reaction Duel",
-    description: "Wait for GO, then react as fast as possible."
-  },
-  {
-    id: "sequence_memory",
-    name: "Sequence Memory",
-    description: "Repeat the color order as fast as possible."
-  },
-  {
-    id: "obstacle_dodge",
-    name: "Obstacle Dodge",
-    description: "Dodge incoming lane blockers for 8 turns."
-  },
-  {
-    id: "precision_stop",
-    name: "Precision Stop",
-    description: "Stop the moving marker near the target zone."
-  },
-  {
-    id: "word_scramble",
-    name: "Word Scramble",
-    description: "Unscramble the word before attempts run out."
+    id: "space_invaders",
+    name: "Space Invaders",
+    description: "Move your ship, shoot aliens, and survive the waves."
   }
 ];
 
 const MINI_GAME_LOOKUP = new Map(MINI_GAME_CATALOG.map((game) => [game.id, game]));
-const MINI_GAME_ROTATION_MODES = new Set(["fixed", "random", "popular", "soccer_only", "off"]);
+const MINI_GAME_ROTATION_MODES = new Set(["fixed", "random", "popular", "off"]);
 const globalMiniGameStats = {};
 for (const game of MINI_GAME_CATALOG) {
   globalMiniGameStats[game.id] = {
@@ -2382,9 +2357,6 @@ function pickMiniGameType(game) {
   if (rotationMode === "off") {
     return null;
   }
-  if (rotationMode === "soccer_only") {
-    return "soccer_shootout";
-  }
 
   const options = MODE_MINI_GAMES[normalizeMode(game.settings.mode)] || [];
   if (options.length === 0) {
@@ -2433,39 +2405,16 @@ function miniGameDifficultyProfile(game) {
 function miniGameHostGoal(game, type) {
   const difficulty = game?.minigameDifficulty || miniGameDifficultyProfile(game);
   const tier = clamp(Number(difficulty?.tier || 1), 1, 4);
-  if (type === "tap_rush") {
-    return Math.max(40, Math.round((Number(game?.minigameDurationMs) || 10000) / 130) + (tier - 1) * 8);
-  }
   if (type === "soccer_shootout") {
     return 4 + tier;
   }
-  if (type === "reaction_duel") {
-    return Math.max(180, 380 - (tier - 1) * 40);
-  }
-  if (type === "sequence_memory") {
-    return 4 + tier;
-  }
-  if (type === "obstacle_dodge") {
-    return 7 + tier;
-  }
-  if (type === "precision_stop") {
-    return 100;
-  }
-  if (type === "word_scramble") {
-    return 1;
+  if (type === "space_invaders") {
+    return 8 + tier * 4;
   }
   return 0;
 }
 
 function hostMiniGameProgressRow(state) {
-  if (state.type === "tap_rush") {
-    return {
-      metric: Number(state.taps || 0),
-      progress: Number(state.taps || 0),
-      completed: false
-    };
-  }
-
   if (state.type === "soccer_shootout") {
     const goals = Math.max(0, Number(state.goals || 0));
     const kicks = Math.max(0, Number(state.kicks || 0));
@@ -2479,77 +2428,21 @@ function hostMiniGameProgressRow(state) {
     };
   }
 
-  if (state.type === "reaction_duel") {
-    const reacted = state.reactedAt !== null;
-    const falseStart = state.falseStart === true;
-    const reactionMs = reacted && !falseStart ? Number(state.reactionMs || 0) : null;
+  if (state.type === "space_invaders") {
+    const hits = Math.max(0, Number(state.hits || 0));
+    const shots = Math.max(0, Number(state.shots || 0));
+    const wave = Math.max(1, Number(state.wave || 1));
+    const lives = Math.max(0, Number(state.lives || 0));
+    const accuracy = shots > 0 ? Math.round((hits / shots) * 100) : 100;
     return {
-      metric: reacted ? (falseStart ? -1 : 10000 - reactionMs) : 0,
-      progress: reacted ? (falseStart ? 0 : Math.max(0, 100 - Math.round(reactionMs / 8))) : 0,
-      reacted,
-      falseStart,
-      reactionMs,
-      completed: reacted
-    };
-  }
-
-  if (state.type === "sequence_memory") {
-    const progress = Number(state.progress || 0);
-    const total = Array.isArray(state.sequence) ? state.sequence.length : 5;
-    return {
-      metric: (state.completedAt ? 1000 : 0) + progress,
-      progress,
-      total,
-      completed: state.completedAt !== null
-    };
-  }
-
-  if (state.type === "obstacle_dodge") {
-    const step = Number(state.step || 0);
-    const totalTurns = Number(state.totalTurns || 8);
-    const hits = Number(state.hits || 0);
-    const safeTurns = Math.max(0, step - hits);
-    return {
-      metric: safeTurns * 100 - hits * 10,
-      progress: safeTurns,
-      safeTurns,
+      metric: hits * 220 + wave * 95 + lives * 30,
+      progress: hits,
       hits,
-      step,
-      totalTurns,
-      lane: Number(state.lane ?? 1),
-      lastObstacle: Number.isInteger(state.lastObstacle) ? state.lastObstacle : null,
-      completed: step >= totalTurns
-    };
-  }
-
-  if (state.type === "precision_stop") {
-    const submitted = state.submitted === true;
-    const target = Number(state.target || 0);
-    const value = submitted ? Number(state.value || 0) : null;
-    const diff = submitted ? Math.abs(value - target) : null;
-    return {
-      metric: submitted ? 1000 - diff : 0,
-      progress: submitted ? 100 - diff : 0,
-      submitted,
-      target,
-      value,
-      diff,
-      completed: submitted
-    };
-  }
-
-  if (state.type === "word_scramble") {
-    const attempts = Number(state.attempts || 0);
-    const maxAttempts = Number(state.maxAttempts || 4);
-    const solved = state.solved === true;
-    return {
-      metric: solved ? 1000 - attempts : -attempts,
-      progress: solved ? 100 : 0,
-      solved,
-      attempts,
-      maxAttempts,
-      lastGuess: state.lastGuess || "",
-      completed: solved || attempts >= maxAttempts
+      shots,
+      wave,
+      lives,
+      accuracy,
+      completed: state.completed === true
     };
   }
 
@@ -2843,13 +2736,200 @@ function tickSoccerMatch(game) {
   }
 }
 
-function createMiniGameState(type, difficulty = null) {
-  const safeTier = clamp(Number(difficulty?.tier || 1), 1, 4);
-  const safeRatio = clamp(Number(difficulty?.ratio || 0), 0, 1);
-  if (type === "tap_rush") {
-    return { type, taps: 0, difficultyTier: safeTier };
+function createSpaceInvaderWave(wave, difficultyTier = 1) {
+  const safeWave = Math.max(1, Number(wave || 1));
+  const tier = clamp(Number(difficultyTier || 1), 1, 4);
+  const columns = 7;
+  const rows = clamp(2 + Math.floor((safeWave - 1) / 2) + (tier >= 3 ? 1 : 0), 2, 5);
+  const startX = 16;
+  const stepX = 11;
+  const startY = 10;
+  const stepY = 8;
+  const invaders = [];
+  let sequence = 0;
+  for (let row = 0; row < rows; row += 1) {
+    for (let col = 0; col < columns; col += 1) {
+      invaders.push({
+        id: `w${safeWave}_${sequence}`,
+        x: startX + col * stepX,
+        y: startY + row * stepY,
+        alive: true
+      });
+      sequence += 1;
+    }
+  }
+  return invaders;
+}
+
+function spaceInvadersStateSnapshot(state) {
+  const invaders = Array.isArray(state?.invaders)
+    ? state.invaders
+        .filter((invader) => invader && invader.alive !== false)
+        .map((invader) => ({
+          id: String(invader.id || ""),
+          x: clamp(Number(invader.x || 0), 0, 100),
+          y: clamp(Number(invader.y || 0), 0, 100)
+        }))
+    : [];
+  const bulletActive = Boolean(state?.bullet && state.bullet.active !== false);
+  const bullet = bulletActive
+    ? {
+        x: clamp(Number(state.bullet.x || 50), 0, 100),
+        y: clamp(Number(state.bullet.y || 90), 0, 100)
+      }
+    : null;
+  return {
+    shipX: clamp(Number(state?.shipX || 50), 6, 94),
+    lives: Math.max(0, Number(state?.lives || 0)),
+    wave: Math.max(1, Number(state?.wave || 1)),
+    hits: Math.max(0, Number(state?.hits || 0)),
+    shots: Math.max(0, Number(state?.shots || 0)),
+    invaderDirection: Number(state?.invaderDirection || 1) >= 0 ? 1 : -1,
+    invaders,
+    bullet,
+    completed: state?.completed === true,
+    lost: state?.lost === true
+  };
+}
+
+function spaceInvadersPayload(state, game) {
+  const difficulty = game?.minigameDifficulty || miniGameDifficultyProfile(game);
+  const tier = clamp(Number(state?.difficultyTier || difficulty?.tier || 1), 1, 4);
+  return {
+    type: "space_invaders",
+    ...spaceInvadersStateSnapshot(state),
+    difficultyTier: tier
+  };
+}
+
+function broadcastSpaceInvadersState(game) {
+  if (!game || game.phase !== "minigame" || game.minigameType !== "space_invaders") {
+    return;
   }
 
+  for (const [playerId, state] of game.chestPhase.entries()) {
+    if (!state || state.type !== "space_invaders") {
+      continue;
+    }
+    io.to(playerId).emit("minigame:state", spaceInvadersPayload(state, game));
+  }
+}
+
+function tickSpaceInvadersMatch(game) {
+  if (!game || game.phase !== "minigame" || game.minigameType !== "space_invaders") {
+    return;
+  }
+
+  const now = Date.now();
+  let shouldBroadcastProgress = false;
+  let shouldBroadcastState = false;
+
+  for (const [playerId, state] of game.chestPhase.entries()) {
+    if (!state || state.type !== "space_invaders" || state.completed) {
+      continue;
+    }
+
+    const tickMs = clamp(now - Number(state.lastTickAt || now), 16, 180);
+    state.lastTickAt = now;
+    state.tick = Math.max(0, Number(state.tick || 0)) + 1;
+
+    const aliveInvaders = Array.isArray(state.invaders)
+      ? state.invaders.filter((invader) => invader && invader.alive !== false)
+      : [];
+    if (aliveInvaders.length === 0) {
+      state.wave = Math.max(1, Number(state.wave || 1)) + 1;
+      state.invaders = createSpaceInvaderWave(state.wave, state.difficultyTier || 1);
+      state.invaderDirection = state.wave % 2 === 0 ? -1 : 1;
+      state.invaderSpeed = Math.min(
+        1.5,
+        Math.max(0.3, Number(state.invaderSpeed || 0.35) + 0.07 + Number(state.difficultyTier || 1) * 0.01)
+      );
+      state.bullet = null;
+      shouldBroadcastProgress = true;
+      shouldBroadcastState = true;
+      continue;
+    }
+
+    const invaderSpeed = Math.max(0.2, Number(state.invaderSpeed || 0.35));
+    const xDelta = Number(state.invaderDirection || 1) * invaderSpeed * (tickMs / 16);
+    let minX = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY;
+    for (const invader of aliveInvaders) {
+      invader.x = clamp(Number(invader.x || 0) + xDelta, 3, 97);
+      minX = Math.min(minX, invader.x);
+      maxX = Math.max(maxX, invader.x);
+    }
+
+    if (minX <= 5 || maxX >= 95) {
+      state.invaderDirection = Number(state.invaderDirection || 1) >= 0 ? -1 : 1;
+      for (const invader of aliveInvaders) {
+        invader.y = clamp(Number(invader.y || 0) + 2.3, 0, 100);
+      }
+      shouldBroadcastState = true;
+    }
+
+    const bullet = state.bullet && state.bullet.active !== false ? state.bullet : null;
+    if (bullet) {
+      bullet.y = clamp(Number(bullet.y || 90) - (2.8 + Number(state.wave || 1) * 0.14) * (tickMs / 16), -10, 100);
+      if (bullet.y < 2) {
+        state.bullet = null;
+      } else {
+        let hitInvader = null;
+        for (const invader of aliveInvaders) {
+          if (Math.abs(invader.x - bullet.x) <= 3.6 && Math.abs(invader.y - bullet.y) <= 3.4) {
+            hitInvader = invader;
+            break;
+          }
+        }
+
+        if (hitInvader) {
+          hitInvader.alive = false;
+          state.hits = Math.max(0, Number(state.hits || 0)) + 1;
+          state.bullet = null;
+          shouldBroadcastProgress = true;
+          shouldBroadcastState = true;
+        }
+      }
+    }
+
+    const updatedAlive = Array.isArray(state.invaders)
+      ? state.invaders.filter((invader) => invader && invader.alive !== false)
+      : [];
+    const reachedBottom = updatedAlive.some((invader) => Number(invader.y || 0) >= 87);
+    if (reachedBottom) {
+      state.lives = Math.max(0, Number(state.lives || 0) - 1);
+      shouldBroadcastProgress = true;
+      shouldBroadcastState = true;
+      if (state.lives <= 0) {
+        state.completed = true;
+        state.lost = true;
+      } else {
+        state.invaders = createSpaceInvaderWave(state.wave, state.difficultyTier || 1);
+        state.invaderDirection = Number(state.invaderDirection || 1) >= 0 ? -1 : 1;
+        state.bullet = null;
+      }
+    }
+
+    if (shouldBroadcastState || state.tick % 2 === 0) {
+      io.to(playerId).emit("minigame:state", spaceInvadersPayload(state, game));
+    }
+  }
+
+  if (shouldBroadcastProgress) {
+    broadcastMiniGameProgress(game);
+  }
+
+  if (shouldBroadcastState) {
+    broadcastSpaceInvadersState(game);
+  }
+
+  if (allMiniGamesResolved(game)) {
+    finalizeMiniGamePhase(game);
+  }
+}
+
+function createMiniGameState(type, difficulty = null) {
+  const safeTier = clamp(Number(difficulty?.tier || 1), 1, 4);
   if (type === "soccer_shootout") {
     return {
       type,
@@ -2861,89 +2941,32 @@ function createMiniGameState(type, difficulty = null) {
     };
   }
 
-  if (type === "reaction_duel") {
-    const waitMin = Math.max(700, 1200 - (safeTier - 1) * 120);
-    const waitMax = Math.max(waitMin + 700, 3200 - (safeTier - 1) * 220);
+  if (type === "space_invaders") {
     return {
       type,
-      goAt: Date.now() + randomInt(waitMin, waitMax),
-      reactedAt: null,
-      falseStart: false,
-      reactionMs: null,
-      difficultyTier: safeTier
-    };
-  }
-
-  if (type === "sequence_memory") {
-    const sequenceLength = 4 + safeTier;
-    return {
-      type,
-      sequence: Array.from({ length: sequenceLength }, () => randomInt(0, 3)),
-      progress: 0,
-      completedAt: null,
-      difficultyTier: safeTier
-    };
-  }
-
-  if (type === "obstacle_dodge") {
-    const totalTurns = 7 + safeTier;
-    return {
-      type,
-      lane: 1,
-      step: 0,
-      totalTurns,
-      obstacles: Array.from({ length: totalTurns }, () => randomInt(0, 2)),
+      shipX: 50,
+      invaders: createSpaceInvaderWave(1, safeTier),
+      invaderDirection: 1,
+      invaderSpeed: 0.34 + safeTier * 0.07,
+      bullet: null,
+      shots: 0,
       hits: 0,
-      lastObstacle: null,
-      lastHit: false,
-      difficultyTier: safeTier
-    };
-  }
-
-  if (type === "precision_stop") {
-    const tolerance = Math.max(6, 14 - (safeTier - 1) * 2);
-    return {
-      type,
-      target: randomInt(15, 85),
-      submitted: false,
-      value: null,
-      tolerance,
-      difficultyTier: safeTier
-    };
-  }
-
-  if (type === "word_scramble") {
-    const minLength = Math.max(4, Math.round(4 + safeRatio * 4));
-    const filteredWords = WORD_SCRAMBLE_WORDS.filter((word) => String(word || "").length >= minLength);
-    const dictionary = filteredWords.length > 0 ? filteredWords : WORD_SCRAMBLE_WORDS;
-    const answer = dictionary[randomInt(0, dictionary.length - 1)];
-    const maxAttempts = safeTier >= 4 ? 2 : safeTier >= 2 ? 3 : 4;
-    return {
-      type,
-      answer,
-      scrambled: scrambleWord(answer),
-      attempts: 0,
-      maxAttempts,
-      solved: false,
+      wave: 1,
+      lives: 3,
       completed: false,
-      lastGuess: "",
+      lost: false,
+      tick: 0,
+      lastTickAt: Date.now(),
       difficultyTier: safeTier
     };
   }
 
-  return { type: "tap_rush", taps: 0, difficultyTier: safeTier };
+  return createMiniGameState("soccer_shootout", difficulty);
 }
 
 function miniGamePublicData(state, game, playerId = "") {
   const difficulty = game?.minigameDifficulty || miniGameDifficultyProfile(game);
   const difficultyTier = clamp(Number(state?.difficultyTier || difficulty?.tier || 1), 1, 4);
-  if (state.type === "tap_rush") {
-    return {
-      taps: 0,
-      difficultyTier
-    };
-  }
-
   if (state.type === "soccer_shootout") {
     const soccer = ensureSoccerMatchState(game);
     const allPlayers = soccerMatchPlayerRows(game);
@@ -2975,44 +2998,9 @@ function miniGamePublicData(state, game, playerId = "") {
     };
   }
 
-  if (state.type === "reaction_duel") {
+  if (state.type === "space_invaders") {
     return {
-      goAt: state.goAt,
-      difficultyTier
-    };
-  }
-
-  if (state.type === "sequence_memory") {
-    return {
-      sequence: state.sequence,
-      total: state.sequence.length,
-      difficultyTier
-    };
-  }
-
-  if (state.type === "obstacle_dodge") {
-    return {
-      lane: state.lane,
-      step: state.step,
-      totalTurns: state.totalTurns,
-      hits: state.hits,
-      difficultyTier
-    };
-  }
-
-  if (state.type === "precision_stop") {
-    return {
-      target: state.target,
-      tolerance: Number(state.tolerance || 12),
-      difficultyTier
-    };
-  }
-
-  if (state.type === "word_scramble") {
-    return {
-      scrambled: state.scrambled,
-      maxAttempts: state.maxAttempts,
-      length: state.answer.length,
+      ...spaceInvadersStateSnapshot(state),
       difficultyTier
     };
   }
@@ -3021,32 +3009,12 @@ function miniGamePublicData(state, game, playerId = "") {
 }
 
 function isMiniGameStateResolved(state) {
-  if (state.type === "tap_rush") {
-    return false;
-  }
-
   if (state.type === "soccer_shootout") {
     return false;
   }
 
-  if (state.type === "reaction_duel") {
-    return state.reactedAt !== null;
-  }
-
-  if (state.type === "sequence_memory") {
-    return state.completedAt !== null;
-  }
-
-  if (state.type === "obstacle_dodge") {
-    return state.step >= state.totalTurns;
-  }
-
-  if (state.type === "precision_stop") {
-    return state.submitted;
-  }
-
-  if (state.type === "word_scramble") {
-    return state.solved || state.attempts >= state.maxAttempts || state.completed === true;
+  if (state.type === "space_invaders") {
+    return state.completed === true;
   }
 
   return false;
@@ -3070,14 +3038,6 @@ function miniGameResult(game, player, state) {
   const modeConfig = getModeConfig(game.settings.mode);
   const unit = modeConfig.unit;
 
-  if (state.type === "tap_rush") {
-    const bonus = Math.max(80, Math.min(700, state.taps * 28) + randomInt(30, 120));
-    return {
-      bonus,
-      text: `${player.name} landed ${state.taps} taps for +${bonus} ${unit}.`
-    };
-  }
-
   if (state.type === "soccer_shootout") {
     const soccer = ensureSoccerMatchState(game);
     const redGoals = Math.max(0, Number(soccer?.teams?.red?.goals || 0));
@@ -3095,80 +3055,19 @@ function miniGameResult(game, player, state) {
     };
   }
 
-  if (state.type === "reaction_duel") {
-    if (state.falseStart) {
-      return {
-        bonus: 60,
-        text: `${player.name} false-started and got +60 ${unit}.`
-      };
-    }
-
-    const reactionMs = Math.max(0, Number(state.reactionMs || 0));
-    const bonus = Math.max(90, 760 - Math.round(reactionMs * 1.7));
+  if (state.type === "space_invaders") {
+    const hits = Math.max(0, Number(state.hits || 0));
+    const shots = Math.max(0, Number(state.shots || 0));
+    const wave = Math.max(1, Number(state.wave || 1));
+    const lives = Math.max(0, Number(state.lives || 0));
+    const accuracy = shots > 0 ? hits / shots : 1;
+    const accuracyBonus = Math.round(accuracy * 220);
+    const waveBonus = (wave - 1) * 170;
+    const lifeBonus = lives * 55;
+    const bonus = Math.max(100, 130 + hits * 95 + waveBonus + lifeBonus + accuracyBonus - (state.lost ? 140 : 0));
     return {
       bonus,
-      text: `${player.name} reacted in ${reactionMs}ms for +${bonus} ${unit}.`
-    };
-  }
-
-  if (state.type === "sequence_memory") {
-    if (state.completedAt !== null) {
-      const elapsed = clamp(state.completedAt - game.minigameStartedAt, 0, game.minigameDurationMs);
-      const speedRatio = clamp(1 - elapsed / game.minigameDurationMs, 0, 1);
-      const bonus = 260 + Math.round(speedRatio * 460);
-      return {
-        bonus,
-        text: `${player.name} cleared memory sequence for +${bonus} ${unit}.`
-      };
-    }
-
-    const bonus = state.progress * 85;
-    return {
-      bonus,
-      text: `${player.name} solved ${state.progress}/5 sequence steps for +${bonus} ${unit}.`
-    };
-  }
-
-  if (state.type === "obstacle_dodge") {
-    const totalTurns = Number(state.totalTurns || 8);
-    const hits = Number(state.hits || 0);
-    const safeTurns = Math.max(0, totalTurns - hits);
-    const bonus = Math.max(80, 110 + safeTurns * 120 - hits * 45 + (hits === 0 ? 180 : 0));
-    return {
-      bonus,
-      text: `${player.name} dodged ${safeTurns}/${totalTurns} turns for +${bonus} ${unit}.`
-    };
-  }
-
-  if (state.type === "precision_stop") {
-    if (state.submitted) {
-      const diff = Math.abs(state.value - state.target);
-      const bonus = Math.max(70, 620 - diff * 10 + (diff <= 5 ? 120 : 0));
-      return {
-        bonus,
-        text: `${player.name} stopped ${diff} away from target for +${bonus} ${unit}.`
-      };
-    }
-
-    return {
-      bonus: 70,
-      text: `${player.name} missed stop timing and got +70 ${unit}.`
-    };
-  }
-
-  if (state.type === "word_scramble") {
-    if (state.solved) {
-      const attemptPenalty = Math.max(0, Number(state.attempts || 1) - 1);
-      const bonus = Math.max(140, 620 - attemptPenalty * 110);
-      return {
-        bonus,
-        text: `${player.name} solved "${state.answer}" in ${state.attempts} tries for +${bonus} ${unit}.`
-      };
-    }
-
-    return {
-      bonus: 90,
-      text: `${player.name} could not solve "${state.answer}" and got +90 ${unit}.`
+      text: `${player.name} blasted ${hits} invaders, reached wave ${wave}, and earned +${bonus} ${unit}.`
     };
   }
 
@@ -3350,14 +3249,25 @@ function startMiniGamePhase(game, eligiblePlayerIds, options = {}) {
     finalizeMiniGamePhase(game);
   }, game.minigameDurationMs + 120);
 
-  if (miniGameType === "soccer_shootout") {
+  if (miniGameType === "soccer_shootout" || miniGameType === "space_invaders") {
     if (game.minigameTick) {
       clearInterval(game.minigameTick);
     }
     game.minigameTick = setInterval(() => {
-      tickSoccerMatch(game);
-    }, 80);
-    broadcastSoccerMatchState(game);
+      if (game.minigameType === "soccer_shootout") {
+        tickSoccerMatch(game);
+        return;
+      }
+      if (game.minigameType === "space_invaders") {
+        tickSpaceInvadersMatch(game);
+      }
+    }, 90);
+
+    if (miniGameType === "soccer_shootout") {
+      broadcastSoccerMatchState(game);
+    } else {
+      broadcastSpaceInvadersState(game);
+    }
   }
 
   broadcastHostStatus(game);

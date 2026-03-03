@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz Arena Player</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="topbar">
+        <div>
+          <h1 class="brand">Student Join</h1>
+          <p class="sub">Enter game code and nickname to play.</p>
+        </div>
+        <a class="action ghost" href="/">Back</a>
+      </section>
+
+      <section id="joinCard" class="card strong fade-in">
+        <h2 class="title">Join Room</h2>
+        <div class="form-grid">
+          <div>
+            <label for="code">Game Code</label>
+            <input id="code" class="mono" maxlength="6" placeholder="ABC123" />
+          </div>
+          <div>
+            <label for="name">Nickname</label>
+            <input id="name" maxlength="24" placeholder="Your name" />
+          </div>
+        </div>
+        <div style="margin-top: 12px">
+          <label>Choose Blook Pack</label>
+          <div id="packTabs" class="pack-tabs">
+            <span class="help">Loading packs...</span>
+          </div>
+        </div>
+        <div style="margin-top: 10px">
+          <label>Choose Your Blook</label>
+          <div id="blookGrid" class="blook-grid"></div>
+        </div>
+        <div id="pickedBlook" class="notice" style="margin-top: 10px">Selected blook will appear here.</div>
+        <div class="button-row" style="margin-top: 12px">
+          <button id="joinBtn">Join Game</button>
+          <span id="joinNotice" class="notice hidden"></span>
+        </div>
+      </section>
+
+      <section id="playCard" class="hidden fade-in">
+        <div class="layout">
+          <article class="card strong">
+            <div class="topbar" style="margin-bottom: 8px">
+              <div>
+                <h2 class="title" style="margin-bottom: 2px">Room <span id="roomCode" class="mono">------</span></h2>
+                <div class="sub">Playing as <span id="playerName">🙂 Player</span></div>
+              </div>
+              <div class="badge">Phase: <span id="phaseText">Lobby</span></div>
+            </div>
+
+            <div id="mainNotice" class="notice">Waiting in lobby for host to start.</div>
+
+            <section id="questionSection" class="hidden" style="margin-top: 12px">
+              <div class="ticker" id="timerText">Time left: --</div>
+              <div class="question" id="questionText">Question appears here.</div>
+              <div id="answers" class="answers"></div>
+            </section>
+
+            <section id="chestSection" class="hidden" style="margin-top: 12px">
+              <h3 id="eventTitle" class="title">Pick An Event Card</h3>
+              <div class="sub" id="chestTimer">Event closes in --</div>
+              <div id="chests" class="chests" style="margin-top: 10px"></div>
+            </section>
+
+            <section id="resultSection" class="hidden" style="margin-top: 12px">
+              <h3 class="title">Round Results</h3>
+              <div id="resultText" class="notice">Result details show here.</div>
+            </section>
+          </article>
+
+          <aside class="card strong">
+            <h2 class="title">Leaderboard</h2>
+            <table>
+              <thead>
+                <tr><th>#</th><th>Name</th><th>Score</th><th>Streak</th></tr>
+              </thead>
+              <tbody id="leaderboardBody"></tbody>
+            </table>
+
+            <div class="card" style="margin-top: 12px">
+              <h3 id="feedTitle" class="title">Mode Feed</h3>
+              <div id="feedList" class="feed"><div class="help">Mode events show up here when active.</div></div>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/play.js"></script>
+  </body>
+</html>

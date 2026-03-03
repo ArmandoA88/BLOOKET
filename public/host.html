@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz Arena Host</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="topbar">
+        <div>
+          <h1 class="brand">Host Dashboard</h1>
+          <p class="sub">Create your room and control every round in realtime.</p>
+        </div>
+        <a class="action ghost" href="/">Back</a>
+      </section>
+
+      <section id="setupCard" class="card strong fade-in">
+        <h2 class="title">Create Game Room</h2>
+        <div class="form-grid">
+          <div>
+            <label for="hostName">Host Name</label>
+            <input id="hostName" maxlength="24" value="Teacher" />
+          </div>
+          <div>
+            <label for="mode">Mode</label>
+            <select id="mode">
+              <option value="classic">Classic Quiz</option>
+              <option value="gold">Gold Quest</option>
+              <option value="crypto">Crypto Hack</option>
+              <option value="fishing">Fishing Frenzy</option>
+              <option value="brawl">Monster Brawl</option>
+            </select>
+          </div>
+          <div>
+            <label for="timer">Question Timer (sec)</label>
+            <input id="timer" type="number" min="8" max="45" value="15" />
+          </div>
+          <div>
+            <label for="count">Question Count</label>
+            <input id="count" type="number" min="5" max="30" value="10" />
+          </div>
+        </div>
+        <div class="button-row" style="margin-top: 12px">
+          <button id="createBtn">Create Room</button>
+          <span id="setupNotice" class="notice hidden"></span>
+        </div>
+      </section>
+
+      <section id="gameCard" class="hidden fade-in">
+        <div class="layout">
+          <article class="card strong">
+            <div class="topbar" style="margin-bottom: 8px">
+              <div>
+                <h2 class="title" style="margin-bottom: 2px">Room <span id="roomCode" class="mono">------</span></h2>
+                <div class="sub" id="modeLabel">Mode: Classic</div>
+              </div>
+              <div class="badge">Phase: <span id="phaseText">Lobby</span></div>
+            </div>
+
+            <div class="kpis" style="margin-bottom: 12px">
+              <div class="kpi"><div id="kpiPlayers" class="v">0</div><div class="l">Players</div></div>
+              <div class="kpi"><div id="kpiAnswers" class="v">0</div><div class="l">Answers</div></div>
+              <div class="kpi"><div id="kpiCorrect" class="v">0</div><div class="l">Correct</div></div>
+              <div class="kpi"><div id="kpiRound" class="v">0 / 0</div><div class="l">Round</div></div>
+            </div>
+
+            <div id="hostNotice" class="notice">Waiting for players to join.</div>
+
+            <div id="questionPanel" class="hidden" style="margin-top: 12px">
+              <div class="ticker" id="questionTimer">Time left: --</div>
+              <div class="question" id="questionText">Question text appears here.</div>
+              <div id="answerStats" class="answers"></div>
+            </div>
+
+            <div id="feedPanel" class="card" style="margin-top: 12px">
+              <h3 id="feedTitle" class="title">Mode Feed</h3>
+              <div id="feedList" class="feed"><div class="help">Mode events appear here when active.</div></div>
+            </div>
+
+            <div class="card" style="margin-top: 12px">
+              <h3 class="title">Leaderboard</h3>
+              <table>
+                <thead>
+                  <tr><th>#</th><th>Name</th><th>Score</th><th>Streak</th><th>Correct</th></tr>
+                </thead>
+                <tbody id="leaderboardBody"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <aside class="card strong">
+            <h2 class="title">Host Controls</h2>
+            <div class="button-row" style="margin-bottom: 12px">
+              <button id="startBtn">Start Game</button>
+              <button id="nextBtn" class="secondary">Next Round</button>
+              <button id="endBtn" class="danger">End Game</button>
+            </div>
+
+            <div class="form-grid">
+              <div>
+                <label for="liveMode">Mode</label>
+                <select id="liveMode">
+                  <option value="classic">Classic Quiz</option>
+                  <option value="gold">Gold Quest</option>
+                  <option value="crypto">Crypto Hack</option>
+                  <option value="fishing">Fishing Frenzy</option>
+                  <option value="brawl">Monster Brawl</option>
+                </select>
+              </div>
+              <div>
+                <label for="liveTimer">Timer (sec)</label>
+                <input id="liveTimer" type="number" min="8" max="45" value="15" />
+              </div>
+              <div>
+                <label for="liveCount">Question Count</label>
+                <input id="liveCount" type="number" min="5" max="30" value="10" />
+              </div>
+            </div>
+            <div class="button-row" style="margin-top: 8px">
+              <button id="saveSettingsBtn" class="ghost">Save Lobby Settings</button>
+            </div>
+
+            <h3 class="title" style="margin-top: 16px">Student Join Links</h3>
+            <div id="joinLinks" class="feed">
+              <div class="help">LAN links will appear here when available.</div>
+            </div>
+
+            <h3 class="title" style="margin-top: 16px">Players</h3>
+            <ul id="playersList" class="player-list"></ul>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/host.js"></script>
+  </body>
+</html>

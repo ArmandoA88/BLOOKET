@@ -14,6 +14,7 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const PORT = process.env.PORT || 3000;
 const GAME_CODE_LENGTH = 6;
 const GAME_IDLE_TTL_MS = 3 * 60 * 60 * 1000;
+const REPORT_TTL_MS = 24 * 60 * 60 * 1000;
 const SESSION_SECRET = process.env.SESSION_SECRET || "change-this-local-session-secret";
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
@@ -941,14 +942,19 @@ const MODE_CONFIG = {
 };
 
 const MODE_MINI_GAMES = {
-  classic: ["soccer_shootout", "space_invaders"],
-  gold: ["soccer_shootout", "space_invaders"],
-  crypto: ["soccer_shootout", "space_invaders"],
-  fishing: ["soccer_shootout", "space_invaders"],
-  brawl: ["soccer_shootout", "space_invaders"]
+  classic: ["foosball_frenzy", "soccer_shootout", "space_invaders"],
+  gold: ["foosball_frenzy", "soccer_shootout", "space_invaders"],
+  crypto: ["foosball_frenzy", "soccer_shootout", "space_invaders"],
+  fishing: ["foosball_frenzy", "soccer_shootout", "space_invaders"],
+  brawl: ["foosball_frenzy", "soccer_shootout", "space_invaders"]
 };
 
 const MINI_GAME_CATALOG = [
+  {
+    id: "foosball_frenzy",
+    name: "Foosball Frenzy",
+    description: "Fast table soccer duel. Pick lane, set power, and score on the bot."
+  },
   {
     id: "soccer_shootout",
     name: "Fossball Arena",
@@ -963,6 +969,9 @@ const MINI_GAME_CATALOG = [
 
 const MINI_GAME_LOOKUP = new Map(MINI_GAME_CATALOG.map((game) => [game.id, game]));
 const MINI_GAME_ROTATION_MODES = new Set(["fixed", "random", "popular", "off"]);
+const GAME_END_TYPES = new Set(["time", "weight"]);
+const RANDOM_NAME_ADJECTIVES = ["Swift", "Bright", "Cosmic", "Brave", "Curious", "Rapid", "Lucky", "Epic", "Nimble", "Bold"];
+const RANDOM_NAME_NOUNS = ["Falcon", "Panda", "Tiger", "Otter", "Comet", "Shark", "Wizard", "Racer", "Fox", "Eagle"];
 const globalMiniGameStats = {};
 for (const game of MINI_GAME_CATALOG) {
   globalMiniGameStats[game.id] = {
@@ -1032,6 +1041,76 @@ function normalizeMiniGameRotationMode(mode) {
   return MINI_GAME_ROTATION_MODES.has(normalized) ? normalized : "fixed";
 }
 
+function normalizeGameEndType(value) {
+  if (typeof value !== "string") {
+    return "time";
+  }
+  const normalized = value.trim().toLowerCase();
+  return GAME_END_TYPES.has(normalized) ? normalized : "time";
+}
+
+function normalizeBooleanFlag(value, defaultValue = true) {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value === "number") {
+    return value !== 0;
+  }
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (["1", "true", "yes", "on"].includes(normalized)) {
+      return true;
+    }
+    if (["0", "false", "no", "off"].includes(normalized)) {
+      return false;
+    }
+  }
+  return defaultValue;
+}
+
+function normalizeEndTargetValue(value, endType = "time") {
+  const numeric = Number(value);
+  if (normalizeGameEndType(endType) === "weight") {
+    return clamp(Number.isFinite(numeric) ? numeric : 7, 2, 30);
+  }
+  return clamp(Number.isFinite(numeric) ? numeric : 7, 2, 20);
+}
+
+function weightScoreGoal(game) {
+  if (!game || normalizeGameEndType(game.settings?.endType) !== "weight") {
+    return 0;
+  }
+  const target = normalizeEndTargetValue(game.settings?.endTargetValue, "weight");
+  return target * 1000;
+}
+
+function gameReachedWeightGoal(game) {
+  const goal = weightScoreGoal(game);
+  if (goal <= 0 || !game || !(game.players instanceof Map)) {
+    return false;
+  }
+  for (const player of game.players.values()) {
+    if (Number(player?.score || 0) >= goal) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function randomPlayerName(game) {
+  const used = new Set(Array.from(game?.players?.values?.() || []).map((player) => String(player.name || "").toLowerCase()));
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    const adjective = RANDOM_NAME_ADJECTIVES[randomInt(0, RANDOM_NAME_ADJECTIVES.length - 1)];
+    const noun = RANDOM_NAME_NOUNS[randomInt(0, RANDOM_NAME_NOUNS.length - 1)];
+    const suffix = randomInt(10, 99);
+    const candidate = sanitizeName(`${adjective}${noun}${suffix}`).slice(0, 24);
+    if (candidate && !used.has(candidate.toLowerCase())) {
+      return candidate;
+    }
+  }
+  return sanitizeName(`Player${randomInt(100, 999)}`).slice(0, 24) || "Player";
+}
+
 function getModeConfig(mode) {
   return MODE_CONFIG[normalizeMode(mode)];
 }
@@ -1075,7 +1154,7 @@ function pathRequiresLogin(pathname) {
     return false;
   }
 
-  return pathname === "/host.html" || pathname === "/play.html";
+  return pathname === "/host.html";
 }
 
 const app = express();
@@ -1102,6 +1181,7 @@ const sessionMiddleware = session({
 
 const games = new Map();
 const socketToGame = new Map();
+const recentReports = new Map();
 
 io.engine.use(sessionMiddleware);
 
@@ -1431,6 +1511,26 @@ app.get("/api/minigames/stats", (_req, res) => {
     mostPlayed: stats[0] || null,
     mostMatched
   });
+});
+
+app.get("/api/reports/:code", (req, res) => {
+  const code = String(req.params?.code || "").toUpperCase().trim();
+  const report = recentReports.get(code);
+  if (!report) {
+    res.status(404).json({ ok: false, message: "Report not found." });
+    return;
+  }
+  res.json({ ok: true, report });
+});
+
+app.delete("/api/reports/:code", (req, res) => {
+  const code = String(req.params?.code || "").toUpperCase().trim();
+  const removed = recentReports.delete(code);
+  if (!removed) {
+    res.status(404).json({ ok: false, message: "Report not found." });
+    return;
+  }
+  res.json({ ok: true, code });
 });
 
 function isPrivateIpv4(ip) {
@@ -2165,6 +2265,129 @@ function sortedPlayers(game) {
     }));
 }
 
+function ensureGameReportState(game) {
+  if (!game || typeof game !== "object") {
+    return null;
+  }
+  if (!game.report || typeof game.report !== "object") {
+    game.report = {
+      startedAt: Date.now(),
+      questionStats: [],
+      playerStats: new Map()
+    };
+  }
+  if (!Array.isArray(game.report.questionStats)) {
+    game.report.questionStats = [];
+  }
+  if (!(game.report.playerStats instanceof Map)) {
+    game.report.playerStats = new Map();
+  }
+  return game.report;
+}
+
+function recordQuestionReportEntry(game, question, submissions) {
+  const report = ensureGameReportState(game);
+  if (!report) {
+    return;
+  }
+  const safeSubmissions = Array.isArray(submissions) ? submissions : [];
+  const correctCount = safeSubmissions.filter((entry) => entry?.correct === true).length;
+  const totalAnswers = safeSubmissions.length;
+  const incorrectCount = Math.max(0, totalAnswers - correctCount);
+
+  report.questionStats.push({
+    index: report.questionStats.length + 1,
+    prompt: String(question?.prompt || `Question ${report.questionStats.length + 1}`),
+    correctCount,
+    incorrectCount,
+    totalAnswers
+  });
+
+  for (const submission of safeSubmissions) {
+    const playerId = String(submission?.playerId || "");
+    if (!playerId) {
+      continue;
+    }
+    const prev = report.playerStats.get(playerId) || { answers: 0, correct: 0 };
+    const nextAnswers = Math.max(0, Number(prev.answers || 0)) + 1;
+    const nextCorrect = Math.max(0, Number(prev.correct || 0)) + (submission?.correct === true ? 1 : 0);
+    report.playerStats.set(playerId, { answers: nextAnswers, correct: nextCorrect });
+  }
+}
+
+function buildGameReportSnapshot(game, leaderboard) {
+  const report = ensureGameReportState(game);
+  const safeLeaderboard = Array.isArray(leaderboard) ? leaderboard : [];
+  const questions = Array.isArray(report?.questionStats) ? report.questionStats : [];
+  const totalCorrect = questions.reduce((sum, row) => sum + Math.max(0, Number(row?.correctCount || 0)), 0);
+  const totalIncorrect = questions.reduce((sum, row) => sum + Math.max(0, Number(row?.incorrectCount || 0)), 0);
+  const totalAnswers = totalCorrect + totalIncorrect;
+  const accuracyPct = totalAnswers > 0 ? Math.round((totalCorrect / totalAnswers) * 100) : 0;
+  const finishedAtMs = Date.now();
+  const normalizedSet = normalizeQuestionSet(game?.settings?.questionSet);
+  const modeConfig = getModeConfig(game?.settings?.mode);
+
+  return {
+    code: String(game?.code || "").toUpperCase(),
+    reportId: `${String(game?.code || "").toUpperCase()}-${finishedAtMs}`,
+    hostName: String(game?.hostName || "Host"),
+    mode: String(game?.settings?.mode || "classic"),
+    modeLabel: modeConfig?.label || "Classic Quiz",
+    questionSet: normalizedSet,
+    questionSetLabel: questionSetLabel(normalizedSet),
+    endType: normalizeGameEndType(game?.settings?.endType),
+    endTargetValue: normalizeEndTargetValue(game?.settings?.endTargetValue, game?.settings?.endType),
+    createdAt: Number(game?.createdAt || finishedAtMs),
+    startedAt: Number(report?.startedAt || game?.createdAt || finishedAtMs),
+    finishedAt: finishedAtMs,
+    totals: {
+      totalCorrect,
+      totalIncorrect,
+      totalAnswers,
+      totalStudents: safeLeaderboard.length,
+      accuracyPct
+    },
+    leaderboard: safeLeaderboard.map((row) => {
+      const stats = report?.playerStats?.get?.(row.id) || { answers: 0, correct: 0 };
+      const answers = Math.max(0, Number(stats.answers || 0));
+      const correct = Math.max(0, Number(stats.correct || 0));
+      const playerAccuracyPct = answers > 0 ? Math.round((correct / answers) * 100) : 0;
+      return {
+        id: row.id,
+        rank: Math.max(1, Number(row.rank || 0)),
+        name: row.name,
+        blook: row.blook,
+        score: Math.max(0, Number(row.score || 0)),
+        weightLbs: Math.max(0, Number(row.score || 0)),
+        correctCount: Math.max(0, Number(row.correctCount || 0)),
+        answerCount: answers,
+        accuracyPct: playerAccuracyPct
+      };
+    }),
+    questions: questions.map((item) => {
+      const total = Math.max(0, Number(item?.totalAnswers || 0));
+      const incorrect = Math.max(0, Number(item?.incorrectCount || 0));
+      const incorrectPct = total > 0 ? Math.round((incorrect / total) * 100) : 0;
+      return {
+        index: Math.max(1, Number(item?.index || 1)),
+        prompt: String(item?.prompt || ""),
+        totalAnswers: total,
+        correctCount: Math.max(0, Number(item?.correctCount || 0)),
+        incorrectCount: incorrect,
+        incorrectPct
+      };
+    })
+  };
+}
+
+function rememberGameReport(snapshot) {
+  const code = String(snapshot?.code || "").toUpperCase().trim();
+  if (!code || !snapshot) {
+    return;
+  }
+  recentReports.set(code, snapshot);
+}
+
 function broadcastLobby(game) {
   const modeConfig = getModeConfig(game.settings.mode);
   const normalizedQuestionSet = normalizeQuestionSet(game.settings.questionSet);
@@ -2278,8 +2501,10 @@ function syncPlayerToCurrentPhase(game, socketId) {
   }
 
   if (game.phase === "finished") {
+    const existingReportCode = String(game.code || "").toUpperCase();
     io.to(socketId).emit("game:finished", {
-      leaderboard
+      leaderboard,
+      reportCode: existingReportCode
     });
   }
 }
@@ -2405,6 +2630,9 @@ function miniGameDifficultyProfile(game) {
 function miniGameHostGoal(game, type) {
   const difficulty = game?.minigameDifficulty || miniGameDifficultyProfile(game);
   const tier = clamp(Number(difficulty?.tier || 1), 1, 4);
+  if (type === "foosball_frenzy") {
+    return 5 + tier;
+  }
   if (type === "soccer_shootout") {
     return 4 + tier;
   }
@@ -2415,6 +2643,24 @@ function miniGameHostGoal(game, type) {
 }
 
 function hostMiniGameProgressRow(state) {
+  if (state.type === "foosball_frenzy") {
+    const goals = Math.max(0, Number(state.goals || 0));
+    const shots = Math.max(0, Number(state.shots || 0));
+    const saves = Math.max(0, Number(state.saves || 0));
+    const botGoals = Math.max(0, Number(state.botGoals || 0));
+    const accuracy = shots > 0 ? Math.round((goals / shots) * 100) : 0;
+    return {
+      metric: goals * 210 + accuracy * 2 + saves * 28 - botGoals * 45,
+      progress: goals,
+      goals,
+      shots,
+      saves,
+      botGoals,
+      accuracy,
+      completed: false
+    };
+  }
+
   if (state.type === "soccer_shootout") {
     const goals = Math.max(0, Number(state.goals || 0));
     const kicks = Math.max(0, Number(state.kicks || 0));
@@ -2736,6 +2982,111 @@ function tickSoccerMatch(game) {
   }
 }
 
+function clampFoosballLane(lane) {
+  return clamp(Math.round(Number(lane ?? 1)), 0, 2);
+}
+
+function foosballStatePayload(state) {
+  const goals = Math.max(0, Number(state?.goals || 0));
+  const botGoals = Math.max(0, Number(state?.botGoals || 0));
+  const shots = Math.max(0, Number(state?.shots || 0));
+  const saves = Math.max(0, Number(state?.saves || 0));
+  return {
+    type: "foosball_frenzy",
+    lane: clampFoosballLane(state?.lane),
+    goalieLane: clampFoosballLane(state?.goalieLane),
+    goals,
+    botGoals,
+    shots,
+    saves,
+    score: {
+      you: goals,
+      bot: botGoals
+    },
+    lastShot: state?.lastShot || null,
+    lastEvent: state?.lastEvent || null,
+    completed: false
+  };
+}
+
+function broadcastFoosballState(game) {
+  if (!game || game.phase !== "minigame" || game.minigameType !== "foosball_frenzy") {
+    return;
+  }
+  for (const [playerId, state] of game.chestPhase.entries()) {
+    if (!state || state.type !== "foosball_frenzy") {
+      continue;
+    }
+    io.to(playerId).emit("minigame:state", foosballStatePayload(state));
+  }
+}
+
+function tickFoosballMatch(game) {
+  if (!game || game.phase !== "minigame" || game.minigameType !== "foosball_frenzy") {
+    return;
+  }
+
+  const now = Date.now();
+  let progressChanged = false;
+
+  for (const [playerId, state] of game.chestPhase.entries()) {
+    if (!state || state.type !== "foosball_frenzy") {
+      continue;
+    }
+
+    const tickMs = clamp(now - Number(state.lastTickAt || now), 16, 250);
+    state.lastTickAt = now;
+    state.tick = Math.max(0, Number(state.tick || 0)) + 1;
+
+    let stateChanged = false;
+    const tier = clamp(Number(state.difficultyTier || 1), 1, 4);
+    const goalieShiftMs = Math.max(520, 1100 - tier * 120);
+    if (now - Number(state.lastGoalieShiftAt || 0) >= goalieShiftMs) {
+      const nextLane = randomInt(0, 2);
+      if (nextLane !== clampFoosballLane(state.goalieLane)) {
+        state.goalieLane = nextLane;
+        state.lastGoalieShiftAt = now;
+        state.lastEventSeq = Math.max(0, Number(state.lastEventSeq || 0)) + 1;
+        state.lastEvent = {
+          seq: state.lastEventSeq,
+          ts: now,
+          type: "goalie_shift",
+          lane: nextLane
+        };
+        stateChanged = true;
+      }
+    }
+
+    state.botMeter = Math.max(0, Number(state.botMeter || 0)) + tickMs * (0.04 + tier * 0.009);
+    if (state.botMeter >= 100) {
+      state.botMeter -= 100;
+      const shotLane = randomInt(0, 2);
+      const blockLane = clampFoosballLane(state.lane);
+      const blocked = shotLane === blockLane && Math.random() < 0.57;
+      if (!blocked) {
+        state.botGoals = Math.max(0, Number(state.botGoals || 0)) + 1;
+        progressChanged = true;
+      }
+      state.lastEventSeq = Math.max(0, Number(state.lastEventSeq || 0)) + 1;
+      state.lastEvent = {
+        seq: state.lastEventSeq,
+        ts: now,
+        type: blocked ? "bot_saved" : "bot_goal",
+        lane: shotLane
+      };
+      stateChanged = true;
+    }
+
+    if (stateChanged || state.tick % 8 === 0) {
+      io.to(playerId).emit("minigame:state", foosballStatePayload(state));
+    }
+  }
+
+  if (progressChanged) {
+    broadcastMiniGameProgress(game);
+  }
+}
+
 function createSpaceInvaderWave(wave, difficultyTier = 1) {
   const safeWave = Math.max(1, Number(wave || 1));
   const tier = clamp(Number(difficultyTier || 1), 1, 4);
@@ -2930,6 +3281,28 @@ function tickSpaceInvadersMatch(game) {
 
 function createMiniGameState(type, difficulty = null) {
   const safeTier = clamp(Number(difficulty?.tier || 1), 1, 4);
+  if (type === "foosball_frenzy") {
+    return {
+      type,
+      lane: 1,
+      goalieLane: randomInt(0, 2),
+      goals: 0,
+      botGoals: 0,
+      shots: 0,
+      saves: 0,
+      lastKickAt: 0,
+      lastShotSeq: 0,
+      lastEventSeq: 0,
+      lastShot: null,
+      lastEvent: null,
+      botMeter: randomFloat(8, 52),
+      tick: 0,
+      lastTickAt: Date.now(),
+      lastGoalieShiftAt: Date.now(),
+      difficultyTier: safeTier
+    };
+  }
+
   if (type === "soccer_shootout") {
     return {
       type,
@@ -2967,6 +3340,13 @@ function createMiniGameState(type, difficulty = null) {
 function miniGamePublicData(state, game, playerId = "") {
   const difficulty = game?.minigameDifficulty || miniGameDifficultyProfile(game);
   const difficultyTier = clamp(Number(state?.difficultyTier || difficulty?.tier || 1), 1, 4);
+  if (state.type === "foosball_frenzy") {
+    return {
+      ...foosballStatePayload(state),
+      difficultyTier
+    };
+  }
+
   if (state.type === "soccer_shootout") {
     const soccer = ensureSoccerMatchState(game);
     const allPlayers = soccerMatchPlayerRows(game);
@@ -3009,6 +3389,10 @@ function miniGamePublicData(state, game, playerId = "") {
 }
 
 function isMiniGameStateResolved(state) {
+  if (state.type === "foosball_frenzy") {
+    return false;
+  }
+
   if (state.type === "soccer_shootout") {
     return false;
   }
@@ -3037,6 +3421,29 @@ function allMiniGamesResolved(game) {
 function miniGameResult(game, player, state) {
   const modeConfig = getModeConfig(game.settings.mode);
   const unit = modeConfig.unit;
+
+  if (state.type === "foosball_frenzy") {
+    const goals = Math.max(0, Number(state.goals || 0));
+    const botGoals = Math.max(0, Number(state.botGoals || 0));
+    const shots = Math.max(0, Number(state.shots || 0));
+    const saves = Math.max(0, Number(state.saves || 0));
+    const accuracy = shots > 0 ? goals / shots : 0;
+    const duelBonus = goals > botGoals ? 220 : goals === botGoals ? 90 : 0;
+    const bonus = Math.max(
+      110,
+      130 +
+        goals * 170 +
+        saves * 22 +
+        Math.round(accuracy * 160) +
+        Math.max(0, 3 - botGoals) * 30 +
+        duelBonus
+    );
+    const duelText = goals > botGoals ? "won" : goals < botGoals ? "lost" : "tied";
+    return {
+      bonus,
+      text: `${player.name} scored ${goals} on ${shots} shots and ${duelText} ${goals}-${botGoals} vs Bot for +${bonus} ${unit}.`
+    };
+  }
 
   if (state.type === "soccer_shootout") {
     const soccer = ensureSoccerMatchState(game);
@@ -3141,11 +3548,16 @@ function finalizeMiniGamePhase(game) {
     }
   }
 
-  if (accountsTouched) {
-    saveAccountsToDisk();
-  }
   if (miniGameStatsTouched) {
     saveMiniGameStatsToDisk();
+  }
+
+  if (maybeFinishGameByWeight(game)) {
+    return;
+  }
+
+  if (accountsTouched) {
+    saveAccountsToDisk();
   }
 
   io.to(game.code).emit("minigame:feed", {
@@ -3249,7 +3661,7 @@ function startMiniGamePhase(game, eligiblePlayerIds, options = {}) {
     finalizeMiniGamePhase(game);
   }, game.minigameDurationMs + 120);
 
-  if (miniGameType === "soccer_shootout" || miniGameType === "space_invaders") {
+  if (miniGameType === "soccer_shootout" || miniGameType === "space_invaders" || miniGameType === "foosball_frenzy") {
     if (game.minigameTick) {
       clearInterval(game.minigameTick);
     }
@@ -3260,13 +3672,19 @@ function startMiniGamePhase(game, eligiblePlayerIds, options = {}) {
       }
       if (game.minigameType === "space_invaders") {
         tickSpaceInvadersMatch(game);
+        return;
+      }
+      if (game.minigameType === "foosball_frenzy") {
+        tickFoosballMatch(game);
       }
     }, 90);
 
     if (miniGameType === "soccer_shootout") {
       broadcastSoccerMatchState(game);
-    } else {
+    } else if (miniGameType === "space_invaders") {
       broadcastSpaceInvadersState(game);
+    } else {
+      broadcastFoosballState(game);
     }
   }
 
@@ -3333,6 +3751,71 @@ function handleMiniGameAction(game, socketId, action, value) {
     }
 
     return { ok: true };
+  }
+
+  if (state.type === "foosball_frenzy") {
+    if (action === "set_lane") {
+      const laneValue =
+        value && typeof value === "object" && value !== null ? value.lane ?? value.value ?? value : value;
+      const lane = clampFoosballLane(laneValue);
+      state.lane = lane;
+      io.to(socketId).emit("minigame:state", foosballStatePayload(state));
+      return { ok: true, lane };
+    }
+
+    if (action !== "kick" && action !== "shoot") {
+      return { ok: false, message: "Invalid action for foosball frenzy." };
+    }
+
+    const now = Date.now();
+    if (now - Number(state.lastKickAt || 0) < 180) {
+      return { ok: true, throttled: true };
+    }
+
+    const lane = clampFoosballLane(value?.lane);
+    const power = clamp(Math.round(Number(value?.power || 2)), 1, 3);
+    const goalieLane = clampFoosballLane(state.goalieLane);
+    state.lastKickAt = now;
+    state.lane = lane;
+    state.shots = Math.max(0, Number(state.shots || 0)) + 1;
+
+    const sameLane = lane === goalieLane;
+    const tierPenalty = (clamp(Number(state.difficultyTier || 1), 1, 4) - 1) * 0.05;
+    let goalChance = sameLane ? 0.28 : 0.86;
+    goalChance += power === 2 ? 0.06 : power === 1 ? 0.03 : -0.05;
+    goalChance -= tierPenalty;
+    goalChance = clamp(goalChance, 0.1, 0.95);
+
+    const goal = Math.random() < goalChance;
+    if (goal) {
+      state.goals = Math.max(0, Number(state.goals || 0)) + 1;
+    } else {
+      state.saves = Math.max(0, Number(state.saves || 0)) + 1;
+    }
+
+    state.goalieLane = randomInt(0, 2);
+    state.lastGoalieShiftAt = now;
+    state.lastShotSeq = Math.max(0, Number(state.lastShotSeq || 0)) + 1;
+    state.lastShot = {
+      seq: state.lastShotSeq,
+      ts: now,
+      lane,
+      goalieLane,
+      power,
+      goal
+    };
+    state.lastEventSeq = Math.max(0, Number(state.lastEventSeq || 0)) + 1;
+    state.lastEvent = {
+      seq: state.lastEventSeq,
+      ts: now,
+      type: goal ? "player_goal" : "player_saved",
+      lane,
+      goalieLane
+    };
+
+    io.to(socketId).emit("minigame:state", foosballStatePayload(state));
+    broadcastMiniGameProgress(game);
+    return { ok: true, goal };
   }
 
   if (state.type === "soccer_shootout") {
@@ -3513,6 +3996,17 @@ function handleMiniGameAction(game, socketId, action, value) {
   return { ok: false, message: "Unknown mini-game type." };
 }
 
+function maybeFinishGameByWeight(game) {
+  if (!game || game.phase === "finished") {
+    return false;
+  }
+  if (!gameReachedWeightGoal(game)) {
+    return false;
+  }
+  finishGame(game);
+  return true;
+}
+
 function closeQuestion(game) {
   if (game.phase !== "question") {
     return;
@@ -3526,6 +4020,7 @@ function closeQuestion(game) {
   const question = game.questions[game.currentQuestionIndex];
   const submissions = Array.from(game.submissions.values());
   game.questionEligiblePlayerIds = new Set();
+  recordQuestionReportEntry(game, question, submissions);
 
   io.to(game.code).emit("question:result", {
     correctAnswer: question.answerIndex,
@@ -3562,6 +4057,8 @@ function finishGame(game) {
   clearTimers(game);
 
   const leaderboard = sortedPlayers(game);
+  const reportSnapshot = buildGameReportSnapshot(game, leaderboard);
+  rememberGameReport(reportSnapshot);
   const totalPlayers = leaderboard.length;
   for (const row of leaderboard) {
     const livePlayer = game.players.get(row.id);
@@ -3594,7 +4091,8 @@ function finishGame(game) {
   saveAccountsToDisk();
 
   io.to(game.code).emit("game:finished", {
-    leaderboard
+    leaderboard,
+    reportCode: reportSnapshot.code
   });
 
   broadcastHostStatus(game);
@@ -3608,8 +4106,13 @@ function startQuestion(game) {
   clearTimers(game);
 
   if (game.currentQuestionIndex >= game.questions.length - 1) {
-    finishGame(game);
-    return;
+    if (normalizeGameEndType(game.settings?.endType) === "weight") {
+      game.questions = pickQuestions(game.settings.questionCount, game.settings.questionSet);
+      game.currentQuestionIndex = -1;
+    } else {
+      finishGame(game);
+      return;
+    }
   }
 
   game.phase = "question";
@@ -3770,6 +4273,12 @@ io.on("connection", (socket) => {
     const questionCount = clamp(Number(payload?.questionCount) || 10, 5, 30);
     const miniGameRotationMode = normalizeMiniGameRotationMode(payload?.miniGameRotationMode);
     const miniGameDurationSec = clamp(Number(payload?.miniGameDurationSec) || 10, 5, 30);
+    const endType = normalizeGameEndType(payload?.endType);
+    const endTargetValue = normalizeEndTargetValue(payload?.endTargetValue, endType);
+    const showInstructions = normalizeBooleanFlag(payload?.showInstructions, true);
+    const allowLateJoin = normalizeBooleanFlag(payload?.allowLateJoin, true);
+    const useRandomNames = normalizeBooleanFlag(payload?.useRandomNames, false);
+    const allowStudentAccounts = normalizeBooleanFlag(payload?.allowStudentAccounts, true);
 
     const code = createGameCode();
     const game = {
@@ -3785,7 +4294,13 @@ io.on("connection", (socket) => {
         timerSeconds,
         questionCount,
         miniGameRotationMode,
-        miniGameDurationSec
+        miniGameDurationSec,
+        endType,
+        endTargetValue,
+        showInstructions,
+        allowLateJoin,
+        useRandomNames,
+        allowStudentAccounts
       },
       players: new Map(),
       questions: pickQuestions(questionCount, questionSet),
@@ -3807,7 +4322,12 @@ io.on("connection", (socket) => {
       minigameEndsAt: null,
       minigameReturnPhase: "round_summary",
       minigameRotationIndex: 0,
-      soccerMatch: null
+      soccerMatch: null,
+      report: {
+        startedAt: Date.now(),
+        questionStats: [],
+        playerStats: new Map()
+      }
     };
 
     games.set(code, game);
@@ -3851,6 +4371,18 @@ io.on("connection", (socket) => {
       5,
       30
     );
+    game.settings.endType = normalizeGameEndType(settings?.endType ?? game.settings.endType);
+    game.settings.endTargetValue = normalizeEndTargetValue(
+      settings?.endTargetValue ?? game.settings.endTargetValue,
+      game.settings.endType
+    );
+    game.settings.showInstructions = normalizeBooleanFlag(settings?.showInstructions, game.settings.showInstructions !== false);
+    game.settings.allowLateJoin = normalizeBooleanFlag(settings?.allowLateJoin, game.settings.allowLateJoin !== false);
+    game.settings.useRandomNames = normalizeBooleanFlag(settings?.useRandomNames, game.settings.useRandomNames === true);
+    game.settings.allowStudentAccounts = normalizeBooleanFlag(
+      settings?.allowStudentAccounts,
+      game.settings.allowStudentAccounts !== false
+    );
     game.questions = pickQuestions(game.settings.questionCount, game.settings.questionSet);
     game.minigameRotationIndex = 0;
     game.updatedAt = Date.now();
@@ -3863,19 +4395,19 @@ io.on("connection", (socket) => {
   });
 
   socket.on("player:join", (payload, ack) => {
-    if (!ensureSocketAuthenticated(socket, ack)) {
-      return;
-    }
-
     const code = String(payload?.code || "").toUpperCase().trim();
-    const playerName = sanitizeName(payload?.name || "");
+    const requestedName = sanitizeName(payload?.name || "");
     const game = games.get(code);
+    const requestedBlookId = String(payload?.blookId || "").trim();
+    const allowLateJoin = normalizeBooleanFlag(game?.settings?.allowLateJoin, true);
+    const useRandomNames = normalizeBooleanFlag(game?.settings?.useRandomNames, false);
+    const allowStudentAccounts = normalizeBooleanFlag(game?.settings?.allowStudentAccounts, true);
     const googleSocketKey = GOOGLE_AUTH_ENABLED && socketGoogleUser(socket)?.id ? `google:${socketGoogleUser(socket).id}` : "";
     const providedAccountKey = normalizeAccountKey(payload?.accountKey || "");
-    const accountKey = normalizeAccountKey(googleSocketKey || providedAccountKey);
-    const hasAccount = accountKey.length > 0;
+    const accountKey = allowStudentAccounts ? normalizeAccountKey(googleSocketKey || providedAccountKey) : "";
+    const hasAccount = allowStudentAccounts && accountKey.length > 0;
     const account = hasAccount ? ensureAccount(accountKey) : null;
-    const requestedBlookId = String(payload?.blookId || "").trim();
+    let playerName = useRandomNames ? randomPlayerName(game) : requestedName;
     let selectedBlook = null;
 
     if (!game) {
@@ -3888,6 +4420,13 @@ io.on("connection", (socket) => {
     if (game.phase === "finished") {
       if (typeof ack === "function") {
         ack({ ok: false, message: "Game already finished." });
+      }
+      return;
+    }
+
+    if (game.phase !== "lobby" && !allowLateJoin) {
+      if (typeof ack === "function") {
+        ack({ ok: false, message: "Late joining is disabled by the host." });
       }
       return;
     }
@@ -3906,7 +4445,11 @@ io.on("connection", (socket) => {
       return;
     }
 
-    const duplicate = Array.from(game.players.values()).some((player) => player.name.toLowerCase() === playerName.toLowerCase());
+    let duplicate = Array.from(game.players.values()).some((player) => player.name.toLowerCase() === playerName.toLowerCase());
+    if (duplicate && useRandomNames) {
+      playerName = randomPlayerName(game);
+      duplicate = Array.from(game.players.values()).some((player) => player.name.toLowerCase() === playerName.toLowerCase());
+    }
     if (duplicate) {
       if (typeof ack === "function") {
         ack({ ok: false, message: "Name already taken in this room." });
@@ -3986,9 +4529,18 @@ io.on("connection", (socket) => {
         code: game.code,
         mode: game.settings.mode,
         hostName: game.hostName,
+        playerName,
         blook: selectedBlook,
         phase: game.phase,
-        account: hasAccount ? publicAccountSummary(account) : null
+        account: hasAccount ? publicAccountSummary(account) : null,
+        settings: {
+          showInstructions: normalizeBooleanFlag(game.settings?.showInstructions, true),
+          allowLateJoin,
+          useRandomNames,
+          allowStudentAccounts,
+          endType: normalizeGameEndType(game.settings?.endType),
+          endTargetValue: normalizeEndTargetValue(game.settings?.endTargetValue, game.settings?.endType)
+        }
       });
     }
   });
@@ -4198,6 +4750,10 @@ io.on("connection", (socket) => {
       leaderboard: sortedPlayers(game)
     });
 
+    if (maybeFinishGameByWeight(game)) {
+      return;
+    }
+
     const requiredAnswers =
       game.questionEligiblePlayerIds instanceof Set && game.questionEligiblePlayerIds.size > 0
         ? game.questionEligiblePlayerIds.size
@@ -4254,6 +4810,13 @@ setInterval(() => {
   for (const [code, game] of games.entries()) {
     if (now - game.updatedAt > GAME_IDLE_TTL_MS) {
       destroyGame(code, "Game expired due to inactivity.");
+    }
+  }
+
+  for (const [code, report] of recentReports.entries()) {
+    const finishedAt = Number(report?.finishedAt || 0);
+    if (!finishedAt || now - finishedAt > REPORT_TTL_MS) {
+      recentReports.delete(code);
     }
   }
 }, 15 * 60 * 1000);

@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -6,64 +6,234 @@
     <title>Quiz Arena</title>
     <link rel="stylesheet" href="/style.css" />
   </head>
-  <body>
-    <main class="page">
-      <section class="topbar">
-        <div>
-          <h1 class="brand">Quiz Arena</h1>
-          <p class="sub">Blooket-style local multiplayer game for classrooms.</p>
+  <body class="authsplit-body">
+    <main id="authShell" class="authsplit-shell">
+      <section class="authsplit-left">
+        <header class="authsplit-header">
+          <a class="authsplit-logo" href="/">Quiz Arena</a>
+          <div class="authsplit-header-actions">
+            <a class="authsplit-signup" href="/foosball.html">Play Foosball Now</a>
+            <a class="authsplit-signup" href="/play.html">Play as Guest</a>
+          </div>
+        </header>
+
+        <div class="authsplit-login-wrap">
+          <h1 class="authsplit-login-title">Log in</h1>
+          <input class="authsplit-input" type="text" placeholder="Username or email" disabled />
+          <input class="authsplit-input" type="password" placeholder="Password" disabled />
+          <button class="authsplit-disabled-btn" type="button" disabled>Let's go!</button>
+          <div class="authsplit-divider">or</div>
+          <a id="loginBtn" class="authsplit-google-btn" href="/auth/google?next=%2Fhost.html">Continue with Google</a>
+          <a id="logoutBtn" class="authsplit-logout hidden" href="/auth/logout">Log out</a>
+
+          <form id="joinGameForm" class="authsplit-join-form" autocomplete="off">
+            <label for="landingCode">Join Game ID</label>
+            <div class="authsplit-join-row">
+              <input
+                id="landingCode"
+                class="authsplit-code mono"
+                type="text"
+                inputmode="text"
+                maxlength="6"
+                placeholder="ABC123"
+                aria-label="Game ID"
+              />
+              <button class="authsplit-join-btn" type="submit">Join</button>
+            </div>
+          </form>
+
+          <p id="landingNotice" class="authsplit-notice">Students can play without logging in.</p>
         </div>
-        <div class="badge"><span>Realtime</span><span class="mono">localhost</span></div>
       </section>
 
-      <section class="card strong fade-in" id="authCard" style="margin-bottom: 14px">
-        <h2 class="title">Account</h2>
-        <p id="authStatusText" class="help">Checking authentication...</p>
-        <div class="button-row" style="margin-top: 10px">
-          <a id="loginBtn" class="action hidden" href="/auth/google">Sign In With Google</a>
-          <a id="logoutBtn" class="action ghost hidden" href="/auth/logout">Sign Out</a>
+      <section class="authsplit-right" aria-hidden="true">
+        <div class="authsplit-pattern"></div>
+        <div class="authsplit-hero-card">
+          <div class="authsplit-mascot">QA</div>
+          <div class="authsplit-platform"></div>
+          <p>Leveling up engagement,<br />one question at a time.</p>
         </div>
       </section>
+    </main>
 
-      <section class="grid roles">
-        <article class="card strong fade-in">
-          <h2 class="title">Host A Game</h2>
-          <p class="help">Create a live room, choose mode and settings, then launch rounds.</p>
-          <p><a class="action" href="/host.html">Open Host Dashboard</a></p>
-        </article>
+    <main id="mySetsShell" class="mysets-shell hidden">
+      <aside class="mysets-sidebar">
+        <a class="mysets-brand" href="/">Quiz Arena</a>
+        <a class="mysets-create-btn" href="/host.html">Create</a>
+        <nav class="mysets-nav">
+          <a href="#">Discover</a>
+          <a class="active" href="/">My Sets</a>
+          <a href="#">Favorites</a>
+          <a href="#">History</a>
+          <a href="#">Homework</a>
+          <a href="/play.html">Play</a>
+          <a href="#">Settings</a>
+        </nav>
+        <a class="mysets-upgrade" href="/host.html">Upgrade</a>
+      </aside>
 
-        <article class="card strong fade-in">
-          <h2 class="title">Join As Student</h2>
-          <p class="help">Enter game code + nickname to compete in timed quiz rounds.</p>
-          <p><a class="action secondary" href="/play.html">Open Student Screen</a></p>
-        </article>
+      <section class="mysets-main">
+        <header class="mysets-topbar">
+          <a class="mysets-plus-btn" href="/host.html">+</a>
+          <input id="mySetsSearch" class="mysets-search" type="search" placeholder="Search your sets..." />
+          <div class="mysets-user">
+            <span id="mySetsUserName">Teacher</span>
+            <a href="/auth/logout">Log out</a>
+          </div>
+        </header>
 
-        <article class="card strong fade-in">
-          <h2 class="title">Play Mini-Game</h2>
-          <p class="help">Quick test mode: launch mini-games without answering quiz questions first.</p>
-          <p><a class="action secondary" href="/host.html?quick=minigame#miniGameTestPanel">Open Mini-Game Test</a></p>
-        </article>
-      </section>
-
-      <section class="card fade-in">
-        <h3 class="title">Included Features</h3>
-        <div class="kpis">
-          <div class="kpi"><div class="v">Live Rooms</div><div class="l">6-character join code</div></div>
-          <div class="kpi"><div class="v">Host Controls</div><div class="l">Start, next round, kick, end game</div></div>
-          <div class="kpi"><div class="v">5 Modes</div><div class="l">Classic, Gold, Crypto, Fishing, Brawl</div></div>
-          <div class="kpi"><div class="v">Blook Packs</div><div class="l">Sports, Anime, Science, Nature, Mythic</div></div>
-          <div class="kpi"><div class="v">Scoring</div><div class="l">Speed + streak bonuses</div></div>
-          <div class="kpi"><div class="v">Leaderboard</div><div class="l">Live ranks each round</div></div>
-          <div class="kpi"><div class="v">Chest Events</div><div class="l">Steal, swap, gain, shield</div></div>
-        </div>
+        <h1 class="mysets-title">My Sets</h1>
+        <section id="mySetsGrid" class="mysets-grid">
+          <article class="myset-empty-card">Loading sets...</article>
+        </section>
       </section>
     </main>
     <script>
       (async () => {
-        const authStatusText = document.getElementById("authStatusText");
+        const authShell = document.getElementById("authShell");
+        const mySetsShell = document.getElementById("mySetsShell");
         const loginBtn = document.getElementById("loginBtn");
         const logoutBtn = document.getElementById("logoutBtn");
+        const joinGameForm = document.getElementById("joinGameForm");
+        const landingCode = document.getElementById("landingCode");
+        const landingNotice = document.getElementById("landingNotice");
+        const mySetsGrid = document.getElementById("mySetsGrid");
+        const mySetsSearch = document.getElementById("mySetsSearch");
+        const mySetsUserName = document.getElementById("mySetsUserName");
         const params = new URLSearchParams(window.location.search);
+
+        function escapeHtml(value) {
+          return String(value || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+        }
+
+        function hashToNumber(text) {
+          let acc = 0;
+          const source = String(text || "");
+          for (let i = 0; i < source.length; i += 1) {
+            acc = (acc * 31 + source.charCodeAt(i)) % 100000;
+          }
+          return Math.abs(acc);
+        }
+
+        function showAuthShell() {
+          document.body.classList.remove("mysets-body");
+          document.body.classList.add("authsplit-body");
+          authShell.classList.remove("hidden");
+          mySetsShell.classList.add("hidden");
+        }
+
+        function showMySetsShell() {
+          document.body.classList.remove("authsplit-body");
+          document.body.classList.add("mysets-body");
+          authShell.classList.add("hidden");
+          mySetsShell.classList.remove("hidden");
+        }
+
+        function setNotice(message, tone = "info") {
+          landingNotice.textContent = message;
+          landingNotice.classList.remove("good", "bad", "warn");
+          if (tone === "good" || tone === "bad" || tone === "warn") {
+            landingNotice.classList.add(tone);
+          }
+        }
+
+        joinGameForm.addEventListener("submit", (event) => {
+          event.preventDefault();
+          const normalized = String(landingCode.value || "")
+            .toUpperCase()
+            .replace(/[^A-Z0-9]/g, "")
+            .slice(0, 6);
+          landingCode.value = normalized;
+          if (normalized.length !== 6) {
+            setNotice("Enter a 6-character Game ID.", "bad");
+            return;
+          }
+          window.location.href = `/play.html?code=${encodeURIComponent(normalized)}`;
+        });
+
+        function renderMySets(sets, hostName) {
+          const sourceSets = Array.isArray(sets) ? sets : [];
+          if (sourceSets.length === 0) {
+            mySetsGrid.innerHTML = `<article class="myset-empty-card">No quiz sets yet. Upload a CSV/Excel set in Host Dashboard.</article>`;
+            return;
+          }
+
+          const thumbs = [
+            "/assets/games/question.svg",
+            "/assets/games/sequence.svg",
+            "/assets/games/soccer.svg",
+            "/assets/games/precision.svg"
+          ];
+
+          mySetsGrid.innerHTML = sourceSets
+            .map((set, index) => {
+              const label = String(set?.label || set?.id || "Quiz Set");
+              const id = String(set?.id || "");
+              const questionCount = Math.max(0, Number(set?.questionCount || 0));
+              const source = String(set?.source || "built_in");
+              const tone = index % 4;
+              const plays = 75 + (hashToNumber(id || label) % 430);
+              const sourceText = source === "uploaded" ? "Uploaded set" : "Built-in set";
+              const hostHref = `/host.html?set=${encodeURIComponent(id)}&hostName=${encodeURIComponent(hostName || "Teacher")}`;
+              const thumb = thumbs[index % thumbs.length];
+              return `
+              <article class="myset-card" data-label="${escapeHtml(label.toLowerCase())}">
+                <div class="myset-thumb myset-tone-${tone}">
+                  <img src="${escapeHtml(thumb)}" alt="" />
+                  <span class="myset-qcount">${questionCount} Questions</span>
+                </div>
+                <h2 class="myset-name">${escapeHtml(label)}</h2>
+                <div class="myset-plays">${plays} Plays</div>
+                <div class="myset-edited">${escapeHtml(sourceText)}</div>
+                <div class="myset-tool-row">
+                  <button type="button" disabled>Edit</button>
+                  <button type="button" disabled>Delete</button>
+                  <button type="button" disabled>More</button>
+                </div>
+                <div class="myset-action-row">
+                  <a class="myset-assign" href="/play.html">Assign</a>
+                  <a class="myset-host" href="${hostHref}">Host</a>
+                </div>
+              </article>`;
+            })
+            .join("");
+        }
+
+        function applyMySetSearch() {
+          const query = String(mySetsSearch.value || "").trim().toLowerCase();
+          const cards = Array.from(mySetsGrid.querySelectorAll(".myset-card"));
+          let visible = 0;
+
+          cards.forEach((card) => {
+            const label = String(card.getAttribute("data-label") || "");
+            const matched = !query || label.includes(query);
+            card.classList.toggle("hidden", !matched);
+            if (matched) {
+              visible += 1;
+            }
+          });
+
+          let empty = mySetsGrid.querySelector(".myset-empty-card.search-empty");
+          if (visible === 0) {
+            if (!empty) {
+              empty = document.createElement("article");
+              empty.className = "myset-empty-card search-empty";
+              empty.textContent = "No sets match that search.";
+              mySetsGrid.appendChild(empty);
+            }
+          } else if (empty) {
+            empty.remove();
+          }
+        }
+
+        mySetsSearch.addEventListener("input", applyMySetSearch);
+
+        showAuthShell();
 
         try {
           const response = await fetch("/api/auth/status");
@@ -72,30 +242,41 @@
           const loggedIn = auth && auth.authenticated === true;
 
           if (!enabled) {
-            authStatusText.textContent =
-              "Google auth is not configured on this server. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to enable it.";
+            loginBtn.classList.add("disabled");
+            loginBtn.setAttribute("aria-disabled", "true");
+            loginBtn.removeAttribute("href");
+            setNotice("Google host login is not configured. Students can still join as guests.", "warn");
             return;
           }
 
           if (params.get("login") === "required") {
-            authStatusText.textContent = "Login required. Sign in with Google to open host or student screens.";
+            setNotice("Host access requires login. Students can still join as guests.", "warn");
           }
 
           if (params.get("error") === "google_auth_failed") {
-            authStatusText.textContent = "Google sign-in failed. Try again.";
+            setNotice("Google sign-in failed. Try again to access host controls.", "bad");
           }
 
           if (loggedIn) {
             const name = auth.user && auth.user.name ? auth.user.name : "Google User";
-            authStatusText.textContent = `Signed in as ${name}.`;
-            logoutBtn.classList.remove("hidden");
+            showMySetsShell();
+            mySetsUserName.textContent = name;
+            try {
+              const quizResponse = await fetch("/api/quizzes");
+              const quizPayload = await quizResponse.json();
+              renderMySets(Array.isArray(quizPayload?.sets) ? quizPayload.sets : [], name);
+              applyMySetSearch();
+            } catch (_quizError) {
+              mySetsGrid.innerHTML = `<article class="myset-empty-card">Could not load quiz sets.</article>`;
+            }
             return;
           }
 
-          authStatusText.textContent = "Sign in with Google to host or join games.";
-          loginBtn.classList.remove("hidden");
+          if (!params.get("login") && !params.get("error")) {
+            setNotice("Students can play as guests. Hosts should use Log In for hosting.");
+          }
         } catch (_error) {
-          authStatusText.textContent = "Could not read auth status from server.";
+          setNotice("Could not read host login status. Guest play is still available.", "warn");
         }
       })();
     </script>

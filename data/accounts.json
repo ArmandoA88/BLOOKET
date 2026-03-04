@@ -1,0 +1,94 @@
+{
+  "savedAt": "2026-03-04T02:25:31.194Z",
+  "accounts": [
+    {
+      "id": "guest:mmbcb9q8er3q7dmw",
+      "coins": 0,
+      "freePackOpensRemaining": 1,
+      "selectedBlookId": "sports-soccer-star",
+      "inventory": {
+        "sports-soccer-star": 1,
+        "sports-basketball-pro": 1,
+        "anime-shonen-hero": 1,
+        "anime-mecha-pilot": 1,
+        "science-lab-rat": 1,
+        "science-rocket-cadet": 1,
+        "nature-forest-owl": 1,
+        "nature-polar-bear": 1,
+        "mythic-stone-golem": 1,
+        "mythic-sun-priest": 1
+      },
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 1,
+          "wins": 1,
+          "bestBonus": 200,
+          "totalBonus": 200
+        },
+        "space_invaders": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        }
+      },
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-04T01:10:30.668Z",
+      "updatedAt": "2026-03-04T01:33:25.213Z"
+    },
+    {
+      "id": "guest:mmbet1sqhyg8r9ao",
+      "coins": 0,
+      "freePackOpensRemaining": 0,
+      "selectedBlookId": "sports-soccer-star",
+      "inventory": {
+        "sports-soccer-star": 1,
+        "sports-basketball-pro": 1,
+        "anime-shonen-hero": 1,
+        "anime-mecha-pilot": 1,
+        "science-lab-rat": 1,
+        "science-rocket-cadet": 1,
+        "nature-forest-owl": 1,
+        "nature-polar-bear": 1,
+        "mythic-stone-golem": 1,
+        "mythic-sun-priest": 1,
+        "sports-hockey-enforcer": 1
+      },
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 1,
+          "wins": 1,
+          "bestBonus": 200,
+          "totalBonus": 200
+        },
+        "space_invaders": {
+          "plays": 1,
+          "wins": 1,
+          "bestBonus": 515,
+          "totalBonus": 515
+        }
+      },
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-04T02:20:19.422Z",
+      "updatedAt": "2026-03-04T02:21:36.309Z"
+    }
+  ]
+}

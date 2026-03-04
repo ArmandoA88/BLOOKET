@@ -3,6 +3,7 @@ const socket = io();
 let roomCode = "";
 let playerName = "";
 let phase = "join";
+let currentMode = "classic";
 let ticker = null;
 let currentQuestion = null;
 let myAnswerIndex = null;
@@ -23,6 +24,7 @@ const MODE_LABELS = {
 };
 const GAME_IMAGE_MAP = {
   question: "/assets/minigames/shared/question.svg",
+  foosball_frenzy: "/assets/minigames/soccer_shootout/soccer.svg",
   soccer_shootout: "/assets/minigames/soccer_shootout/soccer.svg",
   tap_rush: "/assets/minigames/tap_rush/tap.svg",
   reaction_duel: "/assets/minigames/reaction_duel/tap.svg",
@@ -83,11 +85,30 @@ const PHASE_CLASS_CANDIDATES = [
 
 const joinCard = document.getElementById("joinCard");
 const playCard = document.getElementById("playCard");
+const landingTopbar = document.getElementById("landingTopbar");
+const fishingHud = document.getElementById("fishingHud");
+const fishingHudAudio = fishingHud?.querySelector(".fishing-hud-audio") || null;
+const fishingHudName = document.getElementById("fishingHudName");
+const fishingHudTimer = document.getElementById("fishingHudTimer");
+const fishingHudCode = document.getElementById("fishingHudCode");
+const fishingBoard = document.getElementById("fishingBoard");
+const fishingRankCard = document.getElementById("fishingRankCard");
+const fishingRankPlace = document.getElementById("fishingRankPlace");
+const fishingRankIcon = document.getElementById("fishingRankIcon");
+const fishingRankName = document.getElementById("fishingRankName");
+const fishingRankWeight = document.getElementById("fishingRankWeight");
+const fishingFinalPanel = document.getElementById("fishingFinalPanel");
+const fishingPlayAgainBtn = document.getElementById("fishingPlayAgainBtn");
+const fishingWinnerName = document.getElementById("fishingWinnerName");
+const fishingWinnerWeight = document.getElementById("fishingWinnerWeight");
+const fishingWinnerIcon = document.getElementById("fishingWinnerIcon");
 
 const codeInput = document.getElementById("code");
 const nameInput = document.getElementById("name");
 const joinBtn = document.getElementById("joinBtn");
 const joinNotice = document.getElementById("joinNotice");
+const accountPanel = document.getElementById("accountPanel");
+const accountPolicyNotice = document.getElementById("accountPolicyNotice");
 const packTabs = document.getElementById("packTabs");
 const blookGrid = document.getElementById("blookGrid");
 const pickedBlook = document.getElementById("pickedBlook");
@@ -202,6 +223,18 @@ let miniSoccerLastKickSeq = 0;
 let miniSoccerLastEventSeq = 0;
 let miniSoccerSpaceCooldownUntil = 0;
 let miniSoccerYourTeam = "red";
+let miniFoosballSelectedLane = 1;
+let miniFoosballGoalieLane = 1;
+let miniFoosballShotSeq = 0;
+let miniFoosballPixiLoadPromise = null;
+let miniFoosballPixiApp = null;
+let miniFoosballPixiScene = null;
+let miniFoosballPixiTicker = null;
+let miniFoosballBallTween = null;
+let latestLeaderboardRows = [];
+let fishingGameEndsAt = 0;
+let fishingHudTicker = null;
+let currentReportCode = "";
 
 const FALLBACK_BLOOKS = [
   {
@@ -229,6 +262,7 @@ const FALLBACK_BLOOKS = [
 ];
 
 const FALLBACK_MINI_GAMES = [
+  { id: "foosball_frenzy", name: "Foosball Frenzy", description: "Fast table soccer duel with lane + power shots." },
   { id: "soccer_shootout", name: "Soccer Shootout", description: "Penalty kicks with lane + power choice." },
   { id: "tap_rush", name: "Tap Rush", description: "Tap fast for bonus points." },
   { id: "reaction_duel", name: "Reaction Duel", description: "Wait for GO and react fast." },
@@ -241,13 +275,29 @@ const FALLBACK_MINI_GAMES = [
 let autoJoinCodeApplied = "";
 let manualCodeOverride = false;
 let settingCodeProgrammatically = false;
+let roomSettings = {
+  showInstructions: true,
+  allowLateJoin: true,
+  useRandomNames: false,
+  allowStudentAccounts: true,
+  endType: "time",
+  endTargetValue: 7
+};
 
-const prefilledCode = new URLSearchParams(window.location.search).get("code");
+const pageParams = new URLSearchParams(window.location.search);
+const prefilledCode = pageParams.get("code");
+const prefilledName = String(pageParams.get("name") || "").trim().slice(0, 24);
+const shouldAutoJoinFromQuery = ["1", "true", "yes", "on"].includes(String(pageParams.get("autojoin") || "").toLowerCase());
+let autoJoinFromQueryPending = shouldAutoJoinFromQuery;
+let autoJoinFromQueryAttempted = false;
 if (prefilledCode) {
   const safePrefill = String(prefilledCode).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
   codeInput.value = safePrefill;
   autoJoinCodeApplied = safePrefill;
   manualCodeOverride = safePrefill.length > 0;
+}
+if (prefilledName && nameInput) {
+  nameInput.value = prefilledName;
 }
 
 function sanitizeRoomCode(code) {
@@ -294,6 +344,30 @@ function handleActiveRoomPayload(payload) {
     return;
   }
   maybeApplyAutoRoomCode(payload.code, payload.hostName || "");
+}
+
+function maybeAutoJoinFromQuery() {
+  if (!autoJoinFromQueryPending || autoJoinFromQueryAttempted || !joinBtn || !joinCard) {
+    return;
+  }
+  if (roomCode || joinCard.classList.contains("hidden")) {
+    return;
+  }
+
+  const code = sanitizeRoomCode(codeInput?.value || "");
+  const name = String(nameInput?.value || "").trim();
+  if (code.length !== 6 || !name) {
+    return;
+  }
+
+  autoJoinFromQueryPending = false;
+  autoJoinFromQueryAttempted = true;
+  setJoinNotice(`Joining room ${code} as ${name}...`, "good");
+  setTimeout(() => {
+    if (!roomCode && !joinCard.classList.contains("hidden")) {
+      joinBtn.click();
+    }
+  }, 0);
 }
 
 async function loadActiveRoomCode() {
@@ -392,10 +466,273 @@ function setJoinNotice(message, type = "") {
   joinNotice.textContent = message;
 }
 
+function boolFlag(value, fallback = true) {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value === "number") {
+    return value !== 0;
+  }
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (["1", "true", "yes", "on"].includes(normalized)) {
+      return true;
+    }
+    if (["0", "false", "no", "off"].includes(normalized)) {
+      return false;
+    }
+  }
+  return fallback;
+}
+
+function normalizeEndType(value) {
+  return String(value || "time").trim().toLowerCase() === "weight" ? "weight" : "time";
+}
+
+function isFishingMode() {
+  return String(currentMode || "").trim().toLowerCase() === "fishing";
+}
+
+function formatWeightLbs(value) {
+  const score = Number(value);
+  return `${Math.max(0, Math.round(Number.isFinite(score) ? score : 0))} lbs`;
+}
+
+function ordinalPlace(value) {
+  const rank = Math.max(1, Math.floor(Number(value) || 1));
+  const moduloHundred = rank % 100;
+  const moduloTen = rank % 10;
+  if (moduloHundred >= 11 && moduloHundred <= 13) {
+    return `${rank}th`;
+  }
+  if (moduloTen === 1) {
+    return `${rank}st`;
+  }
+  if (moduloTen === 2) {
+    return `${rank}nd`;
+  }
+  if (moduloTen === 3) {
+    return `${rank}rd`;
+  }
+  return `${rank}th`;
+}
+
+function formatCountdown(secondsLeft) {
+  const safe = Math.max(0, Math.floor(Number(secondsLeft) || 0));
+  const minutes = Math.floor(safe / 60);
+  const seconds = safe % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function resetFishingHudTicker() {
+  if (!fishingHudTicker) {
+    return;
+  }
+  clearInterval(fishingHudTicker);
+  fishingHudTicker = null;
+}
+
+function updateFishingTimerDisplay() {
+  if (!fishingHudTimer) {
+    return;
+  }
+  if (!isFishingMode()) {
+    fishingHudTimer.textContent = "--:--";
+    return;
+  }
+  if (phase === "finished") {
+    fishingHudTimer.textContent = "Final Standings";
+    return;
+  }
+  if (roomSettings.endType !== "time") {
+    fishingHudTimer.textContent = "WEIGHT";
+    return;
+  }
+  if (fishingGameEndsAt <= 0) {
+    const defaultMinutes = Math.max(2, Math.min(99, Number(roomSettings.endTargetValue || 7)));
+    fishingHudTimer.textContent = formatCountdown(defaultMinutes * 60);
+    return;
+  }
+  const leftSeconds = Math.ceil((fishingGameEndsAt - Date.now()) / 1000);
+  fishingHudTimer.textContent = formatCountdown(leftSeconds);
+}
+
+function ensureFishingGameTimerStarted() {
+  if (!isFishingMode() || roomSettings.endType !== "time" || fishingGameEndsAt > 0) {
+    return;
+  }
+  const minutes = Math.max(2, Math.min(99, Number(roomSettings.endTargetValue || 7)));
+  fishingGameEndsAt = Date.now() + minutes * 60 * 1000;
+}
+
+function updateFishingHudIdentity() {
+  const finalPhase = String(phase || "").toLowerCase() === "finished";
+  if (fishingHudAudio) {
+    fishingHudAudio.textContent = finalPhase ? "⛶" : "🔊";
+  }
+  if (fishingHudName) {
+    fishingHudName.textContent = finalPhase ? "Blooket" : String(playerName || "PLAYER").toUpperCase();
+  }
+  if (fishingHudCode) {
+    fishingHudCode.textContent = finalPhase ? "View Report" : `ID: ${roomCode || "------"}`;
+  }
+}
+
+function syncFishingRankCard(players = latestLeaderboardRows) {
+  if (!fishingRankCard || !isFishingMode()) {
+    return;
+  }
+  if (String(phase || "").toLowerCase() === "finished") {
+    fishingRankCard.classList.add("hidden");
+    return;
+  }
+  const rows = Array.isArray(players) ? players : [];
+  const me =
+    rows.find((row) => row?.id === socket.id) ||
+    rows.find((row) => String(row?.name || "").toLowerCase() === String(playerName || "").toLowerCase()) ||
+    null;
+  if (!me) {
+    fishingRankCard.classList.add("hidden");
+    return;
+  }
+
+  fishingRankCard.classList.remove("hidden");
+  if (fishingRankPlace) {
+    fishingRankPlace.textContent = ordinalPlace(me.rank);
+  }
+  if (fishingRankIcon) {
+    fishingRankIcon.textContent = String(me?.blook?.icon || "?");
+  }
+  if (fishingRankName) {
+    fishingRankName.textContent = String(me?.name || playerName || "PLAYER").toUpperCase();
+  }
+  if (fishingRankWeight) {
+    fishingRankWeight.textContent = formatWeightLbs(me?.score || 0);
+  }
+}
+
+function renderFishingFinalWinner(players = latestLeaderboardRows) {
+  if (!fishingFinalPanel) {
+    return;
+  }
+  const rows = Array.isArray(players) ? players : [];
+  const winner = rows[0] || null;
+  if (!winner) {
+    fishingFinalPanel.classList.add("hidden");
+    return;
+  }
+
+  if (fishingWinnerName) {
+    fishingWinnerName.textContent = String(winner?.name || "PLAYER").toUpperCase();
+  }
+  if (fishingWinnerWeight) {
+    fishingWinnerWeight.textContent = formatWeightLbs(winner?.score || 0);
+  }
+  if (fishingWinnerIcon) {
+    fishingWinnerIcon.textContent = String(winner?.blook?.icon || "🏆");
+  }
+  fishingFinalPanel.classList.remove("hidden");
+}
+
+function applyPlayModeTheme() {
+  const active = isFishingMode() && !playCard.classList.contains("hidden");
+  const finalPhase = String(phase || "").toLowerCase() === "finished";
+  const stageOnly = active && (phase === "lobby" || phase === "round_summary" || finalPhase);
+
+  document.body.classList.toggle("play-fishing-mode", active);
+  playCard.classList.toggle("fishing-stage-only", stageOnly);
+  playCard.classList.toggle("fishing-final-active", active && finalPhase);
+  if (landingTopbar) {
+    landingTopbar.classList.toggle("hidden", active);
+  }
+  if (fishingHud) {
+    fishingHud.classList.toggle("hidden", !active);
+    fishingHud.setAttribute("aria-hidden", active ? "false" : "true");
+  }
+  if (fishingHudCode) {
+    fishingHudCode.classList.toggle("fishing-report-link", active && finalPhase);
+    if (active && finalPhase) {
+      fishingHudCode.setAttribute("role", "button");
+      fishingHudCode.setAttribute("tabindex", "0");
+    } else {
+      fishingHudCode.removeAttribute("role");
+      fishingHudCode.removeAttribute("tabindex");
+    }
+  }
+  if (fishingBoard) {
+    fishingBoard.classList.toggle("hidden", !active);
+    fishingBoard.setAttribute("aria-hidden", active ? "false" : "true");
+  }
+  if (fishingFinalPanel) {
+    fishingFinalPanel.classList.toggle("hidden", !(active && finalPhase));
+  }
+  if (!active) {
+    resetFishingHudTicker();
+    return;
+  }
+
+  updateFishingHudIdentity();
+  updateFishingTimerDisplay();
+  syncFishingRankCard();
+  if (finalPhase) {
+    renderFishingFinalWinner();
+  }
+  if (!fishingHudTicker) {
+    fishingHudTicker = setInterval(updateFishingTimerDisplay, 300);
+  }
+}
+
+function openCurrentReportPage() {
+  const code = String(currentReportCode || roomCode || "").toUpperCase().trim();
+  if (!code) {
+    return;
+  }
+  window.location.href = `/report.html?code=${encodeURIComponent(code)}`;
+}
+
+function applyRoomSettings(nextSettings = null) {
+  if (nextSettings && typeof nextSettings === "object") {
+    const parsedTarget = Number(nextSettings.endTargetValue ?? roomSettings.endTargetValue ?? 7);
+    roomSettings = {
+      showInstructions: boolFlag(nextSettings.showInstructions, roomSettings.showInstructions),
+      allowLateJoin: boolFlag(nextSettings.allowLateJoin, roomSettings.allowLateJoin),
+      useRandomNames: boolFlag(nextSettings.useRandomNames, roomSettings.useRandomNames),
+      allowStudentAccounts: boolFlag(nextSettings.allowStudentAccounts, roomSettings.allowStudentAccounts),
+      endType: normalizeEndType(nextSettings.endType || roomSettings.endType),
+      endTargetValue: Math.max(2, Number.isFinite(parsedTarget) ? parsedTarget : 7)
+    };
+  }
+
+  const allowAccounts = roomSettings.allowStudentAccounts !== false;
+  if (accountPanel) {
+    accountPanel.classList.toggle("hidden", !allowAccounts);
+  }
+  if (accountPolicyNotice) {
+    if (!allowAccounts) {
+      accountPolicyNotice.classList.remove("hidden", "bad");
+      accountPolicyNotice.classList.add("good");
+      accountPolicyNotice.textContent = "Student accounts are disabled for this game. You can still join and play.";
+    } else {
+      accountPolicyNotice.classList.add("hidden");
+      accountPolicyNotice.textContent = "";
+      accountPolicyNotice.classList.remove("good", "bad");
+    }
+  }
+  if (!allowAccounts && !selectedBlookId) {
+    selectedBlookId = "sports-soccer-star";
+  }
+  updateFishingTimerDisplay();
+  applyPlayModeTheme();
+}
+
 function setPhase(nextPhase, detail = "") {
   phase = nextPhase;
   phaseText.textContent = phaseLabel(nextPhase);
   setPhaseBanner(nextPhase, detail);
+  if (String(nextPhase || "").toLowerCase() !== "lobby" && String(nextPhase || "").toLowerCase() !== "join") {
+    ensureFishingGameTimerStarted();
+  }
+  applyPlayModeTheme();
 }
 
 function startTicker(targetEl, endsAt, label) {
@@ -449,9 +786,11 @@ function stopMiniTickers() {
   stopMiniPrecisionTicker();
   stopMiniReactionTicker();
   stopMiniSoccerTicker();
+  destroyMiniFoosballPixi();
 }
 
 function miniGameTypeLabel(type) {
+  if (type === "foosball_frenzy") return "Foosball Frenzy";
   if (type === "soccer_shootout") return "Soccer Shootout";
   if (type === "tap_rush") return "Tap Rush";
   if (type === "reaction_duel") return "Reaction Duel";
@@ -905,9 +1244,347 @@ function animateSoccerShot(lastShot) {
   }
 }
 
+function clampMiniFoosballLane(value) {
+  return clamp(Math.round(Number(value ?? 1)), 0, 2);
+}
+
+function miniFoosballLaneX(index, width = 720) {
+  const lane = clampMiniFoosballLane(index);
+  const points = [Math.round(width * 0.24), Math.round(width * 0.5), Math.round(width * 0.76)];
+  return points[lane];
+}
+
+function miniFoosballEventText(payload) {
+  const eventType = String(payload?.lastEvent?.type || "");
+  if (eventType === "player_goal") return "GOAL! Your shot found the corner.";
+  if (eventType === "player_saved") return "Saved by the bot keeper. Try a new lane.";
+  if (eventType === "bot_goal") return "Bot scores. Block with your current lane.";
+  if (eventType === "bot_saved") return "Great block! You stopped the bot shot.";
+  if (eventType === "goalie_shift") return "Keeper moved. Time your next shot.";
+  return "Move lane with Left/Right, then press Space to shoot.";
+}
+
+function ensureMiniFoosballPixiLoaded() {
+  if (window.PIXI) {
+    return Promise.resolve(window.PIXI);
+  }
+  if (miniFoosballPixiLoadPromise) {
+    return miniFoosballPixiLoadPromise;
+  }
+  miniFoosballPixiLoadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "/vendor/pixi.min.js";
+    script.async = true;
+    script.onload = () => {
+      if (window.PIXI) {
+        resolve(window.PIXI);
+        return;
+      }
+      reject(new Error("PIXI global missing after load."));
+    };
+    script.onerror = () => reject(new Error("Failed to load PixiJS bundle."));
+    document.head.appendChild(script);
+  });
+  return miniFoosballPixiLoadPromise;
+}
+
+function destroyMiniFoosballPixi() {
+  if (miniFoosballPixiApp && miniFoosballPixiTicker) {
+    miniFoosballPixiApp.ticker.remove(miniFoosballPixiTicker);
+  }
+  miniFoosballPixiTicker = null;
+  miniFoosballBallTween = null;
+  if (miniFoosballPixiApp) {
+    try {
+      miniFoosballPixiApp.destroy(true, { children: true });
+    } catch (_error) {
+      // Ignore teardown failures.
+    }
+  }
+  miniFoosballPixiApp = null;
+  miniFoosballPixiScene = null;
+}
+
+async function initMiniFoosballPixi() {
+  const stage = document.getElementById("miniFoosballStage");
+  if (!stage) {
+    return;
+  }
+
+  try {
+    const PIXI = await ensureMiniFoosballPixiLoaded();
+    const width = 720;
+    const height = 360;
+    destroyMiniFoosballPixi();
+
+    const app = new PIXI.Application();
+    await app.init({
+      width,
+      height,
+      antialias: true,
+      backgroundAlpha: 0,
+      resolution: Math.min(window.devicePixelRatio || 1, 2),
+      autoDensity: true
+    });
+    const view = app.canvas || app.view;
+    if (!view) {
+      throw new Error("PixiJS canvas not available.");
+    }
+
+    stage.innerHTML = "";
+    view.classList.add("mini-foosball-canvas");
+    stage.appendChild(view);
+
+    const root = new PIXI.Container();
+    app.stage.addChild(root);
+
+    const field = new PIXI.Sprite(PIXI.Texture.WHITE);
+    field.width = width;
+    field.height = height;
+    field.tint = 0x198551;
+    root.addChild(field);
+
+    const stripe = new PIXI.Sprite(PIXI.Texture.WHITE);
+    stripe.width = width;
+    stripe.height = 4;
+    stripe.x = 0;
+    stripe.y = height / 2 - 2;
+    stripe.alpha = 0.42;
+    root.addChild(stripe);
+
+    const leftGoal = new PIXI.Sprite(PIXI.Texture.WHITE);
+    leftGoal.width = 14;
+    leftGoal.height = 112;
+    leftGoal.x = 8;
+    leftGoal.y = 124;
+    leftGoal.tint = 0xecf7ff;
+    leftGoal.alpha = 0.9;
+    root.addChild(leftGoal);
+
+    const rightGoal = new PIXI.Sprite(PIXI.Texture.WHITE);
+    rightGoal.width = 14;
+    rightGoal.height = 112;
+    rightGoal.x = width - 22;
+    rightGoal.y = 124;
+    rightGoal.tint = 0xecf7ff;
+    rightGoal.alpha = 0.9;
+    root.addChild(rightGoal);
+
+    const fieldBorder = new PIXI.Sprite(PIXI.Texture.WHITE);
+    fieldBorder.width = width - 24;
+    fieldBorder.height = height - 24;
+    fieldBorder.x = 12;
+    fieldBorder.y = 12;
+    fieldBorder.alpha = 0.16;
+    root.addChild(fieldBorder);
+
+    const striker = new PIXI.Container();
+    const strikerBar = new PIXI.Sprite(PIXI.Texture.WHITE);
+    strikerBar.anchor.set(0.5);
+    strikerBar.width = 126;
+    strikerBar.height = 16;
+    strikerBar.tint = 0xffd447;
+    striker.addChild(strikerBar);
+    root.addChild(striker);
+
+    const goalie = new PIXI.Container();
+    const goalieBar = new PIXI.Sprite(PIXI.Texture.WHITE);
+    goalieBar.anchor.set(0.5);
+    goalieBar.width = 126;
+    goalieBar.height = 16;
+    goalieBar.tint = 0xff6f61;
+    goalie.addChild(goalieBar);
+    root.addChild(goalie);
+
+    const ball = PIXI.Sprite.from("/assets/minigames/soccer_shootout/soccer.svg");
+    ball.anchor.set(0.5);
+    ball.width = 28;
+    ball.height = 28;
+    root.addChild(ball);
+
+    const flash = new PIXI.Sprite(PIXI.Texture.WHITE);
+    flash.width = width;
+    flash.height = height;
+    flash.alpha = 0;
+    root.addChild(flash);
+
+    const laneXs = [miniFoosballLaneX(0, width), miniFoosballLaneX(1, width), miniFoosballLaneX(2, width)];
+    striker.x = laneXs[clampMiniFoosballLane(miniFoosballSelectedLane)];
+    striker.y = height - 58;
+    goalie.x = laneXs[clampMiniFoosballLane(miniFoosballGoalieLane)];
+    goalie.y = 66;
+    ball.x = striker.x;
+    ball.y = striker.y - 24;
+
+    miniFoosballPixiApp = app;
+    miniFoosballPixiScene = {
+      laneXs,
+      striker,
+      goalie,
+      ball,
+      flash,
+      strikerTargetX: striker.x,
+      goalieTargetX: goalie.x
+    };
+
+    miniFoosballPixiTicker = () => {
+      if (!miniFoosballPixiScene) {
+        return;
+      }
+      const scene = miniFoosballPixiScene;
+      scene.striker.x += (scene.strikerTargetX - scene.striker.x) * 0.22;
+      scene.goalie.x += (scene.goalieTargetX - scene.goalie.x) * 0.2;
+
+      const tween = miniFoosballBallTween;
+      if (!tween) {
+        scene.ball.x += (scene.striker.x - scene.ball.x) * 0.22;
+        scene.ball.y += (scene.striker.y - 24 - scene.ball.y) * 0.22;
+      } else {
+        const elapsed = performance.now() - tween.start;
+        const t = clamp(elapsed / tween.duration, 0, 1);
+        const eased = 1 - Math.pow(1 - t, 3);
+        scene.ball.x = tween.fromX + (tween.toX - tween.fromX) * eased;
+        scene.ball.y = tween.fromY + (tween.toY - tween.fromY) * t;
+        if (t >= 1) {
+          miniFoosballBallTween = null;
+        }
+      }
+
+      scene.flash.alpha = Math.max(0, scene.flash.alpha - 0.02);
+    };
+    app.ticker.add(miniFoosballPixiTicker);
+  } catch (_error) {
+    stage.innerHTML = `<div class="notice bad">Could not load Pixi foosball renderer.</div>`;
+  }
+}
+
+function setMiniFoosballLane(lane, syncToServer = false) {
+  miniFoosballSelectedLane = clampMiniFoosballLane(lane);
+  const buttons = chests.querySelectorAll("button[data-mini-action='foos_lane']");
+  buttons.forEach((button) => {
+    const buttonLane = clampMiniFoosballLane(button.getAttribute("data-mini-value"));
+    button.classList.toggle("selected", buttonLane === miniFoosballSelectedLane);
+  });
+
+  if (miniFoosballPixiScene) {
+    miniFoosballPixiScene.strikerTargetX = miniFoosballPixiScene.laneXs[miniFoosballSelectedLane];
+  }
+
+  if (!syncToServer || !roomCode) {
+    return;
+  }
+
+  socket.emit("player:minigameAction", { code: roomCode, action: "set_lane", value: { lane: miniFoosballSelectedLane } }, (res) => {
+    if (res?.ok !== true) {
+      setNotice(res?.message || "Could not update lane.", "bad");
+    }
+  });
+}
+
+function playMiniFoosballShot(lastShot, goalieLane) {
+  if (!miniFoosballPixiScene || !lastShot) {
+    return;
+  }
+  const scene = miniFoosballPixiScene;
+  const lane = clampMiniFoosballLane(lastShot.lane);
+  const keeperLane = clampMiniFoosballLane(goalieLane ?? lastShot.goalieLane);
+  scene.goalieTargetX = scene.laneXs[keeperLane];
+
+  miniFoosballBallTween = {
+    start: performance.now(),
+    duration: lastShot.goal ? 410 : 360,
+    fromX: scene.striker.x,
+    fromY: scene.striker.y - 24,
+    toX: scene.laneXs[lane],
+    toY: lastShot.goal ? 78 : 102
+  };
+  scene.flash.tint = lastShot.goal ? 0x52ef92 : 0xffbf59;
+  scene.flash.alpha = lastShot.goal ? 0.2 : 0.14;
+}
+
+function applyMiniFoosballState(payload, options = {}) {
+  const goals = Math.max(0, Number(payload?.goals ?? payload?.score?.you ?? 0));
+  const botGoals = Math.max(0, Number(payload?.botGoals ?? payload?.score?.bot ?? 0));
+  const shots = Math.max(0, Number(payload?.shots || 0));
+  const saves = Math.max(0, Number(payload?.saves || 0));
+  const accuracy = shots > 0 ? Math.round((goals / shots) * 100) : 0;
+  const lane = clampMiniFoosballLane(payload?.lane);
+  const goalieLane = clampMiniFoosballLane(payload?.goalieLane);
+  miniFoosballGoalieLane = goalieLane;
+
+  setMiniFoosballLane(lane, false);
+  if (miniFoosballPixiScene) {
+    miniFoosballPixiScene.goalieTargetX = miniFoosballPixiScene.laneXs[goalieLane];
+  }
+
+  const scoreEl = document.getElementById("miniFoosScore");
+  const statsEl = document.getElementById("miniFoosStats");
+  const lastEl = document.getElementById("miniFoosLast");
+  if (scoreEl) {
+    scoreEl.textContent = `You ${goals} - ${botGoals} Bot`;
+  }
+  if (statsEl) {
+    statsEl.textContent = `${shots} shots | ${accuracy}% accuracy | ${saves} saves`;
+  }
+  if (lastEl) {
+    lastEl.textContent = miniFoosballEventText(payload);
+  }
+
+  const shotSeq = Number(payload?.lastShot?.seq || 0);
+  if (shotSeq > miniFoosballShotSeq) {
+    miniFoosballShotSeq = shotSeq;
+    playMiniFoosballShot(payload.lastShot, goalieLane);
+    if (payload.lastShot?.goal) {
+      setNotice("Goal! Keep pressing the advantage.", "good");
+    } else {
+      setNotice("Saved. Switch lane or power and shoot again.", "");
+    }
+  } else if (options.forceSummaryText) {
+    setNotice("Foosball live: move lane with arrow keys and press Space to shoot.", "");
+  }
+
+  if (payload?.completed) {
+    chests.querySelectorAll("button[data-mini-action='foos_lane']").forEach((btn) => {
+      btn.disabled = true;
+    });
+    const kickButton = document.getElementById("miniFoosKickBtn");
+    if (kickButton) {
+      kickButton.disabled = true;
+    }
+  }
+}
+
 function renderMiniGame(type, data, actionLabel) {
   stopMiniTickers();
   activeMiniGameType = type;
+
+  if (type === "foosball_frenzy") {
+    miniFoosballSelectedLane = clampMiniFoosballLane(data?.lane);
+    miniFoosballGoalieLane = clampMiniFoosballLane(data?.goalieLane);
+    miniFoosballShotSeq = Number(data?.lastShot?.seq || 0);
+    chests.innerHTML = `
+      <div class="chest mini-foosball-chest">
+        <h4>Foosball Frenzy</h4>
+        <p class="help">Move lanes with <strong>Left/Right</strong> then shoot with <strong>Space</strong>.</p>
+        <div id="miniFoosScore" class="notice">You 0 - 0 Bot</div>
+        <div id="miniFoosStats" class="help">0 shots | 0% accuracy | 0 saves</div>
+        <div id="miniFoosballStage" class="mini-foosball-stage"></div>
+        <div class="mini-foosball-controls">
+          <label for="miniFoosPower">Power</label>
+          <input id="miniFoosPower" type="range" min="1" max="3" value="2" />
+          <div class="answers mini-foosball-lanes">
+            <button class="answer" data-mini-action="foos_lane" data-mini-value="0">Left</button>
+            <button class="answer" data-mini-action="foos_lane" data-mini-value="1">Center</button>
+            <button class="answer" data-mini-action="foos_lane" data-mini-value="2">Right</button>
+          </div>
+          <button id="miniFoosKickBtn" class="answer" data-mini-action="foos_kick">${escapeHtml(actionLabel || "Kick")} (Space)</button>
+        </div>
+        <div id="miniFoosLast" class="help">Get ready to score.</div>
+      </div>`;
+    initMiniFoosballPixi();
+    applyMiniFoosballState(data, { forceSummaryText: true });
+    return;
+  }
 
   if (type === "soccer_shootout") {
     miniSoccerYourTeam = normalizeSoccerTeam(data?.team || data?.yourTeam || "red");
@@ -1071,6 +1748,14 @@ function renderMiniGame(type, data, actionLabel) {
 }
 
 function renderLeaderboard(players) {
+  latestLeaderboardRows = Array.isArray(players) ? players.slice() : [];
+  if (isFishingMode()) {
+    syncFishingRankCard(latestLeaderboardRows);
+    if (String(phase || "").toLowerCase() === "finished") {
+      renderFishingFinalWinner(latestLeaderboardRows);
+    }
+  }
+
   if (!Array.isArray(players) || players.length === 0) {
     leaderboardBody.innerHTML = `<tr><td colspan="4" class="help">No players yet.</td></tr>`;
     return;
@@ -1089,7 +1774,7 @@ function renderLeaderboard(players) {
             ${isYou ? `<span class="player-tag">You</span>` : ""}
           </span>
         </td>
-        <td>${player.score}</td>
+        <td>${isFishingMode() ? formatWeightLbs(player.score) : player.score}</td>
         <td>${player.streak}</td>
       </tr>`;
     })
@@ -1127,6 +1812,14 @@ function getOrCreateAccountKey() {
 function accountQuery() {
   const safeKey = encodeURIComponent(getOrCreateAccountKey());
   return `accountKey=${safeKey}`;
+}
+
+function joinAccountKey() {
+  return roomSettings.allowStudentAccounts === false ? "" : getOrCreateAccountKey();
+}
+
+function effectiveJoinBlookId() {
+  return selectedBlookId || "sports-soccer-star";
 }
 
 function setPackResultNotice(message, tone = "") {
@@ -1623,7 +2316,7 @@ function attemptAutoRejoin() {
   reconnectJoinPending = true;
   socket.emit(
     "player:join",
-    { code: roomCode, name: playerName, blookId: selectedBlookId, accountKey: getOrCreateAccountKey() },
+    { code: roomCode, name: playerName, blookId: effectiveJoinBlookId(), accountKey: joinAccountKey() },
     (res) => {
     reconnectJoinPending = false;
     if (!res?.ok) {
@@ -1646,10 +2339,18 @@ function attemptAutoRejoin() {
     reconnecting = false;
     reconnectRetryCount = 0;
     const activeBlook = res.blook || { icon: "?", name: "Random Blook" };
+    currentMode = String(res.mode || currentMode || "classic").toLowerCase();
+    if (res.playerName) {
+      playerName = String(res.playerName);
+    }
+    if (res.settings) {
+      applyRoomSettings(res.settings);
+    }
     if (res.account) {
       applyAccount(res.account, getOrCreateAccountKey());
     }
     playerNameEl.textContent = `${activeBlook.icon || "?"} ${playerName}`;
+    updateFishingHudIdentity();
     setPhase(res.phase || phase || "lobby", "Reconnected. Syncing live state...");
     setNotice("Reconnected to room.", "good");
     }
@@ -1682,25 +2383,30 @@ joinBtn.addEventListener("click", () => {
   }
 
   if (!selectedBlookId) {
-    setJoinNotice("Open a pack first to unlock your first blook.", "bad");
-    return;
+    selectedBlookId = "sports-soccer-star";
   }
 
-  socket.emit("player:join", { code, name, blookId: selectedBlookId, accountKey: getOrCreateAccountKey() }, (res) => {
+  socket.emit("player:join", { code, name, blookId: effectiveJoinBlookId(), accountKey: joinAccountKey() }, (res) => {
     if (!res?.ok) {
       setJoinNotice(res?.message || "Unable to join room.", "bad");
       return;
     }
 
     roomCode = res.code;
-    playerName = name;
+    currentReportCode = "";
+    playerName = String(res.playerName || name);
+    currentMode = String(res.mode || currentMode || "classic").toLowerCase();
     const activeBlook = res.blook || { icon: "?", name: "Random Blook" };
+    if (res.settings) {
+      applyRoomSettings(res.settings);
+    }
     if (res.account) {
       applyAccount(res.account, getOrCreateAccountKey());
     }
 
     roomCodeEl.textContent = roomCode;
     playerNameEl.textContent = `${activeBlook.icon || "?"} ${playerName}`;
+    updateFishingHudIdentity();
 
     joinCard.classList.add("hidden");
     playCard.classList.remove("hidden");
@@ -1709,7 +2415,11 @@ joinBtn.addEventListener("click", () => {
     const phaseDetail =
       joinedPhase === "lobby" ? "Joined lobby. Waiting for host to start." : "Joined in progress. Syncing live phase now.";
     setPhase(joinedPhase, phaseDetail);
-    setJoinNotice(`Locked blook: ${activeBlook.icon || "?"} ${activeBlook.name || "Blook"}.`, "good");
+    if (roomSettings.allowStudentAccounts === false) {
+      setJoinNotice(`Joined as ${playerName}. Account features are disabled for this game.`, "good");
+    } else {
+      setJoinNotice(`Locked blook: ${activeBlook.icon || "?"} ${activeBlook.name || "Blook"}.`, "good");
+    }
     if (joinedPhase === "lobby") {
       setNotice(`Joined room ${roomCode}. Waiting for host to start.`, "good");
     } else {
@@ -1717,6 +2427,8 @@ joinBtn.addEventListener("click", () => {
     }
   });
 });
+
+maybeAutoJoinFromQuery();
 
 packTabs.addEventListener("click", (event) => {
   const target = event.target;
@@ -1800,6 +2512,31 @@ if (uploadQuizBtn) {
   });
 }
 
+if (fishingPlayAgainBtn) {
+  fishingPlayAgainBtn.addEventListener("click", () => {
+    window.location.href = "/play.html";
+  });
+}
+
+if (fishingHudCode) {
+  fishingHudCode.addEventListener("click", () => {
+    if (String(phase || "").toLowerCase() !== "finished") {
+      return;
+    }
+    openCurrentReportPage();
+  });
+  fishingHudCode.addEventListener("keydown", (event) => {
+    if (String(phase || "").toLowerCase() !== "finished") {
+      return;
+    }
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+    event.preventDefault();
+    openCurrentReportPage();
+  });
+}
+
 answers.addEventListener("click", (event) => {
   const target = event.target;
   if (!(target instanceof HTMLElement)) {
@@ -1843,7 +2580,30 @@ chests.addEventListener("click", (event) => {
     return;
   }
 
+  if (action === "foos_lane") {
+    const lane = clampMiniFoosballLane(button.dataset.miniValue);
+    setMiniFoosballLane(lane, true);
+    return;
+  }
+
   const payload = { code: roomCode, action };
+  if (action === "foos_kick") {
+    const powerInput = document.getElementById("miniFoosPower");
+    payload.action = "kick";
+    payload.value = {
+      lane: miniFoosballSelectedLane,
+      power: Math.max(1, Math.min(3, Math.round(Number(powerInput?.value || 2))))
+    };
+    const kickButton = document.getElementById("miniFoosKickBtn");
+    if (kickButton) {
+      kickButton.disabled = true;
+      setTimeout(() => {
+        if (activeMiniGameType === "foosball_frenzy") {
+          kickButton.disabled = false;
+        }
+      }, 130);
+    }
+  }
   if (action === "kick" || action === "shoot") {
     const powerInput = document.getElementById("miniSoccerPower");
     const power = Number(powerInput?.value || 2);
@@ -1885,6 +2645,12 @@ chests.addEventListener("click", (event) => {
       if (action === "kick") {
         miniSoccerSpaceCooldownUntil = 0;
       }
+      if (action === "foos_kick") {
+        const kickButton = document.getElementById("miniFoosKickBtn");
+        if (kickButton) {
+          kickButton.disabled = false;
+        }
+      }
     }
   });
 });
@@ -1893,21 +2659,55 @@ window.addEventListener("keydown", (event) => {
   if (!(event instanceof KeyboardEvent)) {
     return;
   }
+  if (phase !== "minigame") {
+    return;
+  }
+
+  const isTextEntry =
+    event.target instanceof HTMLInputElement ||
+    event.target instanceof HTMLTextAreaElement ||
+    event.target instanceof HTMLSelectElement;
+  if (isTextEntry) {
+    return;
+  }
+
+  if (event.key === "ArrowLeft" && activeMiniGameType === "foosball_frenzy") {
+    event.preventDefault();
+    setMiniFoosballLane(miniFoosballSelectedLane - 1, true);
+    return;
+  }
+
+  if (event.key === "ArrowRight" && activeMiniGameType === "foosball_frenzy") {
+    event.preventDefault();
+    setMiniFoosballLane(miniFoosballSelectedLane + 1, true);
+    return;
+  }
+
   if (event.key !== " " && event.code !== "Space") {
     return;
   }
-  if (activeMiniGameType !== "soccer_shootout" || phase !== "minigame") {
+
+  if (activeMiniGameType === "soccer_shootout") {
+    const kickBtn = document.getElementById("miniSoccerKickBtn");
+    if (!(kickBtn instanceof HTMLButtonElement) || kickBtn.disabled) {
+      return;
+    }
+    if (Date.now() < miniSoccerSpaceCooldownUntil) {
+      return;
+    }
+    event.preventDefault();
+    kickBtn.click();
     return;
   }
-  const kickBtn = document.getElementById("miniSoccerKickBtn");
-  if (!(kickBtn instanceof HTMLButtonElement) || kickBtn.disabled) {
-    return;
+
+  if (activeMiniGameType === "foosball_frenzy") {
+    const kickBtn = document.getElementById("miniFoosKickBtn");
+    if (!(kickBtn instanceof HTMLButtonElement) || kickBtn.disabled) {
+      return;
+    }
+    event.preventDefault();
+    kickBtn.click();
   }
-  if (Date.now() < miniSoccerSpaceCooldownUntil) {
-    return;
-  }
-  event.preventDefault();
-  kickBtn.click();
 });
 
 chests.addEventListener("keydown", (event) => {
@@ -1934,14 +2734,23 @@ socket.on("lobby:update", (payload) => {
     return;
   }
 
+  currentMode = String(payload.mode || currentMode || "classic").toLowerCase();
+  applyRoomSettings(payload.settings || {});
   setPhase("lobby", `${payload.players.length} students connected. Waiting for host.`);
   showSection(null);
   renderLeaderboard(payload.players);
+  if (!Array.isArray(payload.players) || payload.players.every((row) => Number(row?.score || 0) <= 0)) {
+    fishingGameEndsAt = 0;
+  }
   const modeText = payload.modeName || MODE_LABELS[payload.mode] || payload.mode || "Classic Quiz";
   const quizSetText = payload.questionSetLabel || payload.questionSet || "Quiz";
   feedTitle.textContent = payload.feedTitle || "Mode Feed";
   activeEventName = payload.eventName || "Event Card";
-  setNotice(`Lobby active. Host: ${payload.hostName}. Mode: ${modeText}. Quiz: ${quizSetText}.`);
+  if (roomSettings.showInstructions === false) {
+    setNotice(`Lobby active. Host: ${payload.hostName}.`);
+  } else {
+    setNotice(`Lobby active. Host: ${payload.hostName}. Mode: ${modeText}. Quiz: ${quizSetText}.`);
+  }
 });
 
 socket.on("room:activeCode", (payload) => {
@@ -1956,9 +2765,14 @@ socket.on("players:update", ({ players }) => {
 });
 
 socket.on("question:start", (payload) => {
+  ensureFishingGameTimerStarted();
   setPhase("question", `Question ${payload.questionIndex}/${payload.totalQuestions} is live.`);
   renderQuestion(payload);
-  setNotice(`Question ${payload.questionIndex} of ${payload.totalQuestions}. Answer quickly for bonuses.`);
+  setNotice(
+    roomSettings.showInstructions === false
+      ? `Question ${payload.questionIndex}/${payload.totalQuestions} is live.`
+      : `Question ${payload.questionIndex} of ${payload.totalQuestions}. Answer quickly for bonuses.`
+  );
 });
 
 socket.on("player:locked", ({ leaderboard }) => {
@@ -2011,7 +2825,7 @@ socket.on("minigame:start", ({ eligiblePlayerIds, eventName, feedTitle: nextFeed
     stopMiniTickers();
     showSection(resultSection);
     resultText.textContent = `Only students who answered correctly are in ${activeEventName}.`;
-    setNotice("Answer correctly to enter the next mini-game round.");
+    setNotice(roomSettings.showInstructions === false ? "Mini-game in progress." : "Answer correctly to enter the next mini-game round.");
   }
 });
 
@@ -2024,10 +2838,15 @@ socket.on("minigame:yourData", ({ type, endsAt, eventName, actionLabel, data }) 
   setGameIllustration(chestIllustration, type || "", miniGameTypeLabel(type));
   renderMiniGame(type, data, activeActionLabel);
   startTicker(chestTimer, endsAt, "Mini-game ends in");
-  setNotice("Play the mini-game for bonus points.");
+  setNotice(roomSettings.showInstructions === false ? "Mini-game started." : "Play the mini-game for bonus points.");
 });
 
 socket.on("minigame:state", (payload) => {
+  if (payload.type === "foosball_frenzy") {
+    applyMiniFoosballState(payload, { forceSummaryText: false });
+    return;
+  }
+
   if (payload.type === "soccer_shootout") {
     applyMiniSoccerState(payload, { forceSummaryText: false });
 
@@ -2185,8 +3004,10 @@ socket.on("account:coinsAwarded", ({ reward, rank, totalPlayers, account }) => {
   }
 });
 
-socket.on("game:finished", ({ leaderboard }) => {
+socket.on("game:finished", ({ leaderboard, reportCode }) => {
   stopMiniTickers();
+  fishingGameEndsAt = Date.now();
+  currentReportCode = String(reportCode || roomCode || "").toUpperCase().trim();
   setPhase("finished", "Final rankings locked.");
   showSection(resultSection);
   resultText.textContent = "Game finished. Final rankings are locked. Coins are now awarded.";
@@ -2214,6 +3035,7 @@ socket.on("connect", () => {
   setConnectionPill("Connected", "ok");
   if (!roomCode) {
     loadActiveRoomCode();
+    maybeAutoJoinFromQuery();
   }
   if (reconnecting && roomCode && playerName && !playCard.classList.contains("hidden")) {
     attemptAutoRejoin();
@@ -2238,6 +3060,7 @@ socket.io.on("reconnect_attempt", () => {
   setConnectionPill("Reconnecting...", "warn");
 });
 
+applyRoomSettings(roomSettings);
 loadBlooks();
 loadQuizSets();
 loadMiniGames();

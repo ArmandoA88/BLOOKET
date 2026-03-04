@@ -6,13 +6,9 @@ const ROOT = path.resolve(__dirname, "..");
 const PORT = Number(process.env.SMOKE_PORT || 3100);
 const BASE_URL = `http://127.0.0.1:${PORT}`;
 const MINI_GAME_TYPES = [
+  "foosball_frenzy",
   "soccer_shootout",
-  "tap_rush",
-  "reaction_duel",
-  "sequence_memory",
-  "obstacle_dodge",
-  "precision_stop",
-  "word_scramble"
+  "space_invaders"
 ];
 
 function sleep(ms) {
@@ -135,6 +131,36 @@ function solveMultiplication(questionPayload) {
 }
 
 async function playMiniGameActions(type, code, studentA, studentB, dataA, dataB) {
+  if (type === "foosball_frenzy") {
+    const deadline = Date.now() + 2600;
+    let lane = 0;
+    while (Date.now() < deadline) {
+      lane = (lane + 1) % 3;
+      await emitAck(studentA, "player:minigameAction", {
+        code,
+        action: "set_lane",
+        value: { lane }
+      });
+      await emitAck(studentB, "player:minigameAction", {
+        code,
+        action: "set_lane",
+        value: { lane: (lane + 1) % 3 }
+      });
+      await emitAck(studentA, "player:minigameAction", {
+        code,
+        action: "kick",
+        value: { lane, power: 2 }
+      });
+      await emitAck(studentB, "player:minigameAction", {
+        code,
+        action: "kick",
+        value: { lane: (lane + 2) % 3, power: 2 }
+      });
+      await sleep(110);
+    }
+    return;
+  }
+
   if (type === "soccer_shootout") {
     const deadline = Date.now() + 2800;
     while (Date.now() < deadline) {
@@ -165,6 +191,11 @@ async function playMiniGameActions(type, code, studentA, studentB, dataA, dataB)
       }
       await sleep(120);
     }
+    return;
+  }
+
+  if (type === "space_invaders") {
+    await sleep(1200);
     return;
   }
 
@@ -339,7 +370,7 @@ async function run() {
     const bQuestion = waitForEvent(studentB, "question:start", { timeoutMs: 12000 });
     const hostMiniStart = waitForEvent(host, "minigame:start", {
       timeoutMs: 20000,
-      predicate: (payload) => payload?.type === "soccer_shootout"
+      predicate: (payload) => payload?.type === "foosball_frenzy"
     });
 
     await emitAck(host, "host:start", { code });
@@ -399,7 +430,7 @@ async function run() {
     console.log(`- server: ${BASE_URL}`);
     console.log("- quiz flow verified: host:start + student answers");
     console.log(`- mini-game test verified: ${MINI_GAME_TYPES.join(", ")}`);
-    console.log("- default round mini-game verified: soccer_shootout");
+    console.log("- default round mini-game verified: foosball_frenzy");
     console.log("- mini-game rotation mode off verified: question goes straight to round summary");
     console.log("- multiplayer flow: host + 2 students");
   } finally {

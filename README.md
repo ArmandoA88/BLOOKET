@@ -24,7 +24,7 @@ A localhost-first realtime classroom quiz game with host controls and student jo
 - Host can choose mini-game rotation (`Fixed`, `Random`, `Most Played First`, `Soccer Only`, `Disable`) and mini-game duration
 - Host sees a different live progress dashboard for each mini-game type
 - Host and student UI show mini-game trend stats (`Most Played` and `Most Matched`)
-- Optional Google authentication for host/student access
+- Optional Google authentication for host access (students can still play as guests)
 - Auto round progression and live leaderboard updates
 - Final rankings / game finished screen
 
@@ -47,7 +47,7 @@ set GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
 
 `GOOGLE_CALLBACK_URL` is optional. If omitted, the server auto-detects callback host from the incoming request.
 
-If `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are not set, auth stays disabled and the app runs as before.
+If `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are not set, host login stays disabled and the app still supports guest student play.
 
 ## Run Locally
 

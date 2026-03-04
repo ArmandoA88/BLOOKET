@@ -13,6 +13,7 @@ const MODE_LABELS = {
 };
 const GAME_IMAGE_MAP = {
   question: "/assets/minigames/shared/question.svg",
+  foosball_frenzy: "/assets/minigames/soccer_shootout/soccer.svg",
   soccer_shootout: "/assets/minigames/soccer_shootout/soccer.svg",
   tap_rush: "/assets/minigames/tap_rush/tap.svg",
   reaction_duel: "/assets/minigames/reaction_duel/tap.svg",
@@ -70,6 +71,7 @@ const PHASE_CLASS_CANDIDATES = [
   "phase-kicked"
 ];
 const MINI_GAME_LABELS = {
+  foosball_frenzy: "Foosball Frenzy",
   soccer_shootout: "Soccer Shootout",
   tap_rush: "Tap Rush",
   reaction_duel: "Reaction Duel",
@@ -78,11 +80,73 @@ const MINI_GAME_LABELS = {
   precision_stop: "Precision Stop",
   word_scramble: "Word Scramble"
 };
+const MODE_PREVIEW_COPY = {
+  gold: {
+    title: "Gold Quest",
+    tagline: "Exciting twists and chests full of gold!",
+    difficulty: "Simple",
+    skills: "Luck & Speed",
+    idealTime: "7 min",
+    questions: "Self-paced",
+    players: "2 - 300"
+  },
+  fishing: {
+    title: "Fishing Frenzy",
+    tagline: "Cast lines, catch loot, and snowball points.",
+    difficulty: "Simple",
+    skills: "Risk & Timing",
+    idealTime: "6 min",
+    questions: "Standard pace",
+    players: "2 - 300"
+  },
+  crypto: {
+    title: "Crypto Hack",
+    tagline: "Invest, steal, and defend your wallet.",
+    difficulty: "Medium",
+    skills: "Strategy",
+    idealTime: "8 min",
+    questions: "Standard pace",
+    players: "2 - 300"
+  },
+  brawl: {
+    title: "Monster Brawl",
+    tagline: "Build power and battle for top rank.",
+    difficulty: "Medium",
+    skills: "Planning",
+    idealTime: "8 min",
+    questions: "Standard pace",
+    players: "2 - 300"
+  },
+  classic: {
+    title: "Classic",
+    tagline: "Fast classroom quiz flow with live leaderboard.",
+    difficulty: "Simple",
+    skills: "Accuracy",
+    idealTime: "5 min",
+    questions: "Speed + streak",
+    players: "2 - 300"
+  }
+};
 
 const setupCard = document.getElementById("setupCard");
 const gameCard = document.getElementById("gameCard");
 const hostNameInput = document.getElementById("hostName");
 const modeInput = document.getElementById("mode");
+const modePickerGrid = document.getElementById("modePickerGrid");
+const modePreviewTitle = document.getElementById("modePreviewTitle");
+const modePreviewTagline = document.getElementById("modePreviewTagline");
+const modePreviewDifficulty = document.getElementById("modePreviewDifficulty");
+const modePreviewSkills = document.getElementById("modePreviewSkills");
+const modePreviewTime = document.getElementById("modePreviewTime");
+const modePreviewQuestions = document.getElementById("modePreviewQuestions");
+const modePreviewPlayers = document.getElementById("modePreviewPlayers");
+const modeConfigQuizTitle = document.getElementById("modeConfigQuizTitle");
+const modeSettingsHeading = document.getElementById("modeSettingsHeading");
+const quickDurationLabel = document.getElementById("quickDurationLabel");
+const quickDurationMinInput = document.getElementById("quickDurationMin");
+const endTypeTimeBtn = document.getElementById("endTypeTimeBtn");
+const endTypeWeightBtn = document.getElementById("endTypeWeightBtn");
+const modeSettingToggles = Array.from(document.querySelectorAll(".mode-setting-toggle"));
 const questionSetInput = document.getElementById("questionSet");
 const timerInput = document.getElementById("timer");
 const countInput = document.getElementById("count");
@@ -105,6 +169,7 @@ const quizUploadNotice = document.getElementById("quizUploadNotice");
 const roomCodeEl = document.getElementById("roomCode");
 const copyCodeBtn = document.getElementById("copyCodeBtn");
 const copyJoinLinkBigBtn = document.getElementById("copyJoinLinkBigBtn");
+const playAsHostBtn = document.getElementById("playAsHostBtn");
 const lobbyStartBtn = document.getElementById("lobbyStartBtn");
 const modeLabel = document.getElementById("modeLabel");
 const quizLabel = document.getElementById("quizLabel");
@@ -157,8 +222,22 @@ const lobbyPlayers = document.getElementById("lobbyPlayers");
 let serverInfo = null;
 let activeMiniGameType = "";
 let availableQuestionSets = FALLBACK_QUESTION_SETS.slice();
-const quickMiniGameMode = new URLSearchParams(window.location.search).get("quick") === "minigame";
+let selectedEndType = "time";
+const DEFAULT_SETUP_FLAGS = {
+  instructions: true,
+  late_join: true,
+  random_names: false,
+  student_accounts: true
+};
+const hostPageParams = new URLSearchParams(window.location.search);
+const quickMiniGameMode = hostPageParams.get("quick") === "minigame";
+const requestedMiniGameType = String(hostPageParams.get("mini") || "")
+  .trim()
+  .toLowerCase();
+const requestedQuestionSetId = String(hostPageParams.get("set") || "").trim();
+const requestedHostName = String(hostPageParams.get("hostName") || "").trim();
 const FALLBACK_MINI_GAMES = [
+  { id: "foosball_frenzy", name: "Foosball Frenzy", description: "Fast table soccer duel with lane + power shots." },
   { id: "soccer_shootout", name: "Soccer Shootout", description: "Penalty kicks with lane + power choice." },
   { id: "tap_rush", name: "Tap Rush", description: "Tap fast for bonus points." },
   { id: "reaction_duel", name: "Reaction Duel", description: "Wait for GO and react fast." },
@@ -230,6 +309,256 @@ function showNotice(el, message, type = "") {
     el.classList.add(type);
   }
   el.textContent = message;
+}
+
+function hideSetupNotice() {
+  if (!setupNotice) {
+    return;
+  }
+  setupNotice.classList.add("hidden");
+  setupNotice.classList.remove("good", "bad");
+  setupNotice.textContent = "";
+}
+
+function modePreviewById(mode) {
+  return MODE_PREVIEW_COPY[mode] || MODE_PREVIEW_COPY.classic;
+}
+
+function renderModePreview(mode) {
+  const info = modePreviewById(mode);
+  if (modePreviewTitle) {
+    modePreviewTitle.textContent = info.title;
+  }
+  if (modePreviewTagline) {
+    modePreviewTagline.textContent = info.tagline;
+  }
+  if (modePreviewDifficulty) {
+    modePreviewDifficulty.textContent = info.difficulty;
+  }
+  if (modePreviewSkills) {
+    modePreviewSkills.textContent = info.skills;
+  }
+  if (modePreviewTime) {
+    modePreviewTime.textContent = info.idealTime;
+  }
+  if (modePreviewQuestions) {
+    modePreviewQuestions.textContent = info.questions;
+  }
+  if (modePreviewPlayers) {
+    modePreviewPlayers.textContent = info.players;
+  }
+  if (modeSettingsHeading) {
+    modeSettingsHeading.textContent = `${info.title} Settings`;
+  }
+}
+
+function renderModeConfigQuizTitle() {
+  if (!modeConfigQuizTitle || !questionSetInput) {
+    return;
+  }
+  const setId = String(questionSetInput.value || "");
+  const label = questionSetLabelById(setId);
+  const setInfo = availableQuestionSets.find((set) => set.id === setId);
+  const count = Math.max(0, Number(setInfo?.questionCount || 0));
+  modeConfigQuizTitle.textContent = count > 0 ? `${label} ${count} questions` : label;
+}
+
+function setModeToggleVisual(toggle, enabled) {
+  if (!toggle) {
+    return;
+  }
+  const isEnabled = enabled === true;
+  toggle.classList.toggle("on", isEnabled);
+  toggle.setAttribute("aria-pressed", isEnabled ? "true" : "false");
+}
+
+function readModeToggleFlags() {
+  const flags = { ...DEFAULT_SETUP_FLAGS };
+  for (const toggle of modeSettingToggles) {
+    const key = String(toggle?.dataset?.settingToggle || "").trim();
+    if (!key || !(key in flags)) {
+      continue;
+    }
+    flags[key] = toggle.classList.contains("on");
+  }
+  return flags;
+}
+
+function applyModeToggleFlags(flags = {}) {
+  for (const toggle of modeSettingToggles) {
+    const key = String(toggle?.dataset?.settingToggle || "").trim();
+    if (!key || !(key in DEFAULT_SETUP_FLAGS)) {
+      continue;
+    }
+    const nextValue = key in flags ? flags[key] === true : DEFAULT_SETUP_FLAGS[key];
+    setModeToggleVisual(toggle, nextValue);
+  }
+}
+
+function selectEndType(type) {
+  const nextType = type === "weight" ? "weight" : "time";
+  selectedEndType = nextType;
+  endTypeTimeBtn?.classList.toggle("selected", nextType === "time");
+  endTypeWeightBtn?.classList.toggle("selected", nextType === "weight");
+  if (quickDurationLabel) {
+    quickDurationLabel.textContent = nextType === "weight" ? "Target Weight (x1000)" : "Time (minutes)";
+  }
+  if (quickDurationMinInput) {
+    quickDurationMinInput.min = nextType === "weight" ? "2" : "2";
+    quickDurationMinInput.max = nextType === "weight" ? "30" : "20";
+  }
+}
+
+function initializeModeConfigPanel() {
+  renderModeConfigQuizTitle();
+  selectEndType("time");
+  applyModeToggleFlags(DEFAULT_SETUP_FLAGS);
+
+  endTypeTimeBtn?.addEventListener("click", () => {
+    selectEndType("time");
+    hideSetupNotice();
+  });
+  endTypeWeightBtn?.addEventListener("click", () => {
+    selectEndType("weight");
+    hideSetupNotice();
+  });
+
+  questionSetInput?.addEventListener("change", () => {
+    renderModeConfigQuizTitle();
+  });
+
+  for (const toggle of modeSettingToggles) {
+    toggle.addEventListener("click", () => {
+      const isOn = toggle.classList.contains("on");
+      setModeToggleVisual(toggle, !isOn);
+    });
+  }
+}
+
+function applyQuickDurationEstimate() {
+  if (!quickDurationMinInput) {
+    return;
+  }
+
+  const rawMinutes = Number(quickDurationMinInput.value || 7);
+  const maxValue = selectedEndType === "weight" ? 30 : 20;
+  const minutes = Math.max(2, Math.min(maxValue, Number.isFinite(rawMinutes) ? rawMinutes : 7));
+  quickDurationMinInput.value = String(minutes);
+
+  if (selectedEndType !== "time") {
+    return;
+  }
+
+  const timerSeconds = Math.max(8, Number(timerInput?.value || 15));
+  const miniOff = String(miniRotationInput?.value || "fixed") === "off";
+  const miniSeconds = miniOff ? 0 : Math.max(5, Number(miniDurationInput?.value || 10));
+  const estimatedRoundSeconds = Math.max(12, timerSeconds + 6 + miniSeconds);
+  const estimatedQuestionCount = Math.max(5, Math.min(30, Math.round((minutes * 60) / estimatedRoundSeconds)));
+  if (countInput) {
+    countInput.value = String(estimatedQuestionCount);
+  }
+}
+
+function setupConfigPayload() {
+  applyQuickDurationEstimate();
+  const quickRaw = Number(quickDurationMinInput?.value || 7);
+  const quickValue = Math.max(2, Math.min(selectedEndType === "weight" ? 30 : 20, Number.isFinite(quickRaw) ? quickRaw : 7));
+  const toggles = readModeToggleFlags();
+  return {
+    endType: selectedEndType,
+    endTargetValue: quickValue,
+    showInstructions: toggles.instructions === true,
+    allowLateJoin: toggles.late_join === true,
+    useRandomNames: toggles.random_names === true,
+    allowStudentAccounts: toggles.student_accounts === true
+  };
+}
+
+function applySetupConfigFromSettings(settings = {}) {
+  const endType = String(settings?.endType || "time").toLowerCase() === "weight" ? "weight" : "time";
+  selectEndType(endType);
+  if (quickDurationMinInput) {
+    const fallback = endType === "weight" ? 7 : 7;
+    const maxValue = endType === "weight" ? 30 : 20;
+    const valueRaw = Number(settings?.endTargetValue || settings?.quickDurationMin || fallback);
+    const value = Math.max(2, Math.min(maxValue, Number.isFinite(valueRaw) ? valueRaw : fallback));
+    quickDurationMinInput.value = String(value);
+  }
+  applyModeToggleFlags({
+    instructions: settings?.showInstructions,
+    late_join: settings?.allowLateJoin,
+    random_names: settings?.useRandomNames,
+    student_accounts: settings?.allowStudentAccounts
+  });
+}
+
+function selectSetupMode(mode) {
+  if (!modeInput) {
+    return;
+  }
+
+  const supportedModes = Array.from(modeInput.options).map((option) => option.value);
+  const nextMode = supportedModes.includes(mode) ? mode : supportedModes[0] || "classic";
+  modeInput.value = nextMode;
+
+  const tiles = Array.from(modePickerGrid?.querySelectorAll(".mode-tile[data-mode]") || []);
+  for (const tile of tiles) {
+    const tileMode = String(tile.dataset.mode || "");
+    const selected = tileMode === nextMode;
+    tile.classList.toggle("selected", selected);
+    tile.setAttribute("aria-pressed", selected ? "true" : "false");
+  }
+
+  renderModePreview(nextMode);
+  renderModeConfigQuizTitle();
+}
+
+function initializeModePicker() {
+  if (!modeInput) {
+    return;
+  }
+
+  const requestedMode = String(hostPageParams.get("mode") || "").trim().toLowerCase();
+  if (requestedMode) {
+    selectSetupMode(requestedMode);
+  } else {
+    selectSetupMode(modeInput.value || "classic");
+  }
+
+  modeInput.addEventListener("change", () => {
+    selectSetupMode(modeInput.value || "classic");
+  });
+
+  if (!modePickerGrid) {
+    return;
+  }
+
+  modePickerGrid.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    const tile = target.closest(".mode-tile");
+    if (!(tile instanceof HTMLElement)) {
+      return;
+    }
+
+    const supported = tile.dataset.supported !== "false";
+    if (!supported) {
+      const label = String(tile.childNodes[0]?.textContent || "This mode").trim();
+      showNotice(setupNotice, `${label} is not available in this build.`, "bad");
+      return;
+    }
+
+    const mode = String(tile.dataset.mode || "").trim();
+    if (!mode) {
+      return;
+    }
+
+    hideSetupNotice();
+    selectSetupMode(mode);
+  });
 }
 
 function showMiniGameNotice(message, type = "") {
@@ -316,6 +645,7 @@ function syncQuestionSetInputs(preferredId = "") {
   const selectedId = availableQuestionSets.some((set) => set.id === safePreferred) ? safePreferred : fallback;
   renderQuestionSetOptions(questionSetInput, selectedId);
   renderQuestionSetOptions(liveQuestionSet, selectedId);
+  renderModeConfigQuizTitle();
 }
 
 function renderMiniGamePopularity(data = {}) {
@@ -461,6 +791,31 @@ function renderMiniGameDashboard(payload) {
               </div>
               <div class="host-soccer-score">${escapeHtml(teamLabel)} | ${goals} goals</div>
               <div class="help">${kicks} kicks this round</div>
+            </article>`;
+          })
+          .join("")}
+      </div>`;
+    return;
+  }
+
+  if (type === "foosball_frenzy") {
+    miniGameDashboardBody.innerHTML = `
+      <div class="host-soccer-grid">
+        ${players
+          .map((player) => {
+            const goals = Number(player.goals || 0);
+            const botGoals = Number(player.botGoals || 0);
+            const shots = Number(player.shots || 0);
+            const saves = Number(player.saves || 0);
+            const accuracy = shots > 0 ? Math.round((goals / shots) * 100) : 0;
+            return `
+            <article class="host-soccer-card theme-lime">
+              <div class="host-mini-player">
+                <span class="blook-top-icon">${escapeHtml(player.blook?.icon || "?")}</span>
+                <strong>${escapeHtml(player.name)}</strong>
+              </div>
+              <div class="host-soccer-score">You ${goals} - ${botGoals} Bot</div>
+              <div class="help">${shots} shots | ${accuracy}% accuracy | ${saves} saves</div>
             </article>`;
           })
           .join("")}
@@ -721,6 +1076,28 @@ function preferredJoinUrl() {
   return formatJoinUrl(window.location.origin || "");
 }
 
+function hostPlayUrl() {
+  if (!roomCode) {
+    return "";
+  }
+
+  const hostName = String(hostNameInput?.value || "Host").trim().slice(0, 24) || "Host";
+  const joinUrl = preferredJoinUrl();
+  if (!joinUrl) {
+    return "";
+  }
+
+  try {
+    const url = new URL(joinUrl);
+    url.searchParams.set("code", roomCode);
+    url.searchParams.set("name", hostName);
+    url.searchParams.set("autojoin", "1");
+    return url.toString();
+  } catch (_error) {
+    return `/play.html?code=${encodeURIComponent(roomCode)}&name=${encodeURIComponent(hostName)}&autojoin=1`;
+  }
+}
+
 function joinHostLabel(joinUrl) {
   if (!joinUrl) {
     return "localhost:3000/play.html";
@@ -869,8 +1246,11 @@ function renderMiniGameCatalog(games, stats = []) {
       .map((game) => `<option value="${escapeHtml(game.id)}">${escapeHtml(game.name)}</option>`)
       .join("");
 
-    const exists = games.some((game) => game.id === previous);
-    testMiniGameType.value = exists ? previous : games[0].id;
+    const preferred =
+      (requestedMiniGameType && games.some((game) => game.id === requestedMiniGameType) ? requestedMiniGameType : "") ||
+      previous;
+    const exists = games.some((game) => game.id === preferred);
+    testMiniGameType.value = exists ? preferred : games[0].id;
   }
 }
 
@@ -885,7 +1265,14 @@ async function loadQuestionSets() {
   } catch (_error) {
     rememberQuestionSets(FALLBACK_QUESTION_SETS);
   }
-  syncQuestionSetInputs(questionSetInput?.value || liveQuestionSet?.value || "");
+  const preferred =
+    (requestedQuestionSetId && availableQuestionSets.some((set) => set.id === requestedQuestionSetId)
+      ? requestedQuestionSetId
+      : "") ||
+    questionSetInput?.value ||
+    liveQuestionSet?.value ||
+    "";
+  syncQuestionSetInputs(preferred);
 }
 
 async function uploadQuizSetFile() {
@@ -985,6 +1372,8 @@ async function copyText(text) {
 }
 
 createBtn.addEventListener("click", () => {
+  const setupConfig = setupConfigPayload();
+
   const payload = {
     hostName: hostNameInput.value,
     mode: modeInput.value,
@@ -992,7 +1381,13 @@ createBtn.addEventListener("click", () => {
     timerSeconds: Number(timerInput.value),
     questionCount: Number(countInput.value),
     miniGameRotationMode: miniRotationInput?.value || "fixed",
-    miniGameDurationSec: Number(miniDurationInput?.value || 10)
+    miniGameDurationSec: Number(miniDurationInput?.value || 10),
+    endType: setupConfig.endType,
+    endTargetValue: setupConfig.endTargetValue,
+    showInstructions: setupConfig.showInstructions,
+    allowLateJoin: setupConfig.allowLateJoin,
+    useRandomNames: setupConfig.useRandomNames,
+    allowStudentAccounts: setupConfig.allowStudentAccounts
   };
 
   socket.emit("host:create", payload, (res) => {
@@ -1005,6 +1400,8 @@ createBtn.addEventListener("click", () => {
     roomCodeEl.textContent = roomCode;
     setupCard.classList.add("hidden");
     gameCard.classList.remove("hidden");
+    modeLabel.textContent = `Mode: ${MODE_LABELS[payload.mode] || payload.mode || "Classic Quiz"}`;
+    quizLabel.textContent = `Quiz: ${questionSetLabelById(payload.questionSet)}`;
     setPhase("lobby", "Room created. Share the code so students can join.");
     renderJoinLinks();
     renderLobbyBoard([]);
@@ -1077,8 +1474,29 @@ copyJoinLinkBigBtn?.addEventListener("click", async () => {
   }
 });
 
+playAsHostBtn?.addEventListener("click", () => {
+  if (!roomCode) {
+    showNotice(hostNotice, "Create a room first.", "bad");
+    return;
+  }
+
+  const url = hostPlayUrl();
+  if (!url) {
+    showNotice(hostNotice, "Host play link unavailable right now.", "bad");
+    return;
+  }
+
+  const opened = window.open(url, "_blank", "noopener");
+  if (!opened) {
+    showNotice(hostNotice, "Pop-up blocked. Allow pop-ups to open your host player tab.", "bad");
+    return;
+  }
+  showNotice(hostNotice, "Opened player tab for host. Keep this tab for controls.", "good");
+});
+
 saveSettingsBtn.addEventListener("click", () => {
   if (!ensureCreated()) return;
+  const setupConfig = setupConfigPayload();
 
   socket.emit(
     "host:updateSettings",
@@ -1090,7 +1508,13 @@ saveSettingsBtn.addEventListener("click", () => {
         timerSeconds: Number(liveTimer.value),
         questionCount: Number(liveCount.value),
         miniGameRotationMode: liveMiniRotation?.value || "fixed",
-        miniGameDurationSec: Number(liveMiniDuration?.value || 10)
+        miniGameDurationSec: Number(liveMiniDuration?.value || 10),
+        endType: setupConfig.endType,
+        endTargetValue: setupConfig.endTargetValue,
+        showInstructions: setupConfig.showInstructions,
+        allowLateJoin: setupConfig.allowLateJoin,
+        useRandomNames: setupConfig.useRandomNames,
+        allowStudentAccounts: setupConfig.allowStudentAccounts
       }
     },
     (res) => {
@@ -1200,6 +1624,8 @@ socket.on("lobby:update", (payload) => {
     }
   }
   syncQuestionSetInputs(payload.settings?.questionSet || "");
+  selectSetupMode(payload.settings?.mode || modeInput?.value || "classic");
+  applySetupConfigFromSettings(payload.settings || {});
   const questionSetText = payload.questionSetLabel || questionSetLabelById(payload.settings.questionSet) || "Quiz";
   modeLabel.textContent = `Mode: ${modeText}`;
   quizLabel.textContent = `Quiz: ${questionSetText}`;
@@ -1399,6 +1825,12 @@ socket.on("connect_error", () => {
   }
 });
 
+if (hostNameInput && requestedHostName) {
+  hostNameInput.value = requestedHostName.slice(0, 24);
+}
+
+initializeModeConfigPanel();
+initializeModePicker();
 loadServerInfo();
 loadQuestionSets();
 loadMiniGames();

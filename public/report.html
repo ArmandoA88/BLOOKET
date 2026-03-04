@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz Report</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body class="report-page">
+    <main class="report-shell">
+      <aside class="mysets-sidebar report-sidebar">
+        <a class="mysets-brand" href="/">Blooket</a>
+        <a class="mysets-create-btn" href="/host.html">Create</a>
+        <nav class="mysets-nav">
+          <a href="/">Discover</a>
+          <a href="/">My Sets</a>
+          <a href="/">Favorites</a>
+          <a class="active" href="/">History</a>
+          <a href="/">Homework</a>
+          <a href="/play.html">Play</a>
+          <a href="/">Settings</a>
+        </nav>
+        <a class="mysets-upgrade" href="/host.html">Upgrade to Plus</a>
+      </aside>
+
+      <section class="report-main">
+        <header class="report-topbar">
+          <div class="report-title-wrap">
+            <img id="reportModeIcon" class="report-mode-icon" src="/assets/games/question.svg" alt="" />
+            <h1 id="reportSetTitle" class="report-title">Loading report...</h1>
+          </div>
+          <div class="report-user">
+            <span id="reportHostName">Host</span>
+          </div>
+        </header>
+
+        <div id="reportNotice" class="report-notice hidden" role="status" aria-live="polite"></div>
+
+        <section class="report-summary-grid">
+          <article class="report-accuracy-card">
+            <div id="reportAccuracyRing" class="report-accuracy-ring">
+              <div class="report-accuracy-core">
+                <strong id="reportAccuracyPct">0%</strong>
+                <span>Correct</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="report-stats-card">
+            <div class="report-date-row">
+              <span class="report-date-label">Date</span>
+              <strong id="reportDateText">--</strong>
+            </div>
+
+            <div class="report-stat-grid">
+              <div class="report-stat">
+                <span>Total Correct</span>
+                <strong id="reportTotalCorrect">0</strong>
+              </div>
+              <div class="report-stat">
+                <span>Total Incorrect</span>
+                <strong id="reportTotalIncorrect">0</strong>
+              </div>
+              <div class="report-stat">
+                <span>Total Students</span>
+                <strong id="reportTotalStudents">0</strong>
+              </div>
+              <div class="report-stat">
+                <span>Total Answers</span>
+                <strong id="reportTotalAnswers">0</strong>
+              </div>
+            </div>
+
+            <div class="report-actions">
+              <button id="reportDeleteBtn" type="button" class="report-action report-action-danger">Delete</button>
+              <button id="reportDownloadBtn" type="button" class="report-action report-action-good">Download</button>
+            </div>
+          </article>
+        </section>
+
+        <section class="report-block">
+          <h2 class="report-heading">Leaderboard</h2>
+          <div class="report-rows-head">
+            <span>Place</span>
+            <span>Student</span>
+            <span>Accuracy</span>
+            <span>Weight (lbs)</span>
+          </div>
+          <div id="reportLeaderboardRows" class="report-rows-body"></div>
+        </section>
+
+        <section class="report-block">
+          <div class="report-questions-head">
+            <h2 class="report-heading">Questions</h2>
+            <label>
+              Sort by:
+              <select id="reportQuestionSort">
+                <option value="index">Question #</option>
+                <option value="incorrect">Incorrect %</option>
+              </select>
+            </label>
+          </div>
+          <div id="reportQuestionRows" class="report-question-list"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="/report.js"></script>
+  </body>
+</html>

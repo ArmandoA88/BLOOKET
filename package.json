@@ -6,7 +6,7 @@
     "test": "npm run smoke",
     "dev": "node server.js",
     "start": "node server.js",
-    "check": "node --check server.js && node --check public/host.js && node --check public/play.js && node --check scripts/auto-demo.js && node --check scripts/smoke-test.js",
+    "check": "node --check server.js && node --check public/host.js && node --check public/play.js && node --check public/report.js && node --check scripts/auto-demo.js && node --check scripts/smoke-test.js",
     "smoke": "node scripts/smoke-test.js",
     "demo": "node scripts/auto-demo.js"
   },
@@ -20,6 +20,7 @@
     "multer": "^2.1.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "pixi.js": "^8.16.0",
     "socket.io": "^4.8.3",
     "xlsx": "^0.18.5"
   },

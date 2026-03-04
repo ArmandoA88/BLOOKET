@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Foosball Frenzy Demo</title>
+    <link rel="stylesheet" href="/style.css" />
+    <style>
+      body.foosball-demo-body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(1200px 620px at 15% 8%, rgba(27, 84, 129, 0.46), transparent 70%),
+          radial-gradient(860px 500px at 92% 78%, rgba(57, 99, 156, 0.26), transparent 64%),
+          linear-gradient(160deg, #071734 0%, #102955 54%, #1b3f74 100%);
+        color: #e9f4ff;
+      }
+
+      .foosball-demo-shell {
+        width: min(1240px, 96vw);
+        margin: 14px auto 30px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .foosball-demo-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .foosball-demo-top .action.ghost,
+      .foosball-demo-top .secondary {
+        border-radius: 16px;
+        padding: 11px 18px;
+      }
+
+      .foosball-demo-card {
+        background:
+          radial-gradient(760px 220px at 45% 0%, rgba(40, 96, 169, 0.22), transparent 78%),
+          linear-gradient(180deg, rgba(1, 17, 45, 0.96) 0%, rgba(2, 23, 57, 0.93) 100%);
+        border-color: rgba(108, 154, 218, 0.3);
+        border-radius: 24px;
+        padding: 20px 20px 16px;
+      }
+
+      .foosball-demo-headline {
+        margin-bottom: 10px;
+      }
+
+      .foosball-demo-headline h1 {
+        margin: 0;
+        font-family: "Bungee", "Space Grotesk", sans-serif;
+        font-size: clamp(1.2rem, 2.1vw, 1.8rem);
+        letter-spacing: 0.02em;
+      }
+
+      .foosball-demo-headline p {
+        margin: 6px 0 0;
+        color: #a5c1e4;
+        font-size: clamp(1rem, 1.5vw, 1.15rem);
+      }
+
+      .foosball-demo-topline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .foosball-demo-topline .notice {
+        border-radius: 15px;
+        background: rgba(43, 67, 108, 0.62);
+        border: 1px solid rgba(130, 168, 226, 0.35);
+      }
+
+      #demoLevel {
+        border-color: rgba(255, 204, 82, 0.55);
+        background: rgba(118, 77, 23, 0.35);
+      }
+
+      #demoEvent {
+        border-color: rgba(130, 240, 198, 0.55);
+        background: rgba(31, 103, 88, 0.34);
+      }
+
+      #demoNotice {
+        border-radius: 14px;
+        background: rgba(37, 54, 87, 0.76);
+        border: 1px solid rgba(119, 159, 223, 0.35);
+        margin-bottom: 8px;
+      }
+
+      .foosball-demo-stage-wrap {
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid rgba(126, 173, 232, 0.28);
+        box-shadow:
+          inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+          0 14px 32px rgba(0, 0, 0, 0.32);
+      }
+
+      .foosball-demo-stage {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1000 / 560;
+        min-height: 260px;
+        background:
+          radial-gradient(640px 300px at 50% 34%, rgba(94, 205, 138, 0.22), transparent 76%),
+          linear-gradient(180deg, #2a8f55 0%, #267f4e 100%);
+      }
+
+      .foosball-demo-stage .mini-foosball-canvas {
+        width: 100% !important;
+        height: 100% !important;
+        display: block;
+      }
+
+      .foosball-demo-controls {
+        margin-top: 10px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .foosball-demo-controls label {
+        margin: 0;
+        color: #b7d0ef;
+        font-size: 1.03rem;
+      }
+
+      #demoPower {
+        accent-color: #0b8de2;
+      }
+
+      .foosball-control-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .foosball-control-chip {
+        border-radius: 14px;
+        border: 1px solid rgba(120, 161, 218, 0.45);
+        background: rgba(37, 58, 94, 0.58);
+        color: #e7f3ff;
+        padding: 10px 12px;
+        font-weight: 700;
+        text-align: center;
+      }
+
+      .foosball-super-wrap {
+        display: grid;
+        gap: 6px;
+      }
+
+      .foosball-super-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #b7d0ef;
+        font-size: 0.92rem;
+      }
+
+      .foosball-super-bar {
+        height: 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(120, 161, 218, 0.5);
+        background: rgba(20, 35, 63, 0.72);
+        overflow: hidden;
+      }
+
+      .foosball-super-fill {
+        width: 0%;
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #27bcff, #45f3ad);
+        box-shadow: 0 0 10px rgba(51, 214, 255, 0.45);
+        transition: width 0.14s ease;
+      }
+
+      .foosball-super-wrap.ready .foosball-super-fill {
+        background: linear-gradient(90deg, #ffd447, #ff9e3d);
+        box-shadow: 0 0 12px rgba(255, 198, 82, 0.55);
+      }
+
+      .foosball-demo-lanes {
+        margin-top: 0;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .foosball-demo-lanes .answer,
+      #demoShootBtn {
+        text-align: center;
+        border-radius: 16px;
+        border-color: rgba(120, 161, 218, 0.45);
+        background: rgba(37, 58, 94, 0.58);
+      }
+
+      .foosball-demo-lanes .answer.selected {
+        border-color: rgba(255, 214, 62, 0.9);
+        background: rgba(255, 214, 62, 0.18);
+      }
+
+      #demoShootBtn {
+        font-size: 1.08rem;
+        font-weight: 800;
+      }
+
+        .foosball-demo-footer {
+          color: #a5c1e4;
+          font-size: 0.9rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+
+        .foosball-demo-credits {
+          font-size: 0.78rem;
+          color: #88add8;
+        }
+
+      @media (max-width: 760px) {
+        .foosball-demo-shell {
+          width: min(1240px, 97vw);
+        }
+
+        .foosball-demo-card {
+          padding: 14px 12px 12px;
+          border-radius: 18px;
+        }
+
+        .foosball-demo-topline {
+          gap: 6px;
+        }
+
+        .foosball-demo-topline .notice {
+          font-size: 0.94rem;
+          padding: 8px 10px;
+        }
+
+        .foosball-demo-lanes {
+          grid-template-columns: repeat(3, minmax(90px, 1fr));
+        }
+
+        .foosball-control-grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body class="foosball-demo-body">
+    <main class="foosball-demo-shell">
+      <div class="foosball-demo-top">
+        <a class="action ghost" href="/">Back</a>
+        <button id="demoRestartBtn" class="secondary" type="button">Restart</button>
+      </div>
+
+      <section class="card strong foosball-demo-card">
+        <div class="foosball-demo-headline">
+          <h1>Foosball Frenzy</h1>
+          <p>No host required. Full-field soccer with one control set per player.</p>
+        </div>
+
+        <div class="foosball-demo-topline">
+          <div id="demoScore" class="notice">You 0 - 0 Bot</div>
+          <div id="demoStats" class="notice">0 shots | 0% accuracy | 0 saves</div>
+          <div id="demoLevel" class="notice">Tier 1 | Streak 0</div>
+          <div id="demoEvent" class="notice">Event: None</div>
+          <div id="demoTimer" class="notice">60.0s</div>
+        </div>
+
+        <div id="demoNotice" class="notice">Score as many goals as you can in 60 seconds.</div>
+
+        <div class="foosball-demo-stage-wrap">
+          <div id="demoStage" class="foosball-demo-stage"></div>
+        </div>
+
+        <div class="foosball-demo-controls">
+          <label>Control Map</label>
+          <div class="foosball-control-grid">
+            <div class="foosball-control-chip">Blue Player: W A S D</div>
+            <div class="foosball-control-chip">Gold Player: Arrow Keys</div>
+          </div>
+        </div>
+
+        <div class="foosball-demo-footer">
+          <span>Tip: bump the larger ball while moving to kick with more power.</span>
+          <span class="foosball-demo-credits">Sprites: CC0 OpenGameArt</span>
+        </div>
+      </section>
+    </main>
+
+    <script src="/vendor/pixi.min.js"></script>
+    <script src="/foosball-game.js"></script>
+  </body>
+</html>

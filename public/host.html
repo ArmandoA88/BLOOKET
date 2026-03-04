@@ -22,53 +22,169 @@
       </section>
 
       <section id="setupCard" class="card strong fade-in">
-        <h2 class="title">Create Game Room</h2>
-        <div class="form-grid">
-          <div>
-            <label for="hostName">Host Name</label>
-            <input id="hostName" maxlength="24" value="Teacher" />
-          </div>
-          <div>
-            <label for="mode">Mode</label>
-            <select id="mode">
-              <option value="classic">Classic Quiz</option>
-              <option value="gold">Gold Quest</option>
-              <option value="crypto">Crypto Hack</option>
+        <h2 class="title">Select Live Game Mode</h2>
+        <div class="mode-picker-layout">
+          <section class="mode-picker-stage">
+            <div class="mode-picker-banner">Select Live Game Mode</div>
+            <select id="mode" class="hidden">
+              <option value="gold" selected>Gold Quest</option>
               <option value="fishing">Fishing Frenzy</option>
+              <option value="crypto">Crypto Hack</option>
               <option value="brawl">Monster Brawl</option>
+              <option value="classic">Classic Quiz</option>
             </select>
-          </div>
-          <div>
-            <label for="questionSet">Quiz Set</label>
-            <select id="questionSet">
-              <option value="multiplication_1_digit">Multiplication 1-Digit</option>
-            </select>
-          </div>
-          <div>
-            <label for="timer">Question Timer (sec)</label>
-            <input id="timer" type="number" min="8" max="45" value="15" />
-          </div>
-          <div>
-            <label for="count">Question Count</label>
-            <input id="count" type="number" min="5" max="30" value="10" />
-          </div>
-          <div>
-            <label for="miniRotation">Mini-Game Rotation</label>
-            <select id="miniRotation">
-              <option value="fixed">Fixed Order</option>
-              <option value="random">Random Order</option>
-              <option value="popular">Most Played First</option>
-              <option value="soccer_only">Soccer Only</option>
-              <option value="off">Disable Mini-Games</option>
-            </select>
-          </div>
-          <div>
-            <label for="miniDuration">Mini-Game Duration (sec)</label>
-            <input id="miniDuration" type="number" min="5" max="30" value="10" />
-          </div>
+            <div id="modePickerGrid" class="mode-picker-grid">
+              <button type="button" class="mode-tile selected" data-mode="gold">Gold Quest</button>
+              <button type="button" class="mode-tile" data-mode="fishing">Fishing Frenzy</button>
+              <button type="button" class="mode-tile" data-mode="crypto">Crypto Hack</button>
+              <button type="button" class="mode-tile plus-only" data-mode="" data-supported="false">
+                Busy Bees
+                <span class="mode-tile-badge">Plus Only</span>
+              </button>
+              <button type="button" class="mode-tile plus-only" data-mode="" data-supported="false">
+                Mini Mine
+                <span class="mode-tile-badge">Plus Only</span>
+              </button>
+              <button type="button" class="mode-tile plus-only" data-mode="" data-supported="false">
+                Star Grazer
+                <span class="mode-tile-badge">Plus Only</span>
+              </button>
+              <button type="button" class="mode-tile plus-only" data-mode="" data-supported="false">
+                Laser Tag
+                <span class="mode-tile-badge">Plus Only</span>
+              </button>
+              <button type="button" class="mode-tile plus-only" data-mode="" data-supported="false">
+                Cocoa Cottage
+                <span class="mode-tile-badge">Plus Only</span>
+              </button>
+              <button type="button" class="mode-tile plus-only" data-mode="" data-supported="false">
+                Tower Defense 2
+                <span class="mode-tile-badge">Plus Only</span>
+              </button>
+              <button type="button" class="mode-tile" data-mode="brawl">Monster Brawl</button>
+              <button type="button" class="mode-tile plus-only" data-mode="" data-supported="false">
+                Deceptive Dinos
+                <span class="mode-tile-badge">Plus Only</span>
+              </button>
+              <button type="button" class="mode-tile plus-only" data-mode="" data-supported="false">
+                Battle Royale
+                <span class="mode-tile-badge">Plus Only</span>
+              </button>
+              <button type="button" class="mode-tile plus-only" data-mode="" data-supported="false">
+                Tower Defense
+                <span class="mode-tile-badge">Plus Only</span>
+              </button>
+              <button type="button" class="mode-tile plus-only" data-mode="" data-supported="false">
+                Cafe
+                <span class="mode-tile-badge">Plus Only</span>
+              </button>
+              <button type="button" class="mode-tile plus-only" data-mode="" data-supported="false">
+                Factory
+                <span class="mode-tile-badge">Plus Only</span>
+              </button>
+              <button type="button" class="mode-tile plus-only" data-mode="" data-supported="false">
+                Racing
+                <span class="mode-tile-badge">Plus Only</span>
+              </button>
+              <button type="button" class="mode-tile plus-only" data-mode="" data-supported="false">
+                Blook Rush
+                <span class="mode-tile-badge">Plus Only</span>
+              </button>
+              <button type="button" class="mode-tile" data-mode="classic">Classic</button>
+            </div>
+          </section>
+
+          <aside class="mode-preview-card">
+            <h3 id="modePreviewTitle">Gold Quest</h3>
+            <p id="modePreviewTagline" class="mode-preview-tagline">Exciting twists and chests full of gold!</p>
+            <div class="mode-preview-metrics">
+              <div><span>Difficulty</span><strong id="modePreviewDifficulty">Simple</strong></div>
+              <div><span>Skills</span><strong id="modePreviewSkills">Luck & Speed</strong></div>
+              <div><span>Ideal Time</span><strong id="modePreviewTime">7 min</strong></div>
+              <div><span>Questions</span><strong id="modePreviewQuestions">Self-paced</strong></div>
+              <div><span>Players</span><strong id="modePreviewPlayers">2 - 300</strong></div>
+            </div>
+          </aside>
         </div>
+
+        <section class="mode-config-card">
+          <div id="modeConfigQuizTitle" class="mode-config-header">Quiz Set</div>
+          <button id="createBtn" class="mode-config-host-btn">Host Now</button>
+
+          <div class="mode-end-grid">
+            <button id="endTypeTimeBtn" class="mode-end-tile selected" type="button" data-end-type="time">
+              <strong>Time</strong>
+              <span>The game ends after the set time has passed.</span>
+            </button>
+            <button id="endTypeWeightBtn" class="mode-end-tile" type="button" data-end-type="weight">
+              <strong>Weight</strong>
+              <span>The game ends after a player reaches the target weight.</span>
+            </button>
+          </div>
+
+          <div class="mode-duration-row">
+            <label id="quickDurationLabel" for="quickDurationMin">Time (minutes)</label>
+            <input id="quickDurationMin" type="number" min="2" max="20" value="7" />
+          </div>
+
+          <h3 id="modeSettingsHeading" class="mode-settings-heading">Mode Settings</h3>
+          <div class="mode-setting-row">
+            <span>Show Instructions</span>
+            <button class="mode-setting-toggle on" type="button" data-setting-toggle="instructions" aria-pressed="true">✓</button>
+          </div>
+          <div class="mode-setting-row">
+            <span>Allow Late Joining</span>
+            <button class="mode-setting-toggle on" type="button" data-setting-toggle="late_join" aria-pressed="true">✓</button>
+          </div>
+          <div class="mode-setting-row">
+            <span>Use Random Names</span>
+            <button class="mode-setting-toggle" type="button" data-setting-toggle="random_names" aria-pressed="false">✓</button>
+          </div>
+          <div class="mode-setting-row">
+            <span>Allow Student Accounts</span>
+            <button class="mode-setting-toggle on" type="button" data-setting-toggle="student_accounts" aria-pressed="true">✓</button>
+          </div>
+          <p class="mode-setting-help">Disabling student accounts hides account creation options for students.</p>
+        </section>
+
+        <details class="host-advanced-settings">
+          <summary>Advanced Settings</summary>
+          <div class="form-grid" style="margin-top: 10px">
+            <div>
+              <label for="hostName">Host Name</label>
+              <input id="hostName" maxlength="24" value="Teacher" />
+            </div>
+            <div>
+              <label for="questionSet">Quiz Set</label>
+              <select id="questionSet">
+                <option value="multiplication_1_digit">Multiplication 1-Digit</option>
+              </select>
+            </div>
+            <div>
+              <label for="timer">Question Timer (sec)</label>
+              <input id="timer" type="number" min="8" max="45" value="15" />
+            </div>
+            <div>
+              <label for="count">Question Count</label>
+              <input id="count" type="number" min="5" max="30" value="10" />
+            </div>
+            <div>
+              <label for="miniRotation">Mini-Game Rotation</label>
+              <select id="miniRotation">
+                <option value="fixed">Fixed Order</option>
+                <option value="random">Random Order</option>
+                <option value="popular">Most Played First</option>
+                <option value="soccer_only">Soccer Only</option>
+                <option value="off">Disable Mini-Games</option>
+              </select>
+            </div>
+            <div>
+              <label for="miniDuration">Mini-Game Duration (sec)</label>
+              <input id="miniDuration" type="number" min="5" max="30" value="10" />
+            </div>
+          </div>
+        </details>
         <div class="button-row" style="margin-top: 12px">
-          <button id="createBtn">Create Room</button>
           <span id="setupNotice" class="notice hidden"></span>
         </div>
       </section>
@@ -115,6 +231,7 @@
                 <div id="lobbyCodeBig" class="lobby-code mono">------</div>
                 <div class="lobby-actions">
                   <button id="copyJoinLinkBigBtn" class="ghost">Copy Join Link</button>
+                  <button id="playAsHostBtn" class="secondary">Play as Host</button>
                   <button id="lobbyStartBtn">Start</button>
                 </div>
               </div>

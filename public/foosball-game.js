@@ -621,57 +621,116 @@
       powerSpeedTime: 0,
       powerSuperTime: 0,
       powerFreezeTime: 0,
-      powerMagnetTime: 0
+      powerMagnetTime: 0,
+      kickTime: 0
     };
   }
 
   function animatePlayer(player, now, dtSeconds) {
     const spd = Math.hypot(player.vx, player.vy);
     const isMoving = spd > 40;
-    const cycle = isMoving ? (now / (spd > 300 ? 120 : 200)) : 0;
-    const legSwing = isMoving ? Math.sin(cycle) * 6 : 0;
-    const bobY = isMoving ? Math.abs(Math.sin(cycle)) * -1.5 : 0;
-    const teamColor = player.team === "blue" ? 0x1d4ed8 : 0xb45309;
-    const shirtColor = player.team === "blue" ? 0x3b82f6 : 0xf59e0b;
-    const r = player.name.includes("Goalie") ? 20 : 18;
+    const isSprinting = spd > 400;
+    const isKicking = player.kickTime > 0;
+    player.kickTime = Math.max(0, player.kickTime - dtSeconds);
 
-    // Bob body
+    // Run cycle: faster cycle when sprinting
+    const cycleSpeed = isSprinting ? 140 : 200;
+    const cycle = isMoving ? now / cycleSpeed : 0;
+    const swing = isMoving ? Math.sin(cycle) : 0; // -1 to 1
+
+    // Body bob
+    const bobY = isMoving ? Math.abs(swing) * -2 : 0;
     player.sprite.y = bobY;
 
-    // Redraw legs (animated)
+    const isGoalie = player.name.includes("Goalie");
+    const drawScale = isGoalie ? 1.5 : 1.3;
+    const sc = drawScale; // shorthand
+    const teamDark = player.team === "blue" ? 0x1d4ed8 : 0xb45309;
+    const shirtColor = player.team === "blue" ? 0x3b82f6 : 0xf59e0b;
+    const shortsColor = player.team === "blue" ? 0x1e3a8a : 0x7c2d12;
+    const cfg = {
+      skin: playerConfigs[player.name] ? playerConfigs[player.name].skin : 0xffe0bd
+    };
+
     const lg = player.legsG;
     lg.clear();
-    if (isMoving) {
-      const legLen = r * 0.7;
-      const legW = 4;
-      const shortColor = teamColor;
-      const sockColor = 0xffffff;
-      const bootColor = 0x1a1a1a;
 
-      // Left leg
-      lg.beginFill(shirtColor);
-      lg.drawRect(-legW * 1.6, 0, legLen * 0.5, legW - 1);
+    if (isKicking) {
+      // === KICK ANIMATION ===
+      // Left (plant) leg
+      const plantShift = 4 * sc;
+      lg.beginFill(shortsColor);
+      lg.drawRect(-10 * sc, 0, 6 * sc, 8 * sc);
       lg.endFill();
-      lg.beginFill(sockColor);
-      lg.drawRect(-legW * 1.6 + legLen * 0.35, legSwing * 0.4, legLen * 0.25, legW - 2);
+      lg.beginFill(0xffffff);
+      lg.drawRect(-10 * sc, 8 * sc, 6 * sc, 4 * sc);
       lg.endFill();
-      lg.beginFill(bootColor);
-      lg.drawRect(-legW * 1.6 + legLen * 0.55, legSwing * 0.4, 6, legW - 1.5);
+      lg.beginFill(0x111111);
+      lg.drawRect(-11 * sc, 12 * sc, 8 * sc, 4 * sc);
       lg.endFill();
 
-      // Right leg (opposite phase)
-      lg.beginFill(shirtColor);
-      lg.drawRect(legW * 0.6, 0, legLen * 0.5, legW - 1);
+      // Right (kicking) leg: fully extended
+      const kickProgress = 1 - (player.kickTime / 0.3); // 0 = just kicked, 1 = done
+      const kickExt = 14 * sc * Math.sin(kickProgress * Math.PI); // parabolic extension
+      lg.beginFill(shortsColor);
+      lg.drawRect(4 * sc, -2 * sc, 6 * sc, 8 * sc);
       lg.endFill();
-      lg.beginFill(sockColor);
-      lg.drawRect(legW * 0.6 + legLen * 0.35, -legSwing * 0.4, legLen * 0.25, legW - 2);
+      lg.beginFill(0xffffff);
+      lg.drawRect(4 * sc + kickExt * 0.4, 7 * sc, 6 * sc, 4 * sc);
       lg.endFill();
-      lg.beginFill(bootColor);
-      lg.drawRect(legW * 0.6 + legLen * 0.55, -legSwing * 0.4, 6, legW - 1.5);
+      lg.beginFill(0x111111);
+      lg.drawRect(3 * sc + kickExt * 0.7, 11 * sc, 9 * sc, 4 * sc);
+      lg.endFill();
+
+      // Arm swing during kick
+      lg.beginFill(cfg.skin);
+      lg.drawRect(-16 * sc, -8 * sc - 6 * sc * kickProgress, 5 * sc, 12 * sc); // left arm up
+      lg.drawRect(11 * sc, -8 * sc + 4 * sc * kickProgress, 5 * sc, 12 * sc);
+      lg.endFill();
+    } else if (isMoving) {
+      // === RUN ANIMATION ===
+      const maxSwing = isSprinting ? 10 * sc : 7 * sc;
+      const leftSwingY = swing * maxSwing;       // left leg
+      const rightSwingY = -swing * maxSwing;     // right leg (opposite)
+
+      // LEFT LEG
+      lg.beginFill(shortsColor);
+      lg.drawRect(-10 * sc, leftSwingY, 6 * sc, 8 * sc);
+      lg.endFill();
+      lg.beginFill(0xffffff);
+      lg.drawRect(-10 * sc, leftSwingY + 8 * sc, 6 * sc, 4 * sc);
+      lg.endFill();
+      lg.beginFill(0x111111);
+      lg.drawRect(-11 * sc, leftSwingY + 12 * sc, 8 * sc, 4 * sc);
+      lg.endFill();
+
+      // RIGHT LEG
+      lg.beginFill(shortsColor);
+      lg.drawRect(4 * sc, rightSwingY, 6 * sc, 8 * sc);
+      lg.endFill();
+      lg.beginFill(0xffffff);
+      lg.drawRect(4 * sc, rightSwingY + 8 * sc, 6 * sc, 4 * sc);
+      lg.endFill();
+      lg.beginFill(0x111111);
+      lg.drawRect(3 * sc, rightSwingY + 12 * sc, 8 * sc, 4 * sc);
+      lg.endFill();
+
+      // ARM SWING (opposite to legs)
+      const armSwing = -swing * 6 * sc;
+      lg.beginFill(cfg.skin);
+      lg.drawRect(-16 * sc, -8 * sc + armSwing, 5 * sc, 12 * sc);
+      lg.drawRect(11 * sc, -8 * sc - armSwing, 5 * sc, 12 * sc);
+      lg.endFill();
+    } else {
+      // === IDLE ANIMATION — gentle breathing sway ===
+      const breathe = Math.sin(now / 800) * 1.5;
+      lg.beginFill(cfg.skin);
+      lg.drawRect(-16 * sc, -8 * sc + breathe, 5 * sc, 12 * sc);
+      lg.drawRect(11 * sc, -8 * sc - breathe, 5 * sc, 12 * sc);
       lg.endFill();
     }
 
-    // Keep label unrotated (always faces up)
+    // Keep label always readable (counter-rotate)
     player.label.rotation = -(player.rotation + Math.PI / 2);
   }
 
@@ -1075,6 +1134,7 @@
     capBallSpeed(1200);
 
     ballState.lastTouchTeam = player.team;
+    player.kickTime = 0.3; // trigger kick animation
     if (player.team === "blue") {
       state.blueTouches += 1;
     } else {
@@ -1264,6 +1324,7 @@
 
       for (const player of players) {
         updatePlayer(player, ticker.deltaMS);
+        animatePlayer(player, now, dtSeconds);
       }
 
       for (let i = 0; i < players.length; i++) {

@@ -147,28 +147,196 @@
         }));
     }
 
+    // =====================================================================
+    //  WAVE DESIGNS — 10 unique formation patterns
+    // =====================================================================
+    const WAVE_DESIGNS = [
+        // Wave 1 — Classic Invasion
+        {
+            name: 'CLASSIC INVASION',
+            pattern: () => fullGrid(11, 5),
+            colors: ['#ff6bcd', '#ffd60a', '#ffd60a', '#00ffff', '#00ffff'],
+            armor: false, moveInterval: 0.60, shootInterval: 1.8, speed: 28
+        },
+        // Wave 2 — V Formation
+        {
+            name: 'V SQUADRON',
+            pattern: () => vShape(),
+            colors: ['#ff6bcd', '#ffd60a', '#ffd60a', '#00ffff', '#00ffff'],
+            armor: false, moveInterval: 0.52, shootInterval: 1.5, speed: 32
+        },
+        // Wave 3 — Diamond Strike
+        {
+            name: 'DIAMOND STRIKE',
+            pattern: () => diamond(),
+            colors: ['#ff6bcd', '#ff9900', '#ff9900', '#ff6bcd', '#ff9900'],
+            armor: false, moveInterval: 0.46, shootInterval: 1.4, speed: 36
+        },
+        // Wave 4 — Armored Guard
+        {
+            name: 'ARMORED GUARD',
+            pattern: () => fullGrid(9, 5),
+            colors: ['#aaaaff', '#6688ff', '#6688ff', '#4455ff', '#4455ff'],
+            armor: true, moveInterval: 0.50, shootInterval: 1.3, speed: 34
+        },
+        // Wave 5 — BOSS (handled separately, this is placeholder)
+        {
+            name: 'COMMANDER BOSS',
+            pattern: () => [],
+            colors: [], armor: false, moveInterval: 0.3, shootInterval: 0.8, speed: 0
+        },
+        // Wave 6 — Checkerboard Assault
+        {
+            name: 'CHECKERBOARD ASSAULT',
+            pattern: () => checkerboard(),
+            colors: ['#ff4444', '#ff8800', '#ff4444', '#ff8800', '#ff4444'],
+            armor: true, moveInterval: 0.38, shootInterval: 1.1, speed: 42
+        },
+        // Wave 7 — Fortress Wall
+        {
+            name: 'FORTRESS WALL',
+            pattern: () => fortressWall(),
+            colors: ['#cc00ff', '#aa00ee', '#cc00ff', '#aa00ee', '#cc00ff'],
+            armor: true, moveInterval: 0.34, shootInterval: 1.0, speed: 46
+        },
+        // Wave 8 — Triple Columns
+        {
+            name: 'TRIPLE COLUMN RUSH',
+            pattern: () => tripleColumns(),
+            colors: ['#00ff44', '#00cc44', '#009933', '#00ff44', '#00cc44'],
+            armor: true, moveInterval: 0.30, shootInterval: 0.9, speed: 52
+        },
+        // Wave 9 — X Cross
+        {
+            name: 'X CROSS STRIKE',
+            pattern: () => xCross(),
+            colors: ['#ff0066', '#ff3388', '#ff0066', '#ff3388', '#ff0066'],
+            armor: true, moveInterval: 0.26, shootInterval: 0.8, speed: 58
+        },
+        // Wave 10 — FINAL SWARM BOSS
+        {
+            name: 'FINAL SWARM',
+            pattern: () => [],
+            colors: [], armor: false, moveInterval: 0.20, shootInterval: 0.7, speed: 0
+        }
+    ];
+
+    // Formation shape generators — return array of {row, col} objects
+    function fullGrid(cols, rows) {
+        const cells = [];
+        for (let r = 0; r < rows; r++)
+            for (let c = 0; c < cols; c++)
+                cells.push({ row: r, col: c });
+        return cells;
+    }
+
+    function vShape() {
+        const cells = [];
+        const cols = 11, rows = 6;
+        for (let r = 0; r < rows; r++)
+            for (let c = 0; c < cols; c++) {
+                const depth = Math.abs(c - Math.floor(cols / 2));
+                if (r < rows - depth) cells.push({ row: r, col: c });
+            }
+        return cells;
+    }
+
+    function diamond() {
+        const cells = [];
+        const size = 6;
+        for (let r = 0; r < size * 2 - 1; r++) {
+            const w = r < size ? r + 1 : (size * 2 - 1 - r) + 1;
+            const start = Math.floor((size - w) / 2) + 1;
+            for (let c = 0; c < w; c++)
+                cells.push({ row: Math.min(r, 4), col: start + c });
+        }
+        // dedupe rows > 4
+        const seen = new Set();
+        return cells.filter(c => { const k = `${c.row},${c.col}`; if (seen.has(k)) return false; seen.add(k); return true; });
+    }
+
+    function checkerboard() {
+        const cells = [];
+        for (let r = 0; r < 5; r++)
+            for (let c = 0; c < 11; c++)
+                if ((r + c) % 2 === 0) cells.push({ row: r, col: c });
+        return cells;
+    }
+
+    function fortressWall() {
+        // Full grid EXCEPT a hollow center
+        const cells = [];
+        for (let r = 0; r < 5; r++)
+            for (let c = 0; c < 11; c++) {
+                const isBorder = r === 0 || r === 4 || c === 0 || c === 10;
+                const isInner = r >= 1 && r <= 3 && c >= 3 && c <= 7 && (r + c) % 3 !== 1;
+                if (isBorder || isInner) cells.push({ row: r, col: c });
+            }
+        return cells;
+    }
+
+    function tripleColumns() {
+        const cells = [];
+        const activeCols = [0, 1, 2, 4, 5, 6, 8, 9, 10];
+        for (let r = 0; r < 5; r++)
+            for (const c of activeCols)
+                cells.push({ row: r, col: c });
+        return cells;
+    }
+
+    function xCross() {
+        const cells = [];
+        const mid = 5;
+        for (let r = 0; r < 5; r++)
+            for (let c = 0; c < 11; c++) {
+                const onDiag1 = Math.abs(c - (r * 2.5)) < 1.5;
+                const onDiag2 = Math.abs(c - (10 - r * 2.5)) < 1.5;
+                const onRow = r === 2;
+                if (onDiag1 || onDiag2 || onRow) cells.push({ row: r, col: c });
+            }
+        // dedupe
+        const seen = new Set();
+        return cells.filter(c => { const k = `${c.row},${c.col}`; if (seen.has(k)) return false; seen.add(k); return true; });
+    }
+
+    let waveDesign = null; // active design
+
     function buildAliens() {
         aliens = [];
         formationX = 0;
         formationDir = 1;
-        formationMoveInterval = Math.max(0.18, 0.6 - (wave - 1) * 0.04);
-        alienShootInterval = Math.max(0.6, 1.8 - (wave - 1) * 0.1);
-        formationSpeed = Math.min(80, 28 + (wave - 1) * 4);
 
-        for (let row = 0; row < ALIEN_ROWS; row++) {
-            for (let col = 0; col < ALIEN_COLS; col++) {
-                aliens.push({
-                    row, col,
-                    x: FORMATION_LEFT + col * (ALIEN_SIZE + ALIEN_GAP_X),
-                    y: FORMATION_TOP + row * (ALIEN_SIZE + ALIEN_GAP_Y),
-                    alive: true,
-                    frame: 0,
-                    flashTime: 0,
-                    wobble: 0
-                });
-            }
-        }
+        // Pick design (cycle through 10, then repeat last)
+        const designIdx = Math.min(wave - 1, WAVE_DESIGNS.length - 1);
+        waveDesign = WAVE_DESIGNS[designIdx % WAVE_DESIGNS.length];
+
+        formationMoveInterval = waveDesign.moveInterval;
+        alienShootInterval = waveDesign.shootInterval;
+        formationSpeed = waveDesign.speed;
+
+        const cells = waveDesign.pattern();
+        const colors = waveDesign.colors.length ? waveDesign.colors : ALIEN_COLORS;
+        const useArmor = waveDesign.armor;
+
+        const stepX = ALIEN_SIZE + ALIEN_GAP_X;
+        const stepY = ALIEN_SIZE + ALIEN_GAP_Y;
+
+        cells.forEach(({ row, col }) => {
+            aliens.push({
+                row, col,
+                x: FORMATION_LEFT + col * stepX,
+                y: FORMATION_TOP + row * stepY,
+                alive: true,
+                frame: 0,
+                flashTime: 0,
+                wobble: 0,
+                color: colors[Math.min(row, colors.length - 1)],
+                hp: (useArmor && row <= 1) ? 2 : 1,  // armored rows take 2 hits
+                maxHp: (useArmor && row <= 1) ? 2 : 1
+            });
+        });
     }
+
 
     function buildShields() {
         shields = [];
@@ -189,6 +357,8 @@
     }
 
     function startWave() {
+        // Boss waves: 5, 10, 15 ...
+        if (wave % 5 === 0) { startBossWave(); return; }
         state = 'PLAYING';
         buildAliens();
         buildShields();
@@ -202,10 +372,19 @@
         formationMoveTimer = 0;
         alienShootTimer = 0;
         boss = null;
+        // Show wave announcement
+        showWaveAnnounce();
     }
 
+    let waveAnnounceTimer = 0;
+    let waveAnnounceName = '';
+    function showWaveAnnounce() {
+        waveAnnounceName = waveDesign ? waveDesign.name : `WAVE ${wave}`;
+        waveAnnounceTimer = 2.2;
+    }
+
+
     function startBossWave() {
-        state = 'BOSS';
         aliens = [];
         playerBullets = [];
         alienBullets = [];
@@ -213,20 +392,27 @@
         particles = [];
         ufo = null;
         formationDropped = false;
-        const maxHp = 15 + wave * 5;
+        const isFinal = wave >= 10;
+        const maxHp = isFinal ? 80 + wave * 8 : 20 + wave * 6;
+        const bossSize = isFinal ? 170 : 120;
         boss = {
             x: W / 2, y: 100,
-            w: 120, h: 50,
+            w: bossSize, h: isFinal ? 65 : 50,
             hp: maxHp, maxHp,
-            vx: 120,
+            vx: isFinal ? 160 : 120,
             shootTimer: 0,
-            shootInterval: 1.2,
+            shootInterval: isFinal ? 0.7 : 1.2,
             phase: 0,
             flashTime: 0,
-            armAngle: 0
+            armAngle: 0,
+            isFinal
         };
         state = 'PLAYING';
+        // Announce
+        waveAnnounceName = isFinal ? '⚠ FINAL BOSS ⚠' : `BOSS WAVE ${wave}`;
+        waveAnnounceTimer = 2.5;
     }
+
 
     initStars();
     updateLivesUI();
@@ -850,16 +1036,25 @@
                 if (!a.alive) continue;
                 const ax = a.x, ay = a.y;
                 if (rectHit(b.x - 2, b.y - 9, 4, 18, ax + 4, ay + 4, ALIEN_SIZE - 8, ALIEN_SIZE - 8)) {
-                    a.alive = false;
-                    const pts = ALIEN_PTS[a.row] * wave;
-                    score += pts;
-                    updateHudNumbers();
-                    spawnParticles(ax + ALIEN_SIZE / 2, ay + ALIEN_SIZE / 2, ALIEN_COLORS[a.row], 14);
-                    sfxAlienDie();
-                    // Power-up drop chance
-                    if (Math.random() < 0.12) {
-                        const type = PUP_TYPES[Math.floor(Math.random() * PUP_TYPES.length)];
-                        powerUps.push({ x: ax + ALIEN_SIZE / 2, y: ay + ALIEN_SIZE / 2, vy: 80, type, wobble: 0 });
+                    a.hp--;
+                    a.flashTime = 0.15;
+                    if (a.hp <= 0) {
+                        a.alive = false;
+                        const pts = ALIEN_PTS[Math.min(a.row, ALIEN_PTS.length - 1)] * wave;
+                        score += pts;
+                        updateHudNumbers();
+                        spawnParticles(ax + ALIEN_SIZE / 2, ay + ALIEN_SIZE / 2, a.color || ALIEN_COLORS[a.row] || '#fff', 14);
+                        sfxAlienDie();
+                        // Power-up drop chance (higher in later waves)
+                        const dropChance = Math.min(0.25, 0.12 + wave * 0.01);
+                        if (Math.random() < dropChance) {
+                            const type = PUP_TYPES[Math.floor(Math.random() * PUP_TYPES.length)];
+                            powerUps.push({ x: ax + ALIEN_SIZE / 2, y: ay + ALIEN_SIZE / 2, vy: 80, type, wobble: 0 });
+                        }
+                    } else {
+                        // Armored hit — flash but don't die
+                        sfxShield();
+                        spawnParticles(ax + ALIEN_SIZE / 2, ay + ALIEN_SIZE / 2, '#fff', 5);
                     }
                     playerBullets.splice(i, 1);
                     hitAlien = true;
@@ -867,6 +1062,7 @@
                 }
             }
             if (hitAlien) continue;
+
         }
 
         // Update alien bullets
@@ -936,12 +1132,9 @@
         if (state === 'WAVE_CLEAR' && stateTimer > 2.5) {
             wave++;
             updateHudNumbers();
-            if (wave % 5 === 0) {
-                startBossWave();
-            } else {
-                startWave();
-            }
+            startWave(); // startWave() now handles boss routing internally
         }
+
 
         // Twinkle stars
         stars.forEach(s => {
@@ -1045,14 +1238,29 @@
         // Shields
         shields.forEach(drawShield);
 
-        // Aliens
+        // Aliens — use per-alien color and show shield flash on armored aliens
         aliens.forEach(a => {
             if (!a.alive) return;
+            const ac = a.color || ALIEN_COLORS[Math.min(a.row, ALIEN_COLORS.length - 1)];
             const ax = a.x + ALIEN_SIZE / 2, ay = a.y + a.wobble + ALIEN_SIZE / 2;
-            if (a.row === 0) drawAlienType0(ax, ay, ALIEN_SIZE, ALIEN_COLORS[0], a.frame, a.flashTime);
-            else if (a.row <= 2) drawAlienType1(ax, ay, ALIEN_SIZE, ALIEN_COLORS[a.row], a.frame, a.flashTime);
-            else drawAlienType2(ax, ay, ALIEN_SIZE, ALIEN_COLORS[a.row], a.frame, a.flashTime);
+
+            // Armored shield overlay
+            if (a.maxHp > 1 && a.hp === a.maxHp) {
+                ctx.save();
+                ctx.globalAlpha = 0.28;
+                ctx.beginPath();
+                ctx.arc(ax, ay, ALIEN_SIZE * 0.54, 0, Math.PI * 2);
+                ctx.strokeStyle = '#88aaff';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            if (a.row === 0) drawAlienType0(ax, ay, ALIEN_SIZE, ac, a.frame, a.flashTime);
+            else if (a.row <= 2) drawAlienType1(ax, ay, ALIEN_SIZE, ac, a.frame, a.flashTime);
+            else drawAlienType2(ax, ay, ALIEN_SIZE, ac, a.frame, a.flashTime);
         });
+
 
         // Boss
         if (boss) drawBoss(boss);
@@ -1086,12 +1294,42 @@
             ctx.shadowBlur = 30;
             ctx.shadowColor = '#00ff88';
             ctx.fillStyle = '#00ff88';
-            ctx.fillText('WAVE CLEAR!', W / 2, H / 2 - 20);
-            ctx.font = '22px Share Tech Mono';
-            ctx.fillStyle = 'rgba(0,255,136,0.7)';
-            ctx.fillText(`WAVE ${wave + 1} INCOMING...`, W / 2, H / 2 + 30);
+            ctx.fillText('WAVE CLEAR!', W / 2, H / 2 - 30);
+            // next wave name
+            const nextWaveNum = wave + 1;
+            const isBossNext = nextWaveNum % 5 === 0;
+            const nextDesignIdx = Math.min(nextWaveNum - 1, WAVE_DESIGNS.length - 1);
+            const nextName = isBossNext ? `⚠ BOSS WAVE ${nextWaveNum} ⚠` : WAVE_DESIGNS[nextDesignIdx % WAVE_DESIGNS.length].name;
+            ctx.font = 'bold 20px Orbitron';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = isBossNext ? '#ff4400' : '#00ff88';
+            ctx.fillStyle = isBossNext ? '#ff8800' : 'rgba(0,255,136,0.85)';
+            ctx.fillText(`NEXT: ${nextName}`, W / 2, H / 2 + 14);
+            ctx.font = '16px Share Tech Mono';
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.shadowBlur = 0;
+            ctx.fillText(`WAVE ${nextWaveNum} INCOMING...`, W / 2, H / 2 + 46);
             ctx.restore();
         }
+
+        // Wave announce banner (shown at start of wave)
+        if (waveAnnounceTimer > 0) {
+            waveAnnounceTimer -= 0.016; // approx 1 frame at 60fps
+            const fade = Math.min(1, waveAnnounceTimer * 1.5);
+            const isBoss = waveAnnounceName.includes('BOSS');
+            ctx.save();
+            ctx.globalAlpha = fade;
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fillRect(0, H / 2 - 60, W, 90);
+            ctx.font = 'bold 34px Orbitron';
+            ctx.textAlign = 'center';
+            ctx.shadowBlur = 25;
+            ctx.shadowColor = isBoss ? '#ff4400' : '#ffd60a';
+            ctx.fillStyle = isBoss ? '#ff6600' : '#ffd60a';
+            ctx.fillText(`WAVE ${wave}: ${waveAnnounceName}`, W / 2, H / 2 - 10);
+            ctx.restore();
+        }
+
     }
 
     function drawStartScreen() {

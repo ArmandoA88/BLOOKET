@@ -35,6 +35,8 @@ const GAME_IMAGE_MAP = {
   precision_stop: "/assets/minigames/precision_stop/precision.svg",
   word_scramble: "/assets/minigames/word_scramble/question.svg"
 };
+const SOUND_PREF_STORAGE_KEY = "quizArenaSoundEnabled";
+const MINI_TUTORIAL_STORAGE_KEY = "quizArenaMiniTutorialSeen";
 const PHASE_BANNER_COPY = {
   join: {
     title: "Join Screen",
@@ -120,11 +122,7 @@ const openPackBtn = document.getElementById("openPackBtn");
 const sellDuplicateBtn = document.getElementById("sellDuplicateBtn");
 const packOdds = document.getElementById("packOdds");
 const packResult = document.getElementById("packResult");
-const uploadQuizBtn = document.getElementById("uploadQuizBtn");
-const quizUploadTitleInput = document.getElementById("quizUploadTitle");
-const quizUploadFileInput = document.getElementById("quizUploadFile");
-const quizUploadNotice = document.getElementById("quizUploadNotice");
-const quizUploadSets = document.getElementById("quizUploadSets");
+const packOpenAnimation = document.getElementById("packOpenAnimation");
 
 const roomCodeEl = document.getElementById("roomCode");
 const playerNameEl = document.getElementById("playerName");
@@ -135,6 +133,7 @@ const phaseBannerDetail = document.getElementById("phaseBannerDetail");
 const miniGameActiveFlag = document.getElementById("miniGameActiveFlag");
 const playerConnectionPill = document.getElementById("playerConnectionPill");
 const mainNotice = document.getElementById("mainNotice");
+const soundToggleBtn = document.getElementById("soundToggleBtn");
 
 const questionSection = document.getElementById("questionSection");
 const questionIllustration = document.getElementById("questionIllustration");
@@ -147,6 +146,7 @@ const chestIllustration = document.getElementById("chestIllustration");
 const chestTimer = document.getElementById("chestTimer");
 const chests = document.getElementById("chests");
 const eventTitle = document.getElementById("eventTitle");
+const miniTutorialBtn = document.getElementById("miniTutorialBtn");
 
 const resultSection = document.getElementById("resultSection");
 const resultText = document.getElementById("resultText");
@@ -156,6 +156,11 @@ const feedList = document.getElementById("feedList");
 const feedTitle = document.getElementById("feedTitle");
 const miniGamesList = document.getElementById("miniGamesList");
 const miniGamePopularity = document.getElementById("miniGamePopularity");
+const miniTutorialOverlay = document.getElementById("miniTutorialOverlay");
+const miniTutorialTitle = document.getElementById("miniTutorialTitle");
+const miniTutorialIntro = document.getElementById("miniTutorialIntro");
+const miniTutorialSteps = document.getElementById("miniTutorialSteps");
+const miniTutorialCloseBtn = document.getElementById("miniTutorialCloseBtn");
 
 const MINI_STEP_LABELS = ["Red", "Blue", "Green", "Yellow"];
 const SOCCER_LANE_LABELS = ["Left", "Center", "Right"];
@@ -206,6 +211,72 @@ const SOCCER_FIELD_PLAYERS_FALLBACK = [
   { id: "ronaldo_support", starId: "ronaldo", lane: 1, row: 1 },
   { id: "kylian_support", starId: "kylian", lane: 2, row: 1 }
 ];
+const MINI_GAME_TUTORIALS = {
+  foosball_frenzy: {
+    intro: "Move lane, pick power, then shoot quickly before time runs out.",
+    steps: [
+      "Use Left and Right arrows or lane buttons to position your striker.",
+      "Set power to balance speed and control.",
+      "Press Space or Kick to shoot and score before the bot adapts."
+    ]
+  },
+  soccer_shootout: {
+    intro: "Kick fast to help your team score more goals than the other side.",
+    steps: [
+      "Adjust power before each shot.",
+      "Press Space or Kick to shoot as soon as you are ready.",
+      "Higher power is faster but can reduce control."
+    ]
+  },
+  tap_rush: {
+    intro: "Rapid taps convert directly into bonus progress.",
+    steps: [
+      "Spam the tap button as quickly as possible.",
+      "Every tap is sent to the server immediately.",
+      "Keep a steady pace for the full timer."
+    ]
+  },
+  reaction_duel: {
+    intro: "Wait for GO, then react as fast as possible.",
+    steps: [
+      "Do not click early or it counts as a false start.",
+      "When GO appears, react immediately.",
+      "Lower milliseconds means a better result."
+    ]
+  },
+  sequence_memory: {
+    intro: "Repeat the color order exactly to complete the sequence.",
+    steps: [
+      "Read the sequence shown above.",
+      "Press colors in the same order.",
+      "One wrong step breaks your run."
+    ]
+  },
+  obstacle_dodge: {
+    intro: "Choose safe lanes each turn to avoid blockers.",
+    steps: [
+      "Pick Left, Center, or Right every turn.",
+      "If you choose the blocked lane, you take a hit.",
+      "Finish with as few hits as possible."
+    ]
+  },
+  precision_stop: {
+    intro: "Stop the moving marker as close to the target as possible.",
+    steps: [
+      "Watch the marker sweep left and right.",
+      "Press Stop near the target line.",
+      "Closer distance gives a better result."
+    ]
+  },
+  word_scramble: {
+    intro: "Unscramble the letters before attempts run out.",
+    steps: [
+      "Type your best guess in the input.",
+      "Submit guesses quickly and refine from feedback.",
+      "Solve before max attempts to score."
+    ]
+  }
+};
 
 let activeMiniGameType = "";
 let miniPrecisionValue = 0;
@@ -237,6 +308,12 @@ let latestLeaderboardRows = [];
 let fishingGameEndsAt = 0;
 let fishingHudTicker = null;
 let currentReportCode = "";
+let packOpenAnimationTimer = null;
+let soundEnabled = true;
+let sfxAudioContext = null;
+let miniTutorialSeen = new Set();
+let activeMiniTutorialType = "";
+let tickerWarningSecond = null;
 
 const FALLBACK_BLOOKS = [
   {
@@ -398,6 +475,202 @@ function randomInt(min, max) {
   const low = Math.min(min, max);
   const high = Math.max(min, max);
   return Math.floor(Math.random() * (high - low + 1)) + low;
+}
+
+function readLocalStorageValue(key, fallback = "") {
+  try {
+    const value = window.localStorage.getItem(key);
+    return value === null ? fallback : String(value);
+  } catch (_error) {
+    return fallback;
+  }
+}
+
+function writeLocalStorageValue(key, value) {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch (_error) {
+    // Ignore local storage write failures.
+  }
+}
+
+function loadSoundPreference() {
+  const stored = readLocalStorageValue(SOUND_PREF_STORAGE_KEY, "1").trim().toLowerCase();
+  soundEnabled = !(stored === "0" || stored === "false" || stored === "off");
+}
+
+function applySoundToggleUi() {
+  if (!soundToggleBtn) {
+    return;
+  }
+  soundToggleBtn.textContent = soundEnabled ? "Sound: On" : "Sound: Off";
+  soundToggleBtn.classList.toggle("off", !soundEnabled);
+  soundToggleBtn.setAttribute("aria-pressed", soundEnabled ? "true" : "false");
+}
+
+function ensureSfxAudioContext() {
+  if (!soundEnabled) {
+    return null;
+  }
+  const ContextCtor = window.AudioContext || window.webkitAudioContext;
+  if (!ContextCtor) {
+    return null;
+  }
+  if (!sfxAudioContext) {
+    try {
+      sfxAudioContext = new ContextCtor();
+    } catch (_error) {
+      return null;
+    }
+  }
+  if (sfxAudioContext.state === "suspended") {
+    sfxAudioContext.resume().catch(() => {
+      // Ignore resume failures until next user interaction.
+    });
+  }
+  return sfxAudioContext;
+}
+
+function playSfxTone(ctx, frequency, durationMs, gain = 0.04, waveform = "sine", delayMs = 0) {
+  if (!ctx || ctx.state !== "running") {
+    return;
+  }
+  const start = ctx.currentTime + Math.max(0, Number(delayMs) || 0) / 1000;
+  const end = start + Math.max(20, Number(durationMs) || 80) / 1000;
+  const oscillator = ctx.createOscillator();
+  const volume = ctx.createGain();
+  oscillator.type = waveform;
+  oscillator.frequency.setValueAtTime(Math.max(40, Number(frequency) || 440), start);
+  volume.gain.setValueAtTime(0.0001, start);
+  volume.gain.exponentialRampToValueAtTime(Math.max(0.0002, gain), Math.min(end, start + 0.02));
+  volume.gain.exponentialRampToValueAtTime(0.0001, end);
+  oscillator.connect(volume);
+  volume.connect(ctx.destination);
+  oscillator.start(start);
+  oscillator.stop(end + 0.02);
+}
+
+function playMiniGameSfx(eventType) {
+  if (!soundEnabled) {
+    return;
+  }
+  const ctx = ensureSfxAudioContext();
+  if (!ctx || ctx.state !== "running") {
+    return;
+  }
+
+  const key = String(eventType || "").toLowerCase();
+  if (key === "goal") {
+    playSfxTone(ctx, 680, 90, 0.04, "triangle");
+    playSfxTone(ctx, 880, 120, 0.045, "triangle", 90);
+    return;
+  }
+  if (key === "save") {
+    playSfxTone(ctx, 360, 90, 0.035, "square");
+    playSfxTone(ctx, 290, 110, 0.03, "square", 75);
+    return;
+  }
+  if (key === "timer_warning") {
+    playSfxTone(ctx, 740, 75, 0.03, "square");
+    return;
+  }
+  if (key === "miss") {
+    playSfxTone(ctx, 260, 100, 0.03, "triangle");
+  }
+}
+
+function setSoundEnabled(nextEnabled) {
+  soundEnabled = Boolean(nextEnabled);
+  writeLocalStorageValue(SOUND_PREF_STORAGE_KEY, soundEnabled ? "1" : "0");
+  applySoundToggleUi();
+  updateFishingHudIdentity();
+  if (soundEnabled) {
+    ensureSfxAudioContext();
+  }
+}
+
+function setupSfxUnlockListeners() {
+  const unlock = () => {
+    ensureSfxAudioContext();
+    window.removeEventListener("pointerdown", unlock);
+    window.removeEventListener("keydown", unlock);
+  };
+  window.addEventListener("pointerdown", unlock);
+  window.addEventListener("keydown", unlock);
+}
+
+function loadMiniTutorialProgress() {
+  const raw = readLocalStorageValue(MINI_TUTORIAL_STORAGE_KEY, "");
+  if (!raw) {
+    miniTutorialSeen = new Set();
+    return;
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      miniTutorialSeen = new Set();
+      return;
+    }
+    miniTutorialSeen = new Set(
+      parsed
+        .map((entry) => String(entry || ""))
+        .filter((entry) => Object.prototype.hasOwnProperty.call(MINI_GAME_TUTORIALS, entry))
+    );
+  } catch (_error) {
+    miniTutorialSeen = new Set();
+  }
+}
+
+function saveMiniTutorialProgress() {
+  writeLocalStorageValue(MINI_TUTORIAL_STORAGE_KEY, JSON.stringify(Array.from(miniTutorialSeen)));
+}
+
+function hasMiniTutorial(type) {
+  return Object.prototype.hasOwnProperty.call(MINI_GAME_TUTORIALS, String(type || ""));
+}
+
+function hideMiniTutorialOverlay() {
+  if (miniTutorialOverlay) {
+    miniTutorialOverlay.classList.add("hidden");
+  }
+  activeMiniTutorialType = "";
+}
+
+function applyMiniTutorialButtonVisibility(type = activeMiniGameType) {
+  if (!miniTutorialBtn) {
+    return;
+  }
+  const shouldShow = phase === "minigame" && hasMiniTutorial(type);
+  miniTutorialBtn.classList.toggle("hidden", !shouldShow);
+  miniTutorialBtn.disabled = !shouldShow;
+}
+
+function openMiniTutorial(type, options = {}) {
+  const tutorialType = String(type || "");
+  const tutorial = MINI_GAME_TUTORIALS[tutorialType];
+  if (!tutorial || !miniTutorialOverlay || !miniTutorialTitle || !miniTutorialIntro || !miniTutorialSteps) {
+    return;
+  }
+
+  const force = options.force === true;
+  const alreadySeen = miniTutorialSeen.has(tutorialType);
+  if (!force && alreadySeen) {
+    return;
+  }
+
+  if (!alreadySeen) {
+    miniTutorialSeen.add(tutorialType);
+    saveMiniTutorialProgress();
+  }
+
+  activeMiniTutorialType = tutorialType;
+  miniTutorialTitle.textContent = `${miniGameTypeLabel(tutorialType)} Tutorial`;
+  miniTutorialIntro.textContent = tutorial.intro;
+  miniTutorialSteps.innerHTML = tutorial.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join("");
+  miniTutorialOverlay.classList.remove("hidden");
+  if (miniTutorialCloseBtn) {
+    miniTutorialCloseBtn.focus();
+  }
 }
 
 function phaseLabel(value) {
@@ -570,7 +843,7 @@ function ensureFishingGameTimerStarted() {
 function updateFishingHudIdentity() {
   const finalPhase = String(phase || "").toLowerCase() === "finished";
   if (fishingHudAudio) {
-    fishingHudAudio.textContent = finalPhase ? "⛶" : "🔊";
+    fishingHudAudio.textContent = finalPhase ? "END" : soundEnabled ? "SFX ON" : "SFX OFF";
   }
   if (fishingHudName) {
     fishingHudName.textContent = finalPhase ? "Blooket" : String(playerName || "PLAYER").toUpperCase();
@@ -731,6 +1004,10 @@ function setPhase(nextPhase, detail = "") {
   phase = nextPhase;
   phaseText.textContent = phaseLabel(nextPhase);
   setPhaseBanner(nextPhase, detail);
+  if (String(nextPhase || "").toLowerCase() !== "minigame") {
+    hideMiniTutorialOverlay();
+  }
+  applyMiniTutorialButtonVisibility();
   if (String(nextPhase || "").toLowerCase() !== "lobby" && String(nextPhase || "").toLowerCase() !== "join") {
     ensureFishingGameTimerStarted();
   }
@@ -741,10 +1018,16 @@ function startTicker(targetEl, endsAt, label) {
   if (ticker) {
     clearInterval(ticker);
   }
+  tickerWarningSecond = null;
 
   const update = () => {
     const leftMs = Math.max(0, endsAt - Date.now());
     targetEl.textContent = `${label}: ${(leftMs / 1000).toFixed(1)}s`;
+    const leftSeconds = Math.ceil(leftMs / 1000);
+    if (leftSeconds > 0 && leftSeconds <= 3 && leftSeconds !== tickerWarningSecond) {
+      tickerWarningSecond = leftSeconds;
+      playMiniGameSfx("timer_warning");
+    }
 
     if (leftMs <= 0 && ticker) {
       clearInterval(ticker);
@@ -1237,12 +1520,15 @@ function animateSoccerShot(lastShot) {
     stage?.classList.add("goal-flash");
     strikerImage?.classList.add("powered");
     burstSoccerConfetti();
+    playMiniGameSfx("goal");
   } else if (lastShot.outcome === "saved") {
     stage?.classList.add("save-flash");
     strikerImage?.classList.add("frustrated");
+    playMiniGameSfx("save");
   } else {
     stage?.classList.add("miss-flash");
     strikerImage?.classList.add("frustrated");
+    playMiniGameSfx("miss");
   }
 }
 
@@ -1538,8 +1824,10 @@ function applyMiniFoosballState(payload, options = {}) {
     playMiniFoosballShot(payload.lastShot, goalieLane);
     if (payload.lastShot?.goal) {
       setNotice("Goal! Keep pressing the advantage.", "good");
+      playMiniGameSfx("goal");
     } else {
       setNotice("Saved. Switch lane or power and shoot again.", "");
+      playMiniGameSfx("save");
     }
   } else if (options.forceSummaryText) {
     setNotice("Foosball live: move lane with arrow keys and press Space to shoot.", "");
@@ -1559,6 +1847,7 @@ function applyMiniFoosballState(payload, options = {}) {
 function renderMiniGame(type, data, actionLabel) {
   stopMiniTickers();
   activeMiniGameType = type;
+  applyMiniTutorialButtonVisibility(type);
 
   if (type === "foosball_frenzy") {
     miniFoosballSelectedLane = clampMiniFoosballLane(data?.lane);
@@ -1836,87 +2125,37 @@ function setPackResultNotice(message, tone = "") {
   packResult.textContent = message;
 }
 
-function setQuizUploadNotice(message, tone = "") {
-  if (!quizUploadNotice) {
-    return;
-  }
-  if (!message) {
-    quizUploadNotice.classList.add("hidden");
-    quizUploadNotice.classList.remove("good", "bad");
-    quizUploadNotice.textContent = "";
-    return;
-  }
-  quizUploadNotice.classList.remove("hidden", "good", "bad");
-  if (tone) {
-    quizUploadNotice.classList.add(tone);
-  }
-  quizUploadNotice.textContent = message;
-}
-
-function renderAvailableQuizSets(sets) {
-  if (!quizUploadSets) {
-    return;
-  }
-  const rows = Array.isArray(sets) ? sets : [];
-  if (rows.length === 0) {
-    quizUploadSets.textContent = "No uploaded quizzes yet.";
-    return;
-  }
-  const preview = rows.slice(0, 8).map((set) => `${set.label} (${Number(set.questionCount || 0)}Q)`).join(" | ");
-  quizUploadSets.textContent = `Quizzes: ${preview}`;
-}
-
-async function loadQuizSets() {
-  try {
-    const response = await fetch("/api/quizzes");
-    if (!response.ok) {
-      throw new Error("Quiz list unavailable");
-    }
-    const payload = await response.json();
-    renderAvailableQuizSets(payload?.sets || []);
-  } catch (_error) {
-    renderAvailableQuizSets([]);
-  }
-}
-
-async function uploadQuizSetFile() {
-  if (!uploadQuizBtn || !quizUploadFileInput) {
-    return;
-  }
-  const file = quizUploadFileInput.files && quizUploadFileInput.files[0];
-  if (!file) {
-    setQuizUploadNotice("Pick a CSV or Excel file first.", "bad");
+function showPackOpenAnimation(blook) {
+  if (!packOpenAnimation || !blook) {
     return;
   }
 
-  uploadQuizBtn.disabled = true;
-  setQuizUploadNotice("Uploading quiz file...");
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("title", String(quizUploadTitleInput?.value || "").trim());
-  formData.append("uploadedBy", String(nameInput?.value || playerName || "Student").trim());
-
-  try {
-    const response = await fetch("/api/quizzes/upload", {
-      method: "POST",
-      body: formData
-    });
-    const payload = await response.json();
-    if (!response.ok || !payload?.ok) {
-      throw new Error(payload?.message || "Upload failed");
-    }
-
-    setQuizUploadNotice(
-      `Uploaded "${payload.set?.label || "Quiz"}" (${Number(payload.set?.questionCount || 0)} questions).`,
-      "good"
-    );
-    renderAvailableQuizSets(payload?.sets || []);
-    quizUploadFileInput.value = "";
-  } catch (error) {
-    setQuizUploadNotice(error?.message || "Could not upload quiz file.", "bad");
-  } finally {
-    uploadQuizBtn.disabled = false;
+  if (packOpenAnimationTimer) {
+    clearTimeout(packOpenAnimationTimer);
+    packOpenAnimationTimer = null;
   }
+
+  const display = renderBlookWithEffect(blook, selectedEffectId);
+  packOpenAnimation.innerHTML = `
+    <div class="pack-open-shell">
+      <div class="pack-open-seal">Opening...</div>
+      <div class="pack-open-reveal">
+        ${display}
+        <strong>${escapeHtml(blook.name || "Blook")}</strong>
+        <span>${escapeHtml(blook.rarity || "Common")}</span>
+      </div>
+    </div>`;
+
+  packOpenAnimation.classList.remove("hidden", "revealed");
+  requestAnimationFrame(() => {
+    packOpenAnimation.classList.add("revealed");
+  });
+
+  packOpenAnimationTimer = setTimeout(() => {
+    packOpenAnimation.classList.add("hidden");
+    packOpenAnimation.classList.remove("revealed");
+    packOpenAnimationTimer = null;
+  }, 2600);
 }
 
 function getPackById(packId) {
@@ -1940,6 +2179,15 @@ function pickFirstOwnedBlookIdForPack(packId) {
   return owned?.id || "";
 }
 
+function pickRandomOwnedBlookIdForPack(packId) {
+  const owned = getInventoryRows().filter((entry) => entry.packId === packId);
+  if (!Array.isArray(owned) || owned.length === 0) {
+    return "";
+  }
+  const index = Math.floor(Math.random() * owned.length);
+  return owned[index]?.id || "";
+}
+
 function syncSelectedBlook() {
   const owned = getOwnedBlookById(selectedBlookId) || getInventoryRows()[0] || null;
   if (owned) {
@@ -1947,13 +2195,17 @@ function syncSelectedBlook() {
     if (pickedBlook) {
       const display = renderBlookWithEffect(owned, selectedEffectId);
       pickedBlook.innerHTML = `
-        <div style="display:flex;align-items:center;gap:12px;padding:4px">
-          ${display}
-          <div style="display:flex;flex-direction:column">
-            <strong style="color:var(--accent)">${escapeHtml(owned.name)}</strong>
+        <div class="selected-blook-preview">
+          <div class="selected-blook-row">
+            ${display}
+          <div class="selected-blook-meta">
+            <strong>${escapeHtml(owned.name)}</strong>
             <span class="help">${escapeHtml(owned.packName)} | ${escapeHtml(owned.rarity)}</span>
+            <span class="help">Join uses a random avatar from your selected pack.</span>
           </div>
-        </div>`;
+        </div>
+        <span class="selected-blook-ready">Ready!</span>
+      </div>`;
     }
   } else {
     selectedBlookId = "";
@@ -1970,12 +2222,25 @@ function renderPackTabs() {
     return;
   }
 
-  const packButtons = blookPacks.map((pack) => {
+  const preferredPackOrder = ["superheroes", "athletes", "sports", "anime", "books", "science", "nature", "mythic"];
+  const orderIndex = new Map(preferredPackOrder.map((id, index) => [id, index]));
+  const sortedPacks = blookPacks.slice().sort((left, right) => {
+    const leftIdx = orderIndex.has(left.id) ? orderIndex.get(left.id) : preferredPackOrder.length + 1;
+    const rightIdx = orderIndex.has(right.id) ? orderIndex.get(right.id) : preferredPackOrder.length + 1;
+    if (leftIdx !== rightIdx) {
+      return leftIdx - rightIdx;
+    }
+    return String(left.name || "").localeCompare(String(right.name || ""));
+  });
+
+  const packButtons = sortedPacks.map((pack) => {
     const selectedClass = pack.id === selectedPackId ? "pack-tab selected" : "pack-tab";
     const unlocked = Math.max(0, Number(pack.ownedCount || 0));
     const total = Math.max(1, Number(pack.totalCount || 1));
+    const badge = pack.id === "superheroes" ? `<span class="pack-tab-badge">NEW</span>` : "";
     return `<button type="button" class="${selectedClass}" data-pack-id="${pack.id}">
       ${escapeHtml(pack.name)}<br />
+      ${badge}
       <span class="help">${unlocked}/${total} unlocked</span>
     </button>`;
   }).join("");
@@ -2007,14 +2272,17 @@ function renderBlookGrid() {
 
   const unlockedTiles = ownedInPack
     .map((blook) => {
-      const selectedClass = blook.id === selectedBlookId ? "blook-tile selected" : "blook-tile";
+      const isSelected = blook.id === selectedBlookId;
+      const selectedClass = isSelected ? "blook-tile selected" : "blook-tile";
       const duplicateSuffix = blook.duplicates > 0 ? ` x${blook.count}` : "";
       const display = renderBlookWithEffect(blook, selectedEffectId);
+      const readyBanner = isSelected ? `<span class="blook-ready-banner">Ready!</span>` : "";
       return `
       <button type="button" class="${selectedClass}" data-blook-id="${blook.id}">
         ${display}
         <span class="blook-name">${escapeHtml(blook.name)}${escapeHtml(duplicateSuffix)}</span>
         <span class="blook-rarity">${escapeHtml(blook.rarity || "Common")}</span>
+        ${readyBanner}
       </button>`;
     })
     .join("");
@@ -2171,6 +2439,8 @@ async function openSelectedPack() {
   if (reward) {
     selectedBlookId = reward.id;
     renderEconomyPanel();
+    const rewardDisplay = getOwnedBlookById(reward.id) || reward;
+    showPackOpenAnimation(rewardDisplay);
     const duplicateText = reward.duplicate
       ? `Duplicate! You now have ${reward.count}. Sell extras for ${reward.sellValueEach} coins.`
       : "New unlock added to your collection.";
@@ -2397,6 +2667,35 @@ if (codeInput) {
   });
 }
 
+if (soundToggleBtn) {
+  soundToggleBtn.addEventListener("click", () => {
+    setSoundEnabled(!soundEnabled);
+  });
+}
+
+if (miniTutorialBtn) {
+  miniTutorialBtn.addEventListener("click", () => {
+    if (!activeMiniGameType) {
+      return;
+    }
+    openMiniTutorial(activeMiniGameType, { force: true });
+  });
+}
+
+if (miniTutorialCloseBtn) {
+  miniTutorialCloseBtn.addEventListener("click", () => {
+    hideMiniTutorialOverlay();
+  });
+}
+
+if (miniTutorialOverlay) {
+  miniTutorialOverlay.addEventListener("click", (event) => {
+    if (event.target === miniTutorialOverlay) {
+      hideMiniTutorialOverlay();
+    }
+  });
+}
+
 joinBtn.addEventListener("click", () => {
   const code = sanitizeRoomCode(codeInput.value);
   const name = nameInput.value.trim();
@@ -2410,10 +2709,21 @@ joinBtn.addEventListener("click", () => {
     selectedBlookId = "sports-soccer-star";
   }
 
+  const joinPackId = selectedPackId === "effects"
+    ? (getOwnedBlookById(selectedBlookId)?.packId || "")
+    : selectedPackId;
+  const randomJoinBlookId = pickRandomOwnedBlookIdForPack(joinPackId) || effectiveJoinBlookId();
+  if (randomJoinBlookId) {
+    selectedBlookId = randomJoinBlookId;
+    syncSelectedBlook();
+    renderBlookGrid();
+  }
+
   socket.emit("player:join", {
     code,
     name,
-    blookId: effectiveJoinBlookId(),
+    blookId: randomJoinBlookId || effectiveJoinBlookId(),
+    packId: joinPackId,
     effectId: selectedEffectId,
     accountKey: joinAccountKey()
   }, (res) => {
@@ -2481,9 +2791,11 @@ packTabs.addEventListener("click", (event) => {
   if (!pack) return;
 
   selectedPackId = pack.id;
-  const packOwnedBlookId = pickFirstOwnedBlookIdForPack(pack.id);
-  if (!selectedBlookId || !getOwnedBlookById(selectedBlookId)) {
-    selectedBlookId = packOwnedBlookId || selectedBlookId;
+  const packOwnedBlookId = pickRandomOwnedBlookIdForPack(pack.id);
+  if (packOwnedBlookId) {
+    selectedBlookId = packOwnedBlookId;
+  } else if (!selectedBlookId || !getOwnedBlookById(selectedBlookId)) {
+    selectedBlookId = pickFirstOwnedBlookIdForPack(pack.id) || selectedBlookId;
   }
   renderEconomyPanel();
 });
@@ -2500,7 +2812,9 @@ blookGrid.addEventListener("click", (event) => {
 
   if (blookId) {
     if (!getOwnedBlookById(blookId)) return;
-    selectedBlookId = blookId;
+    const randomId = pickRandomOwnedBlookIdForPack(selectedPackId);
+    selectedBlookId = randomId || blookId;
+    setPackResultNotice("Pack locked. Avatar will be random when you join.", "good");
     syncSelectedBlook();
     updateEconomyButtons();
     renderBlookGrid();
@@ -2530,12 +2844,6 @@ if (sellDuplicateBtn) {
       setPackResultNotice(error?.message || "Sell duplicate failed.", "bad");
       updateEconomyButtons();
     }
-  });
-}
-
-if (uploadQuizBtn) {
-  uploadQuizBtn.addEventListener("click", async () => {
-    await uploadQuizSetFile();
   });
 }
 
@@ -2684,6 +2992,14 @@ chests.addEventListener("click", (event) => {
 
 window.addEventListener("keydown", (event) => {
   if (!(event instanceof KeyboardEvent)) {
+    return;
+  }
+  const tutorialOpen = miniTutorialOverlay && !miniTutorialOverlay.classList.contains("hidden");
+  if (tutorialOpen) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      hideMiniTutorialOverlay();
+    }
     return;
   }
   if (phase !== "minigame") {
@@ -2849,6 +3165,8 @@ socket.on("minigame:start", ({ eligiblePlayerIds, eventName, feedTitle: nextFeed
   const isEligible = eligiblePlayerIds.includes(socket.id);
 
   if (!isEligible) {
+    hideMiniTutorialOverlay();
+    applyMiniTutorialButtonVisibility("");
     stopMiniTickers();
     showSection(resultSection);
     resultText.textContent = `Only students who answered correctly are in ${activeEventName}.`;
@@ -2865,6 +3183,7 @@ socket.on("minigame:yourData", ({ type, endsAt, eventName, actionLabel, data }) 
   setGameIllustration(chestIllustration, type || "", miniGameTypeLabel(type));
   renderMiniGame(type, data, activeActionLabel);
   startTicker(chestTimer, endsAt, "Mini-game ends in");
+  openMiniTutorial(type);
   setNotice(roomSettings.showInstructions === false ? "Mini-game started." : "Play the mini-game for bonus points.");
 });
 
@@ -3086,12 +3405,15 @@ socket.io.on("reconnect_attempt", () => {
   setConnectionPill("Reconnecting...", "warn");
 });
 
+loadSoundPreference();
+applySoundToggleUi();
+loadMiniTutorialProgress();
+setupSfxUnlockListeners();
+applyMiniTutorialButtonVisibility("");
 applyRoomSettings(roomSettings);
 loadBlooks();
-loadQuizSets();
 loadMiniGames();
 loadActiveRoomCode();
-setInterval(loadQuizSets, 30000);
 setInterval(loadMiniGames, 15000);
 setInterval(loadActiveRoomCode, 5000);
 

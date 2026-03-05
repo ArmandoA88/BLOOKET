@@ -270,6 +270,45 @@ const BLOOK_PACKS = [
   },
 
   {
+    id: "superheroes",
+    name: "Superheroes Pack",
+    description: "Marvel-only heroes, villains, and Spider-variants with real character images.",
+    price: 20,
+    blooks: [
+      { id: "marvel-spiderman-classic", name: "Spider-Man (Classic)", image: "/assets/superheroes/spiderman-classic.png", icon: "M", rarity: "Legendary", universe: "Marvel", role: "Hero", variant: "Peter Parker" },
+      { id: "marvel-spiderman-peter-mcu", name: "Spider-Man (MCU)", image: "/assets/superheroes/spiderman-mcu-peter.jpg", icon: "M", rarity: "Epic", universe: "Marvel", role: "Hero", variant: "Peter Parker MCU" },
+      { id: "marvel-spiderman-miles", name: "Spider-Man (Miles Morales)", image: "/assets/superheroes/spiderman-miles.png", icon: "M", rarity: "Epic", universe: "Marvel", role: "Hero", variant: "Miles Morales" },
+      { id: "marvel-spidergwen", name: "Spider-Gwen", image: "/assets/superheroes/spidergwen.jpg", icon: "M", rarity: "Epic", universe: "Marvel", role: "Hero", variant: "Gwen Stacy" },
+      { id: "marvel-spiderman-2099", name: "Spider-Man 2099", image: "/assets/superheroes/spiderman-2099.png", icon: "M", rarity: "Epic", universe: "Marvel", role: "Hero", variant: "Miguel O'Hara" },
+      { id: "marvel-spiderman-noir", name: "Spider-Man Noir", image: "/assets/superheroes/spiderman-noir.png", icon: "M", rarity: "Common", universe: "Marvel", role: "Hero", variant: "Noir Universe" },
+      { id: "marvel-iron-man", name: "Iron Man", image: "/assets/superheroes/iron-man.png", icon: "M", rarity: "Legendary", universe: "Marvel", role: "Hero" },
+      { id: "marvel-captain-america-steve", name: "Captain America (Steve)", image: "/assets/superheroes/captain-america-steve.jpg", icon: "M", rarity: "Legendary", universe: "Marvel", role: "Hero", variant: "Steve Rogers" },
+      { id: "marvel-captain-america-sam", name: "Captain America (Sam)", image: "/assets/superheroes/captain-america-sam.jpg", icon: "M", rarity: "Common", universe: "Marvel", role: "Hero", variant: "Sam Wilson" },
+      { id: "marvel-thor", name: "Thor", image: "/assets/superheroes/thor.png", icon: "M", rarity: "Legendary", universe: "Marvel", role: "Hero" },
+      { id: "marvel-hulk", name: "Hulk", image: "/assets/superheroes/hulk.png", icon: "M", rarity: "Legendary", universe: "Marvel", role: "Hero" },
+      { id: "marvel-black-widow", name: "Black Widow", image: "/assets/superheroes/black-widow.jpg", icon: "M", rarity: "Common", universe: "Marvel", role: "Hero" },
+      { id: "marvel-hawkeye", name: "Hawkeye", image: "/assets/superheroes/hawkeye.png", icon: "M", rarity: "Common", universe: "Marvel", role: "Hero" },
+      { id: "marvel-doctor-strange", name: "Doctor Strange", image: "/assets/superheroes/doctor-strange.jpg", icon: "M", rarity: "Epic", universe: "Marvel", role: "Hero" },
+      { id: "marvel-scarlet-witch", name: "Scarlet Witch", image: "/assets/superheroes/scarlet-witch.jpg", icon: "M", rarity: "Epic", universe: "Marvel", role: "Hero" },
+      { id: "marvel-black-panther", name: "Black Panther", image: "/assets/superheroes/black-panther.png", icon: "M", rarity: "Epic", universe: "Marvel", role: "Hero" },
+      { id: "marvel-captain-marvel", name: "Captain Marvel", image: "/assets/superheroes/captain-marvel.jpg", icon: "M", rarity: "Rare", universe: "Marvel", role: "Hero" },
+      { id: "marvel-green-goblin", name: "Green Goblin", image: "/assets/superheroes/green-goblin.png", icon: "M", rarity: "Epic", universe: "Marvel", role: "Villain" },
+      { id: "marvel-doctor-octopus", name: "Doctor Octopus", image: "/assets/superheroes/doctor-octopus.jpg", icon: "M", rarity: "Epic", universe: "Marvel", role: "Villain" },
+      { id: "marvel-venom", name: "Venom", image: "/assets/superheroes/venom.png", icon: "M", rarity: "Epic", universe: "Marvel", role: "Villain" },
+      { id: "marvel-carnage", name: "Carnage", image: "/assets/superheroes/carnage.png", icon: "M", rarity: "Rare", universe: "Marvel", role: "Villain" },
+      { id: "marvel-thanos", name: "Thanos", image: "/assets/superheroes/thanos.png", icon: "M", rarity: "Legendary", universe: "Marvel", role: "Villain" },
+      { id: "marvel-loki", name: "Loki", image: "/assets/superheroes/loki.jpg", icon: "M", rarity: "Epic", universe: "Marvel", role: "Villain" },
+      { id: "marvel-ultron", name: "Ultron", image: "/assets/superheroes/ultron.png", icon: "M", rarity: "Epic", universe: "Marvel", role: "Villain" },
+      { id: "marvel-red-skull", name: "Red Skull", image: "/assets/superheroes/red-skull.png", icon: "M", rarity: "Common", universe: "Marvel", role: "Villain" },
+      { id: "marvel-hela", name: "Hela", image: "/assets/superheroes/hela.png", icon: "M", rarity: "Rare", universe: "Marvel", role: "Villain" },
+      { id: "marvel-killmonger", name: "Killmonger", image: "/assets/superheroes/killmonger.jpg", icon: "M", rarity: "Rare", universe: "Marvel", role: "Villain" },
+      { id: "marvel-mysterio", name: "Mysterio", image: "/assets/superheroes/mysterio.png", icon: "M", rarity: "Rare", universe: "Marvel", role: "Villain" },
+      { id: "marvel-vulture", name: "Vulture", image: "/assets/superheroes/vulture.png", icon: "M", rarity: "Common", universe: "Marvel", role: "Villain" },
+      { id: "marvel-kingpin", name: "Kingpin", image: "/assets/superheroes/kingpin.png", icon: "M", rarity: "Common", universe: "Marvel", role: "Villain" }
+    ]
+  },
+
+  {
     id: "science",
     name: "Science Pack",
     description: "Lab, space, and invention vibes.",
@@ -389,36 +428,15 @@ for (const pack of BLOOK_PACKS) {
 
 const DEFAULT_BLOOK = BLOOK_LOOKUP.get(BLOOK_PACKS[0].blooks[0].id);
 const ALL_BLOOKS = Array.from(BLOOK_LOOKUP.values());
-const STARTER_COMMON_BLOOK_COUNT = 10;
+const ALL_BLOOK_IDS = BLOOK_PACKS.flatMap((pack) => pack.blooks.map((blook) => blook.id));
 
-// Give ALL anime-pack blooks as starters (they are all Common & free),
-// plus the first few Common blooks from other packs.
-const ANIME_BLOOK_IDS = (
-  BLOOK_PACKS.find((p) => p.id === "anime")?.blooks.map((b) => b.id) || []
-);
-const SPORTS_BLOOK_IDS = (
-  BLOOK_PACKS.find((p) => p.id === "sports")?.blooks.map((b) => b.id) || []
-);
-const ATHLETES_BLOOK_IDS = (
-  BLOOK_PACKS.find((p) => p.id === "athletes")?.blooks.map((b) => b.id) || []
-);
-const BOOKS_BLOOK_IDS = (
-  BLOOK_PACKS.find((p) => p.id === "books")?.blooks.map((b) => b.id) || []
-);
-const OTHER_COMMON_IDS = BLOOK_PACKS
-  .filter((p) => p.id !== "anime" && p.id !== "sports" && p.id !== "athletes" && p.id !== "books")
-  .flatMap((pack) =>
-    pack.blooks
-      .filter((b) => String(b?.rarity || "").toLowerCase() === "common")
-      .map((b) => b.id)
-  )
-  .slice(0, STARTER_COMMON_BLOOK_COUNT);
-
-// Students start with every anime character + every sports team + every legendary athlete + every book legend + a few commons from other packs
-const STARTER_COMMON_BLOOK_IDS = [...new Set([...ANIME_BLOOK_IDS, ...SPORTS_BLOOK_IDS, ...ATHLETES_BLOOK_IDS, ...BOOKS_BLOOK_IDS, ...OTHER_COMMON_IDS])];
+// Unhide all blooks for every account (new + existing).
+const STARTER_COMMON_BLOOK_IDS = [...new Set(ALL_BLOOK_IDS)];
 const PACK_OPEN_COST = 20;
 const DUPLICATE_SELL_RATE = 0.3;
-const STARTER_FREE_PACK_OPENS = 1;
+const STARTER_COINS = 200;
+const STARTER_FREE_PACK_OPENS = 0;
+const STARTER_GRANT_VERSION = 1;
 const BLOOK_RARITY_WEIGHT = {
   Common: 60,
   Rare: 26,
@@ -471,11 +489,10 @@ function rarityWeightForBlook(blook) {
 }
 
 function packOpenCost(packId) {
-  const pack = BLOOK_PACKS.find((entry) => entry.id === packId);
-  if (!pack) {
+  if (!packId) {
     return PACK_OPEN_COST;
   }
-  return clamp(Number(pack.price) || PACK_OPEN_COST, 1, 2000);
+  return PACK_OPEN_COST;
 }
 
 function duplicateSellValueForPack(packId) {
@@ -491,7 +508,18 @@ function ensureStarterCommonBlooks(account) {
     account.inventory = {};
   }
 
+  account.coins = Math.max(0, Math.floor(parseStoredNumber(account.coins, 0)));
+  account.freePackOpensRemaining = Math.max(0, Math.floor(parseStoredNumber(account.freePackOpensRemaining, STARTER_FREE_PACK_OPENS)));
+  account.starterGrantVersion = Math.max(0, Math.floor(parseStoredNumber(account.starterGrantVersion, 0)));
+
   let changed = false;
+  if (account.starterGrantVersion < STARTER_GRANT_VERSION) {
+    account.coins = Math.max(account.coins, STARTER_COINS);
+    account.freePackOpensRemaining = STARTER_FREE_PACK_OPENS;
+    account.starterGrantVersion = STARTER_GRANT_VERSION;
+    changed = true;
+  }
+
   for (const blookId of STARTER_COMMON_BLOOK_IDS) {
     const ownedCount = Math.max(0, Math.floor(parseStoredNumber(account.inventory[blookId], 0)));
     if (ownedCount <= 0) {
@@ -562,8 +590,9 @@ function loadAccountsFromDisk() {
 
       const account = {
         id: key,
-        coins: Math.max(0, Math.floor(parseStoredNumber(record.coins, 0))),
+        coins: Math.max(0, Math.floor(parseStoredNumber(record.coins, STARTER_COINS))),
         freePackOpensRemaining: Math.max(0, Math.floor(parseStoredNumber(record.freePackOpensRemaining, STARTER_FREE_PACK_OPENS))),
+        starterGrantVersion: Math.max(0, Math.floor(parseStoredNumber(record.starterGrantVersion, 0))),
         selectedBlookId,
         inventory,
         miniGameStats,
@@ -597,6 +626,7 @@ function saveAccountsToDisk() {
         id: account.id,
         coins: account.coins,
         freePackOpensRemaining: account.freePackOpensRemaining,
+        starterGrantVersion: account.starterGrantVersion || 0,
         selectedBlookId: account.selectedBlookId || "",
         inventory: account.inventory,
         miniGameStats: account.miniGameStats || {},
@@ -625,8 +655,9 @@ function ensureAccount(accountKey) {
     const createdAt = nowIso();
     const created = {
       id: safeKey,
-      coins: 0,
+      coins: STARTER_COINS,
       freePackOpensRemaining: STARTER_FREE_PACK_OPENS,
+      starterGrantVersion: STARTER_GRANT_VERSION,
       selectedBlookId: "",
       inventory: {},
       miniGameStats: {},
@@ -721,6 +752,32 @@ function accountUnlockedBlooks(account) {
     return left.name.localeCompare(right.name);
   });
   return rows;
+}
+
+function pickRandomOwnedBlookForPack(account, packId) {
+  const safePackId = String(packId || "").trim();
+  if (!safePackId || !account || typeof account.inventory !== "object") {
+    return null;
+  }
+
+  const pack = BLOOK_PACKS.find((entry) => entry.id === safePackId);
+  if (!pack || !Array.isArray(pack.blooks) || pack.blooks.length === 0) {
+    return null;
+  }
+
+  const ownedIds = [];
+  for (const blook of pack.blooks) {
+    if (accountOwnedCount(account, blook.id) > 0) {
+      ownedIds.push(blook.id);
+    }
+  }
+
+  if (ownedIds.length === 0) {
+    return null;
+  }
+
+  const chosenId = ownedIds[Math.floor(Math.random() * ownedIds.length)];
+  return BLOOK_LOOKUP.get(chosenId) || null;
 }
 
 function rarityOddsForPack(pack) {
@@ -4533,6 +4590,7 @@ io.on("connection", (socket) => {
     const requestedName = sanitizeName(payload?.name || "");
     const game = games.get(code);
     const requestedBlookId = String(payload?.blookId || "").trim();
+    const requestedPackId = String(payload?.packId || "").trim();
     const allowLateJoin = normalizeBooleanFlag(game?.settings?.allowLateJoin, true);
     const useRandomNames = normalizeBooleanFlag(game?.settings?.useRandomNames, false);
     const allowStudentAccounts = normalizeBooleanFlag(game?.settings?.allowStudentAccounts, true);
@@ -4599,7 +4657,10 @@ io.on("connection", (socket) => {
     }
 
     if (hasAccount) {
-      if (accountOwnsBlook(account, requestedBlookId)) {
+      const randomPackBlook = pickRandomOwnedBlookForPack(account, requestedPackId);
+      if (randomPackBlook) {
+        selectedBlook = { ...randomPackBlook };
+      } else if (accountOwnsBlook(account, requestedBlookId)) {
         selectedBlook = { ...resolveBlookById(requestedBlookId) };
       } else if (accountOwnsBlook(account, account.selectedBlookId)) {
         selectedBlook = { ...resolveBlookById(account.selectedBlookId) };

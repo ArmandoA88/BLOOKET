@@ -36,8 +36,8 @@ Build and harden a classroom-ready, Blooket-style realtime quiz platform that ru
 - [x] Add host option for mini-game rotation mode:
 - [x] `Fixed order`, `Random order`, `Most Played First`, `Soccer only`, `Disable mini-games`.
 - [x] Add optional mini-game duration control in host settings.
-- [ ] Add per-mini-game tutorial overlays for first-time players.
-- [ ] Add sound toggle + simple SFX events (goal, save, timer warning).
+- [x] Add per-mini-game tutorial overlays for first-time players.
+- [x] Add sound toggle + simple SFX events (goal, save, timer warning).
 
 ### Phase 4: Quiz Content System
 - [ ] Add quiz import/export (`.json`) for teacher-made sets.
@@ -121,3 +121,5 @@ Build and harden a classroom-ready, Blooket-style realtime quiz platform that ru
 - [x] Economy update: persistent student accounts with hidden blook unlocks, coin rewards, pack opening, and duplicate sellback.
 - [x] Quiz content update: host and student pages can upload CSV/Excel quiz files and persist them to `data/custom-quizzes.json`.
 - [x] Analytics update: mini-game stats endpoint now tracks and exposes most played + most matched mini-games.
+- [x] Phase 3.5 completed: first-time mini-game tutorial overlays now show once per mini-game and are reopenable from the mini-game panel.
+- [x] Phase 3.6 completed: player-side sound toggle added with SFX for goal, save, and timer warning events.

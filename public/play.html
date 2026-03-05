@@ -46,7 +46,7 @@
               <div class="notice">Free Opens: <strong id="accountFreeOpen">0</strong></div>
             </div>
             <div id="packTabs" class="pack-tabs">
-              <span class="help">Pick a pack and blook before joining.</span>
+              <span class="help">Pick a pack before joining. Avatar is randomized from that pack.</span>
             </div>
             <div class="button-row" style="margin-top: 10px">
               <button id="openPackBtn" class="secondary" type="button">Open Pack</button>
@@ -54,6 +54,7 @@
             </div>
             <div id="packOdds" class="help" style="margin-top: 8px"></div>
             <div id="packResult" class="notice hidden" style="margin-top: 8px"></div>
+            <div id="packOpenAnimation" class="pack-open-animation hidden" aria-live="polite"></div>
           </div>
           <div style="margin-top: 10px">
             <label>Unlocked Blooks (Locked blooks stay hidden)</label>
@@ -61,25 +62,7 @@
           </div>
         </div>
         <div id="accountPolicyNotice" class="notice hidden" style="margin-top: 10px"></div>
-        <div class="card" style="margin-top: 12px">
-          <h3 class="title">Upload Quiz (Student/Teacher)</h3>
-          <div class="form-grid">
-            <div>
-              <label for="quizUploadTitle">Quiz Title (optional)</label>
-              <input id="quizUploadTitle" maxlength="64" placeholder="e.g. Times Tables Warmup" />
-            </div>
-            <div>
-              <label for="quizUploadFile">CSV or Excel File</label>
-              <input id="quizUploadFile" type="file" accept=".csv,.xlsx,.xls" />
-            </div>
-          </div>
-          <div class="button-row" style="margin-top: 8px">
-            <button id="uploadQuizBtn" class="secondary" type="button">Upload Quiz File</button>
-          </div>
-          <div id="quizUploadNotice" class="notice hidden" style="margin-top: 8px"></div>
-          <div id="quizUploadSets" class="help" style="margin-top: 8px">Available quizzes loading...</div>
-        </div>
-        <div id="pickedBlook" class="notice" style="margin-top: 10px">Your selected blook will be locked after you join.</div>
+        <div id="pickedBlook" class="notice" style="margin-top: 10px">Your join avatar is randomized from your selected pack.</div>
         <div class="button-row" style="margin-top: 12px">
           <button id="joinBtn">Join Game</button>
           <span id="joinNotice" class="notice hidden"></span>
@@ -89,7 +72,7 @@
       <section id="playCard" class="hidden fade-in">
         <section id="fishingHud" class="fishing-hud hidden" aria-hidden="true">
           <div class="fishing-hud-left">
-            <span class="fishing-hud-audio">🔊</span>
+            <span class="fishing-hud-audio">SFX ON</span>
             <span id="fishingHudName">PLAYER</span>
           </div>
           <div id="fishingHudTimer" class="fishing-hud-timer">--:--</div>
@@ -128,6 +111,7 @@
               <div class="topbar-phase">
                 <div class="badge">Phase: <span id="phaseText">Lobby</span></div>
                 <span id="playerConnectionPill" class="status-pill">Connecting...</span>
+                <button id="soundToggleBtn" class="ghost sound-toggle-btn" type="button" aria-pressed="true">Sound: On</button>
               </div>
             </div>
 
@@ -154,6 +138,9 @@
               <img id="chestIllustration" class="game-illustration hidden" alt="Mini-game" />
               <h3 id="eventTitle" class="title">Mini-game</h3>
               <div class="sub" id="chestTimer">Mini-game ends in --</div>
+              <div class="button-row mini-game-tools">
+                <button id="miniTutorialBtn" class="ghost mini-tool-btn hidden" type="button">How to Play</button>
+              </div>
               <div id="chests" class="chests" style="margin-top: 10px"></div>
             </section>
 
@@ -185,6 +172,17 @@
           </aside>
         </div>
       </section>
+      <div id="miniTutorialOverlay" class="tutorial-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="miniTutorialTitle">
+        <section class="tutorial-card">
+          <span class="tutorial-kicker">First-Time Mini-Game Tips</span>
+          <h3 id="miniTutorialTitle" class="title">Mini-Game Tutorial</h3>
+          <p id="miniTutorialIntro" class="help">Tutorial details will appear here.</p>
+          <ul id="miniTutorialSteps" class="tutorial-steps"></ul>
+          <div class="button-row" style="margin-top: 12px">
+            <button id="miniTutorialCloseBtn" type="button">Got It</button>
+          </div>
+        </section>
+      </div>
     </main>
 
     <script src="/socket.io/socket.io.js"></script>

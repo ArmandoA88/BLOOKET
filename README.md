@@ -7,7 +7,7 @@ A localhost-first realtime classroom quiz game with host controls and student jo
 - Host creates game room with 6-character join code
 - Student join screen for nickname + game code
 - Main page shortcut to launch mini-game testing quickly
-- Hidden blook unlock economy with themed packs: Sports, Anime, Science, Nature, Mythic
+- Hidden blook unlock economy with themed packs: Sports, Anime, Superheroes, Science, Nature, Mythic
 - First pack open is free, then packs cost coins (default: 20)
 - Coins are awarded after each game from score + correct answers + final rank
 - Duplicate blooks can be sold back at 30% of pack cost

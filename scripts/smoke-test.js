@@ -402,7 +402,9 @@ async function run() {
     const noMiniQuestionA = waitForEvent(studentA, "question:start", { timeoutMs: 12000 });
     const noMiniQuestionB = waitForEvent(studentB, "question:start", { timeoutMs: 12000 });
     const noMiniRoundSummary = waitForEvent(host, "round:summary", { timeoutMs: 12000 });
-    const noMiniStart = waitForEvent(host, "minigame:start", { timeoutMs: 4500 });
+    const noMiniStart = waitForEvent(host, "minigame:start", { timeoutMs: 4500 })
+      .then((payload) => ({ triggered: true, payload }))
+      .catch((error) => ({ triggered: false, error }));
 
     await emitAck(host, "host:start", { code: noMiniCode });
 
@@ -414,14 +416,13 @@ async function run() {
     await emitAck(studentB, "player:answer", { code: noMiniCode, answerIndex: noMiniAnswer });
 
     await noMiniRoundSummary;
-    try {
-      await noMiniStart;
+    const noMiniResult = await noMiniStart;
+    if (noMiniResult.triggered) {
       throw new Error("Mini-game fired even though mini-game rotation mode is off.");
-    } catch (error) {
-      const message = String(error?.message || error);
-      if (!message.includes("Timed out waiting for 'minigame:start'")) {
-        throw error;
-      }
+    }
+    const noMiniMessage = String(noMiniResult.error?.message || noMiniResult.error || "");
+    if (!noMiniMessage.includes("Timed out waiting for 'minigame:start'")) {
+      throw noMiniResult.error;
     }
 
     await emitAck(host, "host:end", { code: noMiniCode });

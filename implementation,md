@@ -44,13 +44,13 @@ Build and harden a classroom-ready, Blooket-style realtime quiz platform that ru
 - [x] Add quiz upload from CSV/Excel (`.csv`, `.xlsx`, `.xls`) to local database.
 - [x] Add host UI for creating/editing question sets in browser.
 - [x] Add categories/tags and quick filter search.
-- [ ] Add per-question image support.
-- [ ] Add optional explanation reveal duration control.
-- [ ] Add question randomization controls (shuffle options, no repeats).
+- [x] Add per-question image support.
+- [x] Add optional explanation reveal duration control.
+- [x] Add question randomization controls (shuffle options, no repeats).
 
 ### Phase 5: Classroom Controls
-- [ ] Add lock join toggle after class starts.
-- [ ] Add manual start countdown (3..2..1).
+- [x] Add lock join toggle after class starts.
+- [x] Add manual start countdown (3..2..1).
 - [ ] Add per-student mute/kick/rejoin approvals.
 - [ ] Add temporary pause/resume game button.
 - [ ] Add "skip current mini-game" button.
@@ -126,3 +126,8 @@ Build and harden a classroom-ready, Blooket-style realtime quiz platform that ru
 - [x] Phase 4.1 completed: host can import JSON quiz bundles and export all custom quiz sets as JSON backups.
 - [x] Phase 4.2 completed: host quiz builder can create new custom sets and edit existing custom sets in-browser.
 - [x] Phase 4.3 completed: quiz sets now include category/tags metadata with host quick search + category filters.
+- [x] Phase 4.4 completed: custom questions now support optional image URLs from builder, JSON, and CSV/Excel imports.
+- [x] Phase 4.5 completed: host can configure explanation reveal duration (0-10s) before mini-game/round transition.
+- [x] Phase 4.6 completed: host controls now support shuffled answer options and no-repeat question selection.
+- [x] Phase 5.1 completed: host can lock/unlock late joining during active gameplay with live setting sync.
+- [x] Phase 5.2 completed: host start now runs a visible 3..2..1 countdown before first question.

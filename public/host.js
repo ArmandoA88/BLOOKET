@@ -49,6 +49,10 @@ const PHASE_BANNER_COPY = {
     title: "Lobby Open",
     detail: "Students can join and pick blooks."
   },
+  countdown: {
+    title: "Starting Countdown",
+    detail: "Launching the first question in 3..2..1."
+  },
   question: {
     title: "Question Live",
     detail: "Answers are being submitted."
@@ -76,6 +80,7 @@ const PHASE_BANNER_COPY = {
 };
 const PHASE_CLASS_CANDIDATES = [
   "phase-lobby",
+  "phase-countdown",
   "phase-question",
   "phase-question-result",
   "phase-minigame",
@@ -165,7 +170,10 @@ const questionSetInput = document.getElementById("questionSet");
 const questionSetSearchInput = document.getElementById("questionSetSearch");
 const questionSetCategoryInput = document.getElementById("questionSetCategory");
 const timerInput = document.getElementById("timer");
+const explanationRevealInput = document.getElementById("explanationReveal");
 const countInput = document.getElementById("count");
+const shuffleQuestionOptionsInput = document.getElementById("shuffleQuestionOptions");
+const preventQuestionRepeatsInput = document.getElementById("preventQuestionRepeats");
 const miniRotationInput = document.getElementById("miniRotation");
 const miniDurationInput = document.getElementById("miniDuration");
 const setupNotice = document.getElementById("setupNotice");
@@ -174,6 +182,8 @@ const createBtn = document.getElementById("createBtn");
 const startBtn = document.getElementById("startBtn");
 const nextBtn = document.getElementById("nextBtn");
 const endBtn = document.getElementById("endBtn");
+const lateJoinToggleBtn = document.getElementById("lateJoinToggleBtn");
+const lateJoinStatusText = document.getElementById("lateJoinStatusText");
 const saveSettingsBtn = document.getElementById("saveSettingsBtn");
 const testMiniGameBtn = document.getElementById("testMiniGameBtn");
 const testMiniGameType = document.getElementById("testMiniGameType");
@@ -219,7 +229,10 @@ const liveQuestionSetSearchInput = document.getElementById("liveQuestionSetSearc
 const liveQuestionSetCategoryInput = document.getElementById("liveQuestionSetCategory");
 const liveQuestionSet = document.getElementById("liveQuestionSet");
 const liveTimer = document.getElementById("liveTimer");
+const liveExplanationReveal = document.getElementById("liveExplanationReveal");
 const liveCount = document.getElementById("liveCount");
+const liveShuffleQuestionOptions = document.getElementById("liveShuffleQuestionOptions");
+const livePreventQuestionRepeats = document.getElementById("livePreventQuestionRepeats");
 const liveMiniRotation = document.getElementById("liveMiniRotation");
 const liveMiniDuration = document.getElementById("liveMiniDuration");
 
@@ -228,6 +241,7 @@ const leaderboardBody = document.getElementById("leaderboardBody");
 const questionPanel = document.getElementById("questionPanel");
 const questionTimer = document.getElementById("questionTimer");
 const questionText = document.getElementById("questionText");
+const hostQuestionMedia = document.getElementById("hostQuestionMedia");
 const answerStats = document.getElementById("answerStats");
 const miniGameDashboardPanel = document.getElementById("miniGameDashboardPanel");
 const miniGameDashboardTitle = document.getElementById("miniGameDashboardTitle");
@@ -256,6 +270,7 @@ let quizSetFilterCategory = "";
 let builderEditingSetId = "";
 let builderQuestionRows = [];
 let selectedEndType = "time";
+let currentAllowLateJoin = true;
 const DEFAULT_SETUP_FLAGS = {
   instructions: true,
   late_join: true,
@@ -308,6 +323,21 @@ function setConnectionPill(label, tone = "") {
     hostConnectionPill.classList.add(tone);
   }
   hostConnectionPill.textContent = label;
+}
+
+function updateLateJoinControls() {
+  const phaseValue = String(phase || "").toLowerCase();
+  const roomReady = Boolean(roomCode);
+  const lockedPhase = phaseValue === "finished" || phaseValue === "ended" || phaseValue === "kicked";
+  if (lateJoinToggleBtn) {
+    lateJoinToggleBtn.disabled = !roomReady || lockedPhase;
+    lateJoinToggleBtn.textContent = currentAllowLateJoin ? "Lock Late Join" : "Unlock Late Join";
+  }
+  if (lateJoinStatusText) {
+    lateJoinStatusText.textContent = currentAllowLateJoin
+      ? "Late join currently allowed."
+      : "Late join currently locked.";
+  }
 }
 
 function setPhaseBanner(nextPhase, detailOverride = "") {
@@ -544,6 +574,30 @@ function applySetupConfigFromSettings(settings = {}) {
     const value = Math.max(2, Math.min(maxValue, Number.isFinite(valueRaw) ? valueRaw : fallback));
     quickDurationMinInput.value = String(value);
   }
+  const revealRaw = Number(settings?.explanationRevealSec);
+  const revealSec = Math.max(0, Math.min(10, Number.isFinite(revealRaw) ? revealRaw : 2));
+  if (explanationRevealInput) {
+    explanationRevealInput.value = String(revealSec);
+  }
+  if (liveExplanationReveal) {
+    liveExplanationReveal.value = String(revealSec);
+  }
+  const shuffleOptions = settings?.shuffleQuestionOptions === true;
+  const preventRepeats = settings?.preventQuestionRepeats === true;
+  if (shuffleQuestionOptionsInput) {
+    shuffleQuestionOptionsInput.checked = shuffleOptions;
+  }
+  if (liveShuffleQuestionOptions) {
+    liveShuffleQuestionOptions.checked = shuffleOptions;
+  }
+  if (preventQuestionRepeatsInput) {
+    preventQuestionRepeatsInput.checked = preventRepeats;
+  }
+  if (livePreventQuestionRepeats) {
+    livePreventQuestionRepeats.checked = preventRepeats;
+  }
+  currentAllowLateJoin = settings?.allowLateJoin !== false;
+  updateLateJoinControls();
   applyModeToggleFlags({
     instructions: settings?.showInstructions,
     late_join: settings?.allowLateJoin,
@@ -679,7 +733,8 @@ function defaultBuilderQuestion() {
     prompt: "",
     options: ["", "", "", ""],
     answerIndex: 0,
-    explanation: ""
+    explanation: "",
+    image: ""
   };
 }
 
@@ -687,6 +742,7 @@ function normalizeBuilderQuestion(rawQuestion) {
   const source = rawQuestion && typeof rawQuestion === "object" ? rawQuestion : {};
   const prompt = String(source.prompt || "").slice(0, 240);
   const explanation = String(source.explanation || "").slice(0, 240);
+  const image = String(source.image || source.imageUrl || "").trim().slice(0, 400);
   const baseOptions = Array.isArray(source.options) ? source.options.slice(0, 4) : [];
   while (baseOptions.length < 4) {
     baseOptions.push("");
@@ -699,7 +755,8 @@ function normalizeBuilderQuestion(rawQuestion) {
     prompt,
     options,
     answerIndex,
-    explanation
+    explanation,
+    image
   };
 }
 
@@ -784,6 +841,16 @@ function renderBuilderQuestions() {
               maxlength="240"
               placeholder="Enter question prompt"
             >${escapeHtml(safe.prompt)}</textarea>
+          </div>
+          <div class="quiz-builder-field" style="margin-top: 8px;">
+            <label>Image URL (optional)</label>
+            <input
+              class="builder-input builder-image"
+              data-builder-row="${index}"
+              maxlength="400"
+              value="${escapeHtml(safe.image || "")}"
+              placeholder="https://... or /assets/..."
+            />
           </div>
           <div class="quiz-builder-options">${optionFields}</div>
           <div class="quiz-builder-foot">
@@ -892,7 +959,8 @@ async function saveBuilderSet() {
     prompt: String(question.prompt || "").trim(),
     options: Array.isArray(question.options) ? question.options.map((option) => String(option || "").trim()) : [],
     answerIndex: Number(question.answerIndex || 0),
-    explanation: String(question.explanation || "").trim()
+    explanation: String(question.explanation || "").trim(),
+    image: String(question.image || "").trim()
   }));
 
   builderSaveBtn.disabled = true;
@@ -1474,6 +1542,23 @@ function setPhaseIllustration(type, altText) {
   phaseIllustration.classList.remove("hidden");
 }
 
+function setQuestionMediaImage(element, imageUrl, questionPrompt = "Question") {
+  if (!element) {
+    return;
+  }
+
+  const src = String(imageUrl || "").trim();
+  if (!src) {
+    element.classList.add("hidden");
+    element.removeAttribute("src");
+    return;
+  }
+
+  element.src = src;
+  element.alt = `${String(questionPrompt || "Question")} image`;
+  element.classList.remove("hidden");
+}
+
 function startTicker(targetEl, endsAt, label) {
   if (tickInterval) {
     clearInterval(tickInterval);
@@ -1501,6 +1586,9 @@ function setPhase(value, detail = "") {
   if (value !== "minigame") {
     hideMiniGameDashboard();
   }
+  if (value !== "question") {
+    setQuestionMediaImage(hostQuestionMedia, "", "");
+  }
 
   const inRoundSummary = value === "round_summary";
   const inLobby = value === "lobby";
@@ -1517,6 +1605,7 @@ function setPhase(value, detail = "") {
   if (testMiniGameBtn) {
     testMiniGameBtn.disabled = !canRunMiniTest;
   }
+  updateLateJoinControls();
 }
 
 function formatJoinUrl(baseUrl) {
@@ -1910,7 +1999,10 @@ createBtn.addEventListener("click", () => {
     mode: modeInput.value,
     questionSet: questionSetInput.value,
     timerSeconds: Number(timerInput.value),
+    explanationRevealSec: Number(explanationRevealInput?.value || 2),
     questionCount: Number(countInput.value),
+    shuffleQuestionOptions: shuffleQuestionOptionsInput?.checked === true,
+    preventQuestionRepeats: preventQuestionRepeatsInput?.checked === true,
     miniGameRotationMode: miniRotationInput?.value || "fixed",
     miniGameDurationSec: Number(miniDurationInput?.value || 10),
     endType: setupConfig.endType,
@@ -1934,6 +2026,8 @@ createBtn.addEventListener("click", () => {
     modeLabel.textContent = `Mode: ${MODE_LABELS[payload.mode] || payload.mode || "Classic Quiz"}`;
     quizLabel.textContent = `Quiz: ${questionSetLabelById(payload.questionSet)}`;
     setPhase("lobby", "Room created. Share the code so students can join.");
+    currentAllowLateJoin = setupConfig.allowLateJoin === true;
+    updateLateJoinControls();
     renderJoinLinks();
     renderLobbyBoard([]);
     if (quickMiniGameMode) {
@@ -2025,6 +2119,20 @@ playAsHostBtn?.addEventListener("click", () => {
   showNotice(hostNotice, "Opened player tab for host. Keep this tab for controls.", "good");
 });
 
+lateJoinToggleBtn?.addEventListener("click", () => {
+  if (!ensureCreated()) return;
+  const nextAllowLateJoin = !currentAllowLateJoin;
+  socket.emit("host:toggleLateJoin", { code: roomCode, allowLateJoin: nextAllowLateJoin }, (res) => {
+    if (!res?.ok) {
+      showNotice(hostNotice, res?.message || "Could not update late join setting.", "bad");
+      return;
+    }
+    currentAllowLateJoin = res.allowLateJoin !== false;
+    updateLateJoinControls();
+    showNotice(hostNotice, currentAllowLateJoin ? "Late join unlocked." : "Late join locked.", "good");
+  });
+});
+
 saveSettingsBtn.addEventListener("click", () => {
   if (!ensureCreated()) return;
   const setupConfig = setupConfigPayload();
@@ -2037,7 +2145,10 @@ saveSettingsBtn.addEventListener("click", () => {
         mode: liveMode.value,
         questionSet: liveQuestionSet.value,
         timerSeconds: Number(liveTimer.value),
+        explanationRevealSec: Number(liveExplanationReveal?.value || 2),
         questionCount: Number(liveCount.value),
+        shuffleQuestionOptions: liveShuffleQuestionOptions?.checked === true,
+        preventQuestionRepeats: livePreventQuestionRepeats?.checked === true,
         miniGameRotationMode: liveMiniRotation?.value || "fixed",
         miniGameDurationSec: Number(liveMiniDuration?.value || 10),
         endType: setupConfig.endType,
@@ -2124,6 +2235,11 @@ builderQuestions?.addEventListener("input", (event) => {
     const answerIndex = Number(target.value || 0);
     row.answerIndex =
       Number.isInteger(answerIndex) && answerIndex >= 0 && answerIndex < row.options.length ? answerIndex : 0;
+    return;
+  }
+
+  if (target.classList.contains("builder-image")) {
+    row.image = String(target.value || "").trim();
     return;
   }
 
@@ -2257,6 +2373,30 @@ socket.on("lobby:update", (payload) => {
   liveMode.value = payload.settings.mode;
   liveQuestionSet.value = payload.settings.questionSet;
   liveTimer.value = payload.settings.timerSeconds;
+  const revealRaw = Number(payload.settings?.explanationRevealSec);
+  const revealSec = Math.max(0, Math.min(10, Number.isFinite(revealRaw) ? revealRaw : 2));
+  if (liveExplanationReveal) {
+    liveExplanationReveal.value = String(revealSec);
+  }
+  if (explanationRevealInput) {
+    explanationRevealInput.value = String(revealSec);
+  }
+  currentAllowLateJoin = payload.settings?.allowLateJoin !== false;
+  const shuffleOptions = payload.settings?.shuffleQuestionOptions === true;
+  const preventRepeats = payload.settings?.preventQuestionRepeats === true;
+  if (shuffleQuestionOptionsInput) {
+    shuffleQuestionOptionsInput.checked = shuffleOptions;
+  }
+  if (liveShuffleQuestionOptions) {
+    liveShuffleQuestionOptions.checked = shuffleOptions;
+  }
+  if (preventQuestionRepeatsInput) {
+    preventQuestionRepeatsInput.checked = preventRepeats;
+  }
+  if (livePreventQuestionRepeats) {
+    livePreventQuestionRepeats.checked = preventRepeats;
+  }
+  updateLateJoinControls();
   liveCount.value = payload.settings.questionCount;
   if (liveMiniRotation) {
     liveMiniRotation.value = payload.settings.miniGameRotationMode || "fixed";
@@ -2307,11 +2447,29 @@ socket.on("host:status", (payload) => {
   kpiRound.textContent = `${payload.currentQuestionIndex} / ${payload.totalQuestions}`;
 });
 
+socket.on("settings:update", (payload) => {
+  if (payload?.code !== roomCode || !payload?.settings) {
+    return;
+  }
+  currentAllowLateJoin = payload.settings.allowLateJoin !== false;
+  updateLateJoinControls();
+});
+
+socket.on("game:countdown", ({ secondsLeft }) => {
+  const safeSeconds = Math.max(0, Number(secondsLeft) || 0);
+  const message = safeSeconds > 0 ? `Game starts in ${safeSeconds}...` : "Go! Question is starting.";
+  setPhase("countdown", message);
+  setPhaseIllustration("", "");
+  questionPanel.classList.add("hidden");
+  showNotice(hostNotice, message, safeSeconds > 0 ? "" : "good");
+});
+
 socket.on("question:start", (payload) => {
   setPhase("question", `Question ${payload.questionIndex}/${payload.totalQuestions} is live.`);
   setPhaseIllustration("question", "Question round");
   questionPanel.classList.remove("hidden");
   questionText.textContent = payload.question.prompt;
+  setQuestionMediaImage(hostQuestionMedia, payload.question.image, payload.question.prompt);
   currentQuestionOptions = payload.question.options;
 
   answerStats.innerHTML = payload.question.options
@@ -2459,6 +2617,7 @@ resetBuilderEditor();
 loadServerInfo();
 loadQuestionSets();
 loadMiniGames();
+updateLateJoinControls();
 setInterval(loadQuestionSets, 30000);
 setInterval(loadMiniGames, 15000);
 

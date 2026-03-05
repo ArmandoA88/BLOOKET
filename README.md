@@ -17,6 +17,11 @@ A localhost-first realtime classroom quiz game with host controls and student jo
 - Host can export all custom quiz sets to a `.json` backup and re-import later
 - Host has an in-browser Quiz Builder to create and edit custom quiz sets
 - Quiz sets support categories/tags with quick host-side search and category filters
+- Questions can include optional image URLs (builder + CSV/Excel + JSON imports)
+- Host can control explanation reveal duration (0-10s) before mini-game/summary transition
+- Host can toggle question randomization controls: shuffled answer options and no-repeat question selection
+- Host can lock/unlock late joining while a game is running
+- Game start uses a visible 3..2..1 countdown before question 1
 - Realtime lobby with player list and kick support
 - Timed multiple-choice questions
 - Speed + streak scoring engine

@@ -175,8 +175,24 @@
               <input id="timer" type="number" min="8" max="45" value="15" />
             </div>
             <div>
+              <label for="explanationReveal">Explanation Reveal (sec, 0 = instant)</label>
+              <input id="explanationReveal" type="number" min="0" max="10" value="2" />
+            </div>
+            <div>
               <label for="count">Question Count</label>
               <input id="count" type="number" min="5" max="30" value="10" />
+            </div>
+            <div>
+              <label for="shuffleQuestionOptions">
+                <input id="shuffleQuestionOptions" type="checkbox" />
+                Shuffle Answer Options
+              </label>
+            </div>
+            <div>
+              <label for="preventQuestionRepeats">
+                <input id="preventQuestionRepeats" type="checkbox" />
+                No Repeated Questions
+              </label>
             </div>
             <div>
               <label for="miniRotation">Mini-Game Rotation</label>
@@ -242,7 +258,7 @@
                 <div class="lobby-actions">
                   <button id="copyJoinLinkBigBtn" class="ghost">Copy Join Link</button>
                   <button id="playAsHostBtn" class="secondary">Play as Host</button>
-                  <button id="lobbyStartBtn">Start</button>
+                  <button id="lobbyStartBtn">Start 3..2..1</button>
                 </div>
               </div>
               <div class="lobby-board-main">
@@ -267,6 +283,7 @@
             <div id="questionPanel" class="hidden" style="margin-top: 12px">
               <div class="ticker" id="questionTimer">Time left: --</div>
               <div class="question" id="questionText">Question text appears here.</div>
+              <img id="hostQuestionMedia" class="question-media hidden" alt="Question reference image" />
               <div id="answerStats" class="answers"></div>
             </div>
 
@@ -295,9 +312,13 @@
           <aside id="hostControlsCard" class="card strong">
             <h2 class="title">Host Controls</h2>
             <div class="button-row" style="margin-bottom: 12px">
-              <button id="startBtn">Start Game</button>
+              <button id="startBtn">Start 3..2..1</button>
               <button id="nextBtn" class="secondary">Next Round</button>
               <button id="endBtn" class="danger">End Game</button>
+            </div>
+            <div class="button-row" style="margin-bottom: 12px">
+              <button id="lateJoinToggleBtn" class="ghost">Lock Late Join</button>
+              <span id="lateJoinStatusText" class="help">Late join currently allowed.</span>
             </div>
 
             <div class="form-grid">
@@ -332,8 +353,24 @@
                 <input id="liveTimer" type="number" min="8" max="45" value="15" />
               </div>
               <div>
+                <label for="liveExplanationReveal">Explanation Reveal (sec, 0 = instant)</label>
+                <input id="liveExplanationReveal" type="number" min="0" max="10" value="2" />
+              </div>
+              <div>
                 <label for="liveCount">Question Count</label>
                 <input id="liveCount" type="number" min="5" max="30" value="10" />
+              </div>
+              <div>
+                <label for="liveShuffleQuestionOptions">
+                  <input id="liveShuffleQuestionOptions" type="checkbox" />
+                  Shuffle Answer Options
+                </label>
+              </div>
+              <div>
+                <label for="livePreventQuestionRepeats">
+                  <input id="livePreventQuestionRepeats" type="checkbox" />
+                  No Repeated Questions
+                </label>
               </div>
               <div>
                 <label for="liveMiniRotation">Mini-Game Rotation</label>
@@ -372,7 +409,7 @@
               </div>
               <div id="quizUploadNotice" class="notice hidden" style="margin-top: 8px"></div>
               <p class="help" style="margin-top: 8px">
-                Import supports CSV/Excel headers (question/prompt, optionA-optionD, answer) or JSON quiz bundles.
+                Import supports CSV/Excel headers (question/prompt, optionA-optionD, answer, optional image) or JSON quiz bundles.
               </p>
             </div>
 
@@ -409,7 +446,7 @@
               </div>
               <div id="builderNotice" class="notice hidden" style="margin-top: 8px"></div>
               <p class="help" style="margin-top: 8px">
-                Add at least 5 questions. Each question needs prompt, 4 options, and a correct answer.
+                Add at least 5 questions. Each question needs prompt, 4 options, and a correct answer. Optional image URL supported.
               </p>
             </div>
 

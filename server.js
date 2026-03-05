@@ -1271,6 +1271,11 @@ function normalizeEndTargetValue(value, endType = "time") {
   return clamp(Number.isFinite(numeric) ? numeric : 7, 2, 20);
 }
 
+function normalizeExplanationRevealSec(value) {
+  const numeric = Number(value);
+  return clamp(Number.isFinite(numeric) ? numeric : 2, 0, 10);
+}
+
 function weightScoreGoal(game) {
   if (!game || normalizeGameEndType(game.settings?.endType) !== "weight") {
     return 0;
@@ -2106,6 +2111,28 @@ function sanitizeQuestionOption(value) {
   return String(value || "").replace(/\s+/g, " ").trim().slice(0, 160);
 }
 
+function sanitizeQuestionImage(value) {
+  const cleaned = String(value || "")
+    .replace(/[\u0000-\u001F<>"'`]/g, "")
+    .trim()
+    .slice(0, 400);
+  if (!cleaned) {
+    return "";
+  }
+
+  const lower = cleaned.toLowerCase();
+  if (lower.startsWith("javascript:") || lower.startsWith("data:")) {
+    return "";
+  }
+  if (lower.startsWith("http://") || lower.startsWith("https://") || cleaned.startsWith("/")) {
+    return cleaned;
+  }
+  if (lower.startsWith("assets/")) {
+    return `/${cleaned}`;
+  }
+  return "";
+}
+
 function sanitizeQuizCategory(value) {
   return String(value || "").replace(/\s+/g, " ").trim().slice(0, 40);
 }
@@ -2278,12 +2305,17 @@ function parseQuizRows(rows) {
       const answerIndex = parseAnswerIndex(row.answerIndex ?? row.answer ?? row.correct, options);
       if (prompt && options.length >= 2 && answerIndex >= 0 && answerIndex < options.length) {
         const explanation = sanitizeQuestionPrompt(row.explanation || "");
-        questions.push({
+        const image = sanitizeQuestionImage(row.image || row.imageUrl || row.media || "");
+        const normalizedQuestion = {
           prompt,
           options,
           answerIndex,
           explanation
-        });
+        };
+        if (image) {
+          normalizedQuestion.image = image;
+        }
+        questions.push(normalizedQuestion);
       }
       continue;
     }
@@ -2346,12 +2378,19 @@ function parseQuizRows(rows) {
     }
 
     const explanation = sanitizeQuestionPrompt(readQuizRowValue(rowLookup, ["explanation", "hint", "reason"]));
-    questions.push({
+    const image = sanitizeQuestionImage(
+      readQuizRowValue(rowLookup, ["image", "imageUrl", "img", "picture", "photo", "media", "asset"])
+    );
+    const normalizedQuestion = {
       prompt,
       options: optionSet,
       answerIndex,
       explanation
-    });
+    };
+    if (image) {
+      normalizedQuestion.image = image;
+    }
+    questions.push(normalizedQuestion);
   }
 
   return questions;
@@ -2476,14 +2515,21 @@ function publicImportedQuestionSetSummary(quiz) {
 
 function publicCustomQuestionSetDetail(quiz) {
   const safeQuestions = Array.isArray(quiz?.questions)
-    ? quiz.questions.map((question) => ({
-        prompt: sanitizeQuestionPrompt(question?.prompt || ""),
-        options: Array.isArray(question?.options)
-          ? question.options.map((option) => sanitizeQuestionOption(option)).filter(Boolean).slice(0, 6)
-          : [],
-        answerIndex: Number(question?.answerIndex || 0),
-        explanation: sanitizeQuestionPrompt(question?.explanation || "")
-      }))
+    ? quiz.questions.map((question) => {
+        const normalized = {
+          prompt: sanitizeQuestionPrompt(question?.prompt || ""),
+          options: Array.isArray(question?.options)
+            ? question.options.map((option) => sanitizeQuestionOption(option)).filter(Boolean).slice(0, 6)
+            : [],
+          answerIndex: Number(question?.answerIndex || 0),
+          explanation: sanitizeQuestionPrompt(question?.explanation || "")
+        };
+        const image = sanitizeQuestionImage(question?.image || question?.imageUrl || "");
+        if (image) {
+          normalized.image = image;
+        }
+        return normalized;
+      })
     : [];
   return {
     id: quiz?.id || "",
@@ -2752,20 +2798,157 @@ function questionPoolBySet(questionSet) {
   return QUESTION_BANK;
 }
 
-function pickQuestions(count, questionSet) {
+function normalizeQuestionSource(question) {
+  const prompt = sanitizeQuestionPrompt(question?.prompt || "");
+  const options = Array.isArray(question?.options)
+    ? question.options.map((option) => sanitizeQuestionOption(option)).filter(Boolean).slice(0, 6)
+    : [];
+  if (!prompt || options.length < 2) {
+    return null;
+  }
+
+  let answerIndex = parseAnswerIndex(question?.answerIndex, options);
+  if (!Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex >= options.length) {
+    answerIndex = 0;
+  }
+
+  const normalized = {
+    prompt,
+    options,
+    answerIndex,
+    explanation: sanitizeQuestionPrompt(question?.explanation || "")
+  };
+  const image = sanitizeQuestionImage(question?.image || question?.imageUrl || "");
+  if (image) {
+    normalized.image = image;
+  }
+  return normalized;
+}
+
+function questionFingerprint(question) {
+  if (!question || typeof question !== "object") {
+    return "";
+  }
+  const prompt = sanitizeQuestionPrompt(question.prompt || "");
+  const options = Array.isArray(question.options)
+    ? question.options.map((option) => sanitizeQuestionOption(option)).filter(Boolean).slice(0, 6)
+    : [];
+  const answerIndex = parseAnswerIndex(question.answerIndex, options);
+  const image = sanitizeQuestionImage(question.image || "");
+  if (!prompt || options.length < 2) {
+    return "";
+  }
+  return `${prompt}::${options.join("\u001f")}::${answerIndex}::${image}`;
+}
+
+function materializeQuestion(question, shuffleOptions = false) {
+  const source = normalizeQuestionSource(question);
+  if (!source) {
+    return null;
+  }
+
+  const output = {
+    prompt: source.prompt,
+    options: source.options.slice(),
+    answerIndex: source.answerIndex,
+    explanation: source.explanation
+  };
+  if (source.image) {
+    output.image = source.image;
+  }
+  if (!shuffleOptions) {
+    return output;
+  }
+
+  const decorated = output.options.map((value, index) => ({
+    value,
+    correct: index === output.answerIndex
+  }));
+  const shuffled = shuffle(decorated);
+  output.options = shuffled.map((entry) => entry.value);
+  output.answerIndex = Math.max(
+    0,
+    shuffled.findIndex((entry) => entry.correct)
+  );
+  return output;
+}
+
+function pickQuestions(count, questionSet, options = {}) {
   const safeCount = clamp(count, 5, 30);
-  const pool = shuffle(questionPoolBySet(questionSet));
-
-  if (safeCount <= pool.length) {
-    return pool.slice(0, safeCount);
+  const shuffleOptions = options?.shuffleOptions === true;
+  const noRepeats = options?.noRepeats === true;
+  const usedQuestionKeys = options?.usedQuestionKeys instanceof Set ? options.usedQuestionKeys : null;
+  const sourceEntries = questionPoolBySet(questionSet)
+    .map((sourceQuestion) => {
+      const normalized = normalizeQuestionSource(sourceQuestion);
+      if (!normalized) {
+        return null;
+      }
+      const key = questionFingerprint(normalized);
+      if (!key) {
+        return null;
+      }
+      return {
+        key,
+        question: normalized
+      };
+    })
+    .filter(Boolean);
+  if (sourceEntries.length === 0) {
+    return [];
   }
 
-  const extended = [];
-  while (extended.length < safeCount) {
-    extended.push(...shuffle(questionPoolBySet(questionSet)));
+  const targetCount = noRepeats ? Math.min(safeCount, sourceEntries.length) : safeCount;
+  let ordered = shuffle(sourceEntries);
+
+  if (noRepeats && usedQuestionKeys) {
+    const unseen = ordered.filter((entry) => !usedQuestionKeys.has(entry.key));
+    if (unseen.length >= targetCount) {
+      ordered = unseen;
+    } else {
+      usedQuestionKeys.clear();
+      for (const entry of unseen) {
+        usedQuestionKeys.add(entry.key);
+      }
+      const refill = shuffle(sourceEntries).filter((entry) => !usedQuestionKeys.has(entry.key));
+      ordered = [...unseen, ...refill];
+    }
   }
 
-  return extended.slice(0, safeCount);
+  const selected = [];
+  if (noRepeats) {
+    for (const entry of ordered) {
+      if (selected.length >= targetCount) {
+        break;
+      }
+      const question = materializeQuestion(entry.question, shuffleOptions);
+      if (!question) {
+        continue;
+      }
+      selected.push(question);
+      if (usedQuestionKeys) {
+        usedQuestionKeys.add(entry.key);
+      }
+    }
+    return selected;
+  }
+
+  while (selected.length < targetCount) {
+    for (const entry of ordered) {
+      if (selected.length >= targetCount) {
+        break;
+      }
+      const question = materializeQuestion(entry.question, shuffleOptions);
+      if (question) {
+        selected.push(question);
+      }
+    }
+    if (selected.length >= targetCount) {
+      break;
+    }
+    ordered = shuffle(sourceEntries);
+  }
+  return selected;
 }
 
 function sortedPlayers(game) {
@@ -2976,8 +3159,39 @@ function syncPlayerToCurrentPhase(game, socketId) {
       endsAt: game.questionEndsAt || Date.now() + 1000,
       question: {
         prompt: question.prompt,
-        options: question.options
+        options: question.options,
+        image: sanitizeQuestionImage(question.image || "")
       }
+    });
+    return;
+  }
+
+  if (game.phase === "question_result") {
+    const question = game.questions[game.currentQuestionIndex];
+    if (question) {
+      io.to(socketId).emit("question:start", {
+        questionIndex: game.currentQuestionIndex + 1,
+        totalQuestions: game.questions.length,
+        endsAt: Date.now(),
+        question: {
+          prompt: question.prompt,
+          options: question.options,
+          image: sanitizeQuestionImage(question.image || "")
+        }
+      });
+    }
+    if (game.lastQuestionResultPayload) {
+      io.to(socketId).emit("question:result", game.lastQuestionResultPayload);
+    }
+    return;
+  }
+
+  if (game.phase === "countdown") {
+    const endsAt = Number(game.countdownEndsAt || Date.now());
+    const leftSeconds = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
+    io.to(socketId).emit("game:countdown", {
+      secondsLeft: leftSeconds,
+      endsAt
     });
     return;
   }
@@ -3046,6 +3260,50 @@ function clearTimers(game) {
     clearInterval(game.minigameTick);
     game.minigameTick = null;
   }
+}
+
+function emitCountdownTick(game, secondsLeft) {
+  io.to(game.code).emit("game:countdown", {
+    secondsLeft: Math.max(0, Number(secondsLeft) || 0),
+    endsAt: Number(game.countdownEndsAt || Date.now())
+  });
+}
+
+function startGameCountdown(game, seconds = 3) {
+  if (!game || !games.has(game.code) || game.phase !== "lobby") {
+    return false;
+  }
+
+  clearTimers(game);
+  const safeSeconds = clamp(Number(seconds) || 3, 1, 10);
+  game.phase = "countdown";
+  game.countdownEndsAt = Date.now() + safeSeconds * 1000;
+  game.updatedAt = Date.now();
+
+  emitCountdownTick(game, safeSeconds);
+  broadcastHostStatus(game);
+
+  const tick = (remainingSeconds) => {
+    if (!games.has(game.code) || game.phase !== "countdown") {
+      return;
+    }
+
+    if (remainingSeconds <= 0) {
+      game.countdownEndsAt = 0;
+      startQuestion(game);
+      return;
+    }
+
+    game.roundTimer = setTimeout(() => {
+      game.roundTimer = null;
+      const next = remainingSeconds - 1;
+      emitCountdownTick(game, next);
+      tick(next);
+    }, 1000);
+  };
+
+  tick(safeSeconds);
+  return true;
 }
 
 function destroyGame(code, reason = "Game ended") {
@@ -4525,6 +4783,30 @@ function maybeFinishGameByWeight(game) {
   return true;
 }
 
+function advanceAfterQuestionResult(game) {
+  if (!game || !games.has(game.code) || game.phase !== "question_result") {
+    return;
+  }
+
+  game.lastQuestionResultPayload = null;
+
+  if (game.players.size > 0) {
+    const submissions = Array.from(game.submissions.values());
+    const eligible = submissions
+      .filter((entry) => entry.correct === true)
+      .map((entry) => entry.playerId)
+      .filter((playerId, index, source) => source.indexOf(playerId) === index);
+    const started = startMiniGamePhase(game, eligible, {
+      durationMs: 10000
+    });
+    if (started || game.phase !== "question_result") {
+      return;
+    }
+  }
+
+  startRoundSummary(game);
+}
+
 function closeQuestion(game) {
   if (game.phase !== "question") {
     return;
@@ -4539,8 +4821,8 @@ function closeQuestion(game) {
   const submissions = Array.from(game.submissions.values());
   game.questionEligiblePlayerIds = new Set();
   recordQuestionReportEntry(game, question, submissions);
-
-  io.to(game.code).emit("question:result", {
+  game.phase = "question_result";
+  const resultPayload = {
     correctAnswer: question.answerIndex,
     explanation: question.explanation,
     submissions: submissions.map((item) => ({
@@ -4552,22 +4834,20 @@ function closeQuestion(game) {
       ms: item.ms
     })),
     leaderboard: sortedPlayers(game)
-  });
+  };
+  game.lastQuestionResultPayload = resultPayload;
+  io.to(game.code).emit("question:result", resultPayload);
+  broadcastHostStatus(game);
 
-  if (game.players.size > 0) {
-    const eligible = submissions
-      .filter((entry) => entry.correct === true)
-      .map((entry) => entry.playerId)
-      .filter((playerId, index, source) => source.indexOf(playerId) === index);
-    const started = startMiniGamePhase(game, eligible, {
-      durationMs: 10000
-    });
-    if (started) {
-      return;
-    }
+  const revealDelayMs = normalizeExplanationRevealSec(game.settings?.explanationRevealSec) * 1000;
+  if (game.roundTimer) {
+    clearTimeout(game.roundTimer);
+    game.roundTimer = null;
   }
-
-  startRoundSummary(game);
+  game.roundTimer = setTimeout(() => {
+    game.roundTimer = null;
+    advanceAfterQuestionResult(game);
+  }, revealDelayMs);
 }
 
 function finishGame(game) {
@@ -4625,7 +4905,17 @@ function startQuestion(game) {
 
   if (game.currentQuestionIndex >= game.questions.length - 1) {
     if (normalizeGameEndType(game.settings?.endType) === "weight") {
-      game.questions = pickQuestions(game.settings.questionCount, game.settings.questionSet);
+      if (!(game.usedQuestionKeys instanceof Set)) {
+        game.usedQuestionKeys = new Set();
+      }
+      if (!normalizeBooleanFlag(game.settings?.preventQuestionRepeats, false)) {
+        game.usedQuestionKeys.clear();
+      }
+      game.questions = pickQuestions(game.settings.questionCount, game.settings.questionSet, {
+        shuffleOptions: normalizeBooleanFlag(game.settings?.shuffleQuestionOptions, false),
+        noRepeats: normalizeBooleanFlag(game.settings?.preventQuestionRepeats, false),
+        usedQuestionKeys: game.usedQuestionKeys
+      });
       game.currentQuestionIndex = -1;
     } else {
       finishGame(game);
@@ -4634,7 +4924,9 @@ function startQuestion(game) {
   }
 
   game.phase = "question";
+  game.countdownEndsAt = 0;
   game.currentQuestionIndex += 1;
+  game.lastQuestionResultPayload = null;
   game.submissions.clear();
   game.questionEligiblePlayerIds = new Set(game.players.keys());
   game.chestPhase.clear();
@@ -4655,7 +4947,8 @@ function startQuestion(game) {
     endsAt,
     question: {
       prompt: question.prompt,
-      options: question.options
+      options: question.options,
+      image: sanitizeQuestionImage(question.image || "")
     }
   });
 
@@ -4788,15 +5081,19 @@ io.on("connection", (socket) => {
     const mode = normalizeMode(payload?.mode);
     const questionSet = normalizeQuestionSet(payload?.questionSet);
     const timerSeconds = clamp(Number(payload?.timerSeconds) || 15, 8, 45);
+    const explanationRevealSec = normalizeExplanationRevealSec(payload?.explanationRevealSec);
     const questionCount = clamp(Number(payload?.questionCount) || 10, 5, 30);
     const miniGameRotationMode = normalizeMiniGameRotationMode(payload?.miniGameRotationMode);
     const miniGameDurationSec = clamp(Number(payload?.miniGameDurationSec) || 10, 5, 30);
+    const shuffleQuestionOptions = normalizeBooleanFlag(payload?.shuffleQuestionOptions, false);
+    const preventQuestionRepeats = normalizeBooleanFlag(payload?.preventQuestionRepeats, false);
     const endType = normalizeGameEndType(payload?.endType);
     const endTargetValue = normalizeEndTargetValue(payload?.endTargetValue, endType);
     const showInstructions = normalizeBooleanFlag(payload?.showInstructions, true);
     const allowLateJoin = normalizeBooleanFlag(payload?.allowLateJoin, true);
     const useRandomNames = normalizeBooleanFlag(payload?.useRandomNames, false);
     const allowStudentAccounts = normalizeBooleanFlag(payload?.allowStudentAccounts, true);
+    const usedQuestionKeys = new Set();
 
     const code = createGameCode();
     const game = {
@@ -4810,9 +5107,12 @@ io.on("connection", (socket) => {
         mode,
         questionSet,
         timerSeconds,
+        explanationRevealSec,
         questionCount,
         miniGameRotationMode,
         miniGameDurationSec,
+        shuffleQuestionOptions,
+        preventQuestionRepeats,
         endType,
         endTargetValue,
         showInstructions,
@@ -4821,16 +5121,23 @@ io.on("connection", (socket) => {
         allowStudentAccounts
       },
       players: new Map(),
-      questions: pickQuestions(questionCount, questionSet),
+      questions: pickQuestions(questionCount, questionSet, {
+        shuffleOptions: shuffleQuestionOptions,
+        noRepeats: preventQuestionRepeats,
+        usedQuestionKeys
+      }),
       currentQuestionIndex: -1,
       submissions: new Map(),
       questionEligiblePlayerIds: new Set(),
       chestPhase: new Map(),
+      usedQuestionKeys,
       feed: [],
       questionTimer: null,
       roundTimer: null,
       chestTimer: null,
       minigameTick: null,
+      lastQuestionResultPayload: null,
+      countdownEndsAt: 0,
       questionStartedAt: null,
       questionEndsAt: null,
       minigameType: null,
@@ -4880,6 +5187,9 @@ io.on("connection", (socket) => {
     game.settings.mode = normalizeMode(settings?.mode ?? game.settings.mode);
     game.settings.questionSet = normalizeQuestionSet(settings?.questionSet ?? game.settings.questionSet);
     game.settings.timerSeconds = clamp(Number(settings?.timerSeconds) || game.settings.timerSeconds, 8, 45);
+    game.settings.explanationRevealSec = normalizeExplanationRevealSec(
+      settings?.explanationRevealSec ?? game.settings.explanationRevealSec
+    );
     game.settings.questionCount = clamp(Number(settings?.questionCount) || game.settings.questionCount, 5, 30);
     game.settings.miniGameRotationMode = normalizeMiniGameRotationMode(
       settings?.miniGameRotationMode ?? game.settings.miniGameRotationMode
@@ -4888,6 +5198,14 @@ io.on("connection", (socket) => {
       Number(settings?.miniGameDurationSec) || game.settings.miniGameDurationSec || 10,
       5,
       30
+    );
+    game.settings.shuffleQuestionOptions = normalizeBooleanFlag(
+      settings?.shuffleQuestionOptions,
+      game.settings.shuffleQuestionOptions === true
+    );
+    game.settings.preventQuestionRepeats = normalizeBooleanFlag(
+      settings?.preventQuestionRepeats,
+      game.settings.preventQuestionRepeats === true
     );
     game.settings.endType = normalizeGameEndType(settings?.endType ?? game.settings.endType);
     game.settings.endTargetValue = normalizeEndTargetValue(
@@ -4901,7 +5219,15 @@ io.on("connection", (socket) => {
       settings?.allowStudentAccounts,
       game.settings.allowStudentAccounts !== false
     );
-    game.questions = pickQuestions(game.settings.questionCount, game.settings.questionSet);
+    if (!(game.usedQuestionKeys instanceof Set)) {
+      game.usedQuestionKeys = new Set();
+    }
+    game.usedQuestionKeys.clear();
+    game.questions = pickQuestions(game.settings.questionCount, game.settings.questionSet, {
+      shuffleOptions: game.settings.shuffleQuestionOptions === true,
+      noRepeats: game.settings.preventQuestionRepeats === true,
+      usedQuestionKeys: game.usedQuestionKeys
+    });
     game.minigameRotationIndex = 0;
     game.updatedAt = Date.now();
 
@@ -4909,6 +5235,33 @@ io.on("connection", (socket) => {
 
     if (typeof ack === "function") {
       ack({ ok: true });
+    }
+  });
+
+  socket.on("host:toggleLateJoin", ({ code, allowLateJoin }, ack) => {
+    const game = games.get((code || "").toUpperCase());
+    if (!canHost(socket, game) || !game || game.phase === "finished") {
+      if (typeof ack === "function") {
+        ack({ ok: false, message: "Cannot update late join right now." });
+      }
+      return;
+    }
+
+    game.settings.allowLateJoin = normalizeBooleanFlag(allowLateJoin, game.settings.allowLateJoin !== false);
+    game.updatedAt = Date.now();
+
+    io.to(game.code).emit("settings:update", {
+      code: game.code,
+      settings: game.settings
+    });
+
+    if (game.phase === "lobby") {
+      broadcastLobby(game);
+    }
+    broadcastHostStatus(game);
+
+    if (typeof ack === "function") {
+      ack({ ok: true, allowLateJoin: game.settings.allowLateJoin });
     }
   });
 
@@ -5121,7 +5474,7 @@ io.on("connection", (socket) => {
       return;
     }
 
-    startQuestion(game);
+    startGameCountdown(game, 3);
 
     if (typeof ack === "function") {
       ack({ ok: true });

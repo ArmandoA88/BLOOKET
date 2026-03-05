@@ -46,6 +46,10 @@ const PHASE_BANNER_COPY = {
     title: "Lobby",
     detail: "Waiting for host to start the game."
   },
+  countdown: {
+    title: "Starting Countdown",
+    detail: "First question begins in 3..2..1."
+  },
   question: {
     title: "Question Live",
     detail: "Answer fast for more points."
@@ -78,6 +82,7 @@ const PHASE_BANNER_COPY = {
 const PHASE_CLASS_CANDIDATES = [
   "phase-join",
   "phase-lobby",
+  "phase-countdown",
   "phase-question",
   "phase-question-result",
   "phase-minigame",
@@ -154,6 +159,7 @@ const soundToggleBtn = document.getElementById("soundToggleBtn");
 
 const questionSection = document.getElementById("questionSection");
 const questionIllustration = document.getElementById("questionIllustration");
+const questionMedia = document.getElementById("questionMedia");
 const timerText = document.getElementById("timerText");
 const questionText = document.getElementById("questionText");
 const answers = document.getElementById("answers");
@@ -1111,6 +1117,23 @@ function setGameIllustration(element, type, altText) {
   const src = GAME_IMAGE_MAP[type] || GAME_IMAGE_MAP.question;
   element.src = src;
   element.alt = altText;
+  element.classList.remove("hidden");
+}
+
+function setQuestionMediaImage(element, imageUrl, questionPrompt = "Question") {
+  if (!element) {
+    return;
+  }
+
+  const src = String(imageUrl || "").trim();
+  if (!src) {
+    element.classList.add("hidden");
+    element.removeAttribute("src");
+    return;
+  }
+
+  element.src = src;
+  element.alt = `${String(questionPrompt || "Question")} image`;
   element.classList.remove("hidden");
 }
 
@@ -2608,6 +2631,7 @@ function renderQuestion(payload) {
     chestIllustration.classList.add("hidden");
   }
   questionText.textContent = payload.question.prompt;
+  setQuestionMediaImage(questionMedia, payload.question.image, payload.question.prompt);
 
   answers.innerHTML = payload.question.options
     .map(
@@ -3110,6 +3134,31 @@ socket.on("lobby:update", (payload) => {
     setNotice(`Lobby active. Host: ${payload.hostName}.`);
   } else {
     setNotice(`Lobby active. Host: ${payload.hostName}. Mode: ${modeText}. Quiz: ${quizSetText}.`);
+  }
+});
+
+socket.on("settings:update", (payload) => {
+  if (payload?.code !== roomCode) {
+    return;
+  }
+  applyRoomSettings(payload?.settings || {});
+  const allowLateJoin = roomSettings.allowLateJoin !== false;
+  if (phase !== "join" && phase !== "lobby") {
+    setNotice(allowLateJoin ? "Late join unlocked by host." : "Late join locked by host.");
+  }
+});
+
+socket.on("game:countdown", ({ secondsLeft, endsAt }) => {
+  stopMiniTickers();
+  const safeSeconds = Math.max(0, Number(secondsLeft) || 0);
+  const countdownText = safeSeconds > 0 ? `Game starts in ${safeSeconds}...` : "Go! Question is starting.";
+  setPhase("countdown", countdownText);
+  showSection(resultSection);
+  resultText.textContent = countdownText;
+  setNotice(countdownText, safeSeconds > 0 ? "" : "good");
+  const countdownEndsAt = Number(endsAt || 0);
+  if (Number.isFinite(countdownEndsAt) && countdownEndsAt > Date.now()) {
+    startTicker(timerText, countdownEndsAt, "Starting in");
   }
 });
 

@@ -1689,6 +1689,13 @@ label {
   border-left-color: rgba(52, 215, 198, 0.72);
 }
 
+.phase-banner.phase-countdown {
+  border-left-color: rgba(255, 179, 71, 0.86);
+  background:
+    radial-gradient(520px 180px at 10% 10%, rgba(255, 179, 71, 0.18), transparent 58%),
+    rgba(4, 14, 30, 0.76);
+}
+
 .phase-banner.phase-question {
   border-left-color: rgba(74, 170, 255, 0.82);
 }
@@ -1812,6 +1819,17 @@ th {
   box-shadow: 0 10px 30px rgba(4, 12, 25, 0.4);
   margin-bottom: 10px;
   animation: illustrationFloat 2.8s ease-in-out infinite;
+}
+
+.question-media {
+  width: 100%;
+  max-height: 230px;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 1px solid rgba(151, 193, 255, 0.35);
+  background: rgba(4, 12, 26, 0.68);
+  margin-top: 10px;
+  padding: 4px;
 }
 
 .mono {

@@ -185,35 +185,90 @@ const MINIGAME_STATS_FILE = path.join(__dirname, "data", "minigame-stats.json");
 
 const BLOOK_PACKS = [
   {
+    id: "athletes",
+    name: "Legendary Athletes",
+    description: "20 world-class icons from NFL, NBA, MLB, and Soccer. High-quality portraits!",
+    price: 0,
+    blooks: [
+      { id: "ath-mahomes", name: "Patrick Mahomes", image: "/assets/athletes/ath-mahomes.png", icon: "🏈", rarity: "Common", sport: "NFL" },
+      { id: "ath-brady", name: "Tom Brady", image: "/assets/athletes/ath-brady.png", icon: "🏈", rarity: "Common", sport: "NFL" },
+      { id: "ath-lebron", name: "LeBron James", image: "/assets/athletes/ath-lebron.png", icon: "🏀", rarity: "Common", sport: "NBA" },
+      { id: "ath-curry", name: "Stephen Curry", image: "/assets/athletes/ath-curry.png", icon: "🏀", rarity: "Common", sport: "NBA" },
+      { id: "ath-messi", name: "Lionel Messi", image: "/assets/athletes/ath-messi.png", icon: "⚽", rarity: "Common", sport: "Soccer" },
+      { id: "ath-ronaldo", name: "Cristiano Ronaldo", image: "/assets/athletes/ath-ronaldo.png", icon: "⚽", rarity: "Common", sport: "Soccer" },
+      { id: "ath-ohtani", name: "Shohei Ohtani", image: "/assets/athletes/ath-ohtani.png", icon: "⚾", rarity: "Common", sport: "MLB" },
+      { id: "ath-judge", name: "Aaron Judge", image: "/assets/athletes/ath-judge.png", icon: "⚾", rarity: "Common", sport: "MLB" },
+      { id: "ath-durant", name: "Kevin Durant", image: "/assets/athletes/ath-durant.png", icon: "🏀", rarity: "Common", sport: "NBA" },
+      { id: "ath-giannis", name: "Giannis Antetokounmpo", image: "/assets/athletes/ath-giannis.png", icon: "🏀", rarity: "Common", sport: "NBA" },
+      { id: "ath-luka", name: "Luka Doncic", image: "/assets/athletes/ath-luka.png", icon: "🏀", rarity: "Common", sport: "NBA" },
+      { id: "ath-haaland", name: "Erling Haaland", image: "/assets/athletes/ath-haaland.png", icon: "⚽", rarity: "Common", sport: "Soccer" },
+      { id: "ath-mbappe", name: "Kylian Mbappe", image: "/assets/athletes/ath-mbappe.png", icon: "⚽", rarity: "Common", sport: "Soccer" },
+      { id: "ath-jackson", name: "Lamar Jackson", image: "/assets/athletes/ath-jackson.png", icon: "🏈", rarity: "Common", sport: "NFL" },
+      { id: "ath-kelce", name: "Travis Kelce", image: "/assets/athletes/ath-kelce.png", icon: "🏈", rarity: "Common", sport: "NFL" },
+      { id: "ath-allen", name: "Josh Allen", image: "/assets/athletes/ath-allen.png", icon: "🏈", rarity: "Common", sport: "NFL" },
+      { id: "ath-burrow", name: "Joe Burrow", image: "/assets/athletes/ath-burrow.png", icon: "🏈", rarity: "Common", sport: "NFL" },
+      { id: "ath-hill", name: "Tyreek Hill", image: "/assets/athletes/ath-hill.png", icon: "🏈", rarity: "Common", sport: "NFL" },
+      { id: "ath-trout", name: "Mike Trout", image: "/assets/athletes/ath-trout.png", icon: "⚾", rarity: "Common", sport: "MLB" },
+      { id: "ath-harper", name: "Bryce Harper", image: "/assets/athletes/ath-harper.png", icon: "⚾", rarity: "Common", sport: "MLB" }
+    ]
+  },
+  {
     id: "sports",
     name: "Sports Pack",
-    description: "Athletes and game-day icons.",
+    description: "20 elite NFL and World Soccer teams with real logos. Pick a champion!",
+    price: 0,
     blooks: [
-      { id: "sports-soccer-star", name: "Soccer Star", icon: "⚽", rarity: "Common" },
-      { id: "sports-basketball-pro", name: "Basketball Pro", icon: "🏀", rarity: "Common" },
-      { id: "sports-tennis-ace", name: "Tennis Ace", icon: "🎾", rarity: "Rare" },
-      { id: "sports-football-captain", name: "Football Captain", icon: "🏈", rarity: "Rare" },
-      { id: "sports-baseball-slugger", name: "Baseball Slugger", icon: "⚾", rarity: "Epic" },
-      { id: "sports-hockey-enforcer", name: "Hockey Enforcer", icon: "🏒", rarity: "Epic" },
-      { id: "sports-boxing-champ", name: "Boxing Champ", icon: "🥊", rarity: "Legendary" },
-      { id: "sports-gold-medalist", name: "Gold Medalist", icon: "🥇", rarity: "Legendary" }
+      { id: "nfl-chiefs", name: "Kansas City Chiefs", image: "/assets/sports/nfl-chiefs.png", icon: "🏈", rarity: "Common", sport: "NFL" },
+      { id: "nfl-49ers", name: "SF 49ers", image: "/assets/sports/nfl-49ers.png", icon: "🏈", rarity: "Common", sport: "NFL" },
+      { id: "nfl-eagles", name: "Philadelphia Eagles", image: "/assets/sports/nfl-eagles.png", icon: "🦅", rarity: "Common", sport: "NFL" },
+      { id: "nfl-ravens", name: "Baltimore Ravens", image: "/assets/sports/nfl-ravens.png", icon: "🐦", rarity: "Common", sport: "NFL" },
+      { id: "nfl-cowboys", name: "Dallas Cowboys", image: "/assets/sports/nfl-cowboys.png", icon: "⭐", rarity: "Common", sport: "NFL" },
+      { id: "nfl-bills", name: "Buffalo Bills", image: "/assets/sports/nfl-bills.png", icon: "🦬", rarity: "Common", sport: "NFL" },
+      { id: "nfl-lions", name: "Detroit Lions", image: "/assets/sports/nfl-lions.png", icon: "🦁", rarity: "Common", sport: "NFL" },
+      { id: "nfl-bengals", name: "Cincinnati Bengals", image: "/assets/sports/nfl-bengals.png", icon: "🐅", rarity: "Common", sport: "NFL" },
+      { id: "nfl-dolphins", name: "Miami Dolphins", image: "/assets/sports/nfl-dolphins.png", icon: "🐬", rarity: "Common", sport: "NFL" },
+      { id: "nfl-packers", name: "Green Bay Packers", image: "/assets/sports/nfl-packers.png", icon: "🧀", rarity: "Common", sport: "NFL" },
+      { id: "nfl-steelers", name: "Pittsburgh Steelers", image: "/assets/sports/nfl-steelers.png", icon: "🛠️", rarity: "Common", sport: "NFL" },
+      { id: "soc-real-madrid", name: "Real Madrid", image: "/assets/sports/soc-real-madrid.png", icon: "⚽", rarity: "Common", sport: "Soccer" },
+      { id: "soc-man-city", name: "Manchester City", image: "/assets/sports/soc-man-city.png", icon: "⚽", rarity: "Common", sport: "Soccer" },
+      { id: "soc-liverpool", name: "Liverpool FC", image: "/assets/sports/soc-liverpool.png", icon: "⚽", rarity: "Common", sport: "Soccer" },
+      { id: "soc-bayern", name: "Bayern Munich", image: "/assets/sports/soc-bayern.png", icon: "⚽", rarity: "Common", sport: "Soccer" },
+      { id: "soc-psg", name: "Paris SG", image: "/assets/sports/soc-psg.png", icon: "⚽", rarity: "Common", sport: "Soccer" },
+      { id: "soc-arsenal", name: "Arsenal FC", image: "/assets/sports/soc-arsenal.png", icon: "⚽", rarity: "Common", sport: "Soccer" },
+      { id: "soc-leverkusen", name: "Bayer Leverkusen", image: "/assets/sports/soc-leverkusen.png", icon: "⚽", rarity: "Common", sport: "Soccer" },
+      { id: "soc-chelsea", name: "Chelsea FC", image: "/assets/sports/soc-chelsea.png", icon: "⚽", rarity: "Common", sport: "Soccer" },
+      { id: "soc-man-utd", name: "Manchester United", image: "/assets/sports/soc-man-utd.png", icon: "⚽", rarity: "Common", sport: "Soccer" }
     ]
   },
   {
     id: "anime",
     name: "Anime Pack",
-    description: "Stylized heroes and rivals.",
+    description: "Iconic protagonists from the greatest anime of all time. All free!",
+    price: 0,
     blooks: [
-      { id: "anime-shonen-hero", name: "Shonen Hero", icon: "🗡️", rarity: "Common" },
-      { id: "anime-mecha-pilot", name: "Mecha Pilot", icon: "🤖", rarity: "Common" },
-      { id: "anime-element-mage", name: "Element Mage", icon: "🔥", rarity: "Rare" },
-      { id: "anime-shadow-rival", name: "Shadow Rival", icon: "🌘", rarity: "Rare" },
-      { id: "anime-sky-ninja", name: "Sky Ninja", icon: "🌪️", rarity: "Epic" },
-      { id: "anime-spirit-fox", name: "Spirit Fox", icon: "🦊", rarity: "Epic" },
-      { id: "anime-dragon-summoner", name: "Dragon Summoner", icon: "🐉", rarity: "Legendary" },
-      { id: "anime-cosmic-sentinel", name: "Cosmic Sentinel", icon: "✨", rarity: "Legendary" }
+      { id: "anime-naruto", name: "Naruto Uzumaki", image: "/assets/anime/naruto.jpg", icon: "🍜", rarity: "Common", series: "Naruto" },
+      { id: "anime-goku", name: "Son Goku", image: "/assets/anime/goku.jpg", icon: "🐉", rarity: "Common", series: "Dragon Ball Z" },
+      { id: "anime-luffy", name: "Monkey D. Luffy", image: "/assets/anime/luffy.jpg", icon: "🏴‍☠️", rarity: "Common", series: "One Piece" },
+      { id: "anime-ichigo", name: "Ichigo Kurosaki", image: "/assets/anime/ichigo.jpg", icon: "⚔️", rarity: "Common", series: "Bleach" },
+      { id: "anime-edward", name: "Edward Elric", image: "/assets/anime/edward.jpg", icon: "⚗️", rarity: "Common", series: "Fullmetal Alchemist" },
+      { id: "anime-sasuke", name: "Sasuke Uchiha", image: "/assets/anime/sasuke.jpg", icon: "🌑", rarity: "Common", series: "Naruto" },
+      { id: "anime-killua", name: "Killua Zoldyck", image: "/assets/anime/killua.jpg", icon: "⚡", rarity: "Common", series: "Hunter x Hunter" },
+      { id: "anime-gon", name: "Gon Freecss", image: "/assets/anime/gon.jpg", icon: "🎣", rarity: "Common", series: "Hunter x Hunter" },
+      { id: "anime-lelouch", name: "Lelouch vi Britannia", image: "/assets/anime/lelouch.jpg", icon: "♟️", rarity: "Common", series: "Code Geass" },
+      { id: "anime-light", name: "Light Yagami", image: "/assets/anime/light.jpg", icon: "📓", rarity: "Common", series: "Death Note" },
+      { id: "anime-spike", name: "Spike Spiegel", image: "/assets/anime/spike.jpg", icon: "🚀", rarity: "Common", series: "Cowboy Bebop" },
+      { id: "anime-saitama", name: "Saitama", image: "/assets/anime/saitama.jpg", icon: "👊", rarity: "Common", series: "One Punch Man" },
+      { id: "anime-kirito", name: "Kirito", image: "/assets/anime/kirito.jpg", icon: "🗡️", rarity: "Common", series: "Sword Art Online" },
+      { id: "anime-eren", name: "Eren Yeager", image: "/assets/anime/eren.jpg", icon: "🔱", rarity: "Common", series: "Attack on Titan" },
+      { id: "anime-levi", name: "Levi Ackerman", image: "/assets/anime/levi.jpg", icon: "🗡️", rarity: "Common", series: "Attack on Titan" },
+      { id: "anime-deku", name: "Izuku Midoriya", image: "/assets/anime/deku.jpg", icon: "💪", rarity: "Common", series: "My Hero Academia" },
+      { id: "anime-tanjiro", name: "Tanjiro Kamado", image: "/assets/anime/tanjiro.jpg", icon: "🌊", rarity: "Common", series: "Demon Slayer" },
+      { id: "anime-meliodas", name: "Meliodas", image: "/assets/anime/meliodas.jpg", icon: "🐗", rarity: "Common", series: "Seven Deadly Sins" },
+      { id: "anime-rimuru", name: "Rimuru Tempest", image: "/assets/anime/rimuru.jpg", icon: "🌀", rarity: "Common", series: "That Time I Got Reincarnated as a Slime" },
+      { id: "anime-yusuke", name: "Yusuke Urameshi", image: "/assets/anime/yusuke.jpg", icon: "👻", rarity: "Common", series: "Yu Yu Hakusho" }
     ]
   },
+
   {
     id: "science",
     name: "Science Pack",
@@ -261,14 +316,32 @@ const BLOOK_PACKS = [
   }
 ];
 
+// ── 10 Equippable Aura Effects (all free for students) ──────────────────────
+const BLOOK_EFFECTS = [
+  { id: "fx-none", name: "None", icon: "✖", css: "", description: "No effect" },
+  { id: "fx-lightning", name: "Lightning", icon: "⚡", css: "fx-lightning", description: "Electric bolts crackle around you" },
+  { id: "fx-golden-aura", name: "Golden Aura", icon: "✨", css: "fx-golden-aura", description: "Radiant golden glow pulses outward" },
+  { id: "fx-snow", name: "Snow", icon: "❄️", css: "fx-snow", description: "Soft snowflakes drift around you" },
+  { id: "fx-fire", name: "Fire", icon: "🔥", css: "fx-fire", description: "Roaring flames engulf your spirit" },
+  { id: "fx-shadow", name: "Shadow Realm", icon: "🌑", css: "fx-shadow", description: "Dark energy swirls in your wake" },
+  { id: "fx-rainbow", name: "Rainbow", icon: "🌈", css: "fx-rainbow", description: "Prismatic light streams around you" },
+  { id: "fx-galaxy", name: "Galaxy", icon: "🌌", css: "fx-galaxy", description: "Stars and nebulas orbit your form" },
+  { id: "fx-sakura", name: "Sakura", icon: "🌸", css: "fx-sakura", description: "Cherry blossoms float on the wind" },
+  { id: "fx-matrix", name: "Matrix Code", icon: "💻", css: "fx-matrix", description: "Green digital rain cascades down" },
+  { id: "fx-ice-crown", name: "Ice Crown", icon: "👑", css: "fx-ice-crown", description: "A frozen crown of ice above your head" }
+];
+
 const BLOOK_LOOKUP = new Map();
 
 for (const pack of BLOOK_PACKS) {
+
   for (const blook of pack.blooks) {
     BLOOK_LOOKUP.set(blook.id, {
       id: blook.id,
       name: blook.name,
       icon: blook.icon,
+      image: blook.image || null,   // real image URL if present
+      series: blook.series || null,
       rarity: blook.rarity,
       packId: pack.id,
       packName: pack.name
@@ -279,11 +352,29 @@ for (const pack of BLOOK_PACKS) {
 const DEFAULT_BLOOK = BLOOK_LOOKUP.get(BLOOK_PACKS[0].blooks[0].id);
 const ALL_BLOOKS = Array.from(BLOOK_LOOKUP.values());
 const STARTER_COMMON_BLOOK_COUNT = 10;
-const STARTER_COMMON_BLOOK_IDS = BLOOK_PACKS.flatMap((pack) =>
-  pack.blooks
-    .filter((blook) => String(blook?.rarity || "").toLowerCase() === "common")
-    .map((blook) => blook.id)
-).slice(0, STARTER_COMMON_BLOOK_COUNT);
+
+// Give ALL anime-pack blooks as starters (they are all Common & free),
+// plus the first few Common blooks from other packs.
+const ANIME_BLOOK_IDS = (
+  BLOOK_PACKS.find((p) => p.id === "anime")?.blooks.map((b) => b.id) || []
+);
+const SPORTS_BLOOK_IDS = (
+  BLOOK_PACKS.find((p) => p.id === "sports")?.blooks.map((b) => b.id) || []
+);
+const ATHLETES_BLOOK_IDS = (
+  BLOOK_PACKS.find((p) => p.id === "athletes")?.blooks.map((b) => b.id) || []
+);
+const OTHER_COMMON_IDS = BLOOK_PACKS
+  .filter((p) => p.id !== "anime" && p.id !== "sports" && p.id !== "athletes")
+  .flatMap((pack) =>
+    pack.blooks
+      .filter((b) => String(b?.rarity || "").toLowerCase() === "common")
+      .map((b) => b.id)
+  )
+  .slice(0, STARTER_COMMON_BLOOK_COUNT);
+
+// Students start with every anime character + every sports team + every legendary athlete + a few commons from other packs
+const STARTER_COMMON_BLOOK_IDS = [...new Set([...ANIME_BLOOK_IDS, ...SPORTS_BLOOK_IDS, ...ATHLETES_BLOOK_IDS, ...OTHER_COMMON_IDS])];
 const PACK_OPEN_COST = 20;
 const DUPLICATE_SELL_RATE = 0.3;
 const STARTER_FREE_PACK_OPENS = 1;
@@ -669,6 +760,7 @@ function publicAccountSummary(account) {
     selectedBlookId,
     packs: packRows,
     inventory,
+    effects: BLOOK_EFFECTS,
     stats: {
       gamesPlayed: account.gamesPlayed || 0,
       totalCorrect: account.totalCorrect || 0,
@@ -1123,11 +1215,11 @@ function authStatusForRequest(req) {
     authenticated,
     user: user
       ? {
-          id: user.id || "",
-          name: user.name || "",
-          email: user.email || "",
-          picture: user.picture || ""
-        }
+        id: user.id || "",
+        name: user.name || "",
+        email: user.email || "",
+        picture: user.picture || ""
+      }
       : null
   };
 }
@@ -1329,7 +1421,8 @@ app.get("/health", (_req, res) => {
 
 app.get("/api/blooks", (_req, res) => {
   res.json({
-    packs: publicBlookPacks()
+    packs: publicBlookPacks(),
+    effects: BLOOK_EFFECTS
   });
 });
 
@@ -2741,11 +2834,11 @@ function buildMiniGameProgressPayload(game) {
     teamScores:
       type === "soccer_shootout"
         ? {
-            red: Math.max(0, Number(game.soccerMatch?.teams?.red?.goals || 0)),
-            blue: Math.max(0, Number(game.soccerMatch?.teams?.blue?.goals || 0)),
-            redName: SOCCER_TEAMS.red.name,
-            blueName: SOCCER_TEAMS.blue.name
-          }
+          red: Math.max(0, Number(game.soccerMatch?.teams?.red?.goals || 0)),
+          blue: Math.max(0, Number(game.soccerMatch?.teams?.blue?.goals || 0)),
+          redName: SOCCER_TEAMS.red.name,
+          blueName: SOCCER_TEAMS.blue.name
+        }
         : null
   };
 }
@@ -3115,19 +3208,19 @@ function createSpaceInvaderWave(wave, difficultyTier = 1) {
 function spaceInvadersStateSnapshot(state) {
   const invaders = Array.isArray(state?.invaders)
     ? state.invaders
-        .filter((invader) => invader && invader.alive !== false)
-        .map((invader) => ({
-          id: String(invader.id || ""),
-          x: clamp(Number(invader.x || 0), 0, 100),
-          y: clamp(Number(invader.y || 0), 0, 100)
-        }))
+      .filter((invader) => invader && invader.alive !== false)
+      .map((invader) => ({
+        id: String(invader.id || ""),
+        x: clamp(Number(invader.x || 0), 0, 100),
+        y: clamp(Number(invader.y || 0), 0, 100)
+      }))
     : [];
   const bulletActive = Boolean(state?.bullet && state.bullet.active !== false);
   const bullet = bulletActive
     ? {
-        x: clamp(Number(state.bullet.x || 50), 0, 100),
-        y: clamp(Number(state.bullet.y || 90), 0, 100)
-      }
+      x: clamp(Number(state.bullet.x || 50), 0, 100),
+      y: clamp(Number(state.bullet.y || 90), 0, 100)
+    }
     : null;
   return {
     shipX: clamp(Number(state?.shipX || 50), 6, 94),
@@ -3432,11 +3525,11 @@ function miniGameResult(game, player, state) {
     const bonus = Math.max(
       110,
       130 +
-        goals * 170 +
-        saves * 22 +
-        Math.round(accuracy * 160) +
-        Math.max(0, 3 - botGoals) * 30 +
-        duelBonus
+      goals * 170 +
+      saves * 22 +
+      Math.round(accuracy * 160) +
+      Math.max(0, 3 - botGoals) * 30 +
+      duelBonus
     );
     const duelText = goals > botGoals ? "won" : goals < botGoals ? "lost" : "tied";
     return {
@@ -4497,6 +4590,7 @@ io.on("connection", (socket) => {
       id: socket.id,
       name: playerName,
       blook: selectedBlook,
+      effectId: BLOOK_EFFECTS.find(e => e.id === payload?.effectId) ? payload.effectId : "fx-none",
       accountKey: hasAccount ? account.id : "",
       score: 0,
       streak: 0,

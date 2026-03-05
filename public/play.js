@@ -11,6 +11,8 @@ let canAnswer = false;
 let blookPacks = [];
 let selectedPackId = "";
 let selectedBlookId = "";
+let selectedEffectId = "fx-none";
+let blookEffects = [];
 let accountKey = "";
 let accountData = null;
 let activeEventName = "Event Card";
@@ -601,7 +603,7 @@ function syncFishingRankCard(players = latestLeaderboardRows) {
     fishingRankPlace.textContent = ordinalPlace(me.rank);
   }
   if (fishingRankIcon) {
-    fishingRankIcon.textContent = String(me?.blook?.icon || "?");
+    fishingRankIcon.innerHTML = renderBlookWithEffect(me.blook, me.effectId);
   }
   if (fishingRankName) {
     fishingRankName.textContent = String(me?.name || playerName || "PLAYER").toUpperCase();
@@ -629,7 +631,7 @@ function renderFishingFinalWinner(players = latestLeaderboardRows) {
     fishingWinnerWeight.textContent = formatWeightLbs(winner?.score || 0);
   }
   if (fishingWinnerIcon) {
-    fishingWinnerIcon.textContent = String(winner?.blook?.icon || "🏆");
+    fishingWinnerIcon.innerHTML = renderBlookWithEffect(winner.blook, winner.effectId);
   }
   fishingFinalPanel.classList.remove("hidden");
 }
@@ -1764,13 +1766,14 @@ function renderLeaderboard(players) {
   leaderboardBody.innerHTML = players
     .map((player) => {
       const isYou = player.id === socket.id;
+      const displayBlook = renderBlookWithEffect(player.blook, player.effectId);
       return `
       <tr>
         <td>${player.rank}</td>
         <td>
           <span class="blook-name-stack">
-            <span class="blook-top-icon">${escapeHtml(player.blook?.icon || "?")}</span>
-            <span class="player-label">${escapeHtml(player.name)}</span>
+            <span class="blook-top-icon" style="overflow:visible;height:auto;width:auto">${displayBlook}</span>
+            <span class="player-label" style="margin-left:8px">${escapeHtml(player.name)}</span>
             ${isYou ? `<span class="player-tag">You</span>` : ""}
           </span>
         </td>
@@ -1938,49 +1941,60 @@ function pickFirstOwnedBlookIdForPack(packId) {
 }
 
 function syncSelectedBlook() {
-  const owned = getOwnedBlookById(selectedBlookId);
+  const owned = getOwnedBlookById(selectedBlookId) || getInventoryRows()[0] || null;
   if (owned) {
+    selectedBlookId = owned.id;
     if (pickedBlook) {
-      pickedBlook.textContent = `Selected: ${owned.icon} ${owned.name} (${owned.packName})`;
+      const display = renderBlookWithEffect(owned, selectedEffectId);
+      pickedBlook.innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;padding:4px">
+          ${display}
+          <div style="display:flex;flex-direction:column">
+            <strong style="color:var(--accent)">${escapeHtml(owned.name)}</strong>
+            <span class="help">${escapeHtml(owned.packName)} | ${escapeHtml(owned.rarity)}</span>
+          </div>
+        </div>`;
     }
-    return;
-  }
-
-  const fallback = getInventoryRows()[0] || null;
-  selectedBlookId = fallback?.id || "";
-  if (pickedBlook) {
-    if (!fallback) {
+  } else {
+    selectedBlookId = "";
+    if (pickedBlook) {
       pickedBlook.textContent = "No blooks unlocked yet. Open a pack to unlock your first blook.";
-    } else {
-      pickedBlook.textContent = `Selected: ${fallback.icon} ${fallback.name} (${fallback.packName})`;
     }
   }
 }
 
 function renderPackTabs() {
-  if (!packTabs) {
-    return;
-  }
-
+  if (!packTabs) return;
   if (!Array.isArray(blookPacks) || blookPacks.length === 0) {
     packTabs.innerHTML = `<span class="help">No packs available.</span>`;
     return;
   }
 
-  packTabs.innerHTML = blookPacks
-    .map((pack) => {
-      const selectedClass = pack.id === selectedPackId ? "pack-tab selected" : "pack-tab";
-      const unlocked = Math.max(0, Number(pack.ownedCount || 0));
-      const total = Math.max(1, Number(pack.totalCount || 1));
-      return `<button type="button" class="${selectedClass}" data-pack-id="${pack.id}">
-        ${escapeHtml(pack.name)}<br />
-        <span class="help">${unlocked}/${total} unlocked</span>
-      </button>`;
-    })
-    .join("");
+  const packButtons = blookPacks.map((pack) => {
+    const selectedClass = pack.id === selectedPackId ? "pack-tab selected" : "pack-tab";
+    const unlocked = Math.max(0, Number(pack.ownedCount || 0));
+    const total = Math.max(1, Number(pack.totalCount || 1));
+    return `<button type="button" class="${selectedClass}" data-pack-id="${pack.id}">
+      ${escapeHtml(pack.name)}<br />
+      <span class="help">${unlocked}/${total} unlocked</span>
+    </button>`;
+  }).join("");
+
+  const effectBtnClass = selectedPackId === "effects" ? "pack-tab selected" : "pack-tab";
+  const effectBtn = `<button type="button" class="${effectBtnClass}" data-pack-id="effects" style="background:linear-gradient(135deg,#34d7c6,#28cad7);color:#fff">
+    Effects Picker<br />
+    <span class="help">Apply auras</span>
+  </button>`;
+
+  packTabs.innerHTML = packButtons + effectBtn;
 }
 
 function renderBlookGrid() {
+  if (selectedPackId === "effects") {
+    renderEffectGrid();
+    return;
+  }
+
   const pack = getPackById(selectedPackId);
   if (!pack) {
     blookGrid.innerHTML = `<span class="help">Select a pack.</span>`;
@@ -1988,19 +2002,19 @@ function renderBlookGrid() {
   }
 
   const ownedInPack = getInventoryRows().filter((entry) => entry.packId === pack.id);
-  const unlockedCount = ownedInPack.length;
   const totalCount = Math.max(0, Number(pack.totalCount || 0));
-  const lockedCount = Math.max(0, totalCount - unlockedCount);
+  const lockedCount = Math.max(0, totalCount - ownedInPack.length);
 
   const unlockedTiles = ownedInPack
     .map((blook) => {
       const selectedClass = blook.id === selectedBlookId ? "blook-tile selected" : "blook-tile";
       const duplicateSuffix = blook.duplicates > 0 ? ` x${blook.count}` : "";
+      const display = renderBlookWithEffect(blook, selectedEffectId);
       return `
       <button type="button" class="${selectedClass}" data-blook-id="${blook.id}">
-        <span class="blook-emoji">${escapeHtml(blook.icon)}</span>
+        ${display}
         <span class="blook-name">${escapeHtml(blook.name)}${escapeHtml(duplicateSuffix)}</span>
-        <span class="blook-rarity">${escapeHtml(blook.rarity || "Common")}${blook.duplicates > 0 ? ` | ${blook.duplicates} dupes` : ""}</span>
+        <span class="blook-rarity">${escapeHtml(blook.rarity || "Common")}</span>
       </button>`;
     })
     .join("");
@@ -2014,12 +2028,21 @@ function renderBlookGrid() {
       </div>`;
   }).join("");
 
-  if (!unlockedTiles && !lockedTiles) {
-    blookGrid.innerHTML = `<span class="help">No blooks in this pack.</span>`;
-    return;
-  }
+  blookGrid.innerHTML = unlockedTiles + lockedTiles || `<span class="help">No blooks in this pack.</span>`;
+}
 
-  blookGrid.innerHTML = `${unlockedTiles}${lockedTiles}`;
+function renderEffectGrid() {
+  if (!blookGrid) return;
+  const tiles = blookEffects.map(fx => {
+    const selectedClass = fx.id === selectedEffectId ? "effect-tile selected" : "effect-tile";
+    return `
+      <button type="button" class="${selectedClass}" data-effect-id="${fx.id}">
+        <span class="effect-icon">${escapeHtml(fx.icon)}</span>
+        <span class="effect-name">${escapeHtml(fx.name)}</span>
+        <span class="blook-rarity" style="font-size:0.7rem">${escapeHtml(fx.description)}</span>
+      </button>`;
+  }).join("");
+  blookGrid.innerHTML = tiles || `<span class="help">No effects available.</span>`;
 }
 
 function updatePackOdds() {
@@ -2092,6 +2115,7 @@ function applyAccount(account, nextKey = "") {
 
   accountData = account || null;
   blookPacks = Array.isArray(accountData?.packs) ? accountData.packs : [];
+  blookEffects = Array.isArray(accountData?.effects) ? accountData.effects : [];
   const defaultPackId = blookPacks[0]?.id || "";
   if (!selectedPackId || !getPackById(selectedPackId)) {
     selectedPackId = defaultPackId;
@@ -2318,41 +2342,41 @@ function attemptAutoRejoin() {
     "player:join",
     { code: roomCode, name: playerName, blookId: effectiveJoinBlookId(), accountKey: joinAccountKey() },
     (res) => {
-    reconnectJoinPending = false;
-    if (!res?.ok) {
-      const message = res?.message || "Reconnect failed.";
-      if (/taken/i.test(message) && reconnectRetryCount < 2) {
-        reconnectRetryCount += 1;
-        setNotice("Reconnecting to room...", "bad");
-        setTimeout(() => {
-          attemptAutoRejoin();
-        }, 450);
+      reconnectJoinPending = false;
+      if (!res?.ok) {
+        const message = res?.message || "Reconnect failed.";
+        if (/taken/i.test(message) && reconnectRetryCount < 2) {
+          reconnectRetryCount += 1;
+          setNotice("Reconnecting to room...", "bad");
+          setTimeout(() => {
+            attemptAutoRejoin();
+          }, 450);
+          return;
+        }
+
+        reconnecting = false;
+        setNotice(`${message} Rejoin from the join screen if needed.`, "bad");
+        setPhaseBanner(phase, "Reconnect failed. Rejoin if sync does not recover.");
         return;
       }
 
       reconnecting = false;
-      setNotice(`${message} Rejoin from the join screen if needed.`, "bad");
-      setPhaseBanner(phase, "Reconnect failed. Rejoin if sync does not recover.");
-      return;
-    }
-
-    reconnecting = false;
-    reconnectRetryCount = 0;
-    const activeBlook = res.blook || { icon: "?", name: "Random Blook" };
-    currentMode = String(res.mode || currentMode || "classic").toLowerCase();
-    if (res.playerName) {
-      playerName = String(res.playerName);
-    }
-    if (res.settings) {
-      applyRoomSettings(res.settings);
-    }
-    if (res.account) {
-      applyAccount(res.account, getOrCreateAccountKey());
-    }
-    playerNameEl.textContent = `${activeBlook.icon || "?"} ${playerName}`;
-    updateFishingHudIdentity();
-    setPhase(res.phase || phase || "lobby", "Reconnected. Syncing live state...");
-    setNotice("Reconnected to room.", "good");
+      reconnectRetryCount = 0;
+      const activeBlook = res.blook || { icon: "?", name: "Random Blook" };
+      currentMode = String(res.mode || currentMode || "classic").toLowerCase();
+      if (res.playerName) {
+        playerName = String(res.playerName);
+      }
+      if (res.settings) {
+        applyRoomSettings(res.settings);
+      }
+      if (res.account) {
+        applyAccount(res.account, getOrCreateAccountKey());
+      }
+      playerNameEl.textContent = `${activeBlook.icon || "?"} ${playerName}`;
+      updateFishingHudIdentity();
+      setPhase(res.phase || phase || "lobby", "Reconnected. Syncing live state...");
+      setNotice("Reconnected to room.", "good");
     }
   );
 }
@@ -2386,7 +2410,13 @@ joinBtn.addEventListener("click", () => {
     selectedBlookId = "sports-soccer-star";
   }
 
-  socket.emit("player:join", { code, name, blookId: effectiveJoinBlookId(), accountKey: joinAccountKey() }, (res) => {
+  socket.emit("player:join", {
+    code,
+    name,
+    blookId: effectiveJoinBlookId(),
+    effectId: selectedEffectId,
+    accountKey: joinAccountKey()
+  }, (res) => {
     if (!res?.ok) {
       setJoinNotice(res?.message || "Unable to join room.", "bad");
       return;
@@ -2405,7 +2435,11 @@ joinBtn.addEventListener("click", () => {
     }
 
     roomCodeEl.textContent = roomCode;
-    playerNameEl.textContent = `${activeBlook.icon || "?"} ${playerName}`;
+    playerNameEl.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px;transform:scale(0.85);transform-origin:left">
+        ${renderBlookWithEffect(activeBlook, res.player?.effectId || selectedEffectId)}
+        <span style="font-size:1.4rem;font-weight:700">${escapeHtml(playerName)}</span>
+      </div>`;
     updateFishingHudIdentity();
 
     joinCard.classList.add("hidden");
@@ -2418,7 +2452,7 @@ joinBtn.addEventListener("click", () => {
     if (roomSettings.allowStudentAccounts === false) {
       setJoinNotice(`Joined as ${playerName}. Account features are disabled for this game.`, "good");
     } else {
-      setJoinNotice(`Locked blook: ${activeBlook.icon || "?"} ${activeBlook.name || "Blook"}.`, "good");
+      setJoinNotice(`Locked in ${activeBlook.name || "Blook"}.`, "good");
     }
     if (joinedPhase === "lobby") {
       setNotice(`Joined room ${roomCode}. Waiting for host to start.`, "good");
@@ -2432,24 +2466,19 @@ maybeAutoJoinFromQuery();
 
 packTabs.addEventListener("click", (event) => {
   const target = event.target;
-  if (!(target instanceof HTMLElement)) {
-    return;
-  }
-
+  if (!(target instanceof HTMLElement)) return;
   const button = target.closest("button[data-pack-id]");
-  if (!button) {
-    return;
-  }
+  if (!button) return;
 
   const packId = button.dataset.packId;
-  if (!packId) {
+  if (packId === "effects") {
+    selectedPackId = "effects";
+    renderEconomyPanel();
     return;
   }
 
   const pack = getPackById(packId);
-  if (!pack) {
-    return;
-  }
+  if (!pack) return;
 
   selectedPackId = pack.id;
   const packOwnedBlookId = pickFirstOwnedBlookIdForPack(pack.id);
@@ -2461,27 +2490,25 @@ packTabs.addEventListener("click", (event) => {
 
 blookGrid.addEventListener("click", (event) => {
   const target = event.target;
-  if (!(target instanceof HTMLElement)) {
-    return;
-  }
+  if (!(target instanceof HTMLElement)) return;
 
-  const button = target.closest("button[data-blook-id]");
-  if (!button) {
-    return;
-  }
+  const button = target.closest("button");
+  if (!button) return;
 
   const blookId = button.dataset.blookId;
-  if (!blookId) {
-    return;
-  }
+  const effectId = button.dataset.effectId;
 
-  if (!getOwnedBlookById(blookId)) {
-    return;
+  if (blookId) {
+    if (!getOwnedBlookById(blookId)) return;
+    selectedBlookId = blookId;
+    syncSelectedBlook();
+    updateEconomyButtons();
+    renderBlookGrid();
+  } else if (effectId) {
+    selectedEffectId = effectId;
+    renderEffectGrid();
+    syncSelectedBlook(); // update preview with new effect
   }
-
-  selectedBlookId = blookId;
-  syncSelectedBlook();
-  updateEconomyButtons();
 });
 
 if (openPackBtn) {
@@ -2996,8 +3023,7 @@ socket.on("account:coinsAwarded", ({ reward, rank, totalPlayers, account }) => {
   if (reward?.total) {
     setNotice(`Game rewards: +${reward.total} coins (Rank ${rank}/${totalPlayers}).`, "good");
     setPackResultNotice(
-      `Coins earned +${reward.total} | Participation ${reward.breakdown?.participation || 0}, Correct ${reward.breakdown?.correct || 0}, Score ${
-        reward.breakdown?.score || 0
+      `Coins earned +${reward.total} | Participation ${reward.breakdown?.participation || 0}, Correct ${reward.breakdown?.correct || 0}, Score ${reward.breakdown?.score || 0
       }, Rank ${reward.breakdown?.rank || 0}.`,
       "good"
     );
@@ -3077,4 +3103,14 @@ socket.on("connect_error", () => {
     setJoinNotice("Cannot connect to server. Check localhost process.", "bad");
   }
 });
+
+function renderBlookWithEffect(blook, effectId) {
+  if (!blook) return `<span class="blook-emoji">?</span>`;
+  const aura = effectId && effectId !== "fx-none" ? `<div class="blook-aura ${escapeHtml(effectId)}"></div>` : "";
+  const content = blook.image
+    ? `<img src="${escapeHtml(blook.image)}" class="blook-image" alt="${escapeHtml(blook.name)}" />`
+    : `<span class="blook-emoji">${escapeHtml(blook.icon || "?")}</span>`;
+
+  return `<div class="blook-container">${aura}${content}</div>`;
+}
 

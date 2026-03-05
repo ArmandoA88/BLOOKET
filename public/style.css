@@ -3548,3 +3548,236 @@ body.play-fishing-mode #playCard.fishing-final-active .fishing-hud-right {
     display: none;
   }
 }
+
+/* ── Blook Image & Aura Effects ────────────────────────────────────────── */
+
+.blook-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+}
+
+.blook-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  object-fit: cover;
+  z-index: 2;
+  position: relative;
+  overflow: hidden;
+}
+
+.blook-emoji {
+  font-size: 2rem;
+  z-index: 2;
+  position: relative;
+}
+
+/* Base Aura */
+.blook-aura {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 1. Lightning Effect */
+.fx-lightning {
+  background: radial-gradient(circle, rgba(151, 193, 255, 0.4) 0%, transparent 70%);
+  animation: lightning-pulse 0.2s infinite alternate;
+}
+.fx-lightning::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  box-shadow: 0 0 15px #97c1ff, inset 0 0 10px #97c1ff;
+  border-radius: 50%;
+  filter: blur(2px);
+  opacity: 0.8;
+}
+@keyframes lightning-pulse {
+  from { opacity: 0.4; }
+  to { opacity: 1; filter: brightness(1.5); }
+}
+
+/* 2. Golden Aura */
+.fx-golden-aura {
+  background: radial-gradient(circle, rgba(255, 212, 71, 0.4) 0%, transparent 70%);
+  box-shadow: 0 0 20px #ffd447, 0 0 40px rgba(255, 212, 71, 0.3);
+  animation: golden-pulse 2s infinite ease-in-out;
+}
+@keyframes golden-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.2); opacity: 1; }
+}
+
+/* 3. Snow Effect */
+.fx-snow {
+  background: transparent;
+}
+.fx-snow::before {
+  content: "❄️";
+  position: absolute;
+  font-size: 10px;
+  animation: snow-fall 3s linear infinite;
+  text-shadow: 15px -20px white, -15px -40px white, 5px -60px white;
+}
+@keyframes snow-fall {
+  from { transform: translateY(-20px); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  to { transform: translateY(20px); opacity: 0; }
+}
+
+/* 4. Fire Effect */
+.fx-fire {
+  background: radial-gradient(circle at bottom, #ff6e63, transparent 80%);
+  filter: blur(4px);
+  animation: fire-flicker 0.15s infinite;
+}
+@keyframes fire-flicker {
+  0% { transform: scaleY(1) translateX(0); }
+  50% { transform: scaleY(1.1) translateX(1px); }
+  100% { transform: scaleY(1) translateX(-1px); }
+}
+
+/* 5. Shadow Realm */
+.fx-shadow {
+  background: radial-gradient(circle, rgba(15, 39, 77, 0.8) 0%, transparent 80%);
+  box-shadow: inset 0 0 15px #07122a, 0 0 20px #07122a;
+  animation: rotate-shadow 4s linear infinite;
+}
+@keyframes rotate-shadow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 6. Rainbow */
+.fx-rainbow {
+  box-shadow: 0 0 15px rgba(255,255,255,0.5);
+  animation: rainbow-anim 4s linear infinite;
+}
+@keyframes rainbow-anim {
+  0% { background: rgba(255,0,0,0.3); }
+  20% { background: rgba(255,255,0,0.3); }
+  40% { background: rgba(0,255,0,0.3); }
+  60% { background: rgba(0,255,255,0.3); }
+  80% { background: rgba(0,0,255,0.3); }
+  100% { background: rgba(255,0,255,0.3); }
+}
+
+/* 7. Galaxy */
+.fx-galaxy {
+  background: radial-gradient(circle, #2a1b3d, #07122a);
+  overflow: hidden;
+}
+.fx-galaxy::before {
+  content: "✨";
+  font-size: 8px;
+  position: absolute;
+  animation: orbit 3s linear infinite;
+}
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(15px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(15px) rotate(-360deg); }
+}
+
+/* 8. Sakura */
+.fx-sakura {
+  background: radial-gradient(circle, rgba(255, 182, 193, 0.4) 0%, transparent 70%);
+}
+.fx-sakura::after {
+  content: "🌸";
+  font-size: 10px;
+  position: absolute;
+  animation: sakura-drift 5s ease-in-out infinite;
+}
+@keyframes sakura-drift {
+  0% { transform: translate(-10px, -10px) rotate(0deg); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translate(10px, 10px) rotate(360deg); opacity: 0; }
+}
+
+/* 9. Matrix */
+.fx-matrix {
+  background: rgba(0, 20, 0, 0.8);
+  border: 1px solid #00ff41;
+}
+.fx-matrix::before {
+  content: "10101";
+  font-family: monospace;
+  font-size: 8px;
+  color: #00ff41;
+  position: absolute;
+  top: -10px;
+  animation: matrix-fall 2s linear infinite;
+}
+@keyframes matrix-fall {
+  from { top: -20px; }
+  to { top: 40px; }
+}
+
+/* 10. Ice Crown */
+.fx-ice-crown {
+  background: radial-gradient(circle, rgba(165, 242, 255, 0.3) 0%, transparent 70%);
+}
+.fx-ice-crown::after {
+  content: "👑";
+  position: absolute;
+  top: -18px;
+  font-size: 1.2rem;
+  filter: hue-rotate(180deg) brightness(1.5);
+  animation: float-crown 3s ease-in-out infinite;
+}
+@keyframes float-crown {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-5px) rotate(5deg); }
+}
+
+/* Small adjustments for blook grid */
+.blook-tile {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  background: var(--bg-1);
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+.blook-tile:hover {
+  transform: translateY(-4px);
+  background: var(--bg-2);
+  border-color: var(--accent);
+}
+.blook-tile.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 15px rgba(255, 212, 71, 0.4);
+}
+.blook-name { font-weight: 700; display: block; margin-top: 8px; }
+.blook-rarity { font-size: 0.75rem; color: var(--muted); }
+
+/* Effect tab picker */
+.effect-tile {
+  padding: 8px;
+  border-radius: 8px;
+  border: 2px solid var(--line);
+  cursor: pointer;
+  background: var(--bg-1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.effect-tile.selected {
+  border-color: var(--teal);
+  box-shadow: 0 0 10px rgba(52, 215, 198, 0.3);
+}
+.effect-icon { font-size: 1.4rem; }
+.effect-name { font-size: 0.8rem; font-weight: 600; }

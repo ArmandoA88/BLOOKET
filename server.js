@@ -313,6 +313,44 @@ const BLOOK_PACKS = [
       { id: "mythic-titan-warden", name: "Titan Warden", icon: "🏛️", rarity: "Legendary" },
       { id: "mythic-celestial-dragon", name: "Celestial Dragon", icon: "🐲", rarity: "Legendary" }
     ]
+  },
+  {
+    id: "books",
+    name: "Book Legends",
+    description: "30 iconic characters from your favorite childhood stories. Adventure awaits!",
+    price: 0,
+    blooks: [
+      { id: "book-harry", name: "Harry Potter", image: "/assets/books/harry-potter.png", icon: "⚡", rarity: "Common", series: "Harry Potter" },
+      { id: "book-hermione", name: "Hermione Granger", image: "/assets/books/hermione-granger.png", icon: "📚", rarity: "Common", series: "Harry Potter" },
+      { id: "book-ron", name: "Ron Weasley", image: "/assets/books/ron-weasley.png", icon: "🐀", rarity: "Common", series: "Harry Potter" },
+      { id: "book-matilda", name: "Matilda Wormwood", image: "/assets/books/matilda.png", icon: "📖", rarity: "Common", series: "Matilda" },
+      { id: "book-greg", name: "Greg Heffley", image: "/assets/books/greg-heffley.png", icon: "📓", rarity: "Common", series: "Diary of a Wimpy Kid" },
+      { id: "book-percy", name: "Percy Jackson", image: "/assets/books/percy-jackson.png", icon: "🔱", rarity: "Common", series: "Percy Jackson" },
+      { id: "book-alice", name: "Alice", image: "/assets/books/alice.png", icon: "☕", rarity: "Common", series: "Alice in Wonderland" },
+      { id: "book-dorothy", name: "Dorothy Gale", image: "/assets/books/dorothy.png", icon: "👠", rarity: "Common", series: "The Wizard of Oz" },
+      { id: "book-charlie", name: "Charlie Bucket", image: "/assets/books/charlie-bucket.png", icon: "🍫", rarity: "Common", series: "Charlie and the Chocolate Factory" },
+      { id: "book-wonka", name: "Willy Wonka", image: "/assets/books/willy-wonka.png", icon: "🎩", rarity: "Common", series: "Charlie and the Chocolate Factory" },
+      { id: "book-peter", name: "Peter Pan", image: "/assets/books/peter-pan.png", icon: "🧚‍♂️", rarity: "Common", series: "Peter Pan" },
+      { id: "book-pippi", name: "Pippi Longstocking", image: "/assets/books/pippi.png", icon: "👧", rarity: "Common", series: "Pippi Longstocking" },
+      { id: "book-paddington", name: "Paddington Bear", image: "/assets/books/paddington.png", icon: "🐻", rarity: "Common", series: "Paddington" },
+      { id: "book-pooh", name: "Winnie the Pooh", image: "/assets/books/pooh.png", icon: "🍯", rarity: "Common", series: "Winnie the Pooh" },
+      { id: "book-charlotte", name: "Charlotte", image: "/assets/books/charlotte.png", icon: "🕷️", rarity: "Common", series: "Charlotte's Web" },
+      { id: "book-wilbur", name: "Wilbur", image: "/assets/books/wilbur.png", icon: "🐷", rarity: "Common", series: "Charlotte's Web" },
+      { id: "book-stuart", name: "Stuart Little", image: "/assets/books/stuart-little.png", icon: "🐭", rarity: "Common", series: "Stuart Little" },
+      { id: "book-cat-hat", name: "Cat in the Hat", image: "/assets/books/cat-hat.png", icon: "🎩", rarity: "Common", series: "Dr. Seuss" },
+      { id: "book-horton", name: "Horton", image: "/assets/books/horton.png", icon: "🐘", rarity: "Common", series: "Dr. Seuss" },
+      { id: "book-dogman", name: "Dog Man", image: "/assets/books/dogman.png", icon: "🐕", rarity: "Common", series: "Dog Man" },
+      { id: "book-underpants", name: "Captain Underpants", image: "/assets/books/captain-underpants.png", icon: "🩲", rarity: "Common", series: "Captain Underpants" },
+      { id: "book-auggie", name: "Auggie Pullman", image: "/assets/books/auggie.png", icon: "👨‍🚀", rarity: "Common", series: "Wonder" },
+      { id: "book-ivan", name: "Ivan", image: "/assets/books/ivan.png", icon: "🦍", rarity: "Common", series: "The One and Only Ivan" },
+      { id: "book-mercy", name: "Mercy Watson", image: "/assets/books/mercy-watson.png", icon: "🐽", rarity: "Common", series: "Mercy Watson" },
+      { id: "book-junie", name: "Junie B. Jones", image: "/assets/books/junie-b-jones.png", icon: "🎀", rarity: "Common", series: "Junie B. Jones" },
+      { id: "book-geronimo", name: "Geronimo Stilton", image: "/assets/books/geronimo-stilton.png", icon: "🧀", rarity: "Common", series: "Geronimo Stilton" },
+      { id: "book-frizzle", name: "Ms. Frizzle", image: "/assets/books/ms-frizzle.png", icon: "🚌", rarity: "Common", series: "Magic School Bus" },
+      { id: "book-arthur", name: "Arthur", image: "/assets/books/arthur.png", icon: "👓", rarity: "Common", series: "Arthur" },
+      { id: "book-clifford", name: "Clifford", image: "/assets/books/clifford.png", icon: "🐕‍🦺", rarity: "Common", series: "Clifford" },
+      { id: "book-george", name: "Curious George", image: "/assets/books/curious-george.png", icon: "🐒", rarity: "Common", series: "Curious George" }
+    ]
   }
 ];
 
@@ -364,8 +402,11 @@ const SPORTS_BLOOK_IDS = (
 const ATHLETES_BLOOK_IDS = (
   BLOOK_PACKS.find((p) => p.id === "athletes")?.blooks.map((b) => b.id) || []
 );
+const BOOKS_BLOOK_IDS = (
+  BLOOK_PACKS.find((p) => p.id === "books")?.blooks.map((b) => b.id) || []
+);
 const OTHER_COMMON_IDS = BLOOK_PACKS
-  .filter((p) => p.id !== "anime" && p.id !== "sports" && p.id !== "athletes")
+  .filter((p) => p.id !== "anime" && p.id !== "sports" && p.id !== "athletes" && p.id !== "books")
   .flatMap((pack) =>
     pack.blooks
       .filter((b) => String(b?.rarity || "").toLowerCase() === "common")
@@ -373,8 +414,8 @@ const OTHER_COMMON_IDS = BLOOK_PACKS
   )
   .slice(0, STARTER_COMMON_BLOOK_COUNT);
 
-// Students start with every anime character + every sports team + every legendary athlete + a few commons from other packs
-const STARTER_COMMON_BLOOK_IDS = [...new Set([...ANIME_BLOOK_IDS, ...SPORTS_BLOOK_IDS, ...ATHLETES_BLOOK_IDS, ...OTHER_COMMON_IDS])];
+// Students start with every anime character + every sports team + every legendary athlete + every book legend + a few commons from other packs
+const STARTER_COMMON_BLOOK_IDS = [...new Set([...ANIME_BLOOK_IDS, ...SPORTS_BLOOK_IDS, ...ATHLETES_BLOOK_IDS, ...BOOKS_BLOOK_IDS, ...OTHER_COMMON_IDS])];
 const PACK_OPEN_COST = 20;
 const DUPLICATE_SELL_RATE = 0.3;
 const STARTER_FREE_PACK_OPENS = 1;

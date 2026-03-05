@@ -151,6 +151,16 @@
           <summary>Advanced Settings</summary>
           <div class="form-grid" style="margin-top: 10px">
             <div>
+              <label for="questionSetSearch">Quiz Search</label>
+              <input id="questionSetSearch" maxlength="64" placeholder="Search by title or tag" />
+            </div>
+            <div>
+              <label for="questionSetCategory">Quiz Category</label>
+              <select id="questionSetCategory">
+                <option value="">All Categories</option>
+              </select>
+            </div>
+            <div>
               <label for="hostName">Host Name</label>
               <input id="hostName" maxlength="24" value="Teacher" />
             </div>
@@ -302,6 +312,16 @@
                 </select>
               </div>
               <div>
+                <label for="liveQuestionSetSearch">Quiz Search</label>
+                <input id="liveQuestionSetSearch" maxlength="64" placeholder="Search by title or tag" />
+              </div>
+              <div>
+                <label for="liveQuestionSetCategory">Quiz Category</label>
+                <select id="liveQuestionSetCategory">
+                  <option value="">All Categories</option>
+                </select>
+              </div>
+              <div>
                 <label for="liveQuestionSet">Quiz Set</label>
                 <select id="liveQuestionSet">
                   <option value="multiplication_1_digit">Multiplication 1-Digit</option>
@@ -335,23 +355,61 @@
             </div>
 
             <div class="card" style="margin-top: 12px">
-              <h3 class="title">Quiz Upload</h3>
+              <h3 class="title">Quiz Import/Export</h3>
               <div class="form-grid">
                 <div>
                   <label for="quizUploadTitle">Quiz Title (optional)</label>
                   <input id="quizUploadTitle" maxlength="64" placeholder="e.g. Multiplication Challenge" />
                 </div>
                 <div>
-                  <label for="quizUploadFile">CSV or Excel File</label>
-                  <input id="quizUploadFile" type="file" accept=".csv,.xlsx,.xls" />
+                  <label for="quizUploadFile">CSV, Excel, or JSON File</label>
+                  <input id="quizUploadFile" type="file" accept=".csv,.xlsx,.xls,.json" />
                 </div>
               </div>
               <div class="button-row" style="margin-top: 8px">
-                <button id="uploadQuizBtn" class="secondary">Upload Quiz File</button>
+                <button id="uploadQuizBtn" class="secondary">Import Quiz File</button>
+                <button id="exportQuizBtn" class="ghost">Export Custom Quizzes (.json)</button>
               </div>
               <div id="quizUploadNotice" class="notice hidden" style="margin-top: 8px"></div>
               <p class="help" style="margin-top: 8px">
-                Supported headers: question/prompt, optionA-optionD (or A-D), answer.
+                Import supports CSV/Excel headers (question/prompt, optionA-optionD, answer) or JSON quiz bundles.
+              </p>
+            </div>
+
+            <div class="card" style="margin-top: 12px">
+              <h3 class="title">Quiz Builder</h3>
+              <div class="form-grid">
+                <div>
+                  <label for="builderSetSelect">Custom Set</label>
+                  <select id="builderSetSelect">
+                    <option value="">New Custom Quiz</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="builderTitleInput">Quiz Title</label>
+                  <input id="builderTitleInput" maxlength="64" placeholder="e.g. Science Sprint" />
+                </div>
+                <div>
+                  <label for="builderCategoryInput">Category</label>
+                  <input id="builderCategoryInput" maxlength="40" placeholder="e.g. Science" />
+                </div>
+                <div>
+                  <label for="builderTagsInput">Tags (comma separated)</label>
+                  <input id="builderTagsInput" maxlength="160" placeholder="e.g. planets, space, grade-5" />
+                </div>
+              </div>
+              <div class="button-row" style="margin-top: 8px">
+                <button id="builderLoadBtn" class="ghost">Load Selected Set</button>
+                <button id="builderNewBtn" class="ghost">Start New Set</button>
+              </div>
+              <div id="builderQuestions" class="quiz-builder-list" style="margin-top: 10px"></div>
+              <div class="button-row" style="margin-top: 8px">
+                <button id="builderAddQuestionBtn" class="secondary">Add Question</button>
+                <button id="builderSaveBtn" class="ghost">Save Custom Quiz</button>
+              </div>
+              <div id="builderNotice" class="notice hidden" style="margin-top: 8px"></div>
+              <p class="help" style="margin-top: 8px">
+                Add at least 5 questions. Each question needs prompt, 4 options, and a correct answer.
               </p>
             </div>
 

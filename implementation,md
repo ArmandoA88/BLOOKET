@@ -40,10 +40,10 @@ Build and harden a classroom-ready, Blooket-style realtime quiz platform that ru
 - [x] Add sound toggle + simple SFX events (goal, save, timer warning).
 
 ### Phase 4: Quiz Content System
-- [ ] Add quiz import/export (`.json`) for teacher-made sets.
+- [x] Add quiz import/export (`.json`) for teacher-made sets.
 - [x] Add quiz upload from CSV/Excel (`.csv`, `.xlsx`, `.xls`) to local database.
-- [ ] Add host UI for creating/editing question sets in browser.
-- [ ] Add categories/tags and quick filter search.
+- [x] Add host UI for creating/editing question sets in browser.
+- [x] Add categories/tags and quick filter search.
 - [ ] Add per-question image support.
 - [ ] Add optional explanation reveal duration control.
 - [ ] Add question randomization controls (shuffle options, no repeats).
@@ -123,3 +123,6 @@ Build and harden a classroom-ready, Blooket-style realtime quiz platform that ru
 - [x] Analytics update: mini-game stats endpoint now tracks and exposes most played + most matched mini-games.
 - [x] Phase 3.5 completed: first-time mini-game tutorial overlays now show once per mini-game and are reopenable from the mini-game panel.
 - [x] Phase 3.6 completed: player-side sound toggle added with SFX for goal, save, and timer warning events.
+- [x] Phase 4.1 completed: host can import JSON quiz bundles and export all custom quiz sets as JSON backups.
+- [x] Phase 4.2 completed: host quiz builder can create new custom sets and edit existing custom sets in-browser.
+- [x] Phase 4.3 completed: quiz sets now include category/tags metadata with host quick search + category filters.

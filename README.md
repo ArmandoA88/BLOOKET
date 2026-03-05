@@ -13,7 +13,10 @@ A localhost-first realtime classroom quiz game with host controls and student jo
 - Duplicate blooks can be sold back at 30% of pack cost
 - Students pick from unlocked blooks before joining (locked once the game starts)
 - Quiz sets including `Multiplication 1-Digit` (default) and `General Knowledge`
-- Teachers and students can upload new quiz sets from `.csv`, `.xlsx`, or `.xls`
+- Teachers and students can import quiz sets from `.csv`, `.xlsx`, `.xls`, or `.json`
+- Host can export all custom quiz sets to a `.json` backup and re-import later
+- Host has an in-browser Quiz Builder to create and edit custom quiz sets
+- Quiz sets support categories/tags with quick host-side search and category filters
 - Realtime lobby with player list and kick support
 - Timed multiple-choice questions
 - Speed + streak scoring engine

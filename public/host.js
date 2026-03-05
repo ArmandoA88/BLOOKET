@@ -27,8 +27,22 @@ const QUESTION_SET_LABELS = new Map([
   ["general_knowledge", "General Knowledge"]
 ]);
 const FALLBACK_QUESTION_SETS = [
-  { id: "multiplication_1_digit", label: "Multiplication 1-Digit", source: "built_in", questionCount: 81 },
-  { id: "general_knowledge", label: "General Knowledge", source: "built_in", questionCount: 24 }
+  {
+    id: "multiplication_1_digit",
+    label: "Multiplication 1-Digit",
+    source: "built_in",
+    questionCount: 81,
+    category: "Math",
+    tags: ["math", "multiplication", "facts"]
+  },
+  {
+    id: "general_knowledge",
+    label: "General Knowledge",
+    source: "built_in",
+    questionCount: 24,
+    category: "General",
+    tags: ["trivia", "mixed"]
+  }
 ];
 const PHASE_BANNER_COPY = {
   lobby: {
@@ -148,6 +162,8 @@ const endTypeTimeBtn = document.getElementById("endTypeTimeBtn");
 const endTypeWeightBtn = document.getElementById("endTypeWeightBtn");
 const modeSettingToggles = Array.from(document.querySelectorAll(".mode-setting-toggle"));
 const questionSetInput = document.getElementById("questionSet");
+const questionSetSearchInput = document.getElementById("questionSetSearch");
+const questionSetCategoryInput = document.getElementById("questionSetCategory");
 const timerInput = document.getElementById("timer");
 const countInput = document.getElementById("count");
 const miniRotationInput = document.getElementById("miniRotation");
@@ -162,9 +178,20 @@ const saveSettingsBtn = document.getElementById("saveSettingsBtn");
 const testMiniGameBtn = document.getElementById("testMiniGameBtn");
 const testMiniGameType = document.getElementById("testMiniGameType");
 const uploadQuizBtn = document.getElementById("uploadQuizBtn");
+const exportQuizBtn = document.getElementById("exportQuizBtn");
 const quizUploadTitleInput = document.getElementById("quizUploadTitle");
 const quizUploadFileInput = document.getElementById("quizUploadFile");
 const quizUploadNotice = document.getElementById("quizUploadNotice");
+const builderSetSelect = document.getElementById("builderSetSelect");
+const builderTitleInput = document.getElementById("builderTitleInput");
+const builderCategoryInput = document.getElementById("builderCategoryInput");
+const builderTagsInput = document.getElementById("builderTagsInput");
+const builderQuestions = document.getElementById("builderQuestions");
+const builderLoadBtn = document.getElementById("builderLoadBtn");
+const builderNewBtn = document.getElementById("builderNewBtn");
+const builderAddQuestionBtn = document.getElementById("builderAddQuestionBtn");
+const builderSaveBtn = document.getElementById("builderSaveBtn");
+const builderNotice = document.getElementById("builderNotice");
 
 const roomCodeEl = document.getElementById("roomCode");
 const copyCodeBtn = document.getElementById("copyCodeBtn");
@@ -188,6 +215,8 @@ const kpiCorrect = document.getElementById("kpiCorrect");
 const kpiRound = document.getElementById("kpiRound");
 
 const liveMode = document.getElementById("liveMode");
+const liveQuestionSetSearchInput = document.getElementById("liveQuestionSetSearch");
+const liveQuestionSetCategoryInput = document.getElementById("liveQuestionSetCategory");
 const liveQuestionSet = document.getElementById("liveQuestionSet");
 const liveTimer = document.getElementById("liveTimer");
 const liveCount = document.getElementById("liveCount");
@@ -222,6 +251,10 @@ const lobbyPlayers = document.getElementById("lobbyPlayers");
 let serverInfo = null;
 let activeMiniGameType = "";
 let availableQuestionSets = FALLBACK_QUESTION_SETS.slice();
+let quizSetFilterQuery = "";
+let quizSetFilterCategory = "";
+let builderEditingSetId = "";
+let builderQuestionRows = [];
 let selectedEndType = "time";
 const DEFAULT_SETUP_FLAGS = {
   instructions: true,
@@ -413,6 +446,11 @@ function initializeModeConfigPanel() {
   renderModeConfigQuizTitle();
   selectEndType("time");
   applyModeToggleFlags(DEFAULT_SETUP_FLAGS);
+  applyQuestionSetFilter(
+    questionSetSearchInput?.value || liveQuestionSetSearchInput?.value || "",
+    questionSetCategoryInput?.value || liveQuestionSetCategoryInput?.value || ""
+  );
+  syncQuestionSetInputs(questionSetInput?.value || liveQuestionSet?.value || "");
 
   endTypeTimeBtn?.addEventListener("click", () => {
     selectEndType("time");
@@ -425,6 +463,28 @@ function initializeModeConfigPanel() {
 
   questionSetInput?.addEventListener("change", () => {
     renderModeConfigQuizTitle();
+  });
+
+  const applyFiltersAndRefresh = (queryValue, categoryValue) => {
+    const selected = questionSetInput?.value || liveQuestionSet?.value || "";
+    applyQuestionSetFilter(queryValue, categoryValue);
+    syncQuestionSetInputs(selected);
+  };
+
+  questionSetSearchInput?.addEventListener("input", () => {
+    applyFiltersAndRefresh(questionSetSearchInput.value, questionSetCategoryInput?.value || "");
+  });
+
+  questionSetCategoryInput?.addEventListener("change", () => {
+    applyFiltersAndRefresh(questionSetSearchInput?.value || "", questionSetCategoryInput.value);
+  });
+
+  liveQuestionSetSearchInput?.addEventListener("input", () => {
+    applyFiltersAndRefresh(liveQuestionSetSearchInput.value, liveQuestionSetCategoryInput?.value || "");
+  });
+
+  liveQuestionSetCategoryInput?.addEventListener("change", () => {
+    applyFiltersAndRefresh(liveQuestionSetSearchInput?.value || "", liveQuestionSetCategoryInput.value);
   });
 
   for (const toggle of modeSettingToggles) {
@@ -597,12 +657,399 @@ function showQuizUploadNotice(message, type = "") {
   quizUploadNotice.textContent = message;
 }
 
+function showBuilderNotice(message, type = "") {
+  if (!builderNotice) {
+    return;
+  }
+  if (!message) {
+    builderNotice.classList.add("hidden");
+    builderNotice.classList.remove("good", "bad");
+    builderNotice.textContent = "";
+    return;
+  }
+  builderNotice.classList.remove("hidden", "good", "bad");
+  if (type) {
+    builderNotice.classList.add(type);
+  }
+  builderNotice.textContent = message;
+}
+
+function defaultBuilderQuestion() {
+  return {
+    prompt: "",
+    options: ["", "", "", ""],
+    answerIndex: 0,
+    explanation: ""
+  };
+}
+
+function normalizeBuilderQuestion(rawQuestion) {
+  const source = rawQuestion && typeof rawQuestion === "object" ? rawQuestion : {};
+  const prompt = String(source.prompt || "").slice(0, 240);
+  const explanation = String(source.explanation || "").slice(0, 240);
+  const baseOptions = Array.isArray(source.options) ? source.options.slice(0, 4) : [];
+  while (baseOptions.length < 4) {
+    baseOptions.push("");
+  }
+  const options = baseOptions.map((value) => String(value || "").slice(0, 160));
+  const answerCandidate = Number(source.answerIndex);
+  const answerIndex =
+    Number.isInteger(answerCandidate) && answerCandidate >= 0 && answerCandidate < options.length ? answerCandidate : 0;
+  return {
+    prompt,
+    options,
+    answerIndex,
+    explanation
+  };
+}
+
+function ensureBuilderQuestionMinimum(minimum = 5) {
+  const target = Math.max(1, Number(minimum) || 5);
+  while (builderQuestionRows.length < target) {
+    builderQuestionRows.push(defaultBuilderQuestion());
+  }
+}
+
+function renderBuilderSetOptions(preferredId = "") {
+  if (!builderSetSelect) {
+    return;
+  }
+
+  const safePreferred = String(preferredId || "");
+  const customSets = availableQuestionSets.filter((set) => set.source === "uploaded");
+  builderSetSelect.innerHTML = [
+    `<option value="">New Custom Quiz</option>`,
+    ...customSets.map((set) => {
+      const category = normalizeQuestionSetCategory(set.category || "");
+      const label = category ? `[${category}] ${set.label}` : set.label;
+      return `<option value="${escapeHtml(set.id)}">${escapeHtml(label)}</option>`;
+    })
+  ].join("");
+
+  const exists = customSets.some((set) => set.id === safePreferred);
+  builderSetSelect.value = exists ? safePreferred : "";
+}
+
+function renderBuilderQuestions() {
+  if (!builderQuestions) {
+    return;
+  }
+
+  if (!Array.isArray(builderQuestionRows)) {
+    builderQuestionRows = [];
+  }
+  if (builderQuestionRows.length === 0) {
+    ensureBuilderQuestionMinimum(1);
+  }
+
+  builderQuestions.innerHTML = builderQuestionRows
+    .map((question, index) => {
+      const safe = normalizeBuilderQuestion(question);
+      const answerOptions = ["A", "B", "C", "D"]
+        .map((label, optionIndex) => {
+          const selected = safe.answerIndex === optionIndex ? " selected" : "";
+          return `<option value="${optionIndex}"${selected}>${label}</option>`;
+        })
+        .join("");
+
+      const optionFields = safe.options
+        .map(
+          (option, optionIndex) => `
+            <div class="quiz-builder-option">
+              <label>Option ${String.fromCharCode(65 + optionIndex)}</label>
+              <input
+                class="builder-input builder-option"
+                data-builder-row="${index}"
+                data-builder-option="${optionIndex}"
+                maxlength="160"
+                value="${escapeHtml(option)}"
+                placeholder="Option ${String.fromCharCode(65 + optionIndex)}"
+              />
+            </div>`
+        )
+        .join("");
+
+      return `
+        <article class="quiz-builder-row" data-builder-row="${index}">
+          <div class="quiz-builder-row-head">
+            <strong>Question ${index + 1}</strong>
+            <button type="button" class="danger quiz-builder-remove" data-builder-remove="${index}">Remove</button>
+          </div>
+          <div class="quiz-builder-field">
+            <label>Prompt</label>
+            <textarea
+              class="builder-input builder-prompt"
+              data-builder-row="${index}"
+              rows="2"
+              maxlength="240"
+              placeholder="Enter question prompt"
+            >${escapeHtml(safe.prompt)}</textarea>
+          </div>
+          <div class="quiz-builder-options">${optionFields}</div>
+          <div class="quiz-builder-foot">
+            <div class="quiz-builder-field">
+              <label>Correct Answer</label>
+              <select class="builder-input builder-answer" data-builder-row="${index}">
+                ${answerOptions}
+              </select>
+            </div>
+            <div class="quiz-builder-field">
+              <label>Explanation (optional)</label>
+              <input
+                class="builder-input builder-explanation"
+                data-builder-row="${index}"
+                maxlength="240"
+                value="${escapeHtml(safe.explanation)}"
+                placeholder="Short explanation"
+              />
+            </div>
+          </div>
+        </article>`;
+    })
+    .join("");
+}
+
+function resetBuilderEditor() {
+  builderEditingSetId = "";
+  if (builderTitleInput) {
+    builderTitleInput.value = "";
+  }
+  if (builderCategoryInput) {
+    builderCategoryInput.value = "";
+  }
+  if (builderTagsInput) {
+    builderTagsInput.value = "";
+  }
+  builderQuestionRows = [];
+  ensureBuilderQuestionMinimum(5);
+  renderBuilderSetOptions("");
+  renderBuilderQuestions();
+  showBuilderNotice("Builder reset. Add questions and save as a new custom quiz.");
+}
+
+function applyBuilderSetPayload(setPayload) {
+  if (!setPayload || typeof setPayload !== "object") {
+    return;
+  }
+
+  builderEditingSetId = String(setPayload.id || "");
+  if (builderTitleInput) {
+    builderTitleInput.value = String(setPayload.label || "").slice(0, 64);
+  }
+  if (builderCategoryInput) {
+    builderCategoryInput.value = normalizeQuestionSetCategory(setPayload.category || "");
+  }
+  if (builderTagsInput) {
+    builderTagsInput.value = tagsText(normalizeQuestionSetTags(setPayload.tags || ""));
+  }
+  builderQuestionRows = Array.isArray(setPayload.questions) ? setPayload.questions.map(normalizeBuilderQuestion) : [];
+  ensureBuilderQuestionMinimum(5);
+  renderBuilderSetOptions(builderEditingSetId);
+  renderBuilderQuestions();
+}
+
+async function loadBuilderSet(setId = "") {
+  const safeSetId = String(setId || builderSetSelect?.value || "").trim();
+  if (!safeSetId) {
+    showBuilderNotice("Pick a custom set to load.", "bad");
+    return;
+  }
+
+  if (builderLoadBtn) {
+    builderLoadBtn.disabled = true;
+  }
+  showBuilderNotice("Loading custom set...");
+
+  try {
+    const response = await fetch(`/api/quizzes/custom/${encodeURIComponent(safeSetId)}`);
+    const payload = await response.json();
+    if (!response.ok || !payload?.ok || !payload?.set) {
+      throw new Error(payload?.message || "Could not load custom set.");
+    }
+    applyBuilderSetPayload(payload.set);
+    showBuilderNotice(`Loaded "${payload.set.label}" into builder.`, "good");
+  } catch (error) {
+    showBuilderNotice(error?.message || "Could not load custom set.", "bad");
+  } finally {
+    if (builderLoadBtn) {
+      builderLoadBtn.disabled = false;
+    }
+  }
+}
+
+async function saveBuilderSet() {
+  if (!builderSaveBtn) {
+    return;
+  }
+
+  const title = String(builderTitleInput?.value || "").trim();
+  if (!title) {
+    showBuilderNotice("Enter a quiz title before saving.", "bad");
+    return;
+  }
+
+  const payloadQuestions = builderQuestionRows.map((question) => ({
+    prompt: String(question.prompt || "").trim(),
+    options: Array.isArray(question.options) ? question.options.map((option) => String(option || "").trim()) : [],
+    answerIndex: Number(question.answerIndex || 0),
+    explanation: String(question.explanation || "").trim()
+  }));
+
+  builderSaveBtn.disabled = true;
+  showBuilderNotice("Saving custom quiz...");
+
+  try {
+    const response = await fetch("/api/quizzes/custom/save", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        id: builderEditingSetId || undefined,
+        title,
+        category: normalizeQuestionSetCategory(builderCategoryInput?.value || ""),
+        tags: normalizeQuestionSetTags(builderTagsInput?.value || ""),
+        uploadedBy: String(hostNameInput?.value || "Teacher").trim(),
+        questions: payloadQuestions
+      })
+    });
+    const payload = await response.json();
+    if (!response.ok || !payload?.ok) {
+      throw new Error(payload?.message || "Could not save custom set.");
+    }
+
+    builderEditingSetId = String(payload?.set?.id || "");
+    rememberQuestionSets(payload?.sets);
+    syncQuestionSetInputs(builderEditingSetId);
+    renderBuilderSetOptions(builderEditingSetId);
+    if (builderSetSelect) {
+      builderSetSelect.value = builderEditingSetId;
+    }
+    showBuilderNotice(
+      `Saved "${payload?.set?.label || "Custom Quiz"}" with ${Number(payload?.set?.questionCount || 0)} questions.`,
+      "good"
+    );
+  } catch (error) {
+    showBuilderNotice(error?.message || "Could not save custom set.", "bad");
+  } finally {
+    builderSaveBtn.disabled = false;
+  }
+}
+
 function clampPercent(value) {
   return Math.max(0, Math.min(100, Number(value) || 0));
 }
 
 function questionSetLabelById(setId) {
   return QUESTION_SET_LABELS.get(String(setId || "")) || String(setId || "Quiz");
+}
+
+function normalizeQuestionSetCategory(value) {
+  return String(value || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 40);
+}
+
+function normalizeQuestionSetTags(value) {
+  const source = Array.isArray(value)
+    ? value
+    : String(value || "")
+        .split(/[,\|]+/g)
+        .map((entry) => entry.trim());
+  const tags = [];
+  for (const raw of source) {
+    const tag = String(raw || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9\s_-]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 28);
+    if (!tag || tags.includes(tag)) {
+      continue;
+    }
+    tags.push(tag);
+    if (tags.length >= 8) {
+      break;
+    }
+  }
+  return tags;
+}
+
+function tagsText(tags) {
+  const source = Array.isArray(tags) ? tags : [];
+  return source.join(", ");
+}
+
+function questionSetCategoryList() {
+  const sets = availableQuestionSets.length > 0 ? availableQuestionSets : FALLBACK_QUESTION_SETS;
+  const categories = [];
+  for (const set of sets) {
+    const category = normalizeQuestionSetCategory(set?.category || "");
+    if (!category || categories.includes(category)) {
+      continue;
+    }
+    categories.push(category);
+  }
+  return categories.sort((left, right) => left.localeCompare(right));
+}
+
+function syncQuizFilterInputs() {
+  if (questionSetSearchInput) {
+    questionSetSearchInput.value = quizSetFilterQuery;
+  }
+  if (liveQuestionSetSearchInput) {
+    liveQuestionSetSearchInput.value = quizSetFilterQuery;
+  }
+  if (questionSetCategoryInput) {
+    questionSetCategoryInput.value = quizSetFilterCategory;
+  }
+  if (liveQuestionSetCategoryInput) {
+    liveQuestionSetCategoryInput.value = quizSetFilterCategory;
+  }
+}
+
+function renderQuestionSetCategoryFilters() {
+  const categories = questionSetCategoryList();
+  const options = [`<option value="">All Categories</option>`]
+    .concat(categories.map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`))
+    .join("");
+
+  if (questionSetCategoryInput) {
+    questionSetCategoryInput.innerHTML = options;
+  }
+  if (liveQuestionSetCategoryInput) {
+    liveQuestionSetCategoryInput.innerHTML = options;
+  }
+
+  if (quizSetFilterCategory && !categories.includes(quizSetFilterCategory)) {
+    quizSetFilterCategory = "";
+  }
+  syncQuizFilterInputs();
+}
+
+function applyQuestionSetFilter(queryValue = "", categoryValue = "") {
+  quizSetFilterQuery = String(queryValue || "").trim().slice(0, 64);
+  quizSetFilterCategory = normalizeQuestionSetCategory(categoryValue || "");
+  renderQuestionSetCategoryFilters();
+}
+
+function filteredQuestionSets() {
+  const allSets = availableQuestionSets.length > 0 ? availableQuestionSets : FALLBACK_QUESTION_SETS;
+  const query = quizSetFilterQuery.toLowerCase();
+  const category = quizSetFilterCategory;
+  return allSets.filter((set) => {
+    const setCategory = normalizeQuestionSetCategory(set?.category || "");
+    if (category && setCategory !== category) {
+      return false;
+    }
+    if (!query) {
+      return true;
+    }
+    const tags = Array.isArray(set?.tags) ? set.tags : [];
+    const haystack = [set?.label, set?.id, setCategory, ...tags].join(" ").toLowerCase();
+    return haystack.includes(query);
+  });
 }
 
 function rememberQuestionSets(sets) {
@@ -614,7 +1061,9 @@ function rememberQuestionSets(sets) {
       id: String(entry?.id || ""),
       label: String(entry?.label || entry?.id || "Quiz"),
       source: String(entry?.source || "uploaded"),
-      questionCount: Math.max(0, Number(entry?.questionCount || 0))
+      questionCount: Math.max(0, Number(entry?.questionCount || 0)),
+      category: normalizeQuestionSetCategory(entry?.category || ""),
+      tags: normalizeQuestionSetTags(entry?.tags || "")
     }));
   }
   for (const set of availableQuestionSets) {
@@ -628,11 +1077,28 @@ function renderQuestionSetOptions(selectEl, selectedId) {
   if (!selectEl) {
     return;
   }
+  const allSets = availableQuestionSets.length > 0 ? availableQuestionSets : FALLBACK_QUESTION_SETS;
+  const filtered = filteredQuestionSets();
+  const sets = filtered.length > 0 ? filtered.slice() : allSets.slice();
   const safeSelected = String(selectedId || "");
-  const sets = availableQuestionSets.length > 0 ? availableQuestionSets : FALLBACK_QUESTION_SETS;
+  if (safeSelected && !sets.some((set) => set.id === safeSelected)) {
+    const selectedEntry = allSets.find((set) => set.id === safeSelected);
+    if (selectedEntry) {
+      sets.unshift(selectedEntry);
+    }
+  }
+
+  if (sets.length === 0) {
+    selectEl.innerHTML = `<option value="">No matching quiz sets</option>`;
+    return;
+  }
+
   selectEl.innerHTML = sets
     .map((set) => {
-      const label = `${set.label}${set.source === "uploaded" ? " (Uploaded)" : ""}`;
+      const category = normalizeQuestionSetCategory(set.category || "");
+      const categoryPrefix = category ? `[${category}] ` : "";
+      const uploadedSuffix = set.source === "uploaded" ? " (Uploaded)" : "";
+      const label = `${categoryPrefix}${set.label}${uploadedSuffix}`;
       const selected = set.id === safeSelected ? " selected" : "";
       return `<option value="${escapeHtml(set.id)}"${selected}>${escapeHtml(label)}</option>`;
     })
@@ -640,11 +1106,14 @@ function renderQuestionSetOptions(selectEl, selectedId) {
 }
 
 function syncQuestionSetInputs(preferredId = "") {
-  const fallback = availableQuestionSets[0]?.id || "multiplication_1_digit";
+  const allSets = availableQuestionSets.length > 0 ? availableQuestionSets : FALLBACK_QUESTION_SETS;
+  const fallback = allSets[0]?.id || "multiplication_1_digit";
   const safePreferred = String(preferredId || "");
-  const selectedId = availableQuestionSets.some((set) => set.id === safePreferred) ? safePreferred : fallback;
+  const selectedId = allSets.some((set) => set.id === safePreferred) ? safePreferred : fallback;
+  renderQuestionSetCategoryFilters();
   renderQuestionSetOptions(questionSetInput, selectedId);
   renderQuestionSetOptions(liveQuestionSet, selectedId);
+  renderBuilderSetOptions(builderEditingSetId || "");
   renderModeConfigQuizTitle();
 }
 
@@ -1282,12 +1751,12 @@ async function uploadQuizSetFile() {
 
   const file = quizUploadFileInput.files && quizUploadFileInput.files[0];
   if (!file) {
-    showQuizUploadNotice("Pick a CSV or Excel file first.", "bad");
+    showQuizUploadNotice("Pick a CSV, Excel, or JSON file first.", "bad");
     return;
   }
 
   uploadQuizBtn.disabled = true;
-  showQuizUploadNotice("Uploading quiz file...");
+  showQuizUploadNotice("Importing quiz file...");
   const formData = new FormData();
   formData.append("file", file);
   formData.append("title", String(quizUploadTitleInput?.value || "").trim());
@@ -1300,22 +1769,84 @@ async function uploadQuizSetFile() {
     });
     const payload = await response.json();
     if (!response.ok || !payload?.ok) {
-      throw new Error(payload?.message || "Upload failed");
+      throw new Error(payload?.message || "Import failed");
     }
 
+    const importedSets = Array.isArray(payload?.importedSets) ? payload.importedSets : payload?.set ? [payload.set] : [];
+    const importedCount = Math.max(0, Number(payload?.importedCount || importedSets.length || 0));
+    const skippedCount = Math.max(0, Number(payload?.skippedCount || 0));
     rememberQuestionSets(payload?.sets);
     syncQuestionSetInputs(payload?.set?.id || "");
-    showQuizUploadNotice(
-      `Uploaded "${payload.set?.label || "Quiz"}" with ${Number(payload.set?.questionCount || 0)} questions.`,
-      "good"
-    );
+    if (importedCount > 1) {
+      const skippedText = skippedCount > 0 ? ` (${skippedCount} skipped)` : "";
+      showQuizUploadNotice(`Imported ${importedCount} quiz sets${skippedText}.`, "good");
+    } else {
+      const firstSet = importedSets[0] || payload?.set || null;
+      showQuizUploadNotice(
+        `Imported "${firstSet?.label || "Quiz"}" with ${Number(firstSet?.questionCount || 0)} questions.`,
+        "good"
+      );
+    }
     if (quizUploadFileInput) {
       quizUploadFileInput.value = "";
     }
   } catch (error) {
-    showQuizUploadNotice(error?.message || "Could not upload quiz file.", "bad");
+    showQuizUploadNotice(error?.message || "Could not import quiz file.", "bad");
   } finally {
     uploadQuizBtn.disabled = false;
+  }
+}
+
+function parseDownloadFileName(contentDisposition) {
+  const value = String(contentDisposition || "").trim();
+  if (!value) {
+    return "";
+  }
+
+  const utf8Match = value.match(/filename\*=UTF-8''([^;]+)/i);
+  if (utf8Match && utf8Match[1]) {
+    try {
+      return decodeURIComponent(utf8Match[1]).trim();
+    } catch (_error) {
+      return utf8Match[1].trim();
+    }
+  }
+
+  const simpleMatch = value.match(/filename="?([^";]+)"?/i);
+  return simpleMatch && simpleMatch[1] ? simpleMatch[1].trim() : "";
+}
+
+async function exportCustomQuizSets() {
+  if (!exportQuizBtn) {
+    return;
+  }
+
+  exportQuizBtn.disabled = true;
+  showQuizUploadNotice("Preparing quiz export...");
+
+  try {
+    const response = await fetch("/api/quizzes/export");
+    if (!response.ok) {
+      throw new Error("Could not export quizzes.");
+    }
+
+    const fileName =
+      parseDownloadFileName(response.headers.get("content-disposition")) ||
+      `quiz-arena-custom-quizzes-${new Date().toISOString().slice(0, 10)}.json`;
+    const blob = await response.blob();
+    const downloadUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = downloadUrl;
+    anchor.download = fileName;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(downloadUrl);
+    showQuizUploadNotice(`Exported custom quizzes to "${fileName}".`, "good");
+  } catch (error) {
+    showQuizUploadNotice(error?.message || "Could not export quizzes.", "bad");
+  } finally {
+    exportQuizBtn.disabled = false;
   }
 }
 
@@ -1531,6 +2062,97 @@ uploadQuizBtn?.addEventListener("click", () => {
   uploadQuizSetFile();
 });
 
+exportQuizBtn?.addEventListener("click", () => {
+  exportCustomQuizSets();
+});
+
+builderLoadBtn?.addEventListener("click", () => {
+  loadBuilderSet(builderSetSelect?.value || "");
+});
+
+builderNewBtn?.addEventListener("click", () => {
+  resetBuilderEditor();
+});
+
+builderAddQuestionBtn?.addEventListener("click", () => {
+  builderQuestionRows.push(defaultBuilderQuestion());
+  renderBuilderQuestions();
+  showBuilderNotice("");
+});
+
+builderSaveBtn?.addEventListener("click", () => {
+  saveBuilderSet();
+});
+
+builderQuestions?.addEventListener("input", (event) => {
+  const target = event.target;
+  if (
+    !(
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement ||
+      target instanceof HTMLSelectElement
+    )
+  ) {
+    return;
+  }
+
+  const rowIndex = Number(target.getAttribute("data-builder-row"));
+  if (!Number.isInteger(rowIndex) || rowIndex < 0 || rowIndex >= builderQuestionRows.length) {
+    return;
+  }
+
+  const row = builderQuestionRows[rowIndex];
+  if (!row) {
+    return;
+  }
+
+  if (target.classList.contains("builder-prompt")) {
+    row.prompt = String(target.value || "");
+    return;
+  }
+
+  if (target.classList.contains("builder-option")) {
+    const optionIndex = Number(target.getAttribute("data-builder-option"));
+    if (!Number.isInteger(optionIndex) || optionIndex < 0 || optionIndex >= row.options.length) {
+      return;
+    }
+    row.options[optionIndex] = String(target.value || "");
+    return;
+  }
+
+  if (target.classList.contains("builder-answer")) {
+    const answerIndex = Number(target.value || 0);
+    row.answerIndex =
+      Number.isInteger(answerIndex) && answerIndex >= 0 && answerIndex < row.options.length ? answerIndex : 0;
+    return;
+  }
+
+  if (target.classList.contains("builder-explanation")) {
+    row.explanation = String(target.value || "");
+  }
+});
+
+builderQuestions?.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+
+  const removeIndex = Number(target.getAttribute("data-builder-remove"));
+  if (!Number.isInteger(removeIndex) || removeIndex < 0 || removeIndex >= builderQuestionRows.length) {
+    return;
+  }
+
+  if (builderQuestionRows.length <= 1) {
+    showBuilderNotice("Keep at least one row in the builder.", "bad");
+    return;
+  }
+
+  builderQuestionRows.splice(removeIndex, 1);
+  renderBuilderQuestions();
+  showBuilderNotice("");
+});
+
 testMiniGameBtn?.addEventListener("click", () => {
   if (!ensureCreated()) {
     showMiniGameNotice("Create a room first.", "bad");
@@ -1619,7 +2241,9 @@ socket.on("lobby:update", (payload) => {
         id: payload.settings.questionSet,
         label: payload.questionSetLabel,
         source: "uploaded",
-        questionCount: 0
+        questionCount: 0,
+        category: "",
+        tags: []
       });
     }
   }
@@ -1831,6 +2455,7 @@ if (hostNameInput && requestedHostName) {
 
 initializeModeConfigPanel();
 initializeModePicker();
+resetBuilderEditor();
 loadServerInfo();
 loadQuestionSets();
 loadMiniGames();

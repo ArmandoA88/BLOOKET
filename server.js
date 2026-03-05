@@ -171,15 +171,20 @@ const QUESTION_SET_CONFIG = {
   multiplication_1_digit: {
     id: "multiplication_1_digit",
     label: "Multiplication 1-Digit",
-    source: "built_in"
+    source: "built_in",
+    category: "Math",
+    tags: ["math", "multiplication", "facts"]
   },
   general_knowledge: {
     id: "general_knowledge",
     label: "General Knowledge",
-    source: "built_in"
+    source: "built_in",
+    category: "General",
+    tags: ["trivia", "mixed"]
   }
 };
 const CUSTOM_QUIZZES_DATA_FILE = path.join(__dirname, "data", "custom-quizzes.json");
+const QUIZ_UPLOAD_ALLOWED_EXTENSIONS = new Set([".csv", ".xlsx", ".xls", ".json"]);
 const customQuestionSets = new Map();
 const MINIGAME_STATS_FILE = path.join(__dirname, "data", "minigame-stats.json");
 
@@ -1531,21 +1536,91 @@ app.get("/api/quizzes", (_req, res) => {
   });
 });
 
+app.get("/api/quizzes/export", (_req, res) => {
+  const payload = buildCustomQuestionSetsPayload("exportedAt");
+  const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("Content-Disposition", `attachment; filename="quiz-arena-custom-quizzes-${stamp}.json"`);
+  res.json(payload);
+});
+
 app.post("/api/quizzes/upload", quizUpload.single("file"), (req, res) => {
   const titleRaw = String(req.body?.title || "").trim();
   const uploadedBy = sanitizeName(req.body?.uploadedBy || req.user?.name || "User");
+  const category = sanitizeQuizCategory(req.body?.category || "");
+  const tags = sanitizeQuizTags(req.body?.tags || "");
   const file = req.file;
 
   if (!file || !file.buffer || file.buffer.length === 0) {
-    res.status(400).json({ ok: false, message: "Upload a CSV or Excel file." });
+    res.status(400).json({ ok: false, message: "Upload a CSV, Excel, or JSON file." });
     return;
   }
 
   const fileName = String(file.originalname || "quiz_upload");
   const ext = path.extname(fileName).toLowerCase();
-  const allowed = new Set([".csv", ".xlsx", ".xls"]);
-  if (!allowed.has(ext)) {
-    res.status(400).json({ ok: false, message: "Only CSV, XLSX, and XLS files are supported." });
+  if (!QUIZ_UPLOAD_ALLOWED_EXTENSIONS.has(ext)) {
+    res.status(400).json({ ok: false, message: "Only CSV, XLSX, XLS, and JSON files are supported." });
+    return;
+  }
+
+  const fallbackLabel = sanitizeQuestionPrompt(titleRaw || path.basename(fileName, ext) || "Uploaded Quiz").slice(0, 64);
+
+  if (ext === ".json") {
+    let payload = null;
+    try {
+      payload = JSON.parse(file.buffer.toString("utf8"));
+    } catch (_error) {
+      res.status(400).json({ ok: false, message: "Could not parse JSON file. Check format and try again." });
+      return;
+    }
+
+    const importEntries = extractQuizImportEntriesFromJson(payload, fallbackLabel);
+    if (importEntries.length === 0) {
+      res.status(400).json({
+        ok: false,
+        message: "JSON must contain a quiz with a questions array or a quizzes array."
+      });
+      return;
+    }
+
+    const importedSets = [];
+    let skippedCount = 0;
+    const singleSetImport = importEntries.length === 1;
+    for (const entry of importEntries) {
+      const labelOverride = singleSetImport && titleRaw ? titleRaw : entry.label;
+      const storedSet = saveImportedQuestionSet({
+        label: labelOverride,
+        questions: entry.questions,
+        uploadedBy: entry.uploadedBy || uploadedBy,
+        uploadedAt: entry.uploadedAt,
+        category: entry.category || category,
+        tags: Array.isArray(entry.tags) && entry.tags.length > 0 ? entry.tags : tags
+      });
+      if (!storedSet) {
+        skippedCount += 1;
+        continue;
+      }
+      importedSets.push(storedSet);
+    }
+
+    if (importedSets.length === 0) {
+      res.status(400).json({
+        ok: false,
+        message: "No valid quiz sets were imported. Each set needs at least 5 valid questions."
+      });
+      return;
+    }
+
+    saveCustomQuestionSetsToDisk();
+    const setSummaries = importedSets.map(publicImportedQuestionSetSummary);
+    res.json({
+      ok: true,
+      importedCount: setSummaries.length,
+      skippedCount,
+      importedSets: setSummaries,
+      set: setSummaries[0],
+      sets: publicQuestionSets()
+    });
     return;
   }
 
@@ -1563,13 +1638,20 @@ app.post("/api/quizzes/upload", quizUpload.single("file"), (req, res) => {
       defval: "",
       blankrows: false
     });
-  } catch (error) {
+  } catch (_error) {
     res.status(400).json({ ok: false, message: "Could not parse file. Check CSV/Excel format." });
     return;
   }
 
-  const parsedQuestions = parseQuizRows(rows);
-  if (parsedQuestions.length < 5) {
+  const importedSet = saveImportedQuestionSet({
+    label: fallbackLabel,
+    questions: rows,
+    uploadedBy,
+    uploadedAt: nowIso(),
+    category,
+    tags
+  });
+  if (!importedSet) {
     res.status(400).json({
       ok: false,
       message: "Need at least 5 valid questions. Required columns: question/prompt, options, and answer."
@@ -1577,29 +1659,86 @@ app.post("/api/quizzes/upload", quizUpload.single("file"), (req, res) => {
     return;
   }
 
-  const label = sanitizeQuestionPrompt(titleRaw || path.basename(fileName, ext) || "Uploaded Quiz").slice(0, 64);
-  const id = normalizeQuizSetId(label, "uploaded_quiz");
+  saveCustomQuestionSetsToDisk();
+  const setSummary = publicImportedQuestionSetSummary(importedSet);
+  res.json({
+    ok: true,
+    importedCount: 1,
+    skippedCount: 0,
+    importedSets: [setSummary],
+    set: setSummary,
+    sets: publicQuestionSets()
+  });
+});
+
+app.get("/api/quizzes/custom/:setId", (req, res) => {
+  const setId = String(req.params?.setId || "").trim();
+  const quiz = customQuestionSets.get(setId);
+  if (!quiz) {
+    res.status(404).json({ ok: false, message: "Custom quiz set not found." });
+    return;
+  }
+
+  res.json({
+    ok: true,
+    set: publicCustomQuestionSetDetail(quiz)
+  });
+});
+
+app.post("/api/quizzes/custom/save", (req, res) => {
+  const requestedId = String(req.body?.id || "").trim();
+  const uploadedBy = sanitizeName(req.body?.uploadedBy || req.user?.name || "User");
+  const titleRaw = String(req.body?.title || req.body?.label || "").trim();
+  const categoryProvided = "category" in (req.body || {});
+  const tagsProvided = "tags" in (req.body || {});
+  const category = sanitizeQuizCategory(req.body?.category || "");
+  const tags = sanitizeQuizTags(req.body?.tags || "");
+  const parsedQuestions = parseQuizRows(Array.isArray(req.body?.questions) ? req.body.questions : []);
+  if (parsedQuestions.length < 5) {
+    res.status(400).json({
+      ok: false,
+      message: "Need at least 5 valid questions with prompt, options, and answer."
+    });
+    return;
+  }
+
+  const safeLabel = sanitizeQuestionPrompt(titleRaw).slice(0, 64);
+  if (!safeLabel) {
+    res.status(400).json({
+      ok: false,
+      message: "Quiz title is required."
+    });
+    return;
+  }
+
+  const existing = requestedId ? customQuestionSets.get(requestedId) : null;
+  if (requestedId && !existing) {
+    res.status(404).json({
+      ok: false,
+      message: "Custom quiz set to edit was not found."
+    });
+    return;
+  }
+
   const now = nowIso();
-  customQuestionSets.set(id, {
+  const id = existing ? existing.id : normalizeQuizSetId(safeLabel, "custom_quiz");
+  const next = {
     id,
-    label,
+    label: safeLabel,
     source: "uploaded",
     questions: parsedQuestions,
     questionCount: parsedQuestions.length,
-    uploadedBy,
-    uploadedAt: now
-  });
+    uploadedBy: uploadedBy || existing?.uploadedBy || "",
+    uploadedAt: existing?.uploadedAt || now,
+    category: categoryProvided ? category : existing?.category || "",
+    tags: tagsProvided ? tags : Array.isArray(existing?.tags) ? existing.tags : []
+  };
+  customQuestionSets.set(id, next);
   saveCustomQuestionSetsToDisk();
 
   res.json({
     ok: true,
-    set: {
-      id,
-      label,
-      questionCount: parsedQuestions.length,
-      uploadedBy,
-      uploadedAt: now
-    },
+    set: publicImportedQuestionSetSummary(next),
     sets: publicQuestionSets()
   });
 });
@@ -1967,6 +2106,41 @@ function sanitizeQuestionOption(value) {
   return String(value || "").replace(/\s+/g, " ").trim().slice(0, 160);
 }
 
+function sanitizeQuizCategory(value) {
+  return String(value || "").replace(/\s+/g, " ").trim().slice(0, 40);
+}
+
+function normalizeQuizTag(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s_-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 28);
+}
+
+function sanitizeQuizTags(value) {
+  const raw =
+    Array.isArray(value) && value.length > 0
+      ? value
+      : String(value || "")
+          .split(/[,\|]+/g)
+          .map((piece) => piece.trim());
+
+  const tags = [];
+  for (const entry of raw) {
+    const tag = normalizeQuizTag(entry);
+    if (!tag || tags.includes(tag)) {
+      continue;
+    }
+    tags.push(tag);
+    if (tags.length >= 8) {
+      break;
+    }
+  }
+  return tags;
+}
+
 function normalizeQuizColumnKey(value) {
   return String(value || "")
     .toLowerCase()
@@ -2183,6 +2357,164 @@ function parseQuizRows(rows) {
   return questions;
 }
 
+function looksLikeQuizQuestionRow(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+
+  if (typeof value.prompt === "string" || typeof value.question === "string" || typeof value.q === "string") {
+    return true;
+  }
+  if (Array.isArray(value.options)) {
+    return true;
+  }
+  if ("optionA" in value || "choiceA" in value || "answerA" in value || "A" in value) {
+    return true;
+  }
+  if ("answerIndex" in value || "answer" in value || "correct" in value || "correctAnswer" in value) {
+    return true;
+  }
+  return false;
+}
+
+function extractQuizImportEntriesFromJson(payload, fallbackLabel = "Uploaded Quiz") {
+  const safeFallback = sanitizeQuestionPrompt(fallbackLabel).slice(0, 64) || "Uploaded Quiz";
+
+  function normalizeEntry(candidate, index = 0) {
+    const source = candidate && typeof candidate === "object" && !Array.isArray(candidate) ? candidate : {};
+    const labelRaw = sanitizeQuestionPrompt(source.label || source.name || source.title || "").slice(0, 64);
+    const label = labelRaw || (index > 0 ? `${safeFallback} ${index + 1}` : safeFallback);
+    return {
+      label,
+      questions: Array.isArray(source.questions) ? source.questions : Array.isArray(source.rows) ? source.rows : [],
+      uploadedBy: sanitizeName(source.uploadedBy || ""),
+      uploadedAt: typeof source.uploadedAt === "string" ? source.uploadedAt : "",
+      category: sanitizeQuizCategory(source.category || ""),
+      tags: sanitizeQuizTags(source.tags || "")
+    };
+  }
+
+  if (Array.isArray(payload)) {
+    if (payload.length === 0) {
+      return [];
+    }
+
+    if (payload.every((row) => looksLikeQuizQuestionRow(row))) {
+      return [
+        {
+          label: safeFallback,
+          questions: payload,
+          uploadedBy: "",
+          uploadedAt: "",
+          category: "",
+          tags: []
+        }
+      ];
+    }
+
+    return payload
+      .map((entry, index) => normalizeEntry(entry, index))
+      .filter((entry) => Array.isArray(entry.questions) && entry.questions.length > 0);
+  }
+
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+
+  if (Array.isArray(payload.quizzes)) {
+    return payload.quizzes
+      .map((entry, index) => normalizeEntry(entry, index))
+      .filter((entry) => Array.isArray(entry.questions) && entry.questions.length > 0);
+  }
+
+  if (Array.isArray(payload.questions) || Array.isArray(payload.rows)) {
+    return [normalizeEntry(payload, 0)];
+  }
+
+  if (payload.set && typeof payload.set === "object" && (Array.isArray(payload.set.questions) || Array.isArray(payload.set.rows))) {
+    return [normalizeEntry(payload.set, 0)];
+  }
+
+  return [];
+}
+
+function saveImportedQuestionSet({ label, questions, uploadedBy, uploadedAt, category, tags }) {
+  const safeLabel = sanitizeQuestionPrompt(label || "Uploaded Quiz").slice(0, 64) || "Uploaded Quiz";
+  const parsedQuestions = parseQuizRows(Array.isArray(questions) ? questions : []);
+  if (parsedQuestions.length < 5) {
+    return null;
+  }
+
+  const now = nowIso();
+  const id = normalizeQuizSetId(safeLabel, "uploaded_quiz");
+  const quiz = {
+    id,
+    label: safeLabel,
+    source: "uploaded",
+    questions: parsedQuestions,
+    questionCount: parsedQuestions.length,
+    uploadedBy: sanitizeName(uploadedBy || ""),
+    uploadedAt: typeof uploadedAt === "string" && uploadedAt.trim() ? uploadedAt : now,
+    category: sanitizeQuizCategory(category || ""),
+    tags: sanitizeQuizTags(tags || "")
+  };
+  customQuestionSets.set(id, quiz);
+  return quiz;
+}
+
+function publicImportedQuestionSetSummary(quiz) {
+  return {
+    id: quiz.id,
+    label: quiz.label,
+    questionCount: quiz.questionCount || (Array.isArray(quiz.questions) ? quiz.questions.length : 0),
+    uploadedBy: quiz.uploadedBy || "",
+    uploadedAt: quiz.uploadedAt || nowIso(),
+    category: sanitizeQuizCategory(quiz.category || ""),
+    tags: sanitizeQuizTags(quiz.tags || "")
+  };
+}
+
+function publicCustomQuestionSetDetail(quiz) {
+  const safeQuestions = Array.isArray(quiz?.questions)
+    ? quiz.questions.map((question) => ({
+        prompt: sanitizeQuestionPrompt(question?.prompt || ""),
+        options: Array.isArray(question?.options)
+          ? question.options.map((option) => sanitizeQuestionOption(option)).filter(Boolean).slice(0, 6)
+          : [],
+        answerIndex: Number(question?.answerIndex || 0),
+        explanation: sanitizeQuestionPrompt(question?.explanation || "")
+      }))
+    : [];
+  return {
+    id: quiz?.id || "",
+    label: quiz?.label || "Custom Quiz",
+    source: "uploaded",
+    uploadedBy: quiz?.uploadedBy || "",
+    uploadedAt: quiz?.uploadedAt || nowIso(),
+    category: sanitizeQuizCategory(quiz?.category || ""),
+    tags: sanitizeQuizTags(quiz?.tags || ""),
+    questionCount: safeQuestions.length,
+    questions: safeQuestions
+  };
+}
+
+function buildCustomQuestionSetsPayload(timestampKey = "savedAt") {
+  const payload = {
+    schemaVersion: 1,
+    quizzes: Array.from(customQuestionSets.values()).map((quiz) => ({
+      id: quiz.id,
+      label: quiz.label,
+      uploadedBy: quiz.uploadedBy || "",
+      uploadedAt: quiz.uploadedAt || nowIso(),
+      category: sanitizeQuizCategory(quiz.category || ""),
+      tags: sanitizeQuizTags(quiz.tags || ""),
+      questions: quiz.questions
+    }))
+  };
+  payload[timestampKey] = nowIso();
+  return payload;
+}
+
 function loadCustomQuestionSetsFromDisk() {
   try {
     customQuestionSets.clear();
@@ -2211,7 +2543,9 @@ function loadCustomQuestionSetsFromDisk() {
         questions,
         questionCount: questions.length,
         uploadedBy: sanitizeName(quiz?.uploadedBy || ""),
-        uploadedAt: typeof quiz?.uploadedAt === "string" ? quiz.uploadedAt : nowIso()
+        uploadedAt: typeof quiz?.uploadedAt === "string" ? quiz.uploadedAt : nowIso(),
+        category: sanitizeQuizCategory(quiz?.category || ""),
+        tags: sanitizeQuizTags(quiz?.tags || "")
       });
     }
   } catch (error) {
@@ -2222,16 +2556,7 @@ function loadCustomQuestionSetsFromDisk() {
 function saveCustomQuestionSetsToDisk() {
   try {
     fs.mkdirSync(path.dirname(CUSTOM_QUIZZES_DATA_FILE), { recursive: true });
-    const payload = {
-      savedAt: nowIso(),
-      quizzes: Array.from(customQuestionSets.values()).map((quiz) => ({
-        id: quiz.id,
-        label: quiz.label,
-        uploadedBy: quiz.uploadedBy || "",
-        uploadedAt: quiz.uploadedAt || nowIso(),
-        questions: quiz.questions
-      }))
-    };
+    const payload = buildCustomQuestionSetsPayload("savedAt");
     fs.writeFileSync(CUSTOM_QUIZZES_DATA_FILE, JSON.stringify(payload, null, 2), "utf8");
   } catch (error) {
     console.warn("Failed to save custom quizzes:", error?.message || error);
@@ -2243,7 +2568,9 @@ function publicQuestionSets() {
     id: entry.id,
     label: entry.label,
     source: entry.source || "built_in",
-    questionCount: entry.questionCount || (entry.id === "multiplication_1_digit" ? 81 : QUESTION_BANK.length)
+    questionCount: entry.questionCount || (entry.id === "multiplication_1_digit" ? 81 : QUESTION_BANK.length),
+    category: sanitizeQuizCategory(entry.category || ""),
+    tags: sanitizeQuizTags(entry.tags || "")
   }));
 }
 

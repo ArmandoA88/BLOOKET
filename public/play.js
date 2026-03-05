@@ -86,6 +86,23 @@ const PHASE_CLASS_CANDIDATES = [
   "phase-kicked",
   "phase-ended"
 ];
+const BLOOK_IMAGE_POSITION_OVERRIDES = {
+  "spiderman-noir": { position: "center 7%", scale: 0.9 },
+  "spiderman-2099": { position: "center 6%", scale: 0.92 },
+  "spiderman-mcu-peter": { position: "center 9%", scale: 0.93 },
+  "doctor-strange": { position: "center 6%", scale: 0.93 },
+  "scarlet-witch": { position: "center 8%", scale: 0.94 },
+  thanos: { position: "center 11%", scale: 0.94 },
+  loki: { position: "center 8%", scale: 0.94 },
+  hawkeye: { position: "center 9%", scale: 0.93 },
+  "black-widow": { position: "center 8%", scale: 0.94 },
+  "captain-marvel": { position: "center 8%", scale: 0.93 },
+  "captain-america-steve": { position: "center 9%", scale: 0.93 },
+  "captain-america-sam": { position: "center 9%", scale: 0.93 },
+  "black-panther": { position: "center 10%", scale: 0.93 },
+  killmonger: { position: "center 9%", scale: 0.94 },
+  vulture: { position: "center 8%", scale: 0.92 }
+};
 
 const joinCard = document.getElementById("joinCard");
 const playCard = document.getElementById("playCard");
@@ -3426,11 +3443,63 @@ socket.on("connect_error", () => {
   }
 });
 
+function clampBlookImageScale(scale) {
+  const value = Number(scale);
+  if (!Number.isFinite(value)) {
+    return 1;
+  }
+  return Math.max(0.75, Math.min(1.2, value));
+}
+
+function blookImagePresentation(blook) {
+  const safeBlook = blook && typeof blook === "object" ? blook : {};
+  const id = String(safeBlook.id || "");
+  const packId = String(safeBlook.packId || "").toLowerCase();
+  const imagePath = String(safeBlook.image || "").toLowerCase();
+
+  const specific = BLOOK_IMAGE_POSITION_OVERRIDES[id];
+  if (specific) {
+    return {
+      position: String(specific.position || ""),
+      scale: clampBlookImageScale(specific.scale)
+    };
+  }
+
+  const isSuperhero = packId === "superheroes" || imagePath.includes("/assets/superheroes/");
+  if (isSuperhero) {
+    return {
+      position: "center 10%",
+      scale: 0.95
+    };
+  }
+
+  return {
+    position: "",
+    scale: 1
+  };
+}
+
+function blookImageStyleAttribute(blook) {
+  const presentation = blookImagePresentation(blook);
+  const parts = [];
+  if (presentation.position) {
+    parts.push(`--blook-image-position:${presentation.position}`);
+  }
+  if (Math.abs(Number(presentation.scale || 1) - 1) > 0.001) {
+    parts.push(`--blook-image-scale:${clampBlookImageScale(presentation.scale)}`);
+  }
+  if (parts.length === 0) {
+    return "";
+  }
+  return ` style="${escapeHtml(parts.join(";"))}"`;
+}
+
 function renderBlookWithEffect(blook, effectId) {
   if (!blook) return `<span class="blook-emoji">?</span>`;
   const aura = effectId && effectId !== "fx-none" ? `<div class="blook-aura ${escapeHtml(effectId)}"></div>` : "";
+  const styleAttribute = blookImageStyleAttribute(blook);
   const content = blook.image
-    ? `<img src="${escapeHtml(blook.image)}" class="blook-image" alt="${escapeHtml(blook.name)}" />`
+    ? `<img src="${escapeHtml(blook.image)}" class="blook-image" alt="${escapeHtml(blook.name)}"${styleAttribute} />`
     : `<span class="blook-emoji">${escapeHtml(blook.icon || "?")}</span>`;
 
   return `<div class="blook-container">${aura}${content}</div>`;

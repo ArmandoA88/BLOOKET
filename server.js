@@ -10,6 +10,7 @@ const XLSX = require("xlsx");
 const session = require("express-session");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const { BOOK_LEGENDS_BLOOKS } = require("./data/pack-blooks");
 
 const PORT = process.env.PORT || 3000;
 const GAME_CODE_LENGTH = 6;
@@ -344,21 +345,6 @@ const BLOOK_PACKS = [
     ]
   },
   {
-    id: "mythic",
-    name: "Mythic Pack",
-    description: "Fantasy and legendary entities.",
-    blooks: [
-      { id: "mythic-stone-golem", name: "Stone Golem", icon: "🪨", rarity: "Common" },
-      { id: "mythic-sun-priest", name: "Sun Priest", icon: "☀️", rarity: "Common" },
-      { id: "mythic-moon-seer", name: "Moon Seer", icon: "🌙", rarity: "Rare" },
-      { id: "mythic-arcane-knight", name: "Arcane Knight", icon: "🛡️", rarity: "Rare" },
-      { id: "mythic-griffin-rider", name: "Griffin Rider", icon: "🪽", rarity: "Epic" },
-      { id: "mythic-phoenix", name: "Phoenix", icon: "🐦‍🔥", rarity: "Epic" },
-      { id: "mythic-titan-warden", name: "Titan Warden", icon: "🏛️", rarity: "Legendary" },
-      { id: "mythic-celestial-dragon", name: "Celestial Dragon", icon: "🐲", rarity: "Legendary" }
-    ]
-  },
-  {
     id: "books",
     name: "Book Legends",
     description: "30 iconic characters from your favorite childhood stories. Adventure awaits!",
@@ -399,6 +385,13 @@ const BLOOK_PACKS = [
 ];
 
 // ── 10 Equippable Aura Effects (all free for students) ──────────────────────
+const LEGACY_BLOOK_ID_MIGRATIONS = new Map();
+
+const booksPack = BLOOK_PACKS.find((pack) => pack.id === "books");
+if (booksPack) {
+  booksPack.blooks = BOOK_LEGENDS_BLOOKS.map((blook) => ({ ...blook }));
+}
+
 const BLOOK_EFFECTS = [
   { id: "fx-none", name: "None", icon: "✖", css: "", description: "No effect" },
   { id: "fx-lightning", name: "Lightning", icon: "⚡", css: "fx-lightning", description: "Electric bolts crackle around you" },
@@ -473,6 +466,43 @@ function normalizeAccountKey(value) {
   return trimmed;
 }
 
+function migrateLegacyBlookId(blookId) {
+  const safeId = typeof blookId === "string" ? blookId.trim() : "";
+  if (!safeId) {
+    return "";
+  }
+  return LEGACY_BLOOK_ID_MIGRATIONS.get(safeId) || safeId;
+}
+
+function migrateLegacyAccountBlooks(account) {
+  if (!account || !account.inventory || typeof account.inventory !== "object") {
+    return false;
+  }
+
+  let changed = false;
+  for (const [legacyId, nextId] of LEGACY_BLOOK_ID_MIGRATIONS.entries()) {
+    const ownedCount = Math.max(0, Math.floor(parseStoredNumber(account.inventory[legacyId], 0)));
+    if (ownedCount <= 0) {
+      continue;
+    }
+
+    account.inventory[nextId] = Math.max(0, Math.floor(parseStoredNumber(account.inventory[nextId], 0))) + ownedCount;
+    delete account.inventory[legacyId];
+    changed = true;
+  }
+
+  const migratedSelectedId = migrateLegacyBlookId(account.selectedBlookId);
+  if (migratedSelectedId && migratedSelectedId !== account.selectedBlookId) {
+    account.selectedBlookId = migratedSelectedId;
+    changed = true;
+  }
+
+  if (changed) {
+    account.updatedAt = nowIso();
+  }
+  return changed;
+}
+
 function generateGuestAccountKey() {
   if (typeof crypto.randomUUID === "function") {
     return `guest:${crypto.randomUUID()}`;
@@ -513,11 +543,11 @@ function ensureStarterCommonBlooks(account) {
     account.inventory = {};
   }
 
+  let changed = migrateLegacyAccountBlooks(account);
   account.coins = Math.max(0, Math.floor(parseStoredNumber(account.coins, 0)));
   account.freePackOpensRemaining = Math.max(0, Math.floor(parseStoredNumber(account.freePackOpensRemaining, STARTER_FREE_PACK_OPENS)));
   account.starterGrantVersion = Math.max(0, Math.floor(parseStoredNumber(account.starterGrantVersion, 0)));
 
-  let changed = false;
   if (account.starterGrantVersion < STARTER_GRANT_VERSION) {
     account.coins = Math.max(account.coins, STARTER_COINS);
     account.freePackOpensRemaining = STARTER_FREE_PACK_OPENS;
@@ -570,16 +600,24 @@ function loadAccountsFromDisk() {
       const inventorySource = record?.inventory && typeof record.inventory === "object" ? record.inventory : {};
       const inventory = {};
       for (const [blookId, countValue] of Object.entries(inventorySource)) {
-        if (!BLOOK_LOOKUP.has(blookId)) {
+        const nextBlookId = migrateLegacyBlookId(blookId);
+        if (!BLOOK_LOOKUP.has(nextBlookId)) {
           continue;
         }
         const count = Math.max(0, Math.floor(parseStoredNumber(countValue, 0)));
         if (count > 0) {
-          inventory[blookId] = count;
+          inventory[nextBlookId] = (inventory[nextBlookId] || 0) + count;
+          if (nextBlookId !== blookId) {
+            touched = true;
+          }
         }
       }
 
-      const selectedCandidate = typeof record.selectedBlookId === "string" ? record.selectedBlookId : "";
+      const rawSelectedCandidate = typeof record.selectedBlookId === "string" ? record.selectedBlookId : "";
+      const selectedCandidate = migrateLegacyBlookId(rawSelectedCandidate);
+      if (selectedCandidate !== rawSelectedCandidate) {
+        touched = true;
+      }
       const selectedBlookId = inventory[selectedCandidate] > 0 ? selectedCandidate : "";
       const miniGameStatsSource = record?.miniGameStats && typeof record.miniGameStats === "object" ? record.miniGameStats : {};
       const miniGameStats = {};
@@ -1038,11 +1076,23 @@ function publicBlookPacks() {
     id: pack.id,
     name: pack.name,
     description: pack.description,
+    openCost: packOpenCost(pack.id),
+    sellValueEach: duplicateSellValueForPack(pack.id),
+    totalCount: pack.blooks.length,
+    ownedCount: pack.blooks.length,
+    duplicateCount: 0,
+    rarityOdds: rarityOddsForPack(pack),
     blooks: pack.blooks.map((blook) => ({
       id: blook.id,
       name: blook.name,
+      image: blook.image || null,
       icon: blook.icon,
-      rarity: blook.rarity
+      rarity: blook.rarity,
+      packId: pack.id,
+      packName: pack.name,
+      count: 1,
+      duplicates: 0,
+      sellValueEach: duplicateSellValueForPack(pack.id)
     }))
   }));
 }
@@ -3186,6 +3236,82 @@ function syncPlayerToCurrentPhase(game, socketId) {
     return;
   }
 
+  if (game.phase === "paused") {
+    const pausedFromPhase = String(game.pauseState?.fromPhase || "");
+    const remainingMs = Math.max(0, Number(game.pauseState?.remainingMs || 0));
+    if (pausedFromPhase === "countdown") {
+      io.to(socketId).emit("game:countdown", {
+        secondsLeft: Math.max(0, Math.ceil(remainingMs / 1000)),
+        endsAt: Date.now() + remainingMs
+      });
+    } else if (pausedFromPhase === "question") {
+      const question = game.questions[game.currentQuestionIndex];
+      if (question) {
+        io.to(socketId).emit("question:start", {
+          questionIndex: game.currentQuestionIndex + 1,
+          totalQuestions: game.questions.length,
+          endsAt: Date.now() + remainingMs,
+          question: {
+            prompt: question.prompt,
+            options: question.options,
+            image: sanitizeQuestionImage(question.image || "")
+          }
+        });
+      }
+    } else if (pausedFromPhase === "question_result") {
+      const question = game.questions[game.currentQuestionIndex];
+      if (question) {
+        io.to(socketId).emit("question:start", {
+          questionIndex: game.currentQuestionIndex + 1,
+          totalQuestions: game.questions.length,
+          endsAt: Date.now(),
+          question: {
+            prompt: question.prompt,
+            options: question.options,
+            image: sanitizeQuestionImage(question.image || "")
+          }
+        });
+      }
+      if (game.lastQuestionResultPayload) {
+        io.to(socketId).emit("question:result", game.lastQuestionResultPayload);
+      }
+    } else if (pausedFromPhase === "minigame") {
+      const eligiblePlayerIds = Array.from(game.chestPhase.keys());
+      const meta = miniGameMeta(game.minigameType);
+      io.to(socketId).emit("minigame:start", {
+        eligiblePlayerIds,
+        type: game.minigameType,
+        endsAt: Date.now() + remainingMs,
+        eventName: meta?.name || "Mini Game",
+        feedTitle: "Mini-game Feed",
+        difficulty: game.minigameDifficulty || miniGameDifficultyProfile(game)
+      });
+      if (game.chestPhase.has(socketId)) {
+        const state = game.chestPhase.get(socketId);
+        io.to(socketId).emit("minigame:yourData", {
+          type: state.type,
+          endsAt: Date.now() + remainingMs,
+          eventName: meta?.name || "Mini Game",
+          actionLabel: "Play",
+          data: miniGamePublicData(state, game, socketId),
+          difficulty: game.minigameDifficulty || miniGameDifficultyProfile(game)
+        });
+      }
+    } else if (pausedFromPhase === "round_summary") {
+      io.to(socketId).emit("round:summary", {
+        questionIndex: game.currentQuestionIndex + 1,
+        totalQuestions: game.questions.length,
+        leaderboard
+      });
+    }
+
+    io.to(socketId).emit("game:paused", {
+      fromPhase: pausedFromPhase || "question",
+      remainingMs
+    });
+    return;
+  }
+
   if (game.phase === "countdown") {
     const endsAt = Number(game.countdownEndsAt || Date.now());
     const leftSeconds = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
@@ -3262,6 +3388,16 @@ function clearTimers(game) {
   }
 }
 
+function resetMiniGameRuntimeState(game) {
+  game.chestPhase.clear();
+  game.minigameType = null;
+  game.minigameDifficulty = null;
+  game.minigameDurationMs = 0;
+  game.minigameStartedAt = null;
+  game.minigameEndsAt = null;
+  game.soccerMatch = null;
+}
+
 function emitCountdownTick(game, secondsLeft) {
   io.to(game.code).emit("game:countdown", {
     secondsLeft: Math.max(0, Number(secondsLeft) || 0),
@@ -3277,6 +3413,7 @@ function startGameCountdown(game, seconds = 3) {
   clearTimers(game);
   const safeSeconds = clamp(Number(seconds) || 3, 1, 10);
   game.phase = "countdown";
+  game.pauseState = null;
   game.countdownEndsAt = Date.now() + safeSeconds * 1000;
   game.updatedAt = Date.now();
 
@@ -3306,6 +3443,263 @@ function startGameCountdown(game, seconds = 3) {
   return true;
 }
 
+function restartActiveMiniGameTick(game) {
+  if (!game || game.phase !== "minigame" || !game.minigameType) {
+    return;
+  }
+
+  if (game.chestTimer) {
+    clearTimeout(game.chestTimer);
+  }
+  game.chestTimer = setTimeout(() => {
+    finalizeMiniGamePhase(game);
+  }, Math.max(120, Number(game.minigameEndsAt || Date.now()) - Date.now() + 120));
+
+  if (game.minigameTick) {
+    clearInterval(game.minigameTick);
+    game.minigameTick = null;
+  }
+
+  if (game.minigameType === "soccer_shootout" || game.minigameType === "space_invaders" || game.minigameType === "foosball_frenzy") {
+    game.minigameTick = setInterval(() => {
+      if (game.minigameType === "soccer_shootout") {
+        tickSoccerMatch(game);
+        return;
+      }
+      if (game.minigameType === "space_invaders") {
+        tickSpaceInvadersMatch(game);
+        return;
+      }
+      if (game.minigameType === "foosball_frenzy") {
+        tickFoosballMatch(game);
+      }
+    }, 90);
+
+    if (game.minigameType === "soccer_shootout") {
+      broadcastSoccerMatchState(game);
+    } else if (game.minigameType === "space_invaders") {
+      broadcastSpaceInvadersState(game);
+    } else {
+      broadcastFoosballState(game);
+    }
+  }
+
+  broadcastMiniGameProgress(game);
+}
+
+function skipMiniGamePhase(game, options = {}) {
+  if (!game || game.phase !== "minigame") {
+    return false;
+  }
+
+  clearTimers(game);
+  game.feed = [];
+  resetMiniGameRuntimeState(game);
+  game.updatedAt = Date.now();
+
+  if (options.startNextQuestion === true) {
+    startQuestion(game);
+    return true;
+  }
+
+  io.to(game.code).emit("minigame:skipped", {
+    reason: String(options.reason || "Host skipped the current mini-game.")
+  });
+  startRoundSummary(game);
+  return true;
+}
+
+function pauseGame(game) {
+  if (!game || !games.has(game.code) || game.phase === "finished" || game.phase === "ended" || game.phase === "paused") {
+    return false;
+  }
+
+  const now = Date.now();
+  let remainingMs = 0;
+  let resumeAction = "";
+
+  if (game.phase === "countdown") {
+    remainingMs = Math.max(250, Number(game.countdownEndsAt || now) - now);
+    resumeAction = "countdown";
+  } else if (game.phase === "question") {
+    remainingMs = Math.max(250, Number(game.questionEndsAt || now) - now);
+    resumeAction = "question";
+  } else if (game.phase === "question_result") {
+    remainingMs = Math.max(0, Number(game.roundEndsAt || now) - now);
+    resumeAction = "advance_after_result";
+  } else if (game.phase === "minigame") {
+    remainingMs = Math.max(250, Number(game.minigameEndsAt || now) - now);
+    resumeAction = "minigame";
+  } else if (game.phase === "round_summary") {
+    remainingMs = Math.max(250, Number(game.roundEndsAt || now) - now);
+    resumeAction =
+      game.currentQuestionIndex >= game.questions.length - 1 && normalizeGameEndType(game.settings?.endType) !== "weight"
+        ? "finish_game"
+        : "start_question";
+  } else {
+    return false;
+  }
+
+  game.pauseState = {
+    fromPhase: game.phase,
+    remainingMs,
+    elapsedQuestionMs:
+      game.phase === "question" ? clamp(now - Number(game.questionStartedAt || now), 0, Number(game.settings?.timerSeconds || 15) * 1000) : 0,
+    resumeAction
+  };
+  clearTimers(game);
+  game.phase = "paused";
+  game.updatedAt = now;
+
+  io.to(game.code).emit("game:paused", {
+    fromPhase: game.pauseState.fromPhase,
+    remainingMs: game.pauseState.remainingMs
+  });
+  broadcastHostStatus(game);
+  return true;
+}
+
+function resumeGame(game) {
+  if (!game || !games.has(game.code) || game.phase !== "paused" || !game.pauseState) {
+    return false;
+  }
+
+  const pausedFromPhase = String(game.pauseState.fromPhase || "");
+  const remainingMs = Math.max(0, Number(game.pauseState.remainingMs || 0));
+  const elapsedQuestionMs = Math.max(0, Number(game.pauseState.elapsedQuestionMs || 0));
+  const resumeAction = String(game.pauseState.resumeAction || "");
+  game.pauseState = null;
+  game.updatedAt = Date.now();
+
+  if (pausedFromPhase === "countdown") {
+    return startGameCountdown(game, Math.max(1, Math.ceil(remainingMs / 1000)));
+  }
+
+  if (pausedFromPhase === "question") {
+    game.phase = "question";
+    game.questionStartedAt = Date.now() - elapsedQuestionMs;
+    game.questionEndsAt = Date.now() + remainingMs;
+    game.questionTimer = setTimeout(() => {
+      closeQuestion(game);
+    }, remainingMs + 120);
+    io.to(game.code).emit("game:resumed", {
+      phase: "question",
+      endsAt: game.questionEndsAt
+    });
+    broadcastHostStatus(game);
+    return true;
+  }
+
+  if (pausedFromPhase === "question_result") {
+    game.phase = "question_result";
+    game.roundEndsAt = Date.now() + remainingMs;
+    game.roundTimer = setTimeout(() => {
+      game.roundTimer = null;
+      advanceAfterQuestionResult(game);
+    }, remainingMs);
+    io.to(game.code).emit("game:resumed", {
+      phase: "question_result"
+    });
+    broadcastHostStatus(game);
+    return true;
+  }
+
+  if (pausedFromPhase === "minigame") {
+    game.phase = "minigame";
+    game.minigameEndsAt = Date.now() + remainingMs;
+    restartActiveMiniGameTick(game);
+    io.to(game.code).emit("game:resumed", {
+      phase: "minigame",
+      endsAt: game.minigameEndsAt
+    });
+    broadcastHostStatus(game);
+    return true;
+  }
+
+  if (pausedFromPhase === "round_summary") {
+    game.phase = "round_summary";
+    game.roundEndsAt = Date.now() + remainingMs;
+    game.roundTimer = setTimeout(() => {
+      game.roundTimer = null;
+      if (resumeAction === "finish_game") {
+        finishGame(game);
+        return;
+      }
+      startQuestion(game);
+    }, remainingMs);
+    io.to(game.code).emit("game:resumed", {
+      phase: "round_summary"
+    });
+    broadcastHostStatus(game);
+    return true;
+  }
+
+  return false;
+}
+
+function forceNextQuestionNow(game) {
+  if (!game || !games.has(game.code) || game.phase === "finished") {
+    return false;
+  }
+
+  if (game.phase === "paused") {
+    const pausedFromPhase = String(game.pauseState?.fromPhase || "");
+    game.pauseState = null;
+    if (pausedFromPhase === "minigame") {
+      game.phase = "minigame";
+      return skipMiniGamePhase(game, { startNextQuestion: true });
+    }
+    if (pausedFromPhase === "countdown" || pausedFromPhase === "question" || pausedFromPhase === "question_result") {
+      game.phase = pausedFromPhase === "countdown" ? "countdown" : pausedFromPhase;
+      if (pausedFromPhase === "question") {
+        closeQuestion(game);
+      }
+      clearTimers(game);
+      startQuestion(game);
+      return true;
+    }
+    if (pausedFromPhase === "round_summary") {
+      game.phase = "round_summary";
+      clearTimers(game);
+      startQuestion(game);
+      return true;
+    }
+    return false;
+  }
+
+  if (game.phase === "countdown") {
+    clearTimers(game);
+    game.countdownEndsAt = 0;
+    startQuestion(game);
+    return true;
+  }
+
+  if (game.phase === "question") {
+    closeQuestion(game);
+    clearTimers(game);
+    startQuestion(game);
+    return true;
+  }
+
+  if (game.phase === "question_result") {
+    clearTimers(game);
+    startQuestion(game);
+    return true;
+  }
+
+  if (game.phase === "minigame") {
+    return skipMiniGamePhase(game, { startNextQuestion: true });
+  }
+
+  if (game.phase === "round_summary") {
+    clearTimers(game);
+    startQuestion(game);
+    return true;
+  }
+
+  return false;
+}
+
 function destroyGame(code, reason = "Game ended") {
   const game = games.get(code);
   if (!game) {
@@ -3326,6 +3720,7 @@ function destroyGame(code, reason = "Game ended") {
 
 function startRoundSummary(game) {
   game.phase = "round_summary";
+  game.roundEndsAt = 0;
 
   io.to(game.code).emit("round:summary", {
     questionIndex: game.currentQuestionIndex + 1,
@@ -3336,13 +3731,17 @@ function startRoundSummary(game) {
   broadcastHostStatus(game);
 
   if (game.currentQuestionIndex >= game.questions.length - 1) {
+    game.roundEndsAt = Date.now() + 9000;
     game.roundTimer = setTimeout(() => {
+      game.roundTimer = null;
       finishGame(game);
     }, 9000);
     return;
   }
 
+  game.roundEndsAt = Date.now() + 7000;
   game.roundTimer = setTimeout(() => {
+    game.roundTimer = null;
     startQuestion(game);
   }, 7000);
 }
@@ -4341,12 +4740,7 @@ function finalizeMiniGamePhase(game) {
     leaderboard: sortedPlayers(game)
   });
 
-  game.chestPhase.clear();
-  game.minigameType = null;
-  game.minigameDifficulty = null;
-  game.minigameStartedAt = null;
-  game.minigameEndsAt = null;
-  game.soccerMatch = null;
+  resetMiniGameRuntimeState(game);
   const returnPhase = game.minigameReturnPhase === "lobby" ? "lobby" : "round_summary";
   game.minigameReturnPhase = "round_summary";
 
@@ -4386,6 +4780,7 @@ function startMiniGamePhase(game, eligiblePlayerIds, options = {}) {
   }
 
   game.phase = "minigame";
+  game.roundEndsAt = 0;
   game.feed = [];
   game.chestPhase.clear();
   game.minigameType = miniGameType;
@@ -4433,39 +4828,9 @@ function startMiniGamePhase(game, eligiblePlayerIds, options = {}) {
     difficulty: game.minigameDifficulty
   });
 
-  game.chestTimer = setTimeout(() => {
-    finalizeMiniGamePhase(game);
-  }, game.minigameDurationMs + 120);
-
-  if (miniGameType === "soccer_shootout" || miniGameType === "space_invaders" || miniGameType === "foosball_frenzy") {
-    if (game.minigameTick) {
-      clearInterval(game.minigameTick);
-    }
-    game.minigameTick = setInterval(() => {
-      if (game.minigameType === "soccer_shootout") {
-        tickSoccerMatch(game);
-        return;
-      }
-      if (game.minigameType === "space_invaders") {
-        tickSpaceInvadersMatch(game);
-        return;
-      }
-      if (game.minigameType === "foosball_frenzy") {
-        tickFoosballMatch(game);
-      }
-    }, 90);
-
-    if (miniGameType === "soccer_shootout") {
-      broadcastSoccerMatchState(game);
-    } else if (miniGameType === "space_invaders") {
-      broadcastSpaceInvadersState(game);
-    } else {
-      broadcastFoosballState(game);
-    }
-  }
+  restartActiveMiniGameTick(game);
 
   broadcastHostStatus(game);
-  broadcastMiniGameProgress(game);
   return true;
 }
 
@@ -4840,6 +5205,7 @@ function closeQuestion(game) {
   broadcastHostStatus(game);
 
   const revealDelayMs = normalizeExplanationRevealSec(game.settings?.explanationRevealSec) * 1000;
+  game.roundEndsAt = Date.now() + revealDelayMs;
   if (game.roundTimer) {
     clearTimeout(game.roundTimer);
     game.roundTimer = null;
@@ -4852,6 +5218,9 @@ function closeQuestion(game) {
 
 function finishGame(game) {
   game.phase = "finished";
+  game.roundEndsAt = 0;
+  game.countdownEndsAt = 0;
+  game.pauseState = null;
   clearTimers(game);
 
   const leaderboard = sortedPlayers(game);
@@ -4925,6 +5294,8 @@ function startQuestion(game) {
 
   game.phase = "question";
   game.countdownEndsAt = 0;
+  game.roundEndsAt = 0;
+  game.pauseState = null;
   game.currentQuestionIndex += 1;
   game.lastQuestionResultPayload = null;
   game.submissions.clear();
@@ -5138,6 +5509,8 @@ io.on("connection", (socket) => {
       minigameTick: null,
       lastQuestionResultPayload: null,
       countdownEndsAt: 0,
+      roundEndsAt: 0,
+      pauseState: null,
       questionStartedAt: null,
       questionEndsAt: null,
       minigameType: null,
@@ -5445,6 +5818,78 @@ io.on("connection", (socket) => {
     }
 
     removePlayerFromGame(game, playerId);
+
+    if (typeof ack === "function") {
+      ack({ ok: true });
+    }
+  });
+
+  socket.on("host:pauseToggle", ({ code }, ack) => {
+    const game = games.get((code || "").toUpperCase());
+    if (!canHost(socket, game)) {
+      if (typeof ack === "function") {
+        ack({ ok: false, message: "Not allowed." });
+      }
+      return;
+    }
+
+    const ok = game.phase === "paused" ? resumeGame(game) : pauseGame(game);
+    if (!ok) {
+      if (typeof ack === "function") {
+        ack({ ok: false, message: "Pause/resume unavailable right now." });
+      }
+      return;
+    }
+
+    if (typeof ack === "function") {
+      ack({ ok: true, phase: game.phase, pausedFromPhase: game.pauseState?.fromPhase || "" });
+    }
+  });
+
+  socket.on("host:skipMiniGame", ({ code }, ack) => {
+    const game = games.get((code || "").toUpperCase());
+    if (!canHost(socket, game)) {
+      if (typeof ack === "function") {
+        ack({ ok: false, message: "Not allowed." });
+      }
+      return;
+    }
+
+    let ok = false;
+    if (game.phase === "minigame") {
+      ok = skipMiniGamePhase(game);
+    } else if (game.phase === "paused" && String(game.pauseState?.fromPhase || "") === "minigame") {
+      game.phase = "minigame";
+      ok = skipMiniGamePhase(game);
+    }
+    if (!ok) {
+      if (typeof ack === "function") {
+        ack({ ok: false, message: "No mini-game is active." });
+      }
+      return;
+    }
+
+    if (typeof ack === "function") {
+      ack({ ok: true });
+    }
+  });
+
+  socket.on("host:forceNextQuestion", ({ code }, ack) => {
+    const game = games.get((code || "").toUpperCase());
+    if (!canHost(socket, game)) {
+      if (typeof ack === "function") {
+        ack({ ok: false, message: "Not allowed." });
+      }
+      return;
+    }
+
+    const ok = forceNextQuestionNow(game);
+    if (!ok) {
+      if (typeof ack === "function") {
+        ack({ ok: false, message: "Cannot force the next question right now." });
+      }
+      return;
+    }
 
     if (typeof ack === "function") {
       ack({ ok: true });

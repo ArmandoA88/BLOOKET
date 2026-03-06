@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-03-05T19:23:13.507Z",
+  "savedAt": "2026-03-06T15:27:27.161Z",
   "accounts": [
     {
       "id": "guest:mmbcb9q8er3q7dmw",
@@ -12,8 +12,6 @@
         "science-rocket-cadet": 1,
         "nature-forest-owl": 1,
         "nature-polar-bear": 1,
-        "mythic-stone-golem": 1,
-        "mythic-sun-priest": 1,
         "anime-naruto": 1,
         "anime-goku": 1,
         "anime-luffy": 1,
@@ -116,12 +114,6 @@
         "nature-volcano-fox": 1,
         "nature-ancient-turtle": 1,
         "nature-crystal-stag": 1,
-        "mythic-moon-seer": 1,
-        "mythic-arcane-knight": 1,
-        "mythic-griffin-rider": 1,
-        "mythic-phoenix": 1,
-        "mythic-titan-warden": 1,
-        "mythic-celestial-dragon": 1,
         "marvel-spiderman-classic": 1,
         "marvel-spiderman-peter-mcu": 1,
         "marvel-spiderman-miles": 1,
@@ -178,7 +170,7 @@
       "totalScore": 0,
       "bestRank": 0,
       "createdAt": "2026-03-04T01:10:30.668Z",
-      "updatedAt": "2026-03-05T18:43:54.780Z"
+      "updatedAt": "2026-03-06T14:07:55.937Z"
     },
     {
       "id": "guest:mmbet1sqhyg8r9ao",
@@ -191,8 +183,6 @@
         "science-rocket-cadet": 1,
         "nature-forest-owl": 1,
         "nature-polar-bear": 1,
-        "mythic-stone-golem": 1,
-        "mythic-sun-priest": 1,
         "anime-naruto": 1,
         "anime-goku": 1,
         "anime-luffy": 1,
@@ -295,12 +285,6 @@
         "nature-volcano-fox": 1,
         "nature-ancient-turtle": 1,
         "nature-crystal-stag": 1,
-        "mythic-moon-seer": 1,
-        "mythic-arcane-knight": 1,
-        "mythic-griffin-rider": 1,
-        "mythic-phoenix": 1,
-        "mythic-titan-warden": 1,
-        "mythic-celestial-dragon": 1,
         "marvel-spiderman-classic": 1,
         "marvel-spiderman-peter-mcu": 1,
         "marvel-spiderman-miles": 1,
@@ -357,21 +341,19 @@
       "totalScore": 0,
       "bestRank": 0,
       "createdAt": "2026-03-04T02:20:19.422Z",
-      "updatedAt": "2026-03-05T18:43:54.781Z"
+      "updatedAt": "2026-03-06T14:07:55.938Z"
     },
     {
       "id": "guest:mmb2grqy5t0y2eph",
       "coins": 200,
       "freePackOpensRemaining": 0,
       "starterGrantVersion": 1,
-      "selectedBlookId": "mythic-stone-golem",
+      "selectedBlookId": "ath-mahomes",
       "inventory": {
         "science-lab-rat": 1,
         "science-rocket-cadet": 1,
         "nature-forest-owl": 1,
         "nature-polar-bear": 1,
-        "mythic-stone-golem": 1,
-        "mythic-sun-priest": 1,
         "anime-naruto": 1,
         "anime-goku": 1,
         "anime-luffy": 1,
@@ -474,12 +456,6 @@
         "nature-volcano-fox": 1,
         "nature-ancient-turtle": 1,
         "nature-crystal-stag": 1,
-        "mythic-moon-seer": 1,
-        "mythic-arcane-knight": 1,
-        "mythic-griffin-rider": 1,
-        "mythic-phoenix": 1,
-        "mythic-titan-warden": 1,
-        "mythic-celestial-dragon": 1,
         "marvel-spiderman-classic": 1,
         "marvel-spiderman-peter-mcu": 1,
         "marvel-spiderman-miles": 1,
@@ -536,7 +512,7 @@
       "totalScore": 0,
       "bestRank": 0,
       "createdAt": "2026-03-04T20:25:57.851Z",
-      "updatedAt": "2026-03-05T18:43:54.781Z"
+      "updatedAt": "2026-03-06T15:27:27.159Z"
     },
     {
       "id": "guest:mmcj2vljlunkvpvu",
@@ -549,8 +525,6 @@
         "science-rocket-cadet": 1,
         "nature-forest-owl": 1,
         "nature-polar-bear": 1,
-        "mythic-stone-golem": 1,
-        "mythic-sun-priest": 1,
         "anime-naruto": 1,
         "anime-goku": 1,
         "anime-luffy": 1,
@@ -653,12 +627,6 @@
         "nature-volcano-fox": 1,
         "nature-ancient-turtle": 1,
         "nature-crystal-stag": 1,
-        "mythic-moon-seer": 1,
-        "mythic-arcane-knight": 1,
-        "mythic-griffin-rider": 1,
-        "mythic-phoenix": 1,
-        "mythic-titan-warden": 1,
-        "mythic-celestial-dragon": 1,
         "marvel-spiderman-classic": 1,
         "marvel-spiderman-peter-mcu": 1,
         "marvel-spiderman-miles": 1,
@@ -715,7 +683,7 @@
       "totalScore": 0,
       "bestRank": 0,
       "createdAt": "2026-03-04T21:07:42.592Z",
-      "updatedAt": "2026-03-05T18:43:54.781Z"
+      "updatedAt": "2026-03-06T14:07:55.938Z"
     },
     {
       "id": "guest:mmcj4px9n76go4rg",
@@ -728,8 +696,6 @@
         "science-rocket-cadet": 1,
         "nature-forest-owl": 1,
         "nature-polar-bear": 1,
-        "mythic-stone-golem": 1,
-        "mythic-sun-priest": 1,
         "anime-naruto": 1,
         "anime-goku": 1,
         "anime-luffy": 1,
@@ -832,12 +798,6 @@
         "nature-volcano-fox": 1,
         "nature-ancient-turtle": 1,
         "nature-crystal-stag": 1,
-        "mythic-moon-seer": 1,
-        "mythic-arcane-knight": 1,
-        "mythic-griffin-rider": 1,
-        "mythic-phoenix": 1,
-        "mythic-titan-warden": 1,
-        "mythic-celestial-dragon": 1,
         "marvel-spiderman-classic": 1,
         "marvel-spiderman-peter-mcu": 1,
         "marvel-spiderman-miles": 1,
@@ -894,7 +854,7 @@
       "totalScore": 0,
       "bestRank": 0,
       "createdAt": "2026-03-04T21:09:08.565Z",
-      "updatedAt": "2026-03-05T18:43:54.781Z"
+      "updatedAt": "2026-03-06T14:07:55.939Z"
     },
     {
       "id": "guest:mmdorg04vqajxf1t",
@@ -997,8 +957,6 @@
         "science-rocket-cadet": 1,
         "nature-forest-owl": 1,
         "nature-polar-bear": 1,
-        "mythic-stone-golem": 1,
-        "mythic-sun-priest": 1,
         "science-robot-tech": 1,
         "science-dna-hacker": 1,
         "science-circuit-master": 1,
@@ -1011,12 +969,6 @@
         "nature-volcano-fox": 1,
         "nature-ancient-turtle": 1,
         "nature-crystal-stag": 1,
-        "mythic-moon-seer": 1,
-        "mythic-arcane-knight": 1,
-        "mythic-griffin-rider": 1,
-        "mythic-phoenix": 1,
-        "mythic-titan-warden": 1,
-        "mythic-celestial-dragon": 1,
         "marvel-spiderman-classic": 1,
         "marvel-spiderman-peter-mcu": 1,
         "marvel-spiderman-miles": 1,
@@ -1073,7 +1025,7 @@
       "totalScore": 0,
       "bestRank": 0,
       "createdAt": "2026-03-05T16:34:33.042Z",
-      "updatedAt": "2026-03-05T18:43:54.781Z"
+      "updatedAt": "2026-03-06T14:07:55.939Z"
     },
     {
       "id": "guest:mmdr7wgnj64x1ygy",
@@ -1176,8 +1128,6 @@
         "science-rocket-cadet": 1,
         "nature-forest-owl": 1,
         "nature-polar-bear": 1,
-        "mythic-stone-golem": 1,
-        "mythic-sun-priest": 1,
         "science-robot-tech": 1,
         "science-dna-hacker": 1,
         "science-circuit-master": 1,
@@ -1190,12 +1140,6 @@
         "nature-volcano-fox": 1,
         "nature-ancient-turtle": 1,
         "nature-crystal-stag": 1,
-        "mythic-moon-seer": 1,
-        "mythic-arcane-knight": 1,
-        "mythic-griffin-rider": 1,
-        "mythic-phoenix": 1,
-        "mythic-titan-warden": 1,
-        "mythic-celestial-dragon": 1,
         "marvel-spiderman-classic": 1,
         "marvel-spiderman-peter-mcu": 1,
         "marvel-spiderman-miles": 1,
@@ -1252,7 +1196,7 @@
       "totalScore": 0,
       "bestRank": 0,
       "createdAt": "2026-03-05T17:43:20.094Z",
-      "updatedAt": "2026-03-05T19:23:13.507Z"
+      "updatedAt": "2026-03-06T14:07:55.940Z"
     },
     {
       "id": "debug-superheroes",
@@ -1355,8 +1299,6 @@
         "science-rocket-cadet": 1,
         "nature-forest-owl": 1,
         "nature-polar-bear": 1,
-        "mythic-stone-golem": 1,
-        "mythic-sun-priest": 1,
         "science-robot-tech": 1,
         "science-dna-hacker": 1,
         "science-circuit-master": 1,
@@ -1369,12 +1311,6 @@
         "nature-volcano-fox": 1,
         "nature-ancient-turtle": 1,
         "nature-crystal-stag": 1,
-        "mythic-moon-seer": 1,
-        "mythic-arcane-knight": 1,
-        "mythic-griffin-rider": 1,
-        "mythic-phoenix": 1,
-        "mythic-titan-warden": 1,
-        "mythic-celestial-dragon": 1,
         "marvel-spiderman-classic": 1,
         "marvel-spiderman-peter-mcu": 1,
         "marvel-spiderman-miles": 1,
@@ -1431,7 +1367,7 @@
       "totalScore": 0,
       "bestRank": 0,
       "createdAt": "2026-03-05T18:00:12.673Z",
-      "updatedAt": "2026-03-05T18:43:54.782Z"
+      "updatedAt": "2026-03-06T14:07:55.940Z"
     },
     {
       "id": "debug-unhide-check",
@@ -1516,14 +1452,6 @@
         "nature-volcano-fox": 1,
         "nature-ancient-turtle": 1,
         "nature-crystal-stag": 1,
-        "mythic-stone-golem": 1,
-        "mythic-sun-priest": 1,
-        "mythic-moon-seer": 1,
-        "mythic-arcane-knight": 1,
-        "mythic-griffin-rider": 1,
-        "mythic-phoenix": 1,
-        "mythic-titan-warden": 1,
-        "mythic-celestial-dragon": 1,
         "book-harry": 1,
         "book-hermione": 1,
         "book-ron": 1,
@@ -1610,7 +1538,7 @@
       "totalScore": 0,
       "bestRank": 0,
       "createdAt": "2026-03-05T18:21:05.225Z",
-      "updatedAt": "2026-03-05T18:43:54.782Z"
+      "updatedAt": "2026-03-06T14:07:55.941Z"
     }
   ]
 }

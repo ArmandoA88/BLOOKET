@@ -7,7 +7,9 @@ A localhost-first realtime classroom quiz game with host controls and student jo
 - Host creates game room with 6-character join code
 - Student join screen for nickname + game code
 - Main page shortcut to launch mini-game testing quickly
-- Hidden blook unlock economy with themed packs: Sports, Anime, Superheroes, Science, Nature, Mythic
+- Hidden blook unlock economy with themed packs: Sports, Anime, Superheroes, Science, Nature, Book Legends
+- Book Legends now uses local kid-friendly internet-downloaded image assets instead of emoji-only pack art
+- `npm run download:pack-images` refreshes the Book Legends internet-downloaded image set
 - First pack open is free, then packs cost coins (default: 20)
 - Coins are awarded after each game from score + correct answers + final rank
 - Duplicate blooks can be sold back at 30% of pack cost
@@ -22,6 +24,9 @@ A localhost-first realtime classroom quiz game with host controls and student jo
 - Host can toggle question randomization controls: shuffled answer options and no-repeat question selection
 - Host can lock/unlock late joining while a game is running
 - Game start uses a visible 3..2..1 countdown before question 1
+- Host can pause/resume live gameplay without losing the current round state
+- Host can skip the current mini-game instantly
+- Host can force the next question immediately when class pacing needs it
 - Realtime lobby with player list and kick support
 - Timed multiple-choice questions
 - Speed + streak scoring engine
@@ -75,6 +80,12 @@ Quick automated verification:
 
 ```bash
 npm run smoke
+```
+
+Download the current Book Legends image set from internet sources:
+
+```bash
+npm run download:pack-images
 ```
 
 Full realtime auto demo (host + bot students + auto gameplay):

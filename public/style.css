@@ -1689,6 +1689,13 @@ label {
   border-left-color: rgba(52, 215, 198, 0.72);
 }
 
+.phase-banner.phase-paused {
+  border-left-color: rgba(255, 110, 99, 0.86);
+  background:
+    radial-gradient(520px 180px at 10% 10%, rgba(255, 110, 99, 0.16), transparent 58%),
+    rgba(4, 14, 30, 0.76);
+}
+
 .phase-banner.phase-countdown {
   border-left-color: rgba(255, 179, 71, 0.86);
   background:
@@ -3674,6 +3681,13 @@ body.play-fishing-mode #playCard.fishing-final-active .fishing-hud-right {
   --blook-image-position: center 10%;
   --blook-image-scale: 0.95;
   padding: 1px;
+}
+
+.blook-image[src*="/assets/books/book-"],
+.blook-image[src*="/assets/mythic/"] {
+  object-fit: cover;
+  padding: 0;
+  background: transparent;
 }
 
 .blook-emoji {

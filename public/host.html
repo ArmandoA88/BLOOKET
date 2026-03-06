@@ -18,7 +18,10 @@
           <h1 class="brand">Host Dashboard</h1>
           <p class="sub">Create your room and control every round in realtime.</p>
         </div>
-        <a class="action ghost" href="/">Back</a>
+        <div class="button-row">
+          <a class="action secondary" href="/play.html?catalog=1#accountPanel">View All Blooks</a>
+          <a class="action ghost" href="/">Back</a>
+        </div>
       </section>
 
       <section id="setupCard" class="card strong fade-in">
@@ -257,6 +260,7 @@
                 <div id="lobbyCodeBig" class="lobby-code mono">------</div>
                 <div class="lobby-actions">
                   <button id="copyJoinLinkBigBtn" class="ghost">Copy Join Link</button>
+                  <a id="previewBlooksBtn" class="action secondary" href="/play.html?catalog=1#accountPanel" target="_blank" rel="noopener">Preview Blooks</a>
                   <button id="playAsHostBtn" class="secondary">Play as Host</button>
                   <button id="lobbyStartBtn">Start 3..2..1</button>
                 </div>
@@ -313,11 +317,14 @@
             <h2 class="title">Host Controls</h2>
             <div class="button-row" style="margin-bottom: 12px">
               <button id="startBtn">Start 3..2..1</button>
+              <button id="pauseResumeBtn" class="secondary">Pause Game</button>
               <button id="nextBtn" class="secondary">Next Round</button>
+              <button id="forceNextQuestionBtn" class="ghost">Force Next Question</button>
               <button id="endBtn" class="danger">End Game</button>
             </div>
             <div class="button-row" style="margin-bottom: 12px">
               <button id="lateJoinToggleBtn" class="ghost">Lock Late Join</button>
+              <button id="skipMiniGameBtn" class="ghost">Skip Mini-Game</button>
               <span id="lateJoinStatusText" class="help">Late join currently allowed.</span>
             </div>
 

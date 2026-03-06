@@ -8,7 +8,9 @@ let ticker = null;
 let currentQuestion = null;
 let myAnswerIndex = null;
 let canAnswer = false;
+let pausedFromPhase = "";
 let blookPacks = [];
+let catalogPacks = [];
 let selectedPackId = "";
 let selectedBlookId = "";
 let selectedEffectId = "fx-none";
@@ -17,6 +19,7 @@ let accountKey = "";
 let accountData = null;
 let activeEventName = "Event Card";
 let activeActionLabel = "Open";
+const ALL_BLOOKS_AVAILABLE = true;
 const MODE_LABELS = {
   classic: "Classic Quiz",
   gold: "Gold Quest",
@@ -45,6 +48,10 @@ const PHASE_BANNER_COPY = {
   lobby: {
     title: "Lobby",
     detail: "Waiting for host to start the game."
+  },
+  paused: {
+    title: "Game Paused",
+    detail: "Play is temporarily frozen by the host."
   },
   countdown: {
     title: "Starting Countdown",
@@ -82,6 +89,7 @@ const PHASE_BANNER_COPY = {
 const PHASE_CLASS_CANDIDATES = [
   "phase-join",
   "phase-lobby",
+  "phase-paused",
   "phase-countdown",
   "phase-question",
   "phase-question-result",
@@ -112,6 +120,8 @@ const BLOOK_IMAGE_POSITION_OVERRIDES = {
 const joinCard = document.getElementById("joinCard");
 const playCard = document.getElementById("playCard");
 const landingTopbar = document.getElementById("landingTopbar");
+const landingSub = document.getElementById("landingSub");
+const joinCardTitle = document.getElementById("joinCardTitle");
 const fishingHud = document.getElementById("fishingHud");
 const fishingHudAudio = fishingHud?.querySelector(".fishing-hud-audio") || null;
 const fishingHudName = document.getElementById("fishingHudName");
@@ -390,6 +400,7 @@ const pageParams = new URLSearchParams(window.location.search);
 const prefilledCode = pageParams.get("code");
 const prefilledName = String(pageParams.get("name") || "").trim().slice(0, 24);
 const shouldAutoJoinFromQuery = ["1", "true", "yes", "on"].includes(String(pageParams.get("autojoin") || "").toLowerCase());
+const catalogViewRequested = ["1", "true", "yes", "on"].includes(String(pageParams.get("catalog") || "").toLowerCase());
 let autoJoinFromQueryPending = shouldAutoJoinFromQuery;
 let autoJoinFromQueryAttempted = false;
 if (prefilledCode) {
@@ -400,6 +411,21 @@ if (prefilledCode) {
 }
 if (prefilledName && nameInput) {
   nameInput.value = prefilledName;
+}
+
+if (catalogViewRequested) {
+  if (landingSub) {
+    landingSub.textContent = "Browse every blook, then enter a game code when you are ready to join.";
+  }
+  if (joinCardTitle) {
+    joinCardTitle.textContent = "Browse Blooks";
+  }
+  if (pickedBlook) {
+    pickedBlook.textContent = "Viewing the full blook catalog. Choose any pack to preview its roster.";
+  }
+  if (joinNotice) {
+    setJoinNotice("Catalog view loaded. Enter a room code any time to join a game.", "good");
+  }
 }
 
 function sanitizeRoomCode(code) {
@@ -1003,13 +1029,13 @@ function applyRoomSettings(nextSettings = null) {
 
   const allowAccounts = roomSettings.allowStudentAccounts !== false;
   if (accountPanel) {
-    accountPanel.classList.toggle("hidden", !allowAccounts);
+    accountPanel.classList.remove("hidden");
   }
   if (accountPolicyNotice) {
     if (!allowAccounts) {
       accountPolicyNotice.classList.remove("hidden", "bad");
       accountPolicyNotice.classList.add("good");
-      accountPolicyNotice.textContent = "Student accounts are disabled for this game. You can still join and play.";
+      accountPolicyNotice.textContent = "Student accounts are disabled for this game. All packs and blooks are still available for avatar selection.";
     } else {
       accountPolicyNotice.classList.add("hidden");
       accountPolicyNotice.textContent = "";
@@ -1017,7 +1043,7 @@ function applyRoomSettings(nextSettings = null) {
     }
   }
   if (!allowAccounts && !selectedBlookId) {
-    selectedBlookId = "sports-soccer-star";
+    selectedBlookId = pickFirstOwnedBlookIdForPack(selectedPackId) || getInventoryRows()[0]?.id || "";
   }
   updateFishingTimerDisplay();
   applyPlayModeTheme();
@@ -1038,9 +1064,7 @@ function setPhase(nextPhase, detail = "") {
 }
 
 function startTicker(targetEl, endsAt, label) {
-  if (ticker) {
-    clearInterval(ticker);
-  }
+  stopTicker();
   tickerWarningSecond = null;
 
   const update = () => {
@@ -1060,6 +1084,13 @@ function startTicker(targetEl, endsAt, label) {
 
   update();
   ticker = setInterval(update, 120);
+}
+
+function stopTicker() {
+  if (ticker) {
+    clearInterval(ticker);
+    ticker = null;
+  }
 }
 
 function showSection(section) {
@@ -2202,8 +2233,46 @@ function getPackById(packId) {
   return blookPacks.find((pack) => pack.id === packId) || null;
 }
 
+function clonePackRows(packs) {
+  return (Array.isArray(packs) ? packs : []).map((pack) => ({
+    ...pack,
+    blooks: Array.isArray(pack?.blooks) ? pack.blooks.map((blook) => ({ ...blook })) : []
+  }));
+}
+
+function mergeCatalogPackStats(packSummaries) {
+  const summaries = Array.isArray(packSummaries) ? packSummaries : [];
+  const summaryById = new Map(summaries.map((pack) => [pack.id, pack]));
+  return clonePackRows(catalogPacks).map((pack) => {
+    const summary = summaryById.get(pack.id);
+    return summary
+      ? {
+          ...pack,
+          ...summary,
+          blooks: Array.isArray(pack.blooks) ? pack.blooks.map((blook) => ({ ...blook })) : []
+        }
+      : pack;
+  });
+}
+
+function fallbackInventoryRows() {
+  return blookPacks.flatMap((pack) =>
+    (Array.isArray(pack?.blooks) ? pack.blooks : []).map((blook) => ({
+      ...blook,
+      packId: blook.packId || pack.id,
+      packName: blook.packName || pack.name,
+      count: Math.max(1, Number(blook.count || 1)),
+      duplicates: Math.max(0, Number(blook.duplicates || 0)),
+      sellValueEach: Math.max(0, Number(blook.sellValueEach || pack.sellValueEach || 0))
+    }))
+  );
+}
+
 function getInventoryRows() {
-  return Array.isArray(accountData?.inventory) ? accountData.inventory : [];
+  if (Array.isArray(accountData?.inventory) && accountData.inventory.length > 0) {
+    return accountData.inventory;
+  }
+  return fallbackInventoryRows();
 }
 
 function getOwnedBlookById(blookId) {
@@ -2250,7 +2319,7 @@ function syncSelectedBlook() {
   } else {
     selectedBlookId = "";
     if (pickedBlook) {
-      pickedBlook.textContent = "No blooks unlocked yet. Open a pack to unlock your first blook.";
+      pickedBlook.textContent = "No blooks available right now.";
     }
   }
 }
@@ -2262,7 +2331,7 @@ function renderPackTabs() {
     return;
   }
 
-  const preferredPackOrder = ["superheroes", "athletes", "sports", "anime", "books", "science", "nature", "mythic"];
+  const preferredPackOrder = ["superheroes", "athletes", "sports", "anime", "books", "science", "nature"];
   const orderIndex = new Map(preferredPackOrder.map((id, index) => [id, index]));
   const sortedPacks = blookPacks.slice().sort((left, right) => {
     const leftIdx = orderIndex.has(left.id) ? orderIndex.get(left.id) : preferredPackOrder.length + 1;
@@ -2275,13 +2344,14 @@ function renderPackTabs() {
 
   const packButtons = sortedPacks.map((pack) => {
     const selectedClass = pack.id === selectedPackId ? "pack-tab selected" : "pack-tab";
-    const unlocked = Math.max(0, Number(pack.ownedCount || 0));
     const total = Math.max(1, Number(pack.totalCount || 1));
+    const unlocked = Math.max(0, Number(pack.ownedCount || total));
     const badge = pack.id === "superheroes" ? `<span class="pack-tab-badge">NEW</span>` : "";
+    const availabilityText = ALL_BLOOKS_AVAILABLE ? `${total}/${total} available` : `${unlocked}/${total} unlocked`;
     return `<button type="button" class="${selectedClass}" data-pack-id="${pack.id}">
       ${escapeHtml(pack.name)}<br />
       ${badge}
-      <span class="help">${unlocked}/${total} unlocked</span>
+      <span class="help">${availabilityText}</span>
     </button>`;
   }).join("");
 
@@ -2307,9 +2377,6 @@ function renderBlookGrid() {
   }
 
   const ownedInPack = getInventoryRows().filter((entry) => entry.packId === pack.id);
-  const totalCount = Math.max(0, Number(pack.totalCount || 0));
-  const lockedCount = Math.max(0, totalCount - ownedInPack.length);
-
   const unlockedTiles = ownedInPack
     .map((blook) => {
       const isSelected = blook.id === selectedBlookId;
@@ -2327,16 +2394,7 @@ function renderBlookGrid() {
     })
     .join("");
 
-  const lockedTiles = Array.from({ length: lockedCount }, (_value, index) => {
-    return `
-      <div class="blook-tile" data-locked-slot="${index}">
-        <span class="blook-emoji">?</span>
-        <span class="blook-name">Hidden Blook</span>
-        <span class="blook-rarity">Open packs to reveal</span>
-      </div>`;
-  }).join("");
-
-  blookGrid.innerHTML = unlockedTiles + lockedTiles || `<span class="help">No blooks in this pack.</span>`;
+  blookGrid.innerHTML = unlockedTiles || `<span class="help">No blooks in this pack.</span>`;
 }
 
 function renderEffectGrid() {
@@ -2376,6 +2434,7 @@ function updatePackOdds() {
 function updateEconomyButtons() {
   const pack = getPackById(selectedPackId);
   if (openPackBtn) {
+    openPackBtn.hidden = ALL_BLOOKS_AVAILABLE;
     if (!pack) {
       openPackBtn.disabled = true;
       openPackBtn.textContent = "Open Pack";
@@ -2388,6 +2447,7 @@ function updateEconomyButtons() {
   }
 
   if (sellDuplicateBtn) {
+    sellDuplicateBtn.hidden = ALL_BLOOKS_AVAILABLE;
     const selected = getOwnedBlookById(selectedBlookId);
     const duplicates = Math.max(0, Number(selected?.duplicates || 0));
     const sellValue = Math.max(0, Number(selected?.sellValueEach || 0));
@@ -2399,16 +2459,37 @@ function updateEconomyButtons() {
 
 function renderEconomyPanel() {
   if (accountCoins) {
-    accountCoins.textContent = String(Math.max(0, Number(accountData?.coins || 0)));
+    accountCoins.textContent = ALL_BLOOKS_AVAILABLE ? "ALL" : String(Math.max(0, Number(accountData?.coins || 0)));
   }
   if (accountFreeOpen) {
-    accountFreeOpen.textContent = String(Math.max(0, Number(accountData?.freePackOpensRemaining || 0)));
+    accountFreeOpen.textContent = ALL_BLOOKS_AVAILABLE
+      ? "ALL"
+      : String(Math.max(0, Number(accountData?.freePackOpensRemaining || 0)));
   }
   renderPackTabs();
   renderBlookGrid();
   updatePackOdds();
   updateEconomyButtons();
   syncSelectedBlook();
+}
+
+function applyPublicBlookCatalog(payload) {
+  catalogPacks = clonePackRows(Array.isArray(payload?.packs) ? payload.packs : []);
+  blookEffects = Array.isArray(payload?.effects) ? payload.effects : blookEffects;
+  if (accountData?.packs) {
+    blookPacks = mergeCatalogPackStats(accountData.packs);
+  } else {
+    blookPacks = clonePackRows(catalogPacks);
+  }
+
+  const defaultPackId = blookPacks[0]?.id || "";
+  if (!selectedPackId || !getPackById(selectedPackId)) {
+    selectedPackId = defaultPackId;
+  }
+  if (!selectedBlookId) {
+    selectedBlookId = pickFirstOwnedBlookIdForPack(selectedPackId) || getInventoryRows()[0]?.id || "";
+  }
+  renderEconomyPanel();
 }
 
 function applyAccount(account, nextKey = "") {
@@ -2422,7 +2503,7 @@ function applyAccount(account, nextKey = "") {
   }
 
   accountData = account || null;
-  blookPacks = Array.isArray(accountData?.packs) ? accountData.packs : [];
+  blookPacks = mergeCatalogPackStats(Array.isArray(accountData?.packs) ? accountData.packs : []);
   blookEffects = Array.isArray(accountData?.effects) ? accountData.effects : [];
   const defaultPackId = blookPacks[0]?.id || "";
   if (!selectedPackId || !getPackById(selectedPackId)) {
@@ -2442,6 +2523,15 @@ function applyAccount(account, nextKey = "") {
   }
 
   renderEconomyPanel();
+}
+
+async function loadPublicBlooks() {
+  const response = await fetch("/api/blooks");
+  const payload = await response.json();
+  if (!response.ok || !payload?.packs) {
+    throw new Error(payload?.message || "Blook catalog load failed");
+  }
+  applyPublicBlookCatalog(payload);
 }
 
 async function loadAccount() {
@@ -2595,21 +2685,38 @@ async function loadMiniGames() {
 
 async function loadBlooks() {
   try {
+    await loadPublicBlooks();
+  } catch (_error) {
+    blookPacks = [];
+    catalogPacks = [];
+    selectedPackId = "";
+    selectedBlookId = "";
+    setJoinNotice("Could not load the blook catalog. Refresh and try again.", "bad");
+    if (packTabs) {
+      packTabs.innerHTML = `<span class="help">Blook catalog unavailable.</span>`;
+    }
+    if (blookGrid) {
+      blookGrid.innerHTML = `<span class="help">No blooks available.</span>`;
+    }
+    return;
+  }
+
+  try {
     await loadAccount();
     if (packResult) {
       packResult.classList.add("hidden");
     }
   } catch (_error) {
-    blookPacks = [];
-    selectedPackId = "";
-    selectedBlookId = "";
-    setJoinNotice("Could not load your account. Refresh and try again.", "bad");
-    if (packTabs) {
-      packTabs.innerHTML = `<span class="help">Account unavailable.</span>`;
+    accountData = null;
+    blookPacks = clonePackRows(catalogPacks);
+    const defaultPackId = blookPacks[0]?.id || "";
+    if (!selectedPackId || !getPackById(selectedPackId)) {
+      selectedPackId = defaultPackId;
     }
-    if (blookGrid) {
-      blookGrid.innerHTML = `<span class="help">No unlocks available.</span>`;
+    if (!selectedBlookId) {
+      selectedBlookId = pickFirstOwnedBlookIdForPack(selectedPackId) || getInventoryRows()[0]?.id || "";
     }
+    renderEconomyPanel();
   }
 }
 
@@ -3153,6 +3260,7 @@ socket.on("game:countdown", ({ secondsLeft, endsAt }) => {
   const safeSeconds = Math.max(0, Number(secondsLeft) || 0);
   const countdownText = safeSeconds > 0 ? `Game starts in ${safeSeconds}...` : "Go! Question is starting.";
   setPhase("countdown", countdownText);
+  pausedFromPhase = "";
   showSection(resultSection);
   resultText.textContent = countdownText;
   setNotice(countdownText, safeSeconds > 0 ? "" : "good");
@@ -3160,6 +3268,34 @@ socket.on("game:countdown", ({ secondsLeft, endsAt }) => {
   if (Number.isFinite(countdownEndsAt) && countdownEndsAt > Date.now()) {
     startTicker(timerText, countdownEndsAt, "Starting in");
   }
+});
+
+socket.on("game:paused", ({ fromPhase }) => {
+  pausedFromPhase = String(fromPhase || "");
+  stopTicker();
+  stopMiniTickers();
+  canAnswer = false;
+  setPhase("paused", `Paused during ${phaseLabel(pausedFromPhase || "game")}.`);
+  setNotice("Game paused by host.", "good");
+});
+
+socket.on("game:resumed", ({ phase: resumedPhase, endsAt }) => {
+  const nextPhase = String(resumedPhase || "question");
+  pausedFromPhase = "";
+  setPhase(nextPhase, `${phaseLabel(nextPhase)} resumed.`);
+  const safeEndsAt = Number(endsAt || 0);
+  if (nextPhase === "question" && safeEndsAt > Date.now()) {
+    canAnswer = myAnswerIndex === null;
+    startTicker(timerText, safeEndsAt, "Time left");
+  }
+  if (nextPhase === "minigame" && safeEndsAt > Date.now()) {
+    startTicker(chestTimer, safeEndsAt, "Mini-game ends in");
+  }
+  setNotice(`${phaseLabel(nextPhase)} resumed.`, "good");
+});
+
+socket.on("minigame:skipped", ({ reason }) => {
+  setNotice(reason || "Mini-game skipped by host.");
 });
 
 socket.on("room:activeCode", (payload) => {
@@ -3543,12 +3679,37 @@ function blookImageStyleAttribute(blook) {
   return ` style="${escapeHtml(parts.join(";"))}"`;
 }
 
+function handleBlookImageError(img) {
+  if (!img) {
+    return;
+  }
+  img.classList.add("hidden");
+  const fallback = img.parentElement?.querySelector(".blook-emoji");
+  if (fallback) {
+    fallback.classList.remove("hidden");
+  }
+}
+
+function handleBlookImageLoad(img) {
+  if (!img) {
+    return;
+  }
+  img.classList.remove("hidden");
+  const fallback = img.parentElement?.querySelector(".blook-emoji");
+  if (fallback) {
+    fallback.classList.add("hidden");
+  }
+}
+
+window.handleBlookImageError = handleBlookImageError;
+window.handleBlookImageLoad = handleBlookImageLoad;
+
 function renderBlookWithEffect(blook, effectId) {
   if (!blook) return `<span class="blook-emoji">?</span>`;
   const aura = effectId && effectId !== "fx-none" ? `<div class="blook-aura ${escapeHtml(effectId)}"></div>` : "";
   const styleAttribute = blookImageStyleAttribute(blook);
   const content = blook.image
-    ? `<img src="${escapeHtml(blook.image)}" class="blook-image" alt="${escapeHtml(blook.name)}"${styleAttribute} />`
+    ? `<img src="${escapeHtml(blook.image)}" class="blook-image" alt="${escapeHtml(blook.name)}"${styleAttribute} onload="window.handleBlookImageLoad(this)" onerror="window.handleBlookImageError(this)" /><span class="blook-emoji hidden">${escapeHtml(blook.icon || "?")}</span>`
     : `<span class="blook-emoji">${escapeHtml(blook.icon || "?")}</span>`;
 
   return `<div class="blook-container">${aura}${content}</div>`;

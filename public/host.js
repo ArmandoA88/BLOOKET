@@ -49,6 +49,10 @@ const PHASE_BANNER_COPY = {
     title: "Lobby Open",
     detail: "Students can join and pick blooks."
   },
+  paused: {
+    title: "Game Paused",
+    detail: "Play is temporarily frozen by the host."
+  },
   countdown: {
     title: "Starting Countdown",
     detail: "Launching the first question in 3..2..1."
@@ -80,6 +84,7 @@ const PHASE_BANNER_COPY = {
 };
 const PHASE_CLASS_CANDIDATES = [
   "phase-lobby",
+  "phase-paused",
   "phase-countdown",
   "phase-question",
   "phase-question-result",
@@ -180,9 +185,12 @@ const setupNotice = document.getElementById("setupNotice");
 
 const createBtn = document.getElementById("createBtn");
 const startBtn = document.getElementById("startBtn");
+const pauseResumeBtn = document.getElementById("pauseResumeBtn");
 const nextBtn = document.getElementById("nextBtn");
+const forceNextQuestionBtn = document.getElementById("forceNextQuestionBtn");
 const endBtn = document.getElementById("endBtn");
 const lateJoinToggleBtn = document.getElementById("lateJoinToggleBtn");
+const skipMiniGameBtn = document.getElementById("skipMiniGameBtn");
 const lateJoinStatusText = document.getElementById("lateJoinStatusText");
 const saveSettingsBtn = document.getElementById("saveSettingsBtn");
 const testMiniGameBtn = document.getElementById("testMiniGameBtn");
@@ -206,6 +214,7 @@ const builderNotice = document.getElementById("builderNotice");
 const roomCodeEl = document.getElementById("roomCode");
 const copyCodeBtn = document.getElementById("copyCodeBtn");
 const copyJoinLinkBigBtn = document.getElementById("copyJoinLinkBigBtn");
+const previewBlooksBtn = document.getElementById("previewBlooksBtn");
 const playAsHostBtn = document.getElementById("playAsHostBtn");
 const lobbyStartBtn = document.getElementById("lobbyStartBtn");
 const modeLabel = document.getElementById("modeLabel");
@@ -271,6 +280,7 @@ let builderEditingSetId = "";
 let builderQuestionRows = [];
 let selectedEndType = "time";
 let currentAllowLateJoin = true;
+let pausedFromPhase = "";
 const DEFAULT_SETUP_FLAGS = {
   instructions: true,
   late_join: true,
@@ -337,6 +347,37 @@ function updateLateJoinControls() {
     lateJoinStatusText.textContent = currentAllowLateJoin
       ? "Late join currently allowed."
       : "Late join currently locked.";
+  }
+}
+
+function updatePhaseActionButtons() {
+  const phaseValue = String(phase || "").toLowerCase();
+  const effectivePhase = phaseValue === "paused" ? String(pausedFromPhase || "") : phaseValue;
+  const inLobby = phaseValue === "lobby";
+  const inRoundSummary = phaseValue === "round_summary";
+  const canRunMiniTest = phaseValue === "lobby" || phaseValue === "round_summary";
+  const canPause = ["countdown", "question", "question_result", "minigame", "round_summary", "paused"].includes(phaseValue);
+  const canForceNext = ["countdown", "question", "question_result", "minigame", "round_summary"].includes(effectivePhase);
+  const canSkipMiniGame = effectivePhase === "minigame";
+
+  startBtn.disabled = !inLobby;
+  if (lobbyStartBtn) {
+    lobbyStartBtn.disabled = !inLobby;
+  }
+  saveSettingsBtn.disabled = !inLobby;
+  nextBtn.disabled = !inRoundSummary;
+  if (testMiniGameBtn) {
+    testMiniGameBtn.disabled = !canRunMiniTest;
+  }
+  if (pauseResumeBtn) {
+    pauseResumeBtn.disabled = !canPause;
+    pauseResumeBtn.textContent = phaseValue === "paused" ? "Resume Game" : "Pause Game";
+  }
+  if (forceNextQuestionBtn) {
+    forceNextQuestionBtn.disabled = !canForceNext;
+  }
+  if (skipMiniGameBtn) {
+    skipMiniGameBtn.disabled = !canSkipMiniGame;
   }
 }
 
@@ -1560,9 +1601,7 @@ function setQuestionMediaImage(element, imageUrl, questionPrompt = "Question") {
 }
 
 function startTicker(targetEl, endsAt, label) {
-  if (tickInterval) {
-    clearInterval(tickInterval);
-  }
+  stopTicker();
 
   const update = () => {
     const leftMs = Math.max(0, endsAt - Date.now());
@@ -1579,32 +1618,28 @@ function startTicker(targetEl, endsAt, label) {
   tickInterval = setInterval(update, 120);
 }
 
+function stopTicker() {
+  if (tickInterval) {
+    clearInterval(tickInterval);
+    tickInterval = null;
+  }
+}
+
 function setPhase(value, detail = "") {
   phase = value;
   phaseText.textContent = normalizePhase(value);
   setPhaseBanner(value, detail);
-  if (value !== "minigame") {
+  if (value !== "minigame" && value !== "paused") {
     hideMiniGameDashboard();
   }
-  if (value !== "question") {
+  if (value !== "question" && value !== "paused") {
     setQuestionMediaImage(hostQuestionMedia, "", "");
   }
 
-  const inRoundSummary = value === "round_summary";
-  const inLobby = value === "lobby";
-  const canRunMiniTest = value === "lobby" || value === "round_summary";
-  startBtn.disabled = !inLobby;
-  if (lobbyStartBtn) {
-    lobbyStartBtn.disabled = !inLobby;
-  }
-  saveSettingsBtn.disabled = !inLobby;
-  nextBtn.disabled = !inRoundSummary;
   if (lobbyBoard) {
-    lobbyBoard.classList.toggle("hidden", !inLobby);
+    lobbyBoard.classList.toggle("hidden", value !== "lobby");
   }
-  if (testMiniGameBtn) {
-    testMiniGameBtn.disabled = !canRunMiniTest;
-  }
+  updatePhaseActionButtons();
   updateLateJoinControls();
 }
 
@@ -1621,6 +1656,20 @@ function formatJoinUrl(baseUrl) {
   return `${cleanBase}/play.html`;
 }
 
+function formatCatalogUrl(baseUrl) {
+  const cleanBase = String(baseUrl || "").replace(/\/+$/, "");
+  if (!cleanBase) {
+    return "";
+  }
+
+  const query = new URLSearchParams();
+  query.set("catalog", "1");
+  if (roomCode) {
+    query.set("code", roomCode);
+  }
+  return `${cleanBase}/play.html?${query.toString()}#accountPanel`;
+}
+
 function preferredJoinUrl() {
   if (serverInfo) {
     if (Array.isArray(serverInfo.lanUrls) && serverInfo.lanUrls.length > 0) {
@@ -1632,6 +1681,19 @@ function preferredJoinUrl() {
   }
 
   return formatJoinUrl(window.location.origin || "");
+}
+
+function preferredCatalogUrl() {
+  if (serverInfo) {
+    if (Array.isArray(serverInfo.lanUrls) && serverInfo.lanUrls.length > 0) {
+      return formatCatalogUrl(serverInfo.lanUrls[0]);
+    }
+    if (serverInfo.localhost) {
+      return formatCatalogUrl(serverInfo.localhost);
+    }
+  }
+
+  return formatCatalogUrl(window.location.origin || "");
 }
 
 function hostPlayUrl() {
@@ -1709,6 +1771,9 @@ function renderLobbyBoard(players) {
 
   if (copyJoinLinkBigBtn) {
     copyJoinLinkBigBtn.dataset.joinUrl = joinUrl;
+  }
+  if (previewBlooksBtn) {
+    previewBlooksBtn.href = preferredCatalogUrl() || "/play.html?catalog=1#accountPanel";
   }
 
   if (lobbyJoinQr) {
@@ -2133,6 +2198,39 @@ lateJoinToggleBtn?.addEventListener("click", () => {
   });
 });
 
+pauseResumeBtn?.addEventListener("click", () => {
+  if (!ensureCreated()) return;
+  socket.emit("host:pauseToggle", { code: roomCode }, (res) => {
+    if (!res?.ok) {
+      showNotice(hostNotice, res?.message || "Could not pause/resume the game.", "bad");
+      return;
+    }
+    showNotice(hostNotice, res.phase === "paused" ? "Game paused." : "Game resumed.", "good");
+  });
+});
+
+skipMiniGameBtn?.addEventListener("click", () => {
+  if (!ensureCreated()) return;
+  socket.emit("host:skipMiniGame", { code: roomCode }, (res) => {
+    if (!res?.ok) {
+      showNotice(hostNotice, res?.message || "Could not skip the mini-game.", "bad");
+      return;
+    }
+    showNotice(hostNotice, "Mini-game skipped.", "good");
+  });
+});
+
+forceNextQuestionBtn?.addEventListener("click", () => {
+  if (!ensureCreated()) return;
+  socket.emit("host:forceNextQuestion", { code: roomCode }, (res) => {
+    if (!res?.ok) {
+      showNotice(hostNotice, res?.message || "Could not force the next question.", "bad");
+      return;
+    }
+    showNotice(hostNotice, "Advanced to the next question.", "good");
+  });
+});
+
 saveSettingsBtn.addEventListener("click", () => {
   if (!ensureCreated()) return;
   const setupConfig = setupConfigPayload();
@@ -2459,9 +2557,27 @@ socket.on("game:countdown", ({ secondsLeft }) => {
   const safeSeconds = Math.max(0, Number(secondsLeft) || 0);
   const message = safeSeconds > 0 ? `Game starts in ${safeSeconds}...` : "Go! Question is starting.";
   setPhase("countdown", message);
+  pausedFromPhase = "";
   setPhaseIllustration("", "");
   questionPanel.classList.add("hidden");
   showNotice(hostNotice, message, safeSeconds > 0 ? "" : "good");
+});
+
+socket.on("game:paused", ({ fromPhase }) => {
+  pausedFromPhase = String(fromPhase || "");
+  stopTicker();
+  setPhase("paused", `Paused during ${normalizePhase(pausedFromPhase || "game")}.`);
+  showNotice(hostNotice, "Game paused.", "good");
+});
+
+socket.on("game:resumed", ({ phase: resumedPhase, endsAt }) => {
+  pausedFromPhase = "";
+  const nextPhase = String(resumedPhase || "question");
+  setPhase(nextPhase, `${normalizePhase(nextPhase)} resumed.`);
+  if ((nextPhase === "question" || nextPhase === "minigame") && Number.isFinite(Number(endsAt))) {
+    startTicker(questionTimer, Number(endsAt), nextPhase === "question" ? "Time left" : "Mini-game ends in");
+  }
+  showNotice(hostNotice, `${normalizePhase(nextPhase)} resumed.`, "good");
 });
 
 socket.on("question:start", (payload) => {

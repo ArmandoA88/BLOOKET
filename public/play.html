@@ -21,13 +21,13 @@
       <section id="landingTopbar" class="topbar">
         <div>
           <h1 class="brand">Student Join</h1>
-          <p class="sub">Enter game code and nickname to play.</p>
+          <p id="landingSub" class="sub">Enter game code and nickname to play.</p>
         </div>
         <a class="action ghost" href="/">Back</a>
       </section>
 
       <section id="joinCard" class="card strong fade-in">
-        <h2 class="title">Join Room</h2>
+        <h2 id="joinCardTitle" class="title">Join Room</h2>
         <div class="form-grid">
           <div>
             <label for="code">Game Code</label>
@@ -40,7 +40,7 @@
         </div>
         <div id="accountPanel" style="margin-top: 12px">
           <div>
-            <label>Pack Shop</label>
+            <label>Blook Packs</label>
             <div class="button-row" style="margin-bottom: 8px">
               <div class="notice">Coins: <strong id="accountCoins">0</strong></div>
               <div class="notice">Free Opens: <strong id="accountFreeOpen">0</strong></div>
@@ -57,7 +57,7 @@
             <div id="packOpenAnimation" class="pack-open-animation hidden" aria-live="polite"></div>
           </div>
           <div style="margin-top: 10px">
-            <label>Unlocked Blooks (Locked blooks stay hidden)</label>
+            <label>Available Blooks</label>
             <div id="blookGrid" class="blook-grid"></div>
           </div>
         </div>

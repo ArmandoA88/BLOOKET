@@ -52,9 +52,9 @@ Build and harden a classroom-ready, Blooket-style realtime quiz platform that ru
 - [x] Add lock join toggle after class starts.
 - [x] Add manual start countdown (3..2..1).
 - [ ] Add per-student mute/kick/rejoin approvals.
-- [ ] Add temporary pause/resume game button.
-- [ ] Add "skip current mini-game" button.
-- [ ] Add "force next question now" button.
+- [x] Add temporary pause/resume game button.
+- [x] Add "skip current mini-game" button.
+- [x] Add "force next question now" button.
 - [ ] Add classroom-safe nickname filtering.
 
 ### Phase 6: Profiles and Blooks
@@ -131,3 +131,6 @@ Build and harden a classroom-ready, Blooket-style realtime quiz platform that ru
 - [x] Phase 4.6 completed: host controls now support shuffled answer options and no-repeat question selection.
 - [x] Phase 5.1 completed: host can lock/unlock late joining during active gameplay with live setting sync.
 - [x] Phase 5.2 completed: host start now runs a visible 3..2..1 countdown before first question.
+- [x] Phase 5.3 completed: host can pause/resume active countdown, question, mini-game, and summary phases without losing state.
+- [x] Phase 5.4 completed: host can skip the active mini-game immediately and continue normal round flow.
+- [x] Phase 5.5 completed: host can force the next question immediately from countdown, question, result, mini-game, and summary phases.

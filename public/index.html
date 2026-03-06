@@ -596,6 +596,29 @@
       filter: brightness(1.15);
     }
 
+    .quiz-view-btn {
+      display: block;
+      text-align: center;
+      padding: 12px;
+      border-radius: 12px;
+      font-family: 'Orbitron', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-decoration: none;
+      background: linear-gradient(135deg, #0f172a, #1d4ed8);
+      color: #dbeafe;
+      border: 1px solid rgba(96, 165, 250, 0.45);
+      box-shadow: 0 4px 16px rgba(29, 78, 216, 0.28);
+      transition: all 0.2s;
+      margin-top: 8px;
+    }
+
+    .quiz-view-btn:hover {
+      box-shadow: 0 6px 24px rgba(59, 130, 246, 0.45);
+      filter: brightness(1.12);
+    }
+
     .quiz-notice {
       font-size: 11px;
       color: rgba(255, 255, 255, 0.25);
@@ -687,7 +710,7 @@
         <!-- Student: Join a game -->
         <div class="quiz-box">
           <div class="quiz-box-title">🎮 Join a Quiz Game</div>
-          <div class="quiz-box-desc">Enter the 6-character Game ID your teacher displayed on the board.</div>
+          <div class="quiz-box-desc">Enter the 6-character Game ID your teacher displayed on the board, or open the player catalog to browse every blook first.</div>
           <form id="joinGameForm" autocomplete="off">
             <div class="quiz-join-row">
               <input id="gameCodeInput" class="quiz-code-input" type="text" inputmode="text" maxlength="6"
@@ -695,6 +718,7 @@
               <button class="quiz-join-btn" type="submit">JOIN →</button>
             </div>
           </form>
+          <a class="quiz-view-btn" href="/play.html?catalog=1#accountPanel">VIEW ALL BLOOKS</a>
           <p id="joinNotice" class="quiz-notice">Students play as guests — no log-in needed</p>
         </div>
 

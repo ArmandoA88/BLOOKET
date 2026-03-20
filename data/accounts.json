@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-03-20T19:42:49.202Z",
+  "savedAt": "2026-03-20T20:13:04.614Z",
   "accounts": [
     {
       "id": "guest:mmbcb9q8er3q7dmw",
@@ -341,7 +341,7 @@
       "totalScore": 0,
       "bestRank": 0,
       "createdAt": "2026-03-04T02:20:19.422Z",
-      "updatedAt": "2026-03-20T19:39:30.104Z"
+      "updatedAt": "2026-03-20T20:13:04.614Z"
     },
     {
       "id": "guest:mmb2grqy5t0y2eph",
@@ -1545,7 +1545,7 @@
       "coins": 200,
       "freePackOpensRemaining": 0,
       "starterGrantVersion": 1,
-      "selectedBlookId": "ath-mahomes",
+      "selectedBlookId": "ath-giannis",
       "inventory": {
         "ath-mahomes": 1,
         "ath-brady": 1,
@@ -1684,13 +1684,32 @@
         "book-clifford": 1,
         "book-george": 1
       },
-      "miniGameStats": {},
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "space_invaders": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        }
+      },
       "gamesPlayed": 0,
       "totalCorrect": 0,
       "totalScore": 0,
       "bestRank": 0,
       "createdAt": "2026-03-20T19:42:49.202Z",
-      "updatedAt": "2026-03-20T19:42:49.202Z"
+      "updatedAt": "2026-03-20T20:12:56.613Z"
     }
   ]
 }

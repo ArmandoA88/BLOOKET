@@ -1272,10 +1272,10 @@ const TOWER_STACKER_THEMES = {
     accent: "#ff9b5c",
     secondary: "#ffd971",
     pieces: [
-      { id: "tall_tabby", w: 13, h: 10, shape: "roundrect", color: "#f59f61", belly: "#ffe3b8", ears: true, face: "smile", accessory: "stripes" },
-      { id: "sleepy_cat", w: 17, h: 8, shape: "capsule", color: "#7f8da6", belly: "#eef3ff", ears: true, face: "sleepy", accessory: "tail" },
-      { id: "kitten", w: 11, h: 9, shape: "roundrect", color: "#ffcf57", belly: "#fff2bc", ears: true, face: "wide", accessory: "whiskers" },
-      { id: "fluffy_cat", w: 15, h: 11, shape: "cloud", color: "#c17853", belly: "#f8d7be", ears: true, face: "grin", accessory: "patch" }
+      { id: "sleek_cat", w: 11.5, h: 10.8, shape: "tall", color: "#f59f61", belly: "#ffe3b8", ears: true, face: "smile", accessory: "cat_tail" },
+      { id: "sleepy_cat", w: 18.6, h: 7.5, shape: "longcat", color: "#7f8da6", belly: "#eef3ff", ears: true, face: "sleepy", accessory: "whiskers" },
+      { id: "kitten", w: 10.8, h: 8.8, shape: "roundrect", color: "#ffcf57", belly: "#fff2bc", ears: true, face: "wide", accessory: "blush" },
+      { id: "fluffy_kitten", w: 14.2, h: 11.6, shape: "fluff", color: "#c17853", belly: "#f8d7be", ears: true, face: "grin", accessory: "stripes" }
     ]
   },
   dogs: {
@@ -1284,10 +1284,10 @@ const TOWER_STACKER_THEMES = {
     accent: "#ff8c67",
     secondary: "#6ec5ff",
     pieces: [
-      { id: "long_dog", w: 18, h: 8, shape: "capsule", color: "#d28f57", belly: "#f7ddb5", ears: true, face: "happy", accessory: "spots" },
-      { id: "puppy", w: 12, h: 10, shape: "roundrect", color: "#f2c16f", belly: "#fff0ca", ears: true, face: "wide", accessory: "tongue" },
-      { id: "fluffy_dog", w: 15, h: 11, shape: "cloud", color: "#f5f1e8", belly: "#fff8f2", ears: true, face: "smile", accessory: "collar" },
-      { id: "round_pup", w: 13, h: 9, shape: "oval", color: "#8f6947", belly: "#e7d0b9", ears: true, face: "grin", accessory: "tail" }
+      { id: "sausage_dog", w: 18.8, h: 7.8, shape: "dog_long", color: "#d28f57", belly: "#f7ddb5", ears: true, face: "happy", accessory: "wag_tail" },
+      { id: "round_puppy", w: 13.8, h: 10.8, shape: "dog_round", color: "#f2c16f", belly: "#fff0ca", ears: true, face: "wide", accessory: "tongue" },
+      { id: "floppy_dog", w: 15.6, h: 10.9, shape: "dog_chunky", color: "#f5f1e8", belly: "#fff8f2", ears: true, face: "smile", accessory: "collar" },
+      { id: "chunky_pup", w: 14.4, h: 10.2, shape: "dog_chunky", color: "#8f6947", belly: "#e7d0b9", ears: true, face: "grin", accessory: "spots" }
     ]
   },
   ducks: {
@@ -1296,10 +1296,10 @@ const TOWER_STACKER_THEMES = {
     accent: "#ffd34f",
     secondary: "#59d8d2",
     pieces: [
-      { id: "chubby_duck", w: 14, h: 10, shape: "oval", color: "#ffd65c", belly: "#fff2b0", ears: false, face: "wide", accessory: "beak" },
-      { id: "baby_duck", w: 11, h: 8, shape: "roundrect", color: "#ffe27f", belly: "#fff6c7", ears: false, face: "happy", accessory: "beak" },
-      { id: "floatie_duck", w: 16, h: 9, shape: "capsule", color: "#ffcb43", belly: "#fff0a8", ears: false, face: "grin", accessory: "floatie" },
-      { id: "tall_duck", w: 12, h: 11, shape: "roundrect", color: "#f6d24d", belly: "#fff3b8", ears: false, face: "smile", accessory: "blush" }
+      { id: "chubby_duck", w: 14.4, h: 10.2, shape: "duck_round", color: "#ffd65c", belly: "#fff2b0", ears: false, face: "wide", accessory: "duck_beak" },
+      { id: "baby_duck", w: 11.2, h: 8.4, shape: "duck_small", color: "#ffe27f", belly: "#fff6c7", ears: false, face: "happy", accessory: "duck_beak" },
+      { id: "floatie_duck", w: 16.2, h: 9.2, shape: "duck_float", color: "#ffcb43", belly: "#fff0a8", ears: false, face: "grin", accessory: "floatie" },
+      { id: "rubber_duck", w: 12.8, h: 10.8, shape: "duck_tall", color: "#f6d24d", belly: "#fff3b8", ears: false, face: "smile", accessory: "wing" }
     ]
   },
   pandas: {
@@ -1308,13 +1308,17 @@ const TOWER_STACKER_THEMES = {
     accent: "#9fd3ff",
     secondary: "#9af0a9",
     pieces: [
-      { id: "baby_panda", w: 12, h: 10, shape: "roundrect", color: "#f8fafc", belly: "#ffffff", ears: true, face: "wide", accessory: "patch" },
-      { id: "rolling_panda", w: 14, h: 9, shape: "oval", color: "#eef2f7", belly: "#ffffff", ears: true, face: "grin", accessory: "roll" },
-      { id: "sleepy_panda", w: 17, h: 8, shape: "capsule", color: "#f3f6fb", belly: "#ffffff", ears: true, face: "sleepy", accessory: "bamboo" },
-      { id: "chunky_panda", w: 15, h: 11, shape: "cloud", color: "#f7f9fc", belly: "#ffffff", ears: true, face: "happy", accessory: "cheeks" }
+      { id: "baby_panda", w: 12.6, h: 10.8, shape: "panda_round", color: "#f8fafc", belly: "#ffffff", ears: true, face: "wide", accessory: "panda_patch" },
+      { id: "rolling_panda", w: 15.2, h: 9.8, shape: "panda_roll", color: "#eef2f7", belly: "#ffffff", ears: true, face: "grin", accessory: "panda_patch" },
+      { id: "sleepy_panda", w: 17.4, h: 8.3, shape: "panda_loaf", color: "#f3f6fb", belly: "#ffffff", ears: true, face: "sleepy", accessory: "bamboo" },
+      { id: "chunky_panda", w: 15.8, h: 11.8, shape: "panda_round", color: "#f7f9fc", belly: "#ffffff", ears: true, face: "happy", accessory: "cheeks" }
     ]
   }
 };
+const TOWER_STACKER_GROUND_Y = 92;
+const TOWER_STACKER_PIECE_SCALE = 0.54;
+const TOWER_STACKER_SPAWN_HEADROOM = 18;
+const TOWER_STACKER_MIN_VISIBLE_HEADROOM = 10;
 
 function publicMiniGameCatalog() {
   return MINI_GAME_CATALOG.map((game) => ({
@@ -3941,8 +3945,10 @@ function hostMiniGameProgressRow(state) {
       metric: Math.max(0, Number(state.score || 0)),
       progress: height,
       height,
+      heightScore: Math.max(0, Number(state.towerHeightScore || 0)),
       piecesPlaced,
       perfectDrops,
+      perfectLandingScore: Math.max(0, Number(state.perfectLandingScore || 0)),
       combo,
       stabilityScore,
       collapsed: state.collapsed === true,
@@ -4436,8 +4442,8 @@ function createTowerStackerPiece(themeId, difficultyTier = 1) {
   const variant = theme.pieces[randomInt(0, theme.pieces.length - 1)];
   const widthScale = 1 - (tier - 1) * 0.04 + randomFloat(-0.05, 0.05);
   const heightScale = 1 + randomFloat(-0.06, 0.08);
-  const width = clamp(Math.round(variant.w * widthScale * 10) / 10, 9.5, 19.5);
-  const height = clamp(Math.round(variant.h * heightScale * 10) / 10, 7.5, 12.5);
+  const width = clamp(Math.round(variant.w * TOWER_STACKER_PIECE_SCALE * widthScale * 10) / 10, 4.8, 10.8);
+  const height = clamp(Math.round(variant.h * TOWER_STACKER_PIECE_SCALE * heightScale * 10) / 10, 4.2, 8.6);
   return {
     id: `tower_piece_${Math.random().toString(36).slice(2, 9)}`,
     theme: theme.id,
@@ -4473,8 +4479,9 @@ function towerStackerSpawnPreview(state) {
     return;
   }
   const piece = createTowerStackerPiece(state.theme, state.difficultyTier || 1);
+  const towerTopWorld = getTowerTopWorldY(state.settledPieces || []);
   piece.x = 50;
-  piece.y = clamp(92 - Math.max(0, Number(state.towerHeight || 0)) - 16, 12, 30);
+  piece.y = towerTopWorld - TOWER_STACKER_SPAWN_HEADROOM;
   piece.spawnedAt = Date.now();
   state.previewPiece = piece;
 }
@@ -4505,9 +4512,11 @@ function towerStackerRestartState(state, options = {}) {
   state.totalGrantedDrops = Math.max(0, Number(state.totalGrantedDrops || 0));
   state.piecesPlaced = 0;
   state.perfectDrops = 0;
+  state.perfectLandingScore = 0;
   state.combo = 0;
   state.bestCombo = Math.max(0, Number(state.bestCombo || 0));
   state.towerHeight = 0;
+  state.towerHeightScore = 0;
   state.bestHeight = Math.max(0, Number(state.bestHeight || 0));
   state.stabilityScore = 0;
   state.score = 0;
@@ -4541,6 +4550,17 @@ function towerOverlapWidth(a, b) {
   return Math.max(0, Math.min(towerPieceRight(a), towerPieceRight(b)) - Math.max(towerPieceLeft(a), towerPieceLeft(b)));
 }
 
+function getTowerTopWorldY(settledPieces) {
+  if (!Array.isArray(settledPieces) || settledPieces.length === 0) {
+    return TOWER_STACKER_GROUND_Y;
+  }
+  return settledPieces.reduce((min, piece) => Math.min(min, towerPieceTop(piece)), TOWER_STACKER_GROUND_Y);
+}
+
+function getTowerHeightWorldUnits(settledPieces) {
+  return Math.max(0, Math.round((TOWER_STACKER_GROUND_Y - getTowerTopWorldY(settledPieces)) * 10) / 10);
+}
+
 function findTowerSupportPiece(piece, settledPieces) {
   let best = null;
   let bestTop = Number.POSITIVE_INFINITY;
@@ -4562,18 +4582,27 @@ function findTowerSupportPiece(piece, settledPieces) {
 }
 
 function towerStackerTowerHeight(state) {
-  if (!Array.isArray(state?.settledPieces) || state.settledPieces.length === 0) {
-    return 0;
-  }
-  const minTop = state.settledPieces.reduce((min, piece) => Math.min(min, towerPieceTop(piece)), 92);
-  return Math.max(0, Math.round((92 - minTop) * 10) / 10);
+  return getTowerHeightWorldUnits(state?.settledPieces || []);
+}
+
+function towerStackerHeightScore(state) {
+  const height = Math.max(0, Number(state?.towerHeight || 0));
+  const layers = Math.max(0, Number(state?.piecesPlaced || 0));
+  return Math.round(height * 24 + layers * 16);
+}
+
+function towerStackerPerfectPoints(landingPrecision, supportOverlap, wobbleAmount) {
+  const precisionScore = clamp(Number(landingPrecision || 0), 0, 1);
+  const supportScore = clamp(Number(supportOverlap || 0), 0, 1);
+  const wobblePenalty = clamp(Number(wobbleAmount || 0) / 18, 0, 1);
+  return Math.max(0, Math.round(precisionScore * 80 + supportScore * 50 - wobblePenalty * 18));
 }
 
 function towerStackerScore(state) {
-  const heightScore = Math.round(Math.max(0, Number(state.towerHeight || 0)) * 12);
+  const heightScore = Math.round(Math.max(0, Number(state.towerHeightScore || 0)));
   const stackScore = Math.max(0, Number(state.piecesPlaced || 0)) * 135;
   const stability = Math.round(Math.max(0, Number(state.stabilityScore || 0)) * 45);
-  const perfect = Math.max(0, Number(state.perfectDrops || 0)) * 180;
+  const perfect = Math.max(0, Number(state.perfectLandingScore || 0)) * 2;
   const combo = Math.max(0, Number(state.bestCombo || 0)) * 65;
   return heightScore + stackScore + stability + perfect + combo;
 }
@@ -4592,7 +4621,7 @@ function towerStackerPayload(state) {
       face: String(piece.face || "smile"),
       accessory: String(piece.accessory || ""),
       x: clamp(Number(piece.x || 50), -20, 120),
-      y: clamp(Number(piece.y || 0), -20, 120),
+      y: clamp(Number(piece.y || 0), -4000, 160),
       w: clamp(Number(piece.w || 12), 6, 24),
       h: clamp(Number(piece.h || 10), 6, 18),
       angle: Number(piece.angle || 0),
@@ -4609,9 +4638,11 @@ function towerStackerPayload(state) {
     totalGrantedDrops: Math.max(0, Number(state?.totalGrantedDrops || 0)),
     piecesPlaced: Math.max(0, Number(state?.piecesPlaced || 0)),
     perfectDrops: Math.max(0, Number(state?.perfectDrops || 0)),
+    perfectLandingScore: Math.max(0, Number(state?.perfectLandingScore || 0)),
     combo: Math.max(0, Number(state?.combo || 0)),
     bestCombo: Math.max(0, Number(state?.bestCombo || 0)),
     towerHeight: Math.max(0, Number(state?.towerHeight || 0)),
+    towerHeightScore: Math.max(0, Number(state?.towerHeightScore || 0)),
     bestHeight: Math.max(0, Number(state?.bestHeight || 0)),
     stabilityScore: Math.max(0, Number(state?.stabilityScore || 0)),
     score: Math.max(0, Number(state?.score || 0)),
@@ -4649,11 +4680,11 @@ function towerStackerTickState(state, now) {
 
   if (state.collapsed !== true && state.previewPiece && state.previewPiece.dropped !== true) {
     const preview = state.previewPiece;
-    const hoverAmplitude = Math.max(10, 22 - tier * 1.8);
+    const hoverAmplitude = Math.max(8, 18 - tier * 1.4);
     const hoverSpeed = 0.0011 + tier * 0.00018;
-    const towerTop = 92 - Math.max(0, Number(state.towerHeight || 0));
+    const towerTop = getTowerTopWorldY(state.settledPieces || []);
     preview.x = 50 + Math.sin((now - Number(preview.spawnedAt || now)) * hoverSpeed) * hoverAmplitude;
-    preview.y = clamp(towerTop - 18 + Math.sin((now - Number(preview.spawnedAt || now)) * 0.003) * 1.6, 12, 28);
+    preview.y = towerTop - TOWER_STACKER_SPAWN_HEADROOM + Math.sin((now - Number(preview.spawnedAt || now)) * 0.003) * 1.2;
     preview.angle = Math.sin((now - Number(preview.spawnedAt || now)) * 0.004) * 0.05;
     changed = true;
   }
@@ -4665,7 +4696,7 @@ function towerStackerTickState(state, now) {
     piece.x = Number(piece.x || 0) + Number(piece.vx || 0) * (tickMs / 16);
     piece.angle = Number(piece.angle || 0) + Number(piece.rotationSpeed || 0) * (tickMs / 16) * 16;
 
-    let targetY = 92 - Number(piece.h || 0) / 2;
+    let targetY = TOWER_STACKER_GROUND_Y - Number(piece.h || 0) / 2;
     let supportPiece = null;
     let overlapRatio = 1;
     const support = findTowerSupportPiece(piece, state.settledPieces || []);
@@ -4681,12 +4712,17 @@ function towerStackerTickState(state, now) {
       piece.settledAt = now;
       piece.supportId = supportPiece?.id || "ground";
       piece.supportOverlap = overlapRatio;
-      piece.perfect = supportPiece ? Math.abs(Number(piece.x || 0) - Number(supportPiece.x || 0)) <= Math.max(1.8, Number(supportPiece.w || 0) * 0.08) : Math.abs(Number(piece.x || 50) - 50) <= 2.2;
-      piece.wobble = clamp((1 - overlapRatio) * 16, 0, 16);
+      const centerDelta = supportPiece
+        ? Math.abs(Number(piece.x || 0) - Number(supportPiece.x || 0))
+        : Math.abs(Number(piece.x || 50) - 50);
+      const centerAllowance = supportPiece ? Math.max(1.8, Number(supportPiece.w || 0) * 0.08) : 2.2;
+      const landingPrecision = clamp(1 - centerDelta / Math.max(centerAllowance * 3, 1), 0, 1);
+      piece.perfect = centerDelta <= centerAllowance && overlapRatio >= 0.9;
+      piece.wobble = clamp((1 - overlapRatio) * 14, 0, 14);
       if (supportPiece) {
-        piece.slideVx = overlapRatio < 0.56 ? Math.sign(Number(piece.x || 0) - Number(supportPiece.x || 0) || randomFloat(-1, 1)) * (0.02 + (0.56 - overlapRatio) * 0.16) : 0;
+        piece.slideVx = overlapRatio < 0.54 ? Math.sign(Number(piece.x || 0) - Number(supportPiece.x || 0) || randomFloat(-1, 1)) * (0.018 + (0.54 - overlapRatio) * 0.14) : 0;
       } else {
-        piece.slideVx = Math.abs(Number(piece.x || 50) - 50) > 7 ? Math.sign(Number(piece.x || 50) - 50) * 0.04 : 0;
+        piece.slideVx = Math.abs(Number(piece.x || 50) - 50) > 5 ? Math.sign(Number(piece.x || 50) - 50) * 0.03 : 0;
       }
       state.settledPieces.push(piece);
       state.previewPiece = null;
@@ -4696,17 +4732,31 @@ function towerStackerTickState(state, now) {
       if (piece.perfect) {
         state.perfectDrops = Math.max(0, Number(state.perfectDrops || 0)) + 1;
       }
+      const perfectPoints = towerStackerPerfectPoints(landingPrecision, overlapRatio, piece.wobble);
+      state.perfectLandingScore = Math.max(0, Number(state.perfectLandingScore || 0)) + perfectPoints;
       state.lastSupportQuality = overlapRatio;
       state.stabilityScore = Math.max(0, Number(state.stabilityScore || 0)) + overlapRatio;
       state.towerHeight = towerStackerTowerHeight(state);
+      state.towerHeightScore = towerStackerHeightScore(state);
+      const previousBestHeight = Math.max(0, Number(state.bestHeight || 0));
       state.bestHeight = Math.max(Math.max(0, Number(state.bestHeight || 0)), Number(state.towerHeight || 0));
       state.score = towerStackerScore(state);
       state.lastEventSeq = Math.max(0, Number(state.lastEventSeq || 0)) + 1;
       state.lastEvent = {
         seq: state.lastEventSeq,
-        type: piece.perfect ? "perfect_drop" : "drop_landed",
+        type:
+          piece.perfect
+            ? "perfect_drop"
+            : landingPrecision >= 0.74 && overlapRatio >= 0.76
+              ? "great_drop"
+              : overlapRatio >= 0.62
+                ? "stable_stack"
+                : "drop_landed",
         perfect: piece.perfect,
+        perfectPoints,
+        landingPrecision,
         supportOverlap: overlapRatio,
+        isHeightRecord: Number(state.towerHeight || 0) >= previousBestHeight,
         x: piece.x,
         y: piece.y
       };
@@ -4717,24 +4767,29 @@ function towerStackerTickState(state, now) {
   if (Array.isArray(state.settledPieces) && state.settledPieces.length > 0) {
     const stillStanding = [];
     const newlyFalling = [];
-    for (let index = 0; index < state.settledPieces.length; index += 1) {
-      const piece = state.settledPieces[index];
-      const lowerPieces = stillStanding.filter((candidate) => towerPieceTop(candidate) >= towerPieceBottom(piece) - 1);
-      const support = findTowerSupportPiece(piece, lowerPieces);
+    const orderedPieces = [...state.settledPieces].sort((left, right) => towerPieceTop(right) - towerPieceTop(left));
+    for (let index = 0; index < orderedPieces.length; index += 1) {
+      const piece = orderedPieces[index];
+      const grounded = towerPieceBottom(piece) >= TOWER_STACKER_GROUND_Y - 0.75;
+      if (grounded) {
+        piece.y = TOWER_STACKER_GROUND_Y - Number(piece.h || 0) / 2;
+      }
+      const support = grounded ? null : findTowerSupportPiece(piece, stillStanding);
       const overlapRatio = support ? clamp(support.overlap / Math.max(1, Number(piece.w || 1)), 0, 1) : 0;
       piece.supportOverlap = overlapRatio;
-      piece.wobble = clamp((1 - overlapRatio) * 14 + Math.abs(Number(piece.slideVx || 0)) * 50, 0, 18);
+      piece.wobble = clamp((1 - overlapRatio) * 13 + Math.abs(Number(piece.slideVx || 0)) * 44, 0, 16);
 
-      if (!support && piece.supportId !== "ground" && index !== 0) {
+      if (!grounded && !support && stillStanding.length > 0) {
         piece.vx = Number(piece.slideVx || randomFloat(-0.18, 0.18));
         piece.vy = 0.12;
         newlyFalling.push(piece);
         continue;
       }
 
-      if (support && overlapRatio < 0.48) {
+      if (support && overlapRatio < 0.46) {
         const supportCenter = Number(support.piece.x || 50);
-        piece.slideVx = clamp(Number(piece.slideVx || 0) + Math.sign(Number(piece.x || 0) - supportCenter || randomFloat(-1, 1)) * (0.012 + (0.48 - overlapRatio) * 0.05), -0.32, 0.32);
+        piece.y = towerPieceTop(support.piece) - Number(piece.h || 0) / 2;
+        piece.slideVx = clamp(Number(piece.slideVx || 0) + Math.sign(Number(piece.x || 0) - supportCenter || randomFloat(-1, 1)) * (0.01 + (0.46 - overlapRatio) * 0.045), -0.26, 0.26);
       } else {
         piece.slideVx = Number(piece.slideVx || 0) * 0.82;
       }
@@ -4744,7 +4799,7 @@ function towerStackerTickState(state, now) {
         changed = true;
       }
 
-      if (support && Math.abs(Number(piece.x || 0) - Number(support.piece.x || 0)) > (Number(support.piece.w || 0) + Number(piece.w || 0)) * 0.6) {
+      if (support && Math.abs(Number(piece.x || 0) - Number(support.piece.x || 0)) > (Number(support.piece.w || 0) + Number(piece.w || 0)) * 0.58) {
         piece.vx = Number(piece.slideVx || 0);
         piece.vy = 0.14;
         newlyFalling.push(piece);
@@ -4770,6 +4825,7 @@ function towerStackerTickState(state, now) {
   }
 
   state.towerHeight = towerStackerTowerHeight(state);
+  state.towerHeightScore = towerStackerHeightScore(state);
   state.bestHeight = Math.max(Math.max(0, Number(state.bestHeight || 0)), Number(state.towerHeight || 0));
   state.score = towerStackerScore(state);
 
@@ -5025,9 +5081,11 @@ function createMiniGameState(type, difficulty = null) {
       fallingPieces: [],
       piecesPlaced: 0,
       perfectDrops: 0,
+      perfectLandingScore: 0,
       combo: 0,
       bestCombo: 0,
       towerHeight: 0,
+      towerHeightScore: 0,
       bestHeight: 0,
       stabilityScore: 0,
       score: 0,
@@ -5206,7 +5264,9 @@ function miniGameResult(game, player, state) {
     const perfectDrops = Math.max(0, Number(state.perfectDrops || 0));
     const bestCombo = Math.max(0, Number(state.bestCombo || state.combo || 0));
     const collapsePenalty = state.collapsed ? 90 : 0;
-    const bonus = Math.max(120, 140 + Math.round(height * 11) + piecesPlaced * 95 + perfectDrops * 120 + bestCombo * 40 - collapsePenalty);
+    const heightScore = Math.max(0, Number(state.towerHeightScore || 0));
+    const perfectLandingScore = Math.max(0, Number(state.perfectLandingScore || 0));
+    const bonus = Math.max(120, 140 + Math.round(height * 8) + Math.round(heightScore * 0.42) + Math.round(perfectLandingScore * 0.55) + piecesPlaced * 70 + bestCombo * 34 - collapsePenalty);
     return {
       bonus,
       text: `${player.name} stacked ${piecesPlaced} pieces, reached height ${Math.round(height)}, and earned +${bonus} ${unit}.`

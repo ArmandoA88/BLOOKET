@@ -351,6 +351,7 @@ let miniTowerStackerCanvas = null;
 let miniTowerStackerCtx = null;
 let miniTowerStackerAnimationFrame = 0;
 let miniTowerStackerLastEventSeq = 0;
+let miniTowerStackerCameraTop = 0;
 let latestLeaderboardRows = [];
 let fishingGameEndsAt = 0;
 let fishingHudTicker = null;
@@ -1149,6 +1150,7 @@ function stopMiniTickers() {
   miniTowerStackerCtx = null;
   miniTowerStackerState = null;
   miniTowerStackerLastEventSeq = 0;
+  miniTowerStackerCameraTop = 0;
 }
 
 function miniGameTypeLabel(type) {
@@ -2057,10 +2059,54 @@ function applyMiniFoosballState(payload, options = {}) {
 }
 
 const TOWER_STACKER_THEME_STYLES = {
-  cats: { accent: "#ff9b5c", secondary: "#ffd971", skyTop: "#9ae7f3", skyBottom: "#d6fff6", ground: "#6c4d39" },
-  dogs: { accent: "#ff8c67", secondary: "#6ec5ff", skyTop: "#a8d7ff", skyBottom: "#eefbff", ground: "#735440" },
-  ducks: { accent: "#ffd34f", secondary: "#59d8d2", skyTop: "#8ce0ff", skyBottom: "#edfff5", ground: "#7d5f3f" },
-  pandas: { accent: "#9fd3ff", secondary: "#9af0a9", skyTop: "#b9ddff", skyBottom: "#f7fdff", ground: "#505564" }
+  cats: {
+    accent: "#ff9b5c",
+    secondary: "#ffd971",
+    tertiary: "#f7f9ff",
+    skyTop: "#9ae7f3",
+    skyBottom: "#d6fff6",
+    ground: "#6c4d39",
+    silhouette: "cat",
+    idleBob: 1.1,
+    landingSquish: 1,
+    milestone: "Climbing Cat Tower"
+  },
+  dogs: {
+    accent: "#ff8c67",
+    secondary: "#6ec5ff",
+    tertiary: "#f6ede2",
+    skyTop: "#a8d7ff",
+    skyBottom: "#eefbff",
+    ground: "#735440",
+    silhouette: "dog",
+    idleBob: 1.24,
+    landingSquish: 1.18,
+    milestone: "Puppy Pile Rising"
+  },
+  ducks: {
+    accent: "#ffd34f",
+    secondary: "#59d8d2",
+    tertiary: "#fff4ba",
+    skyTop: "#8ce0ff",
+    skyBottom: "#edfff5",
+    ground: "#7d5f3f",
+    silhouette: "duck",
+    idleBob: 0.95,
+    landingSquish: 0.92,
+    milestone: "Duck Stack Parade"
+  },
+  pandas: {
+    accent: "#9fd3ff",
+    secondary: "#9af0a9",
+    tertiary: "#f8fbff",
+    skyTop: "#b9ddff",
+    skyBottom: "#f7fdff",
+    ground: "#505564",
+    silhouette: "panda",
+    idleBob: 0.82,
+    landingSquish: 1.34,
+    milestone: "Panda Peak"
+  }
 };
 
 function towerThemeStyle(themeId) {
@@ -2071,8 +2117,26 @@ function towerCanvasX(value, width) {
   return (Number(value || 0) / 100) * width;
 }
 
-function towerCanvasY(value, height) {
-  return (Number(value || 0) / 100) * height;
+function towerVisibleWorldRange() {
+  return 86;
+}
+
+function towerCameraTargetTop(state) {
+  const pieces = []
+    .concat(Array.isArray(state?.settledPieces) ? state.settledPieces : [])
+    .concat(Array.isArray(state?.fallingPieces) ? state.fallingPieces : []);
+  if (state?.previewPiece) {
+    pieces.push(state.previewPiece);
+  }
+  if (pieces.length === 0) {
+    return 0;
+  }
+  const highestTop = pieces.reduce((min, piece) => Math.min(min, Number(piece.y || 0) - Number(piece.h || 0) / 2), 92);
+  return Math.min(0, Math.round((highestTop - 20) * 10) / 10);
+}
+
+function towerCanvasY(value, height, topWorld = 0) {
+  return ((Number(value || 0) - Number(topWorld || 0)) / towerVisibleWorldRange()) * height;
 }
 
 function towerRoundRect(ctx, x, y, width, height, radius) {
@@ -2085,6 +2149,96 @@ function towerRoundRect(ctx, x, y, width, height, radius) {
   ctx.closePath();
 }
 
+function renderTowerAltitudeDecor(ctx, canvas, state, topWorld, style) {
+  const heightBand = Math.floor(Math.max(0, Number(state?.towerHeight || 0)) / 26);
+  const yAt = (worldY) => towerCanvasY(worldY, canvas.height, topWorld);
+
+  ctx.fillStyle = "rgba(255,255,255,0.18)";
+  for (let i = 0; i < 10; i += 1) {
+    const x = ((i * 93 + 40) % canvas.width);
+    const cloudWorldY = 18 + heightBand * 6 + (i % 4) * 6;
+    ctx.beginPath();
+    ctx.arc(x, yAt(cloudWorldY), 10 + (i % 3) * 5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  if (heightBand >= 1) {
+    for (let i = 0; i < 5; i += 1) {
+      ctx.strokeStyle = i % 2 === 0 ? "rgba(255, 163, 123, 0.55)" : "rgba(89, 216, 210, 0.55)";
+      ctx.lineWidth = 2;
+      const balloonX = ((i * 171) + 110) % canvas.width;
+      const balloonY = yAt(-6 - i * 9);
+      ctx.beginPath();
+      ctx.ellipse(balloonX, balloonY, 12, 16, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(balloonX, balloonY + 16);
+      ctx.lineTo(balloonX - 2, balloonY + 38);
+      ctx.stroke();
+    }
+  }
+
+  if (heightBand >= 2) {
+    for (let i = 0; i < 2; i += 1) {
+      const planeX = ((performance.now() * 0.04) + i * 340) % (canvas.width + 180) - 90;
+      const planeY = yAt(-48 - i * 18);
+      ctx.fillStyle = "rgba(255,255,255,0.78)";
+      ctx.beginPath();
+      ctx.moveTo(planeX - 14, planeY + 4);
+      ctx.lineTo(planeX + 18, planeY);
+      ctx.lineTo(planeX - 14, planeY - 4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillRect(planeX - 6, planeY - 1.5, 16, 3);
+    }
+  }
+
+  if (heightBand >= 3) {
+    const satX = canvas.width - 120 + Math.sin(performance.now() * 0.0008) * 28;
+    const satY = yAt(-94);
+    ctx.strokeStyle = "rgba(215, 233, 255, 0.72)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(satX - 12, satY - 8, 24, 16);
+    ctx.beginPath();
+    ctx.moveTo(satX - 28, satY);
+    ctx.lineTo(satX - 12, satY);
+    ctx.moveTo(satX + 12, satY);
+    ctx.lineTo(satX + 28, satY);
+    ctx.stroke();
+  }
+
+  if (heightBand >= 4) {
+    const moonX = canvas.width - 86;
+    const moonY = yAt(-148);
+    ctx.fillStyle = "rgba(255, 248, 208, 0.95)";
+    ctx.beginPath();
+    ctx.arc(moonX, moonY, 26, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = style.skyTop;
+    ctx.beginPath();
+    ctx.arc(moonX + 9, moonY - 3, 22, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  if (heightBand >= 5) {
+    const sunX = 92;
+    const sunY = yAt(-208);
+    ctx.fillStyle = "rgba(255, 225, 112, 0.98)";
+    ctx.beginPath();
+    ctx.arc(sunX, sunY, 24, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255, 225, 112, 0.55)";
+    ctx.lineWidth = 3;
+    for (let i = 0; i < 8; i += 1) {
+      const angle = (Math.PI * 2 * i) / 8;
+      ctx.beginPath();
+      ctx.moveTo(sunX + Math.cos(angle) * 32, sunY + Math.sin(angle) * 32);
+      ctx.lineTo(sunX + Math.cos(angle) * 46, sunY + Math.sin(angle) * 46);
+      ctx.stroke();
+    }
+  }
+}
+
 function drawTowerPiece(ctx, piece, canvas, options = {}) {
   if (!piece) {
     return;
@@ -2093,31 +2247,56 @@ function drawTowerPiece(ctx, piece, canvas, options = {}) {
   const width = (Number(piece.w || 12) / 100) * canvas.width * 2.6;
   const height = (Number(piece.h || 10) / 100) * canvas.height * 1.6;
   const centerX = towerCanvasX(piece.x, canvas.width);
-  const centerY = towerCanvasY(piece.y, canvas.height);
-  const wobble = Number(piece.wobble || 0) * 0.007 * Math.sin(performance.now() * 0.01 + Number(piece.blinkSeed || 0) * 13);
+  const centerY = towerCanvasY(piece.y, canvas.height, options.topWorld || 0);
+  const motionSeed = performance.now() * 0.01 + Number(piece.blinkSeed || 0) * 13;
+  const wobble = Number(piece.wobble || 0) * 0.007 * Math.sin(motionSeed);
   const angle = Number(piece.angle || 0) + wobble;
   const blinkOpen = Math.sin(performance.now() * 0.0025 + Number(piece.blinkSeed || 0) * 4) > -0.95;
   const bodyColor = piece.color || style.accent;
   const bellyColor = piece.belly || "#fff6dd";
   const accent = style.secondary;
+  const verticalSquish = 1 - Math.min(0.12, Number(piece.wobble || 0) * 0.006 * style.landingSquish);
+  const horizontalStretch = 1 + Math.min(0.14, Number(piece.wobble || 0) * 0.007 * style.landingSquish);
+  const gentleBob = !options.falling && !piece.dropped ? Math.sin(motionSeed * style.idleBob * 0.4) * 3 : 0;
 
   ctx.save();
-  ctx.translate(centerX, centerY);
+  ctx.translate(centerX, centerY + gentleBob);
   ctx.rotate(angle);
+  ctx.scale(horizontalStretch, verticalSquish);
 
   ctx.shadowColor = "rgba(9, 20, 34, 0.18)";
   ctx.shadowBlur = options.shadow ? 18 : 8;
   ctx.shadowOffsetY = options.shadow ? 8 : 4;
   ctx.fillStyle = bodyColor;
 
-  if (piece.shape === "oval") {
+  if (style.silhouette === "duck" || String(piece.shape || "").startsWith("duck")) {
+    ctx.beginPath();
+    ctx.ellipse(0, 4, width * 0.38, height * 0.34, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(-width * 0.06, -height * 0.12, width * 0.22, height * 0.24, 0, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (style.silhouette === "panda" || String(piece.shape || "").startsWith("panda")) {
+    ctx.beginPath();
+    ctx.ellipse(0, 0, width * 0.4, height * 0.34, 0, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (style.silhouette === "dog" || String(piece.shape || "").startsWith("dog")) {
+    if (String(piece.shape || "").includes("long")) {
+      towerRoundRect(ctx, -width / 2, -height * 0.34, width, height * 0.68, Math.min(height / 2, 22));
+      ctx.fill();
+    } else {
+      ctx.beginPath();
+      ctx.ellipse(0, 0, width * 0.42, height * 0.34, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (piece.shape === "oval") {
     ctx.beginPath();
     ctx.ellipse(0, 0, width / 2, height / 2, 0, 0, Math.PI * 2);
     ctx.fill();
-  } else if (piece.shape === "capsule") {
+  } else if (piece.shape === "capsule" || piece.shape === "longcat" || piece.shape === "tall") {
     towerRoundRect(ctx, -width / 2, -height / 2, width, height, Math.min(height / 2, 22));
     ctx.fill();
-  } else if (piece.shape === "cloud") {
+  } else if (piece.shape === "cloud" || piece.shape === "fluff") {
     ctx.beginPath();
     ctx.arc(-width * 0.22, 0, height * 0.34, 0, Math.PI * 2);
     ctx.arc(0, -height * 0.08, height * 0.42, 0, Math.PI * 2);
@@ -2132,7 +2311,10 @@ function drawTowerPiece(ctx, piece, canvas, options = {}) {
 
   ctx.shadowBlur = 0;
   ctx.fillStyle = bellyColor;
-  if (piece.shape === "capsule" || piece.shape === "cloud") {
+  if (style.silhouette === "duck") {
+    ctx.beginPath();
+    ctx.ellipse(-width * 0.05, height * 0.1, width * 0.18, height * 0.14, 0, 0, Math.PI * 2);
+  } else if (piece.shape === "capsule" || piece.shape === "cloud" || piece.shape === "longcat" || piece.shape === "dog_long" || piece.shape === "panda_loaf") {
     towerRoundRect(ctx, -width * 0.24, -height * 0.05, width * 0.48, height * 0.38, Math.min(18, height * 0.18));
   } else {
     ctx.beginPath();
@@ -2140,7 +2322,19 @@ function drawTowerPiece(ctx, piece, canvas, options = {}) {
   }
   ctx.fill();
 
-  if (piece.ears) {
+  if (style.silhouette === "dog") {
+    ctx.fillStyle = bodyColor;
+    ctx.beginPath();
+    ctx.ellipse(-width * 0.24, -height * 0.1, width * 0.1, height * 0.22, -0.45, 0, Math.PI * 2);
+    ctx.ellipse(width * 0.24, -height * 0.1, width * 0.1, height * 0.22, 0.45, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (style.silhouette === "duck") {
+    ctx.fillStyle = "rgba(255,255,255,0.22)";
+    ctx.beginPath();
+    ctx.ellipse(-width * 0.23, height * 0.02, width * 0.11, height * 0.16, -0.4, 0, Math.PI * 2);
+    ctx.ellipse(width * 0.23, height * 0.02, width * 0.11, height * 0.16, 0.4, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (piece.ears) {
     ctx.fillStyle = bodyColor;
     ctx.beginPath();
     ctx.moveTo(-width * 0.22, -height * 0.28);
@@ -2153,6 +2347,14 @@ function drawTowerPiece(ctx, piece, canvas, options = {}) {
     ctx.lineTo(width * 0.08, -height * 0.62);
     ctx.lineTo(0, -height * 0.24);
     ctx.closePath();
+    ctx.fill();
+  }
+
+  if (style.silhouette === "panda") {
+    ctx.fillStyle = "#24344c";
+    ctx.beginPath();
+    ctx.ellipse(-width * 0.19, -height * 0.12, width * 0.12, height * 0.14, 0, 0, Math.PI * 2);
+    ctx.ellipse(width * 0.19, -height * 0.12, width * 0.12, height * 0.14, 0, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -2189,7 +2391,7 @@ function drawTowerPiece(ctx, piece, canvas, options = {}) {
   }
   ctx.stroke();
 
-  if (piece.accessory === "beak") {
+  if (piece.accessory === "duck_beak" || piece.accessory === "beak") {
     ctx.fillStyle = "#ff9855";
     ctx.beginPath();
     ctx.moveTo(0, height * 0.02);
@@ -2209,10 +2411,31 @@ function drawTowerPiece(ctx, piece, canvas, options = {}) {
     ctx.fillStyle = accent;
     ctx.fillRect(-width * 0.22, height * 0.02, width * 0.44, Math.max(4, height * 0.07));
   }
+  if (piece.accessory === "cat_tail" || piece.accessory === "wag_tail") {
+    ctx.strokeStyle = bodyColor;
+    ctx.lineWidth = Math.max(5, width * 0.045);
+    ctx.beginPath();
+    ctx.moveTo(width * 0.34, height * 0.08);
+    ctx.quadraticCurveTo(width * 0.52, -height * 0.05, width * 0.44, -height * 0.34);
+    ctx.stroke();
+  }
+  if (piece.accessory === "wing") {
+    ctx.fillStyle = "rgba(255,255,255,0.25)";
+    ctx.beginPath();
+    ctx.ellipse(width * 0.1, height * 0.02, width * 0.12, height * 0.13, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
   if (piece.accessory === "patch") {
     ctx.fillStyle = "rgba(36, 52, 76, 0.12)";
     ctx.beginPath();
     ctx.ellipse(width * 0.18, -height * 0.02, width * 0.1, height * 0.12, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  if (piece.accessory === "panda_patch") {
+    ctx.fillStyle = "rgba(36, 52, 76, 0.9)";
+    ctx.beginPath();
+    ctx.ellipse(-width * 0.12, -height * 0.04, width * 0.09, height * 0.12, 0, 0, Math.PI * 2);
+    ctx.ellipse(width * 0.12, -height * 0.04, width * 0.09, height * 0.12, 0, 0, Math.PI * 2);
     ctx.fill();
   }
   if (piece.perfect) {
@@ -2232,22 +2455,17 @@ function drawTowerStackerCanvas() {
   const canvas = miniTowerStackerCanvas;
   const ctx = miniTowerStackerCtx;
   const themeStyle = towerThemeStyle(miniTowerStackerState.theme);
+  const targetCameraTop = towerCameraTargetTop(miniTowerStackerState);
+  miniTowerStackerCameraTop += (targetCameraTop - miniTowerStackerCameraTop) * 0.08;
   const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
   gradient.addColorStop(0, themeStyle.skyTop);
   gradient.addColorStop(1, themeStyle.skyBottom);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+  renderTowerAltitudeDecor(ctx, canvas, miniTowerStackerState, miniTowerStackerCameraTop, themeStyle);
 
-  ctx.fillStyle = "rgba(255,255,255,0.18)";
-  for (let i = 0; i < 10; i += 1) {
-    const x = ((i * 93 + 40) % canvas.width);
-    ctx.beginPath();
-    ctx.arc(x, 72 + Math.sin((performance.now() * 0.001) + i) * 10, 10 + (i % 3) * 5, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  const groundY = towerCanvasY(92, canvas.height);
+  const groundY = towerCanvasY(92, canvas.height, miniTowerStackerCameraTop);
   ctx.fillStyle = themeStyle.ground;
   ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
   ctx.fillStyle = "rgba(255,255,255,0.22)";
@@ -2255,18 +2473,18 @@ function drawTowerStackerCanvas() {
 
   const settledPieces = Array.isArray(miniTowerStackerState.settledPieces) ? [...miniTowerStackerState.settledPieces].sort((a, b) => Number(a.y || 0) - Number(b.y || 0)) : [];
   for (const piece of settledPieces) {
-    drawTowerPiece(ctx, piece, canvas, { shadow: true });
+    drawTowerPiece(ctx, piece, canvas, { shadow: true, topWorld: miniTowerStackerCameraTop });
   }
   for (const piece of miniTowerStackerState.fallingPieces || []) {
-    drawTowerPiece(ctx, piece, canvas, { shadow: true });
+    drawTowerPiece(ctx, piece, canvas, { shadow: true, topWorld: miniTowerStackerCameraTop, falling: true });
   }
-  drawTowerPiece(ctx, miniTowerStackerState.previewPiece, canvas, { shadow: true });
+  drawTowerPiece(ctx, miniTowerStackerState.previewPiece, canvas, { shadow: true, topWorld: miniTowerStackerCameraTop });
 
   if (miniTowerStackerState.previewPiece && miniTowerStackerState.previewPiece.dropped !== true) {
     ctx.strokeStyle = "rgba(36,52,76,0.15)";
     ctx.setLineDash([8, 10]);
     ctx.beginPath();
-    ctx.moveTo(towerCanvasX(miniTowerStackerState.previewPiece.x, canvas.width), towerCanvasY(miniTowerStackerState.previewPiece.y, canvas.height));
+    ctx.moveTo(towerCanvasX(miniTowerStackerState.previewPiece.x, canvas.width), towerCanvasY(miniTowerStackerState.previewPiece.y, canvas.height, miniTowerStackerCameraTop));
     ctx.lineTo(towerCanvasX(miniTowerStackerState.previewPiece.x, canvas.width), groundY);
     ctx.stroke();
     ctx.setLineDash([]);
@@ -2276,12 +2494,28 @@ function drawTowerStackerCanvas() {
   ctx.font = "800 22px Arial";
   ctx.fillText("Tower Stacker", 22, 34);
   ctx.font = "700 16px Arial";
-  ctx.fillText("Drop cleanly. Keep it cute. Keep it standing.", 22, 58);
+  ctx.fillText(themeStyle.milestone, 22, 58);
 
-  if (miniTowerStackerState.lastEvent?.type === "perfect_drop" && (performance.now() % 900) < 540) {
+  ctx.fillStyle = "rgba(36,52,76,0.52)";
+  ctx.font = "800 14px Arial";
+  ctx.fillText(`Height Score ${Math.round(Number(miniTowerStackerState.towerHeightScore || 0))}`, canvas.width - 228, 28);
+  ctx.fillText(`Perfect Landings ${Math.round(Number(miniTowerStackerState.perfectLandingScore || 0))}`, canvas.width - 268, 50);
+
+  if (["perfect_drop", "great_drop", "stable_stack"].includes(String(miniTowerStackerState.lastEvent?.type || "")) && (performance.now() % 900) < 540) {
     ctx.fillStyle = "#fff7b5";
     ctx.font = "900 28px Arial";
-    ctx.fillText("Perfect Drop!", canvas.width - 210, 42);
+    const label =
+      miniTowerStackerState.lastEvent?.type === "perfect_drop"
+        ? "Perfect!"
+        : miniTowerStackerState.lastEvent?.type === "great_drop"
+          ? "Great Drop"
+          : "Stable Stack";
+    ctx.fillText(label, canvas.width - 188, 84);
+  }
+  if (miniTowerStackerState.lastEvent?.isHeightRecord === true && (performance.now() % 1200) < 700) {
+    ctx.fillStyle = "#fff7b5";
+    ctx.font = "900 22px Arial";
+    ctx.fillText("New Height Record", canvas.width - 220, 112);
   }
   if (miniTowerStackerState.collapsed) {
     ctx.fillStyle = "rgba(255,255,255,0.86)";
@@ -2305,6 +2539,7 @@ function initTowerStackerCanvas() {
   if (!miniTowerStackerCtx) {
     return;
   }
+  miniTowerStackerCameraTop = 0;
   miniTowerStackerAnimationFrame = requestAnimationFrame(drawTowerStackerCanvas);
 }
 
@@ -2353,10 +2588,10 @@ function applyMiniTowerStackerState(payload = {}, options = {}) {
   const statsEl = document.getElementById("miniTowerStats");
   const dropsEl = document.getElementById("miniTowerDrops");
   if (scoreEl) {
-    scoreEl.textContent = `Height ${Math.round(Number(payload.towerHeight || 0))} | Score ${Math.round(Number(payload.score || 0))}`;
+    scoreEl.textContent = `Height ${Math.round(Number(payload.towerHeightScore || 0))} | Perfect Landings ${Math.round(Number(payload.perfectLandingScore || 0))}`;
   }
   if (statsEl) {
-    statsEl.textContent = `${Number(payload.piecesPlaced || 0)} stacked | ${Number(payload.perfectDrops || 0)} perfect | Best combo ${Number(payload.bestCombo || payload.combo || 0)}`;
+    statsEl.textContent = `${Number(payload.piecesPlaced || 0)} stacked | Height ${Math.round(Number(payload.towerHeight || 0))} | Best combo ${Number(payload.bestCombo || payload.combo || 0)}`;
   }
   if (dropsEl) {
     dropsEl.textContent = `${Number(payload.availableDrops || 0)} drop${Number(payload.availableDrops || 0) === 1 ? "" : "s"} ready`;
@@ -2364,7 +2599,11 @@ function applyMiniTowerStackerState(payload = {}, options = {}) {
   if (summaryEl) {
     const lastEventType = String(payload?.lastEvent?.type || "");
     if (lastEventType === "perfect_drop") {
-      summaryEl.textContent = "Perfect placement! The tower feels extra stable.";
+      summaryEl.textContent = "Perfect! Centered landing and extra stability bonus.";
+    } else if (lastEventType === "great_drop") {
+      summaryEl.textContent = "Great Drop. That one landed cleanly.";
+    } else if (lastEventType === "stable_stack") {
+      summaryEl.textContent = "Stable Stack. Nice balance on that layer.";
     } else if (lastEventType === "tower_collapse") {
       summaryEl.textContent = "Oops! Too many pieces slipped. Restart and try again.";
     } else if (payload.collapsed) {
@@ -2381,6 +2620,10 @@ function applyMiniTowerStackerState(payload = {}, options = {}) {
     if (String(payload?.lastEvent?.type || "") === "perfect_drop") {
       setNotice("Perfect drop! Keep the combo going.", "good");
       playMiniGameSfx("goal");
+    } else if (String(payload?.lastEvent?.type || "") === "great_drop") {
+      setNotice("Great drop. The tower looks solid.", "good");
+    } else if (String(payload?.lastEvent?.type || "") === "stable_stack") {
+      setNotice("Stable stack. Keep climbing.", "good");
     } else if (String(payload?.lastEvent?.type || "") === "tower_collapse") {
       setNotice("Oops! The tower wobbled apart. Restart and try again.", "bad");
       playMiniGameSfx("miss");
@@ -2411,10 +2654,10 @@ function renderMiniGame(type, data, actionLabel) {
         <h4>Tower Stacker</h4>
         <p class="help">Pick a cute theme, then press <strong>Space</strong>, click <strong>Drop</strong>, or tap the stage to release the next piece.</p>
         <div class="mini-tower-topbar">
-          <div id="miniTowerScore" class="notice">Height 0 | Score 0</div>
+          <div id="miniTowerScore" class="notice">Height 0 | Perfect Landings 0</div>
           <div id="miniTowerDrops" class="notice">0 drops ready</div>
         </div>
-        <div id="miniTowerStats" class="help">0 stacked | 0 perfect | Best combo 0</div>
+        <div id="miniTowerStats" class="help">0 stacked | Height 0 | Best combo 0</div>
         <div class="mini-tower-theme-row">
           ${themes.map((theme) => `<button type="button" class="answer mini-theme-btn" data-mini-action="tower_theme" data-mini-value="${escapeHtml(theme.id)}">${escapeHtml(theme.label)}</button>`).join("")}
         </div>

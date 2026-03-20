@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tower Stacker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Baloo+2:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a1220;
+      --panel: rgba(255, 255, 255, 0.08);
+      --line: rgba(151, 214, 255, 0.22);
+      --gold: #ffe06d;
+      --text: #f8fbff;
+      --muted: rgba(248, 251, 255, 0.72);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Baloo 2", system-ui, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 18% 12%, rgba(255, 211, 91, 0.18), transparent 26%),
+        radial-gradient(circle at 82% 14%, rgba(92, 199, 255, 0.16), transparent 24%),
+        linear-gradient(180deg, #07111d 0%, #12233a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .page {
+      width: min(1240px, 100%);
+      display: grid;
+      grid-template-columns: 330px minmax(0, 1fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 24px 80px rgba(4, 11, 23, 0.42);
+    }
+
+    .sidebar {
+      padding: 22px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .eyebrow,
+    .small-label {
+      font-family: "Orbitron", monospace;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.78rem;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Orbitron", monospace;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 0.98;
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.02rem;
+      line-height: 1.5;
+    }
+
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .theme-btn,
+    .action-btn,
+    .back-link {
+      border: none;
+      border-radius: 18px;
+      padding: 13px 14px;
+      font-family: "Orbitron", monospace;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .theme-btn {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .theme-btn.selected {
+      background: linear-gradient(135deg, #ffe06d, #ffae63);
+      color: #50321a;
+      box-shadow: 0 12px 28px rgba(255, 174, 99, 0.22);
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .action-btn.drop {
+      background: linear-gradient(135deg, #ffe06d, #ffae63);
+      color: #50321a;
+      box-shadow: 0 14px 28px rgba(255, 174, 99, 0.22);
+    }
+
+    .action-btn.restart {
+      background: linear-gradient(135deg, #edf8ff, #b8e2ff);
+      color: #16304c;
+      box-shadow: 0 14px 28px rgba(92, 199, 255, 0.18);
+    }
+
+    .back-link {
+      display: block;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .theme-btn:hover,
+    .action-btn:hover,
+    .back-link:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .stat-box {
+      padding: 16px 18px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+    }
+
+    .stat-value {
+      font-family: "Orbitron", monospace;
+      font-size: 1.28rem;
+      color: var(--gold);
+    }
+
+    .stat-copy {
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 6px;
+      font-size: 0.98rem;
+    }
+
+    .stage {
+      padding: 18px;
+      overflow: hidden;
+    }
+
+    .stage-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+      padding: 4px 8px 16px;
+    }
+
+    .stage-title {
+      margin: 0;
+      font-family: "Orbitron", monospace;
+      font-size: 1.16rem;
+    }
+
+    .stage-help {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .banner {
+      min-width: 220px;
+      padding: 14px 18px;
+      border-radius: 18px;
+      text-align: center;
+      font-family: "Orbitron", monospace;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--gold);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 26px;
+      border: 1px solid rgba(151, 214, 255, 0.28);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+      background: #e6fff5;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .footer-note {
+      margin-top: 12px;
+      padding: 0 8px 4px;
+      color: rgba(248, 251, 255, 0.62);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 14px;
+      font-size: 0.96rem;
+    }
+
+    @media (max-width: 980px) {
+      .page { grid-template-columns: 1fr; }
+      .stage-head { flex-direction: column; }
+      .banner { width: 100%; }
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 14px; }
+      .theme-grid,
+      .action-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <aside class="panel sidebar">
+      <div>
+        <div class="eyebrow">Playable Demo</div>
+        <h1>Tower Stacker</h1>
+        <p class="sub">Try the stacking game directly. Pick a theme, line up the moving piece, and press <strong>Space</strong> or click to drop.</p>
+      </div>
+
+      <div class="stat-box">
+        <div class="small-label">Height</div>
+        <div class="stat-value" id="stackerScore">Height Score 0</div>
+        <div class="stat-copy" id="stackerStats">0 stacked | Height 0 | Best combo 0</div>
+      </div>
+
+      <div class="stat-box">
+        <div class="small-label">Perfect Landings</div>
+        <div class="stat-value" id="stackerPerfectScore">Perfect Landings 0</div>
+        <div class="stat-copy">Centered drops, low wobble landings, and stable placements raise this score.</div>
+      </div>
+
+      <div class="stat-box">
+        <div class="small-label">Status</div>
+        <div class="stat-copy" id="stackerStatus">Press Space, click Drop, or tap the stage.</div>
+        <div class="stat-copy" id="stackerBest">Best Height Score 0</div>
+      </div>
+
+      <div>
+        <div class="small-label" style="margin-bottom:10px;">Theme Picker</div>
+        <div class="theme-grid">
+          <button class="theme-btn selected" type="button" data-theme="cats">Cats</button>
+          <button class="theme-btn" type="button" data-theme="dogs">Dogs</button>
+          <button class="theme-btn" type="button" data-theme="ducks">Ducks</button>
+          <button class="theme-btn" type="button" data-theme="pandas">Pandas</button>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="action-btn drop" id="dropBtn" type="button">Drop Piece</button>
+        <button class="action-btn restart" id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <a class="back-link" href="/">Back to Game Hub</a>
+    </aside>
+
+    <main class="panel stage">
+      <div class="stage-head">
+        <div>
+          <h2 class="stage-title">Cute, Fast, Classroom-Friendly Stacking</h2>
+          <p class="stage-help">The piece glides side to side above the tower. Time the drop, land cleanly, and keep the stack stable before it slips apart.</p>
+        </div>
+        <div class="banner" id="stackerBanner">Try for a Perfect Drop</div>
+      </div>
+
+      <canvas id="towerCanvas" width="960" height="560" aria-label="Tower Stacker game"></canvas>
+
+      <div class="footer-note">
+        <span>Space or click to drop</span>
+        <span>Change theme anytime before your next run</span>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tower-stacker.js"></script>
+</body>
+</html>

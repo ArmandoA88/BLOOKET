@@ -263,18 +263,18 @@
     <section class="card strong foosball-demo-card">
       <div class="foosball-demo-headline">
         <h1>Foosball Frenzy</h1>
-        <p>No host required. 3v3 full-field soccer with one control set per team.</p>
+        <p>No host required. Group-controlled foosball lines with live ball recovery and spacebar kicks.</p>
       </div>
 
       <div class="foosball-demo-topline">
         <div id="demoScore" class="notice">You 0 - 0 Bot</div>
-        <div id="demoStats" class="notice">0 shots | 0% accuracy | 0 saves</div>
-        <div id="demoLevel" class="notice">Tier 1 | Streak 0</div>
-        <div id="demoEvent" class="notice">Event: None</div>
+        <div id="demoStats" class="notice">Ball speed 0 | Blue kicks 0 | Gold kicks 0</div>
+        <div id="demoLevel" class="notice">W/S defenders | Arrows attack | Space kick</div>
+        <div id="demoEvent" class="notice">Formation: grouped vertical movement</div>
         <div id="demoTimer" class="notice">60.0s</div>
       </div>
 
-      <div id="demoNotice" class="notice">Score as many goals as you can in 60 seconds.</div>
+      <div id="demoNotice" class="notice">W/S mueve defensores, flechas mueve mediocampo/ataque y Space ejecuta la patada.</div>
 
       <div class="foosball-demo-stage-wrap">
         <div id="demoStage" class="foosball-demo-stage"></div>
@@ -284,13 +284,13 @@
         <label>Control Map & Stamina</label>
         <div class="foosball-control-grid">
           <div class="foosball-super-wrap">
-            <div class="foosball-super-head"><span>Blue Team (W A S D + Shift)</span></div>
+            <div class="foosball-super-head"><span>Blue Team (W/S and Arrows)</span></div>
             <div class="foosball-super-bar">
               <div id="blueStamina" class="foosball-super-fill" style="width: 100%"></div>
             </div>
           </div>
           <div class="foosball-super-wrap ready">
-            <div class="foosball-super-head"><span>Gold Team (Arrows + Enter)</span></div>
+            <div class="foosball-super-head"><span>Gold Team (Auto Kicks)</span></div>
             <div class="foosball-super-bar">
               <div id="goldStamina" class="foosball-super-fill" style="width: 100%"></div>
             </div>
@@ -299,7 +299,7 @@
       </div>
 
       <div class="foosball-demo-footer">
-        <span>Tip: bump the larger ball while moving to kick with more power.</span>
+        <span>Tip: each line moves junta en vertical. La pelota se recoloca sola si se atasca por mas de 1 segundo.</span>
         <span class="foosball-demo-credits">Sprites: CC0 OpenGameArt</span>
       </div>
     </section>

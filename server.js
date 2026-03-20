@@ -1198,7 +1198,7 @@ const MINI_GAME_CATALOG = [
   {
     id: "foosball_frenzy",
     name: "Foosball Frenzy",
-    description: "Fast table soccer duel. Pick lane, set power, and score on the bot."
+    description: "Table soccer bars stay fixed in formation. Slide laterally and kick with space."
   },
   {
     id: "soccer_shootout",
@@ -4909,12 +4909,11 @@ function handleMiniGameAction(game, socketId, action, value) {
     }
 
     const now = Date.now();
-    if (now - Number(state.lastKickAt || 0) < 180) {
+    if (now - Number(state.lastKickAt || 0) < 150) {
       return { ok: true, throttled: true };
     }
 
     const lane = clampFoosballLane(value?.lane);
-    const power = clamp(Math.round(Number(value?.power || 2)), 1, 3);
     const goalieLane = clampFoosballLane(state.goalieLane);
     state.lastKickAt = now;
     state.lane = lane;
@@ -4922,8 +4921,7 @@ function handleMiniGameAction(game, socketId, action, value) {
 
     const sameLane = lane === goalieLane;
     const tierPenalty = (clamp(Number(state.difficultyTier || 1), 1, 4) - 1) * 0.05;
-    let goalChance = sameLane ? 0.28 : 0.86;
-    goalChance += power === 2 ? 0.06 : power === 1 ? 0.03 : -0.05;
+    let goalChance = sameLane ? 0.33 : 0.84;
     goalChance -= tierPenalty;
     goalChance = clamp(goalChance, 0.1, 0.95);
 
@@ -4942,7 +4940,6 @@ function handleMiniGameAction(game, socketId, action, value) {
       ts: now,
       lane,
       goalieLane,
-      power,
       goal
     };
     state.lastEventSeq = Math.max(0, Number(state.lastEventSeq || 0)) + 1;

@@ -20,39 +20,22 @@
 
   const width = 1000;
   const height = 560;
-  const goalDurationMs = 90000;
-  const spriteAssetVersion = "20260303f";
+  const roundDurationMs = 90000;
 
   const pitch = {
-    left: 135,
-    right: 865,
-    top: 110,
-    bottom: 504
+    left: 120,
+    right: 880,
+    top: 84,
+    bottom: 476
   };
 
   const goal = {
-    top: 247,
-    bottom: 377
+    top: 228,
+    bottom: 332
   };
-  const goalTop = goal.top;
-  const goalBottom = goal.bottom;
 
   const teamBlueColor = 0x2f80ff;
   const teamGoldColor = 0xffd447;
-
-  const topFrameUrls = [
-    "/assets/minigames/foosball_demo/player-top-0.png",
-    "/assets/minigames/foosball_demo/player-top-1.png",
-    "/assets/minigames/foosball_demo/player-top-2.png",
-    "/assets/minigames/foosball_demo/player-top-3.png"
-  ];
-
-  const bottomFrameUrls = [
-    "/assets/minigames/foosball_demo/player-bottom-0.png",
-    "/assets/minigames/foosball_demo/player-bottom-1.png",
-    "/assets/minigames/foosball_demo/player-bottom-2.png",
-    "/assets/minigames/foosball_demo/player-bottom-3.png"
-  ];
 
   const state = {
     blueGoals: 0,
@@ -62,13 +45,96 @@
     running: true,
     freezeUntil: 0,
     endAt: 0,
-    blueStamina: 100,
-    goldStamina: 100,
-    statusText: ""
+    statusText: "",
+    cpuKickCooldownUntil: 0,
+    playerKickCooldownUntil: 0,
+    lastKicker: ""
+  };
+
+  const keysDown = new Set();
+  const ballFlow = {
+    stillMs: 0,
+    lastRecoveryAt: 0
+  };
+
+  const FORMATION_ROWS = [
+    { id: "blue_back", team: "blue", x: 150, yPercents: [0.24, 0.5, 0.76], keeperIndex: 1, role: "backline" },
+    { id: "blue_edges", team: "blue", x: 235, yPercents: [0.16, 0.84], role: "wide_support" },
+    { id: "gold_front_press", team: "gold", x: 330, yPercents: [0.28, 0.5, 0.72], role: "press" },
+    { id: "blue_midfield", team: "blue", x: 430, yPercents: [0.14, 0.32, 0.5, 0.68, 0.86], role: "midfield" },
+    { id: "gold_midfield", team: "gold", x: 570, yPercents: [0.14, 0.32, 0.5, 0.68, 0.86], role: "midfield" },
+    { id: "blue_attack", team: "blue", x: 670, yPercents: [0.28, 0.5, 0.72], role: "attack" },
+    { id: "gold_edges", team: "gold", x: 765, yPercents: [0.16, 0.84], role: "wide_support" },
+    { id: "gold_back", team: "gold", x: 850, yPercents: [0.24, 0.5, 0.76], keeperIndex: 1, role: "backline" }
+  ];
+
+  const BLUE_NAMES = [
+    "Blue Left",
+    "B. Goalie",
+    "Blue Right",
+    "Blue Wing A",
+    "Blue Wing B",
+    "Blue Press A",
+    "Blue Press B",
+    "Blue Press C",
+    "Blue Mid A",
+    "Blue Mid B",
+    "Blue Mid C",
+    "Blue Mid D",
+    "Blue Mid E",
+    "Blue Attack A",
+    "Blue Attack B",
+    "Blue Attack C"
+  ];
+
+  const GOLD_NAMES = [
+    "Gold Left",
+    "G. Goalie",
+    "Gold Right",
+    "Gold Wing A",
+    "Gold Wing B",
+    "Gold Press A",
+    "Gold Press B",
+    "Gold Press C",
+    "Gold Mid A",
+    "Gold Mid B",
+    "Gold Mid C",
+    "Gold Mid D",
+    "Gold Mid E",
+    "Gold Attack A",
+    "Gold Attack B",
+    "Gold Attack C"
+  ];
+
+  const MOVEMENT_GROUPS = {
+    defenders: {
+      id: "defenders",
+      rowIds: new Set(["blue_back", "blue_edges"]),
+      upKeys: new Set(["w"]),
+      downKeys: new Set(["s"]),
+      offsetY: 0,
+      speed: 220,
+      minOffset: 0,
+      maxOffset: 0
+    },
+    attack: {
+      id: "attack",
+      rowIds: new Set(["blue_midfield", "blue_attack"]),
+      upKeys: new Set(["arrowup"]),
+      downKeys: new Set(["arrowdown"]),
+      offsetY: 0,
+      speed: 220,
+      minOffset: 0,
+      maxOffset: 0
+    }
   };
 
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
+  }
+
+  function randomFloat(min, max) {
+    return min + Math.random() * (max - min);
   }
 
   function setNotice(text, tone = "") {
@@ -82,78 +148,13 @@
     }
   }
 
-  function makeFrameTexture(sheetTexture, x, y, size = 16) {
-    const frame = new window.PIXI.Rectangle(x, y, size, size);
-    try {
-      return new window.PIXI.Texture({ source: sheetTexture.source, frame });
-    } catch (_err) {
-      return new window.PIXI.Texture(sheetTexture.baseTexture || sheetTexture.source, frame);
-    }
+  function pitchY(percent) {
+    return pitch.top + (pitch.bottom - pitch.top) * percent;
   }
 
-  function setNearestScaleMode(texture) {
-    const source = texture && (texture.source || texture.baseTexture);
-    if (!source || !window.PIXI.SCALE_MODES) {
-      return;
-    }
-    source.scaleMode = window.PIXI.SCALE_MODES.NEAREST;
+  function isInsideGoalY(y) {
+    return y >= goal.top && y <= goal.bottom;
   }
-
-  async function loadTextureSafe(url) {
-    try {
-      if (window.PIXI.Assets) {
-        return await window.PIXI.Assets.load(url);
-      }
-    } catch (_err) { }
-    try {
-      return window.PIXI.Texture.from(url);
-    } catch (err) {
-      return window.PIXI.Texture.WHITE;
-    }
-  }
-
-  function buildFramesFromSheet(sheetTexture, rowIndex) {
-    return [0, 1, 2, 3].map((col) => makeFrameTexture(sheetTexture, col * 16, rowIndex * 16, 16));
-  }
-
-  async function loadFoosballSpriteFrames() {
-    const cacheBust = `?v=${spriteAssetVersion}`;
-    const sheetUrl = `/assets/minigames/foosball_demo/football-player-sheet-cc0.png${cacheBust}`;
-    let topFrames = [];
-    let bottomFrames = [];
-
-    try {
-      const sheetTexture = await loadTextureSafe(sheetUrl);
-      setNearestScaleMode(sheetTexture);
-      topFrames = buildFramesFromSheet(sheetTexture, 6);
-      bottomFrames = buildFramesFromSheet(sheetTexture, 5);
-    } catch (_err) { }
-
-    if (topFrames.length === 0) {
-      topFrames = await Promise.all(topFrameUrls.map((url) => loadTextureSafe(`${url}${cacheBust}`)));
-    }
-    if (bottomFrames.length === 0) {
-      bottomFrames = await Promise.all(bottomFrameUrls.map((url) => loadTextureSafe(`${url}${cacheBust}`)));
-    }
-
-    topFrames.forEach(setNearestScaleMode);
-    bottomFrames.forEach(setNearestScaleMode);
-
-    return {
-      topFrames: topFrames.length ? topFrames : [window.PIXI.Texture.WHITE],
-      bottomFrames: bottomFrames.length ? bottomFrames : [window.PIXI.Texture.WHITE]
-    };
-  }
-
-  const { topFrames, bottomFrames } = await loadFoosballSpriteFrames();
-
-  const messiTex = await loadTextureSafe(`/assets/players/messi.svg?v=${spriteAssetVersion}`);
-  const mbappeTex = await loadTextureSafe(`/assets/players/mbappe.svg?v=${spriteAssetVersion}`);
-  const neymarTex = await loadTextureSafe(`/assets/players/neymar.svg?v=${spriteAssetVersion}`);
-  const ronaldoTex = await loadTextureSafe(`/assets/players/ronaldo.svg?v=${spriteAssetVersion}`);
-  const haalandTex = await loadTextureSafe(`/assets/players/haaland.svg?v=${spriteAssetVersion}`);
-  const peleTex = await loadTextureSafe(`/assets/players/pele.svg?v=${spriteAssetVersion}`);
-  const goalieTex = await loadTextureSafe(`/assets/players/goalie-bot.svg?v=${spriteAssetVersion}`);
 
   const app = new window.PIXI.Application();
   await app.init({
@@ -174,125 +175,72 @@
 
   const root = new window.PIXI.Container();
   app.stage.addChild(root);
+  const fieldLayer = new window.PIXI.Container();
+  const rodLayer = new window.PIXI.Container();
+  const playerLayer = new window.PIXI.Container();
   const fxLayer = new window.PIXI.Container();
+  root.addChild(fieldLayer);
+  root.addChild(rodLayer);
+  root.addChild(playerLayer);
+  root.addChild(fxLayer);
 
-  // Grass alternating stripes (7 bands)
+  const grassStripes = new window.PIXI.Graphics();
   const pitchW = pitch.right - pitch.left;
   const pitchH = pitch.bottom - pitch.top;
   const stripeCount = 7;
   const stripeW = pitchW / stripeCount;
-  const grassStripes = new window.PIXI.Graphics();
-  for (let i = 0; i < stripeCount; i++) {
-    if (i % 2 === 0) {
-      grassStripes.beginFill(0x1a8a52, 0.28);
-    } else {
-      grassStripes.beginFill(0x1aaa58, 0.28);
-    }
+  for (let i = 0; i < stripeCount; i += 1) {
+    grassStripes.beginFill(i % 2 === 0 ? 0x1a8a52 : 0x1aaa58, 0.28);
     grassStripes.drawRect(pitch.left + i * stripeW, pitch.top, stripeW, pitchH);
     grassStripes.endFill();
   }
-  root.addChild(grassStripes);
+  fieldLayer.addChild(grassStripes);
 
-  const fieldDetails = new window.PIXI.Graphics();
+  const field = new window.PIXI.Graphics();
+  field.lineStyle(4, 0xffffff, 0.55);
+  field.drawRect(pitch.left, pitch.top, pitchW, pitchH);
+  field.lineStyle(2, 0xffffff, 0.6);
+  field.moveTo(width / 2, pitch.top);
+  field.lineTo(width / 2, pitch.bottom);
+  field.drawCircle(width / 2, height / 2, 68);
+  field.beginFill(0xffffff, 0.8);
+  field.drawCircle(width / 2, height / 2, 4);
+  field.drawCircle(pitch.left + 85, height / 2, 3);
+  field.drawCircle(pitch.right - 85, height / 2, 3);
+  field.endFill();
+  field.lineStyle(2, 0xffffff, 0.6);
+  field.drawRect(pitch.left, height / 2 - 114, 106, 228);
+  field.drawRect(pitch.left, height / 2 - 48, 44, 96);
+  field.drawRect(pitch.right - 106, height / 2 - 114, 106, 228);
+  field.drawRect(pitch.right - 44, height / 2 - 48, 44, 96);
+  fieldLayer.addChild(field);
 
-  // Pitch outline
-  fieldDetails.lineStyle(4, 0xFFFFFF, 0.55);
-  fieldDetails.drawRect(pitch.left, pitch.top, pitchW, pitchH);
-
-  // Corner arcs (quarter-circles, radius 22)
-  const cR = 22;
-  fieldDetails.lineStyle(2, 0xFFFFFF, 0.55);
-  fieldDetails.arc(pitch.left, pitch.top, cR, 0, Math.PI * 0.5);
-  fieldDetails.moveTo(pitch.right - cR, pitch.top);
-  fieldDetails.arc(pitch.right, pitch.top, cR, Math.PI * 0.5, Math.PI);
-  fieldDetails.moveTo(pitch.right, pitch.bottom - cR);
-  fieldDetails.arc(pitch.right, pitch.bottom, cR, Math.PI, Math.PI * 1.5);
-  fieldDetails.moveTo(pitch.left + cR, pitch.bottom);
-  fieldDetails.arc(pitch.left, pitch.bottom, cR, Math.PI * 1.5, Math.PI * 2);
-
-
-  // Center Line
-  fieldDetails.lineStyle(2, 0xFFFFFF, 0.6);
-  fieldDetails.moveTo(width / 2, pitch.top);
-  fieldDetails.lineTo(width / 2, pitch.bottom);
-
-  // Center Circle
-  fieldDetails.lineStyle(2, 0xFFFFFF, 0.6);
-  fieldDetails.drawCircle(width / 2, height / 2, 70);
-  fieldDetails.beginFill(0xFFFFFF, 0.8);
-  fieldDetails.drawCircle(width / 2, height / 2, 5);
-  fieldDetails.endFill();
-
-  // Penalty spots
-  fieldDetails.beginFill(0xFFFFFF, 0.8);
-  fieldDetails.drawCircle(pitch.left + 80, height / 2, 3.5);
-  fieldDetails.drawCircle(pitch.right - 80, height / 2, 3.5);
-  fieldDetails.endFill();
-
-  // Left Penalty Box
-  fieldDetails.lineStyle(2, 0xFFFFFF, 0.6);
-  fieldDetails.drawRect(pitch.left, height / 2 - 120, 110, 240);
-  fieldDetails.drawRect(pitch.left, height / 2 - 50, 45, 100);
-
-  // Right Penalty Box
-  fieldDetails.drawRect(pitch.right - 110, height / 2 - 120, 110, 240);
-  fieldDetails.drawRect(pitch.right - 45, height / 2 - 50, 45, 100);
-
-  // === GOAL STRUCTURES ===
-  const goalDepth = 44;  // depth of the net area
-  const goalW = goalBottom - goalTop;  // height of opening
-
-  // LEFT GOAL - net fill
-  fieldDetails.beginFill(0xffffff, 0.08);
-  fieldDetails.lineStyle(0);
-  fieldDetails.drawRect(pitch.left - goalDepth, goalTop, goalDepth, goalW);
-  fieldDetails.endFill();
-
-  // LEFT GOAL - net grid lines
-  fieldDetails.lineStyle(1, 0xffffff, 0.22);
-  for (let gx = pitch.left - goalDepth + 11; gx < pitch.left; gx += 11) {
-    fieldDetails.moveTo(gx, goalTop);
-    fieldDetails.lineTo(gx, goalBottom);
-  }
-  for (let gy = goalTop + 13; gy < goalBottom; gy += 13) {
-    fieldDetails.moveTo(pitch.left - goalDepth, gy);
-    fieldDetails.lineTo(pitch.left, gy);
+  function drawGoal(x, facingLeft) {
+    const goalDepth = 40;
+    const goalHeight = goal.bottom - goal.top;
+    const goalShape = new window.PIXI.Graphics();
+    goalShape.beginFill(0xffffff, 0.08);
+    goalShape.drawRect(facingLeft ? x : x - goalDepth, goal.top, goalDepth, goalHeight);
+    goalShape.endFill();
+    goalShape.lineStyle(4, 0xffffff, 1);
+    if (facingLeft) {
+      goalShape.moveTo(x + goalDepth, goal.top);
+      goalShape.lineTo(x + goalDepth, goal.bottom);
+      goalShape.lineTo(x, goal.bottom);
+      goalShape.moveTo(x + goalDepth, goal.top);
+      goalShape.lineTo(x, goal.top);
+    } else {
+      goalShape.moveTo(x - goalDepth, goal.top);
+      goalShape.lineTo(x - goalDepth, goal.bottom);
+      goalShape.lineTo(x, goal.bottom);
+      goalShape.moveTo(x - goalDepth, goal.top);
+      goalShape.lineTo(x, goal.top);
+    }
+    fieldLayer.addChild(goalShape);
   }
 
-  // LEFT GOAL - posts & crossbar
-  fieldDetails.lineStyle(5, 0xFFFFFF, 1.0);
-  fieldDetails.moveTo(pitch.left, goalTop); fieldDetails.lineTo(pitch.left, goalBottom);   // front post
-  fieldDetails.moveTo(pitch.left, goalTop); fieldDetails.lineTo(pitch.left - goalDepth, goalTop);   // top bar
-  fieldDetails.moveTo(pitch.left, goalBottom); fieldDetails.lineTo(pitch.left - goalDepth, goalBottom); // bottom bar
-  fieldDetails.lineStyle(3, 0xdddddd, 0.8);
-  fieldDetails.moveTo(pitch.left - goalDepth, goalTop); fieldDetails.lineTo(pitch.left - goalDepth, goalBottom); // back post
-
-  // RIGHT GOAL - net fill
-  fieldDetails.lineStyle(0);
-  fieldDetails.beginFill(0xffffff, 0.08);
-  fieldDetails.drawRect(pitch.right, goalTop, goalDepth, goalW);
-  fieldDetails.endFill();
-
-  // RIGHT GOAL - net grid lines
-  fieldDetails.lineStyle(1, 0xffffff, 0.22);
-  for (let gx = pitch.right + 11; gx < pitch.right + goalDepth; gx += 11) {
-    fieldDetails.moveTo(gx, goalTop);
-    fieldDetails.lineTo(gx, goalBottom);
-  }
-  for (let gy = goalTop + 13; gy < goalBottom; gy += 13) {
-    fieldDetails.moveTo(pitch.right, gy);
-    fieldDetails.lineTo(pitch.right + goalDepth, gy);
-  }
-
-  // RIGHT GOAL - posts & crossbar
-  fieldDetails.lineStyle(5, 0xFFFFFF, 1.0);
-  fieldDetails.moveTo(pitch.right, goalTop); fieldDetails.lineTo(pitch.right, goalBottom);
-  fieldDetails.moveTo(pitch.right, goalTop); fieldDetails.lineTo(pitch.right + goalDepth, goalTop);
-  fieldDetails.moveTo(pitch.right, goalBottom); fieldDetails.lineTo(pitch.right + goalDepth, goalBottom);
-  fieldDetails.lineStyle(3, 0xdddddd, 0.8);
-  fieldDetails.moveTo(pitch.right + goalDepth, goalTop); fieldDetails.lineTo(pitch.right + goalDepth, goalBottom);
-
-  root.addChild(fieldDetails);
+  drawGoal(pitch.left - 40, true);
+  drawGoal(pitch.right + 40, false);
 
   const boardBg = new window.PIXI.Sprite(window.PIXI.Texture.WHITE);
   boardBg.width = 420;
@@ -341,497 +289,198 @@
   const bigStatusText = new window.PIXI.Text({ text: "", style: statusTextStyle });
   bigStatusText.anchor.set(0.5);
   bigStatusText.x = width / 2;
-  bigStatusText.y = height / 2 - 40;
+  bigStatusText.y = height / 2 - 36;
   root.addChild(bigStatusText);
 
-  const powerUpContainer = new window.PIXI.Container();
-  root.addChild(powerUpContainer);
+  const particles = [];
+  const ballTrail = new window.PIXI.Graphics();
+  fxLayer.addChild(ballTrail);
+  const trailPoints = [];
+  let shakeTime = 0;
 
-  root.addChild(fxLayer);
-
-  const powerUpsArray = [];
-  const powerUpTypes = ["giant", "speed", "stamina", "super", "freeze", "magnet"];
-  const powerUpColors = { "giant": 0xef4444, "speed": 0x3b82f6, "stamina": 0x10b981, "super": 0xa855f7, "freeze": 0x67e8f9, "magnet": 0xf43f5e };
-  const powerUpLabels = { "giant": "Giant Mode", "speed": "Super Speed", "stamina": "Full Stamina", "super": "Power Kicker", "freeze": "Freeze Enemies", "magnet": "Ball Magnet" };
-
-  function spawnPowerUp() {
-    if (powerUpsArray.length >= 3) return;
-    const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
-    const cx = pitch.left + 80 + Math.random() * (pitch.right - pitch.left - 160);
-    const cy = pitch.top + 50 + Math.random() * (pitch.bottom - pitch.top - 100);
-
-    const graphics = new window.PIXI.Graphics();
-    graphics.beginFill(powerUpColors[type]);
-    graphics.lineStyle(2, 0xFFFFFF);
-    graphics.drawCircle(0, 0, 15);
-    graphics.endFill();
-    graphics.x = cx;
-    graphics.y = cy;
-
-    const label = new window.PIXI.Text({
-      text: type === "giant" ? "G" : type === "speed" ? "⚡" : type === "stamina" ? "♥" : type === "freeze" ? "❄" : type === "magnet" ? "🧲" : "S",
-      style: { fill: "#FFFFFF", fontSize: 16, fontWeight: "bold" }
-    });
-    label.anchor.set(0.5);
-    graphics.addChild(label);
-
-    powerUpContainer.addChild(graphics);
-
-    powerUpsArray.push({
-      x: cx,
-      y: cy,
-      radius: 17,
-      type: type,
-      sprite: graphics,
-      life: 12.0
-    });
-  }
-
-  const players = [];
-  const keysDown = new Set();
-
-
-
-
-  // === Player configs — unique per star ===
-  const playerConfigs = {
-    "Messi": { skin: 0xf5c99a, hair: 0x2c1810, hairStyle: "short", num: "10", accent: 0xffe066 },
-    "Mbappe": { skin: 0x8b5e3c, hair: 0x111111, hairStyle: "fade", num: "7", accent: 0x60a5fa },
-    "Neymar": { skin: 0xa0735a, hair: 0x1d1006, hairStyle: "mohawk", num: "11", accent: 0xfde68a },
-    "Ronaldo": { skin: 0xe8c39e, hair: 0x1a120b, hairStyle: "slick", num: "7", accent: 0xfcd34d },
-    "Haaland": { skin: 0xfde8cc, hair: 0xe8c87a, hairStyle: "short", num: "9", accent: 0xa78bfa },
-    "Pel\u00e9": { skin: 0x6b4226, hair: 0x0d0905, hairStyle: "short", num: "10", accent: 0x86efac },
-    "B. Goalie": { skin: 0xf5c99a, hair: 0x2c1810, hairStyle: "short", num: "G", accent: 0x99f6e4 },
-    "G. Goalie": { skin: 0xd4a574, hair: 0x111111, hairStyle: "short", num: "G", accent: 0xfcd34d }
-  };
-
-  function buildPlayerSprite(name, team, r) {
-    const cfg = playerConfigs[name] || { skin: 0xffe0bd, hair: 0x333333, hairStyle: "short", num: "?", accent: 0xffffff };
-    const teamDark = team === "blue" ? 0x1d4ed8 : 0xb45309;
-    const shirtColor = team === "blue" ? 0x3b82f6 : 0xf59e0b;
-    const shirtLight = team === "blue" ? 0x93c5fd : 0xfde68a;
-    const shortsColor = team === "blue" ? 0x1e3a8a : 0x7c2d12;
-    const isGoalie = name.includes("Goalie");
-    const scale = r / 14; // normalize size
-
-    const g = new window.PIXI.Container();
-    const body = new window.PIXI.Graphics();
-
-    // ---- LEGS (drawn first, behind torso) ----
-    const legW = 6 * scale, legH = 10 * scale;
-    const bootH = 4 * scale, bootW = 7 * scale;
-    // Left leg
-    body.beginFill(shortsColor);
-    body.drawRect(-10 * scale, 2 * scale, legW, legH - 2);
-    body.endFill();
-    body.beginFill(0xffffff); // sock
-    body.drawRect(-10 * scale, 2 * scale + legH - 4, legW, 4 * scale);
-    body.endFill();
-    body.beginFill(0x111111); // boot
-    body.drawRect(-11 * scale, 2 * scale + legH + 1, bootW, bootH);
-    body.endFill();
-    // Right leg
-    body.beginFill(shortsColor);
-    body.drawRect(4 * scale, 2 * scale, legW, legH - 2);
-    body.endFill();
-    body.beginFill(0xffffff);
-    body.drawRect(4 * scale, 2 * scale + legH - 4, legW, 4 * scale);
-    body.endFill();
-    body.beginFill(0x111111);
-    body.drawRect(3 * scale, 2 * scale + legH + 1, bootW, bootH);
-    body.endFill();
-
-    // ---- ARMS ----
-    body.beginFill(cfg.skin);
-    // Left arm
-    body.drawRect(-15 * scale, -10 * scale, 5 * scale, 12 * scale);
-    // Right arm
-    body.drawRect(10 * scale, -10 * scale, 5 * scale, 12 * scale);
-    body.endFill();
-
-    // ---- TORSO/JERSEY ----
-    body.lineStyle(1.5, teamDark, 0.8);
-    body.beginFill(shirtColor);
-    body.drawRoundedRect(-9 * scale, -14 * scale, 18 * scale, 18 * scale, 3 * scale);
-    body.endFill();
-    // Jersey stripes
-    body.lineStyle(1.5, shirtLight, 0.7);
-    body.moveTo(-3 * scale, -13 * scale); body.lineTo(-3 * scale, 3 * scale);
-    body.moveTo(3 * scale, -13 * scale); body.lineTo(3 * scale, 3 * scale);
-    // Collar
-    body.lineStyle(0);
-    body.beginFill(shirtLight);
-    body.drawRoundedRect(-4 * scale, -14 * scale, 8 * scale, 5 * scale, 2);
-    body.endFill();
-
-    // Jersey number
-    const numStyle = new window.PIXI.TextStyle({ fill: teamDark, fontSize: Math.round(7 * scale + 2), fontWeight: "900", fontFamily: "Arial Black, sans-serif" });
-    const numText = new window.PIXI.Text({ text: cfg.num, style: numStyle });
-    numText.anchor.set(0.5);
-    numText.y = -5 * scale;
-    body.addChild(numText);
-
-    // ---- HEAD ----
-    // Neck
-    body.beginFill(cfg.skin);
-    body.drawRect(-3 * scale, -17 * scale, 6 * scale, 4 * scale);
-    body.endFill();
-    // Head shape
-    body.lineStyle(1.2, 0x8b6347, 0.5);
-    body.beginFill(cfg.skin);
-    body.drawEllipse(0, -23 * scale, 9 * scale, 8 * scale);
-    body.endFill();
-    // Ears
-    body.lineStyle(0);
-    body.beginFill(cfg.skin);
-    body.drawCircle(-9 * scale, -23 * scale, 2.5 * scale);
-    body.drawCircle(9 * scale, -23 * scale, 2.5 * scale);
-    body.endFill();
-    // Eyes
-    body.beginFill(0x1a1a1a);
-    body.drawEllipse(-4 * scale, -23.5 * scale, 2 * scale, 2.5 * scale);
-    body.drawEllipse(4 * scale, -23.5 * scale, 2 * scale, 2.5 * scale);
-    body.endFill();
-    body.beginFill(0xffffff, 0.85);
-    body.drawCircle(-3.5 * scale, -24 * scale, 0.9 * scale);
-    body.drawCircle(4.5 * scale, -24 * scale, 0.9 * scale);
-    body.endFill();
-    // Mouth
-    body.lineStyle(1.2, 0x7a3a1a, 0.8);
-    body.moveTo(-3 * scale, -20.5 * scale);
-    body.quadraticCurveTo(0, -19 * scale, 3 * scale, -20.5 * scale);
-    // Nose
-    body.lineStyle(0);
-    body.beginFill(cfg.skin);
-    body.drawCircle(0, -21.5 * scale, 1.5 * scale);
-    body.endFill();
-
-    // ---- HAIR ----
-    body.lineStyle(0);
-    if (cfg.hairStyle === "short") {
-      body.beginFill(cfg.hair);
-      body.drawEllipse(0, -28 * scale, 9 * scale, 5 * scale);
-      body.endFill();
-    } else if (cfg.hairStyle === "fade") {
-      body.beginFill(cfg.hair);
-      body.drawEllipse(0, -27 * scale, 9 * scale, 4.5 * scale);
-      body.endFill();
-      // shaved sides
-      body.beginFill(cfg.skin, 0.7);
-      body.drawRect(-9 * scale, -27 * scale, 6 * scale, 6 * scale);
-      body.drawRect(3 * scale, -27 * scale, 6 * scale, 6 * scale);
-      body.endFill();
-    } else if (cfg.hairStyle === "mohawk") {
-      body.beginFill(cfg.hair);
-      body.drawRect(-2 * scale, -34 * scale, 4 * scale, 10 * scale);
-      body.endFill();
-    } else if (cfg.hairStyle === "slick") {
-      body.beginFill(cfg.hair);
-      body.drawEllipse(0, -27 * scale, 9 * scale, 5 * scale);
-      // slick-back highlight
-      body.drawRect(-1.5 * scale, -32 * scale, 3 * scale, 8 * scale);
-      body.endFill();
-    }
-
-    // Direction indicator (small arrow above head)
-    body.beginFill(0xffffff, 0.8);
-    body.drawPolygon([0, -36 * scale, -4 * scale, -31 * scale, 4 * scale, -31 * scale]);
-    body.endFill();
-
-    g.addChild(body);
-    return g;
-  }
-
-  function createPlayer({ name, team, x, y, textures, controls, accent, ai }) {
-    const container = new window.PIXI.Container();
-    container.x = x;
-    container.y = y;
-
-    const isGoalie = name.includes("Goalie");
-    const r = isGoalie ? 22 : 20; // collision radius
-    const drawScale = isGoalie ? 1.5 : 1.3; // visual scale up
-
-    // Shadow
-    const shadowG = new window.PIXI.Graphics();
-    shadowG.beginFill(0x000000, 0.22);
-    shadowG.drawEllipse(3, r + 2, r * 0.9, r * 0.35);
-    shadowG.endFill();
-    container.addChild(shadowG);
-
-    // Build unique sprite
-    const bodyG = buildPlayerSprite(name, team, 14); // always draw at base size=14, scale visually
-    bodyG.scale.set(drawScale);
-    container.addChild(bodyG);
-
-    // Animated legs container (drawn below body)
-    const legsG = new window.PIXI.Graphics();
-    legsG.y = 14 * drawScale - 2;
-    container.addChildAt(legsG, 1);
-
-    // Name label
-    const label = new window.PIXI.Text({
-      text: name,
-      style: {
-        fontFamily: "'Space Grotesk', Arial, sans-serif",
-        fontWeight: "700",
-        fill: "#ffffff",
-        fontSize: 11,
-        dropShadow: true,
-        dropShadowColor: "#000000",
-        dropShadowBlur: 4,
-        dropShadowDistance: 1
-      }
-    });
-    label.anchor.set(0.5, 1);
-    label.y = -(36 * drawScale + 4);
-    label.rotation = 0;
-    container.addChild(label);
-
-    root.addChild(container);
-
-    const sprite = bodyG;
-    const shadow = shadowG;
-    const baseScale = drawScale;
-    const shadowScale = drawScale;
-
-    return {
-      name,
-      team,
-      controls,
-      ai,
-      textures: [window.PIXI.Texture.WHITE],
-      frameIndex: 0,
-      frameMs: 0,
-      container,
-      sprite,
-      shadow,
-      legsG,
-      label,
+  function createParticle(x, y, color) {
+    const particle = new window.PIXI.Graphics();
+    particle.beginFill(color);
+    particle.drawCircle(0, 0, Math.random() * 3 + 2);
+    particle.endFill();
+    particle.x = x;
+    particle.y = y;
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 220 + 90;
+    fxLayer.addChild(particle);
+    particles.push({
+      sprite: particle,
       x,
       y,
-      vx: 0,
-      vy: 0,
-      rotation: 0,
-      speed: 188,
-      radius: isGoalie ? 22 : 20,
-      moveAmount: 0,
-      baseScale,
-      shadowScale,
-      powerGiantTime: 0,
-      powerSpeedTime: 0,
-      powerSuperTime: 0,
-      powerFreezeTime: 0,
-      powerMagnetTime: 0,
-      kickTime: 0
-    };
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 1
+    });
   }
 
-  function animatePlayer(player, now, dtSeconds) {
-    const spd = Math.hypot(player.vx, player.vy);
-    const isMoving = spd > 40;
-    const isSprinting = spd > 400;
-    const isKicking = player.kickTime > 0;
-    player.kickTime = Math.max(0, player.kickTime - dtSeconds);
+  function buildPlayerSprite(team, isGoalie = false) {
+    const container = new window.PIXI.Container();
+    const body = new window.PIXI.Graphics();
+    const shirt = team === "blue" ? 0x3b82f6 : 0xf6d04d;
+    const shorts = team === "blue" ? 0x173a8a : 0xa66b10;
+    const trim = team === "blue" ? 0xcce5ff : 0x5a3f00;
+    const skin = team === "blue" ? 0xf2c79c : 0xeac49c;
+    const bodyWidth = isGoalie ? 18 : 16;
+    const bodyHeight = isGoalie ? 30 : 26;
 
-    // Run cycle: faster cycle when sprinting
-    const cycleSpeed = isSprinting ? 140 : 200;
-    const cycle = isMoving ? now / cycleSpeed : 0;
-    const swing = isMoving ? Math.sin(cycle) : 0; // -1 to 1
+    body.lineStyle(2, trim, 0.95);
+    body.beginFill(shirt);
+    body.drawRoundedRect(-bodyWidth / 2, -bodyHeight / 2, bodyWidth, bodyHeight, 5);
+    body.endFill();
+    body.lineStyle(0);
+    body.beginFill(shorts);
+    body.drawRoundedRect(-bodyWidth / 2, 3, bodyWidth, 8, 3);
+    body.endFill();
+    body.beginFill(skin);
+    body.drawCircle(0, -bodyHeight / 2 - 9, 7);
+    body.endFill();
+    body.beginFill(trim, 0.95);
+    body.drawRect(-2, bodyHeight / 2 - 2, 4, 8);
+    body.endFill();
+    container.addChild(body);
 
-    // Body bob
-    const bobY = isMoving ? Math.abs(swing) * -2 : 0;
-    player.sprite.y = bobY;
+    const marker = new window.PIXI.Graphics();
+    marker.beginFill(isGoalie ? 0x67d8ff : trim, 1);
+    marker.drawCircle(0, -bodyHeight / 2 - 9, isGoalie ? 3.6 : 2.8);
+    marker.endFill();
+    container.addChild(marker);
 
-    const isGoalie = player.name.includes("Goalie");
-    const drawScale = isGoalie ? 1.5 : 1.3;
-    const sc = drawScale; // shorthand
-    const teamDark = player.team === "blue" ? 0x1d4ed8 : 0xb45309;
-    const shirtColor = player.team === "blue" ? 0x3b82f6 : 0xf59e0b;
-    const shortsColor = player.team === "blue" ? 0x1e3a8a : 0x7c2d12;
-    const cfg = {
-      skin: playerConfigs[player.name] ? playerConfigs[player.name].skin : 0xffe0bd
-    };
-
-    const lg = player.legsG;
-    lg.clear();
-
-    if (isKicking) {
-      // === KICK ANIMATION ===
-      // Left (plant) leg
-      const plantShift = 4 * sc;
-      lg.beginFill(shortsColor);
-      lg.drawRect(-10 * sc, 0, 6 * sc, 8 * sc);
-      lg.endFill();
-      lg.beginFill(0xffffff);
-      lg.drawRect(-10 * sc, 8 * sc, 6 * sc, 4 * sc);
-      lg.endFill();
-      lg.beginFill(0x111111);
-      lg.drawRect(-11 * sc, 12 * sc, 8 * sc, 4 * sc);
-      lg.endFill();
-
-      // Right (kicking) leg: fully extended
-      const kickProgress = 1 - (player.kickTime / 0.3); // 0 = just kicked, 1 = done
-      const kickExt = 14 * sc * Math.sin(kickProgress * Math.PI); // parabolic extension
-      lg.beginFill(shortsColor);
-      lg.drawRect(4 * sc, -2 * sc, 6 * sc, 8 * sc);
-      lg.endFill();
-      lg.beginFill(0xffffff);
-      lg.drawRect(4 * sc + kickExt * 0.4, 7 * sc, 6 * sc, 4 * sc);
-      lg.endFill();
-      lg.beginFill(0x111111);
-      lg.drawRect(3 * sc + kickExt * 0.7, 11 * sc, 9 * sc, 4 * sc);
-      lg.endFill();
-
-      // Arm swing during kick
-      lg.beginFill(cfg.skin);
-      lg.drawRect(-16 * sc, -8 * sc - 6 * sc * kickProgress, 5 * sc, 12 * sc); // left arm up
-      lg.drawRect(11 * sc, -8 * sc + 4 * sc * kickProgress, 5 * sc, 12 * sc);
-      lg.endFill();
-    } else if (isMoving) {
-      // === RUN ANIMATION ===
-      const maxSwing = isSprinting ? 10 * sc : 7 * sc;
-      const leftSwingY = swing * maxSwing;       // left leg
-      const rightSwingY = -swing * maxSwing;     // right leg (opposite)
-
-      // LEFT LEG
-      lg.beginFill(shortsColor);
-      lg.drawRect(-10 * sc, leftSwingY, 6 * sc, 8 * sc);
-      lg.endFill();
-      lg.beginFill(0xffffff);
-      lg.drawRect(-10 * sc, leftSwingY + 8 * sc, 6 * sc, 4 * sc);
-      lg.endFill();
-      lg.beginFill(0x111111);
-      lg.drawRect(-11 * sc, leftSwingY + 12 * sc, 8 * sc, 4 * sc);
-      lg.endFill();
-
-      // RIGHT LEG
-      lg.beginFill(shortsColor);
-      lg.drawRect(4 * sc, rightSwingY, 6 * sc, 8 * sc);
-      lg.endFill();
-      lg.beginFill(0xffffff);
-      lg.drawRect(4 * sc, rightSwingY + 8 * sc, 6 * sc, 4 * sc);
-      lg.endFill();
-      lg.beginFill(0x111111);
-      lg.drawRect(3 * sc, rightSwingY + 12 * sc, 8 * sc, 4 * sc);
-      lg.endFill();
-
-      // ARM SWING (opposite to legs)
-      const armSwing = -swing * 6 * sc;
-      lg.beginFill(cfg.skin);
-      lg.drawRect(-16 * sc, -8 * sc + armSwing, 5 * sc, 12 * sc);
-      lg.drawRect(11 * sc, -8 * sc - armSwing, 5 * sc, 12 * sc);
-      lg.endFill();
-    } else {
-      // === IDLE ANIMATION — gentle breathing sway ===
-      const breathe = Math.sin(now / 800) * 1.5;
-      lg.beginFill(cfg.skin);
-      lg.drawRect(-16 * sc, -8 * sc + breathe, 5 * sc, 12 * sc);
-      lg.drawRect(11 * sc, -8 * sc - breathe, 5 * sc, 12 * sc);
-      lg.endFill();
-    }
-
-    // Keep label always readable (counter-rotate)
-    player.label.rotation = -(player.rotation + Math.PI / 2);
+    return container;
   }
 
-  players.push(
-    createPlayer({
-      name: "Messi",
-      team: "blue",
-      x: width * 0.32,
-      y: height * 0.5,
-      textures: [messiTex],
-      controls: { up: "w", down: "s", left: "a", right: "d", boost: "shift" },
-      accent: 0x7ec2ff
-    }),
-    createPlayer({
-      name: "Mbappe",
-      team: "blue",
-      x: width * 0.22,
-      y: height * 0.3,
-      textures: [mbappeTex],
-      controls: { up: "w", down: "s", left: "a", right: "d", boost: "shift" },
-      accent: 0x7ec2ff
-    }),
-    createPlayer({
-      name: "Neymar",
-      team: "blue",
-      x: width * 0.22,
-      y: height * 0.7,
-      textures: [neymarTex],
-      controls: { up: "w", down: "s", left: "a", right: "d", boost: "shift" },
-      accent: 0x7ec2ff
-    }),
-    createPlayer({
-      name: "Ronaldo",
-      team: "gold",
-      x: width * 0.68,
-      y: height * 0.5,
-      textures: [ronaldoTex],
-      ai: "field_gold",
-      accent: 0xffd66a
-    }),
-    createPlayer({
-      name: "Haaland",
-      team: "gold",
-      x: width * 0.78,
-      y: height * 0.3,
-      textures: [haalandTex],
-      ai: "field_gold",
-      accent: 0xffd66a
-    }),
-    createPlayer({
-      name: "Pelé",
-      team: "gold",
-      x: width * 0.78,
-      y: height * 0.7,
-      textures: [peleTex],
-      ai: "field_gold",
-      accent: 0xffd66a
-    }),
-    createPlayer({
-      name: "B. Goalie",
-      team: "blue",
-      x: pitch.left + 25,
-      y: height * 0.5,
-      textures: [goalieTex],
-      ai: "goalie_blue",
-      accent: 0x7ec2ff
-    }),
-    createPlayer({
-      name: "G. Goalie",
-      team: "gold",
-      x: pitch.right - 25,
-      y: height * 0.5,
-      textures: [goalieTex],
-      ai: "goalie_gold",
-      accent: 0xffd66a
-    })
-  );
+  const rods = [];
+  const players = [];
+
+  function createRod(row, index) {
+    const rod = new window.PIXI.Container();
+    rod.baseX = row.x;
+    rod.baseY = height / 2;
+    rod.row = row;
+
+    const shaft = new window.PIXI.Graphics();
+    shaft.beginFill(0xe7eef6, 0.96);
+    shaft.drawRoundedRect(-2.5, pitch.top - 58, 5, pitchH + 116, 3);
+    shaft.endFill();
+    rod.addChild(shaft);
+
+    const topHandle = new window.PIXI.Graphics();
+    topHandle.beginFill(0x384858);
+    topHandle.drawRoundedRect(-10, pitch.top - 86, 20, 28, 8);
+    topHandle.endFill();
+    rod.addChild(topHandle);
+
+    const bottomHandle = new window.PIXI.Graphics();
+    bottomHandle.beginFill(0x384858);
+    bottomHandle.drawRoundedRect(-10, pitch.bottom + 58, 20, 28, 8);
+    bottomHandle.endFill();
+    rod.addChild(bottomHandle);
+
+    rod.x = row.x;
+    rod.y = 0;
+    rodLayer.addChild(rod);
+    rods.push(rod);
+
+    row.yPercents.forEach((percent, slotIndex) => {
+      const isGoalie = row.keeperIndex === slotIndex;
+      const namePool = row.team === "blue" ? BLUE_NAMES : GOLD_NAMES;
+      const player = {
+        id: `${row.id}_${slotIndex}`,
+        name: namePool[players.length % namePool.length],
+        team: row.team,
+        rowId: row.id,
+        role: row.role,
+        rowIndex: index,
+        slotIndex,
+        isGoalie,
+        homeX: row.x,
+        homeY: pitchY(percent),
+        x: row.x,
+        y: pitchY(percent),
+        radius: isGoalie ? 14 : 11.5,
+        kickTime: 0,
+        touchCooldownUntil: 0,
+        groupId: row.team === "blue" && MOVEMENT_GROUPS.defenders.rowIds.has(row.id)
+          ? "defenders"
+          : row.team === "blue" && MOVEMENT_GROUPS.attack.rowIds.has(row.id)
+            ? "attack"
+            : ""
+      };
+
+      const container = new window.PIXI.Container();
+      const shadow = new window.PIXI.Graphics();
+      shadow.beginFill(0x000000, 0.18);
+      shadow.drawEllipse(0, 18, isGoalie ? 16 : 14, 5);
+      shadow.endFill();
+      container.addChild(shadow);
+      const sprite = buildPlayerSprite(row.team, isGoalie);
+      container.addChild(sprite);
+      const kickPose = new window.PIXI.Container();
+      kickPose.visible = false;
+      const leg = new window.PIXI.Graphics();
+      leg.beginFill(row.team === "blue" ? 0x173a8a : 0xa66b10);
+      if (row.team === "blue") {
+        leg.drawPolygon([0, 0, 16, -5, 18, 1, 6, 7]);
+      } else {
+        leg.drawPolygon([0, 1, -16, -5, -18, 1, -6, 7]);
+      }
+      leg.endFill();
+      kickPose.x = row.team === "blue" ? 6 : -6;
+      kickPose.y = 10;
+      kickPose.addChild(leg);
+      container.addChild(kickPose);
+      container.x = player.homeX;
+      container.y = player.homeY;
+      player.container = container;
+      player.sprite = sprite;
+      player.kickPose = kickPose;
+      players.push(player);
+      playerLayer.addChild(container);
+    });
+  }
+
+  FORMATION_ROWS.forEach((row, index) => createRod(row, index));
+
+  function configureMovementGroupBounds() {
+    Object.values(MOVEMENT_GROUPS).forEach((group) => {
+      const groupPlayers = players.filter((player) => player.groupId === group.id);
+      if (groupPlayers.length === 0) {
+        group.minOffset = 0;
+        group.maxOffset = 0;
+        return;
+      }
+      const minHomeY = Math.min(...groupPlayers.map((player) => player.homeY - player.radius));
+      const maxHomeY = Math.max(...groupPlayers.map((player) => player.homeY + player.radius));
+      group.minOffset = pitch.top + 10 - minHomeY;
+      group.maxOffset = pitch.bottom - 10 - maxHomeY;
+    });
+  }
+
+  configureMovementGroupBounds();
 
   const ballShadow = new window.PIXI.Sprite(window.PIXI.Texture.WHITE);
   ballShadow.anchor.set(0.5);
   ballShadow.width = 24;
   ballShadow.height = 12;
   ballShadow.tint = 0x000000;
-  ballShadow.alpha = 0.3;
+  ballShadow.alpha = 0.28;
   fxLayer.addChild(ballShadow);
 
   const ball = new window.PIXI.Graphics();
-  ball.beginFill(0xFFFFFF);
+  ball.beginFill(0xffffff);
   ball.lineStyle(2, 0x000000);
   ball.drawCircle(0, 0, 14);
   ball.endFill();
-
   ball.beginFill(0x000000);
   ball.drawCircle(6, 6, 4);
   ball.drawCircle(-6, -6, 4);
   ball.drawCircle(-6, 6, 4);
   ball.drawCircle(6, -6, 4);
   ball.endFill();
-
-  ball.x = width / 2;
-  ball.y = height / 2;
   fxLayer.addChild(ball);
 
   const ballState = {
@@ -845,248 +494,122 @@
     lastTouchTeam: ""
   };
 
-  const trailPoints = [];
-  const ballTrail = new window.PIXI.Graphics();
-  fxLayer.addChildAt(ballTrail, 0);
-
-  const particles = [];
-  function createParticle(x, y, color) {
-    const p = new window.PIXI.Graphics();
-    p.beginFill(color);
-    p.drawCircle(0, 0, Math.random() * 3 + 2);
-    p.endFill();
-    p.x = x;
-    p.y = y;
-    const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 250 + 80;
-    fxLayer.addChild(p);
-    particles.push({ sprite: p, x: x, y: y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: 1.0 });
-  }
-
-  let shakeTime = 0;
   function resetPositions() {
-    const spawn = [
-      [width * 0.32, height * 0.5, 0],
-      [width * 0.22, height * 0.3, 0],
-      [width * 0.22, height * 0.7, 0],
-      [width * 0.68, height * 0.5, Math.PI],
-      [width * 0.78, height * 0.3, Math.PI],
-      [width * 0.78, height * 0.7, Math.PI],
-      [pitch.left + 25, height * 0.5, 0],
-      [pitch.right - 25, height * 0.5, Math.PI]
-    ];
+    Object.values(MOVEMENT_GROUPS).forEach((group) => {
+      group.offsetY = 0;
+    });
 
-    players.forEach((player, index) => {
-      player.x = spawn[index][0];
-      player.y = spawn[index][1];
-      player.rotation = spawn[index][2];
-      player.vx = 0;
-      player.vy = 0;
-      player.moveAmount = 0;
-      player.powerGiantTime = 0;
-      player.powerSpeedTime = 0;
-      player.powerSuperTime = 0;
-      player.powerFreezeTime = 0;
-      player.powerMagnetTime = 0;
-      player.baseScale = player.textures[0].width > 100 ? (player.name.includes("Goalie") ? 0.35 : 0.12) : 4.35;
-      player.shadowScale = player.textures[0].width > 100 ? (player.name.includes("Goalie") ? 0.38 : 0.13) : 4.7;
-      player.radius = 18;
+    players.forEach((player) => {
+      player.x = player.homeX;
+      player.y = player.homeY;
+      player.kickTime = 0;
+      player.touchCooldownUntil = 0;
+      player.container.x = player.homeX;
+      player.container.y = player.homeY;
+    });
+
+    rods.forEach((rod) => {
+      rod.x = rod.baseX;
+      rod.y = 0;
     });
 
     ballState.x = width / 2;
     ballState.y = height / 2;
     ballState.z = 0;
-    ballState.vx = 0;
-    ballState.vy = 0;
+    ballState.vx = randomFloat(-120, 120);
+    ballState.vy = randomFloat(-80, 80);
     ballState.vz = 0;
-
-  }
-
-  function capBallSpeed(maxSpeed = 460) {
-    const speed = Math.hypot(ballState.vx, ballState.vy);
-    if (speed <= maxSpeed || speed < 0.001) {
-      return;
-    }
-    const scale = maxSpeed / speed;
-    ballState.vx *= scale;
-    ballState.vy *= scale;
+    state.cpuKickCooldownUntil = 0;
+    state.playerKickCooldownUntil = 0;
+    state.lastKicker = "";
+    ballFlow.stillMs = 0;
+    ballFlow.lastRecoveryAt = 0;
   }
 
   function renderHud() {
     const speed = Math.round(Math.hypot(ballState.vx, ballState.vy));
     scoreEl.textContent = `Blue ${state.blueGoals} - ${state.goldGoals} Gold`;
-    statsEl.textContent = `Ball speed ${speed} | Blue touches ${state.blueTouches} | Gold touches ${state.goldTouches}`;
-    levelEl.textContent = "Player: W A S D + Shift";
-    eventEl.textContent = "CPU: Auto";
+    statsEl.textContent = `Ball speed ${speed} | Blue kicks ${state.blueTouches} | Gold kicks ${state.goldTouches}`;
+    levelEl.textContent = "W/S defenders | Arrows attack | Space kick";
+    eventEl.textContent = "Groups: defense and midfield/attack";
+    if (blueStaminaEl) blueStaminaEl.style.width = "100%";
+    if (goldStaminaEl) goldStaminaEl.style.width = "100%";
   }
 
   function scoreGoal(team) {
-    if (state.statusText === "GOAL!") return;
+    if (state.statusText === "GOAL!") {
+      return;
+    }
 
     if (team === "blue") {
       state.blueGoals += 1;
     } else {
       state.goldGoals += 1;
     }
+
     state.statusText = "GOAL!";
-    state.freezeUntil = Date.now() + 2500;
-    shakeTime = 0.35;
-    for (let i = 0; i < 20; i++) createParticle(ballState.x, ballState.y, team === "blue" ? 0x2f80ff : 0xffd447);
-    setNotice(`${team === "blue" ? "Player Team" : "CPU Team"} scored!`, "good");
+    state.freezeUntil = Date.now() + 2200;
+    shakeTime = 0.3;
+    for (let i = 0; i < 18; i += 1) {
+      createParticle(ballState.x, ballState.y, team === "blue" ? teamBlueColor : teamGoldColor);
+    }
+    setNotice(`${team === "blue" ? "Blue Team" : "Gold Team"} scored!`, "good");
   }
 
-  function updatePlayer(player, dtMs) {
-    let up = false, down = false, left = false, right = false, boost = false;
-
-    if (player.ai) {
-      if (state.running && Date.now() >= state.freezeUntil) {
-        let tx = ballState.x;
-        let ty = ballState.y;
-
-        if (player.ai === "goalie_blue") {
-          tx = pitch.left + 28;
-          ty = clamp(ballState.y, goalTop + player.radius, goalBottom - player.radius);
-        } else if (player.ai === "goalie_gold") {
-          tx = pitch.right - 28;
-          ty = clamp(ballState.y, goalTop + player.radius, goalBottom - player.radius);
-        } else if (player.ai === "field_gold") {
-          const ballDist = Math.hypot(ballState.x - player.x, ballState.y - player.y);
-          if (ballDist > 150) {
-            tx += (player.name === "Haaland" ? 50 : player.name === "Pelé" ? -50 : 0);
-            ty += (player.name === "Haaland" ? 80 : player.name === "Pelé" ? -80 : 0);
-          }
-        }
-
-        const dx = tx - player.x;
-        const dy = ty - player.y;
-        const dist = Math.hypot(dx, dy);
-
-        if (dist > 15 || player.ai.startsWith("field")) {
-          const targetAngle = Math.atan2(dy, dx);
-          let angleDiff = targetAngle - player.rotation;
-          while (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
-          while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
-
-          if (angleDiff > 0.15) right = true;
-          else if (angleDiff < -0.15) left = true;
-
-          if (Math.abs(angleDiff) < 1.0) up = true;
-          else if (Math.abs(angleDiff) > 2.0) down = true;
-
-          if (player.ai === "field_gold" && dist < 180 && Math.abs(angleDiff) < 0.4 && state.goldStamina > 20) {
-            boost = true;
-          } else if (player.ai.startsWith("goalie") && dist < 80 && Math.abs(angleDiff) < 0.4) {
-            boost = true;
-          }
-        } else {
-          let targetAngle = player.ai === "goalie_blue" ? 0 : Math.PI;
-          let angleDiff = targetAngle - player.rotation;
-          while (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
-          while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
-          if (angleDiff > 0.1) right = true;
-          else if (angleDiff < -0.1) left = true;
-        }
-      }
-    } else {
-      up = keysDown.has(player.controls.up);
-      down = keysDown.has(player.controls.down);
-      left = keysDown.has(player.controls.left);
-      right = keysDown.has(player.controls.right);
-      boost = keysDown.has(player.controls.boost);
+  function groupOffsetForPlayer(player) {
+    if (!player.groupId) {
+      return 0;
     }
+    return Number(MOVEMENT_GROUPS[player.groupId]?.offsetY || 0);
+  }
 
+  function updatePlayerGroupMovement(dtMs) {
     const dt = dtMs / 1000;
-    const speed = Math.hypot(player.vx, player.vy);
-
-    let turnRate = 4.0;
-    if (player.powerFreezeTime > 0) {
-      turnRate = 0;
-      up = false; down = false; left = false; right = false; boost = false;
-      player.powerFreezeTime -= dt;
-      player.sprite.tint = 0xa5f3fc;
-    } else {
-      player.sprite.tint = 0xFFFFFF;
-    }
-
-    if (left) player.rotation -= turnRate * dt;
-    if (right) player.rotation += turnRate * dt;
-
-    if (player.powerGiantTime > 0) {
-      player.powerGiantTime -= dt;
-      player.container.scale.set(1.55);
-      player.radius = 28;
-    } else {
-      player.powerGiantTime = 0;
-      player.container.scale.set(1.0);
-      player.radius = player.name.includes("Goalie") ? 20 : 18;
-    }
-    if (player.powerSpeedTime > 0) player.powerSpeedTime -= dt;
-    else player.powerSpeedTime = 0;
-    if (player.powerSuperTime > 0) player.powerSuperTime -= dt;
-    else player.powerSuperTime = 0;
-    if (player.powerMagnetTime > 0) player.powerMagnetTime -= dt;
-    else player.powerMagnetTime = 0;
-
-    const staminaKey = player.team === "blue" ? "blueStamina" : "goldStamina";
-    let isBoosting = false;
-    if (boost && state[staminaKey] > 0) {
-      isBoosting = true;
-      state[staminaKey] -= (35 / 3) * dt;
-    } else if (!boost) {
-      state[staminaKey] += (15 / 3) * dt;
-    }
-    state[staminaKey] = clamp(state[staminaKey], 0, 100);
-
-    const maxSpeedThrust = player.powerSpeedTime > 0 ? 3800 : (isBoosting ? 2600 : 900);
-
-    let thrust = 0;
-    if (up) thrust = maxSpeedThrust;
-    if (down) thrust = -700;
-
-    const ax = Math.cos(player.rotation) * thrust;
-    const ay = Math.sin(player.rotation) * thrust;
-
-    player.vx += ax * dt;
-    player.vy += ay * dt;
-
-    const forwardX = Math.cos(player.rotation);
-    const forwardY = Math.sin(player.rotation);
-    const rightX = -Math.sin(player.rotation);
-    const rightY = Math.cos(player.rotation);
-
-    const velForward = player.vx * forwardX + player.vy * forwardY;
-    let velSides = player.vx * rightX + player.vy * rightY;
-
-    velSides *= Math.pow(0.8, dtMs / 16.66);
-    const newVelForward = velForward * Math.pow(0.96, dtMs / 16.66);
-
-    player.vx = newVelForward * forwardX + velSides * rightX;
-    player.vy = newVelForward * forwardY + velSides * rightY;
-
-    player.x += player.vx * dt;
-    player.y += player.vy * dt;
-
-    if (player.x < pitch.left + player.radius) { player.x = pitch.left + player.radius; player.vx *= -0.5; }
-    if (player.x > pitch.right - player.radius) { player.x = pitch.right - player.radius; player.vx *= -0.5; }
-    if (player.y < pitch.top + player.radius) { player.y = pitch.top + player.radius; player.vy *= -0.5; }
-    if (player.y > pitch.bottom - player.radius) { player.y = pitch.bottom - player.radius; player.vy *= -0.5; }
-
-    player.moveAmount = speed;
-
-    player.container.x = player.x;
-    player.container.y = player.y;
-    player.container.rotation = player.rotation + Math.PI / 2;
+    Object.values(MOVEMENT_GROUPS).forEach((group) => {
+      const moveUp = [...group.upKeys].some((key) => keysDown.has(key));
+      const moveDown = [...group.downKeys].some((key) => keysDown.has(key));
+      const direction = (moveDown ? 1 : 0) - (moveUp ? 1 : 0);
+      if (direction === 0) {
+        return;
+      }
+      group.offsetY = clamp(group.offsetY + direction * group.speed * dt, group.minOffset, group.maxOffset);
+    });
   }
 
-  function collideBallWithPlayer(player) {
-    // If ball is too high in the air, don't collide
-    if (ballState.z > 25) return;
+  function animatePlayer(player, now, dtSeconds) {
+    player.kickTime = Math.max(0, player.kickTime - dtSeconds);
+    const body = player.sprite;
+    const sway = Math.sin(now / 650 + player.rowIndex * 0.55 + player.slotIndex * 0.4) * 0.9;
+    const kickProgress = player.kickTime > 0 ? 1 - player.kickTime / 0.22 : 0;
+    const lunge = player.kickTime > 0 ? Math.sin(kickProgress * Math.PI) * 6 : 0;
+    const groupOffset = groupOffsetForPlayer(player);
+    body.y = sway;
+    if (player.kickTime > 0) {
+      body.scale.x = 1 + Math.sin(kickProgress * Math.PI) * 0.09;
+      body.scale.y = 1 - Math.sin(kickProgress * Math.PI) * 0.05;
+      body.rotation = (player.team === "blue" ? -1 : 1) * Math.sin(kickProgress * Math.PI) * 0.08;
+      player.kickPose.visible = true;
+      player.kickPose.rotation = (player.team === "blue" ? -1 : 1) * Math.sin(kickProgress * Math.PI) * 0.18;
+      player.kickPose.scale.x = 0.95 + Math.sin(kickProgress * Math.PI) * 0.12;
+      player.kickPose.scale.y = 0.95 + Math.sin(kickProgress * Math.PI) * 0.08;
+    } else {
+      body.scale.x += (1 - body.scale.x) * 0.25;
+      body.scale.y += (1 - body.scale.y) * 0.25;
+      body.rotation *= 0.72;
+      player.kickPose.visible = false;
+      player.kickPose.rotation = 0;
+      player.kickPose.scale.x = 1;
+      player.kickPose.scale.y = 1;
+    }
+    player.container.x = player.x + (player.team === "blue" ? lunge : -lunge);
+    player.container.y = player.y + groupOffset;
+  }
 
+  function applyStaticPlayerCollision(player) {
     const dx = ballState.x - player.x;
-    const dy = ballState.y - player.y;
+    const dy = ballState.y - (player.y + groupOffsetForPlayer(player));
     const minDist = ballState.radius + player.radius;
     const distSq = dx * dx + dy * dy;
-
     if (distSq >= minDist * minDist) {
       return;
     }
@@ -1099,62 +622,148 @@
     ballState.x += nx * overlap;
     ballState.y += ny * overlap;
 
-    const relVx = ballState.vx - player.vx;
-    const relVy = ballState.vy - player.vy;
-
-    const relSpeed = relVx * nx + relVy * ny;
-
-    if (relSpeed > 0) return;
-
-    const restitution = 1.2;
-    const massBall = 1;
-    const massPlayer = 4;
-
-    const j = -(1 + restitution) * relSpeed / (1 / massBall + 1 / massPlayer);
-
-    ballState.vx += (j / massBall) * nx;
-    ballState.vy += (j / massBall) * ny;
-
-    player.vx -= (j / massPlayer) * nx;
-    player.vy -= (j / massPlayer) * ny;
-
-    const playerSpeed = Math.hypot(player.vx, player.vy);
-    const superMult = player.powerSuperTime > 0 ? 3.0 : 1.0;
-    if (playerSpeed > 400 * (player.powerSuperTime > 0 ? 0.4 : 1)) {
-      ballState.vx += nx * 250 * superMult;
-      ballState.vy += ny * 250 * superMult;
-      ballState.vz = (playerSpeed * 0.4 + 100) * superMult;
-      for (let i = 0; i < 7; i++) createParticle(ballState.x, ballState.y, player.accent);
-      shakeTime = player.powerSuperTime > 0 ? 0.25 : 0.05;
-    } else if (relSpeed < -200) {
-      for (let i = 0; i < 3; i++) createParticle(ballState.x, ballState.y, 0xFFFFFF);
-      ballState.vz = Math.min((Math.abs(relSpeed) * 0.3 + 50), 300);
-    }
-
-    capBallSpeed(1200);
-
-    ballState.lastTouchTeam = player.team;
-    player.kickTime = 0.3; // trigger kick animation
-    if (player.team === "blue") {
-      state.blueTouches += 1;
-    } else {
-      state.goldTouches += 1;
+    const towardNormal = ballState.vx * nx + ballState.vy * ny;
+    if (towardNormal < 0) {
+      ballState.vx -= 1.65 * towardNormal * nx;
+      ballState.vy -= 1.65 * towardNormal * ny;
     }
   }
 
+  function nearestPlayer(team, maxDistance = 64) {
+    let best = null;
+    let bestDist = maxDistance;
+    for (const player of players) {
+      if (player.team !== team) {
+        continue;
+      }
+      const distance = Math.hypot(ballState.x - player.x, ballState.y - player.y);
+      const correctedDistance = Math.hypot(ballState.x - player.x, ballState.y - (player.y + groupOffsetForPlayer(player)));
+      if (correctedDistance <= bestDist) {
+        best = player;
+        bestDist = correctedDistance;
+      }
+    }
+    return best;
+  }
 
+  function kickBall(player) {
+    const now = Date.now();
+    if (player.touchCooldownUntil > now) {
+      return false;
+    }
+    const distance = Math.hypot(ballState.x - player.x, ballState.y - player.y);
+    if (distance > player.radius + ballState.radius + 18) {
+      return false;
+    }
+
+    const towardX = player.team === "blue" ? pitch.right + 40 : pitch.left - 40;
+    const towardY = clamp(ballState.y + randomFloat(-28, 28), pitch.top + 24, pitch.bottom - 24);
+    const playerY = player.y + groupOffsetForPlayer(player);
+    const dirX = towardX - player.x;
+    const dirY = towardY - playerY;
+    const length = Math.hypot(dirX, dirY) || 1;
+    const kickPower = player.isGoalie ? 460 : 540;
+
+    ballState.x = player.x + (dirX / length) * (player.radius + ballState.radius + 2);
+    ballState.y = playerY + (dirY / length) * (player.radius + ballState.radius + 2);
+    ballState.vx = (dirX / length) * kickPower;
+    ballState.vy = (dirY / length) * kickPower;
+    ballState.vz = 80;
+    ballState.lastTouchTeam = player.team;
+    player.kickTime = 0.22;
+    player.touchCooldownUntil = now + 260;
+    state.lastKicker = player.name;
+
+    if (player.team === "blue") {
+      state.blueTouches += 1;
+      state.playerKickCooldownUntil = now + 180;
+      setNotice(`${player.name} kicked the ball.`, "");
+    } else {
+      state.goldTouches += 1;
+      state.cpuKickCooldownUntil = now + 260;
+    }
+
+    for (let i = 0; i < 5; i += 1) {
+      createParticle(ballState.x, ballState.y, player.team === "blue" ? teamBlueColor : teamGoldColor);
+    }
+    return true;
+  }
+
+  function tryPlayerKick() {
+    const now = Date.now();
+    if (now < state.playerKickCooldownUntil || !state.running || now < state.freezeUntil) {
+      return;
+    }
+    const kicker = nearestPlayer("blue", 72);
+    if (!kicker) {
+      setNotice("Wait for the ball to get close to one of your players.", "bad");
+      state.playerKickCooldownUntil = now + 180;
+      return;
+    }
+    kickBall(kicker);
+  }
+
+  function maybeCpuKick() {
+    const now = Date.now();
+    if (!state.running || now < state.freezeUntil || now < state.cpuKickCooldownUntil) {
+      return;
+    }
+    const kicker = nearestPlayer("gold", 68);
+    if (kicker) {
+      kickBall(kicker);
+    }
+  }
+
+  function updateStuckBallDetection(dtMs) {
+    const speed = Math.hypot(ballState.vx, ballState.vy) + Math.abs(ballState.vz) * 0.1;
+    const now = Date.now();
+    if (speed < 18 && ballState.z < 6) {
+      ballFlow.stillMs += dtMs;
+    } else {
+      ballFlow.stillMs = 0;
+    }
+
+    if (ballFlow.stillMs < 1000 || now - ballFlow.lastRecoveryAt < 1000) {
+      return;
+    }
+
+    const sorted = [...players]
+      .map((player) => ({
+        player,
+        distance: Math.hypot(ballState.x - player.x, ballState.y - (player.y + groupOffsetForPlayer(player)))
+      }))
+      .sort((left, right) => left.distance - right.distance);
+    const pool = sorted.slice(0, Math.min(6, sorted.length));
+    const chosen = pool[Math.floor(Math.random() * pool.length)]?.player;
+    if (!chosen) {
+      return;
+    }
+
+    const chosenY = chosen.y + groupOffsetForPlayer(chosen);
+    const direction = chosen.team === "blue" ? 1 : -1;
+    ballState.x = clamp(chosen.x + direction * (chosen.radius + ballState.radius + 12), pitch.left + 40, pitch.right - 40);
+    ballState.y = clamp(chosenY + randomFloat(-20, 20), pitch.top + 24, pitch.bottom - 24);
+    ballState.vx = direction * randomFloat(180, 260);
+    ballState.vy = randomFloat(-120, 120);
+    ballState.vz = randomFloat(20, 55);
+    ballFlow.stillMs = 0;
+    ballFlow.lastRecoveryAt = now;
+    setNotice(`Recovered the ball near ${chosen.name} to keep play moving.`, "");
+  }
 
   function updateBall(dtMs) {
     const dt = dtMs / 1000;
-
     const gravity = -900;
+
     if (ballState.z > 0 || ballState.vz > 0) {
       ballState.vz += gravity * dt;
       ballState.z += ballState.vz * dt;
       if (ballState.z <= 0) {
         ballState.z = 0;
-        ballState.vz *= -0.6;
-        if (Math.abs(ballState.vz) < 50) ballState.vz = 0;
+        ballState.vz *= -0.4;
+        if (Math.abs(ballState.vz) < 35) {
+          ballState.vz = 0;
+        }
       }
     }
 
@@ -1164,41 +773,41 @@
 
     ballState.x += ballState.vx * dt;
     ballState.y += ballState.vy * dt;
+    ballState.vx *= Math.pow(0.986, dtMs / 16.66);
+    ballState.vy *= Math.pow(0.986, dtMs / 16.66);
 
-    ballState.vx *= Math.pow(0.98, dtMs / 16.66);
-    ballState.vy *= Math.pow(0.98, dtMs / 16.66);
-
-    if (Math.abs(ballState.vx) < 0.2) {
-      ballState.vx = 0;
-    }
-    if (Math.abs(ballState.vy) < 0.2) {
-      ballState.vy = 0;
-    }
+    if (Math.abs(ballState.vx) < 0.18) ballState.vx = 0;
+    if (Math.abs(ballState.vy) < 0.18) ballState.vy = 0;
 
     if (ballState.y - ballState.radius <= pitch.top) {
       ballState.y = pitch.top + ballState.radius;
-      ballState.vy = Math.abs(ballState.vy) * 0.82;
+      ballState.vy = Math.abs(ballState.vy) * 0.88;
     } else if (ballState.y + ballState.radius >= pitch.bottom) {
       ballState.y = pitch.bottom - ballState.radius;
-      ballState.vy = -Math.abs(ballState.vy) * 0.82;
+      ballState.vy = -Math.abs(ballState.vy) * 0.88;
     }
 
-    const insideGoalY = ballState.y >= goalTop && ballState.y <= goalBottom;
     if (ballState.x - ballState.radius <= pitch.left) {
-      if (insideGoalY) {
+      if (isInsideGoalY(ballState.y)) {
         scoreGoal("gold");
         return;
       }
       ballState.x = pitch.left + ballState.radius;
-      ballState.vx = Math.abs(ballState.vx) * 0.82;
+      ballState.vx = Math.abs(ballState.vx) * 0.88;
     } else if (ballState.x + ballState.radius >= pitch.right) {
-      if (insideGoalY) {
+      if (isInsideGoalY(ballState.y)) {
         scoreGoal("blue");
         return;
       }
       ballState.x = pitch.right - ballState.radius;
-      ballState.vx = -Math.abs(ballState.vx) * 0.82;
+      ballState.vx = -Math.abs(ballState.vx) * 0.88;
     }
+
+    for (const player of players) {
+      applyStaticPlayerCollision(player);
+    }
+
+    updateStuckBallDetection(dtMs);
   }
 
   function startRound() {
@@ -1206,20 +815,12 @@
     state.goldGoals = 0;
     state.blueTouches = 0;
     state.goldTouches = 0;
-    state.blueStamina = 100;
-    state.goldStamina = 100;
     state.running = true;
-    state.endAt = Date.now() + goalDurationMs + 3000; // Add 3s for countdown
+    state.endAt = Date.now() + roundDurationMs + 3000;
     state.freezeUntil = Date.now() + 3000;
     state.statusText = "";
-
-    for (const pup of powerUpsArray) {
-      pup.sprite.destroy();
-    }
-    powerUpsArray.length = 0;
-
     resetPositions();
-    setNotice("Kickoff! Goalies act as AI defenders. You control Blue Team (WASD).");
+    setNotice("W/S mueve defensores. Flechas mueve mediocampo y ataque. Space patea.", "");
     renderHud();
   }
 
@@ -1235,7 +836,11 @@
     const key = String(event.key || "").toLowerCase();
     keysDown.add(key);
 
-    if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key)) {
+    if (key === " " || event.code === "Space") {
+      event.preventDefault();
+      tryPlayerKick();
+    }
+    if (["w", "s", "arrowup", "arrowdown"].includes(key)) {
       event.preventDefault();
     }
   });
@@ -1271,110 +876,25 @@
       setNotice(`${result} Final ${state.blueGoals}-${state.goldGoals}`, state.blueGoals >= state.goldGoals ? "good" : "bad");
     }
 
+    updatePlayerGroupMovement(ticker.deltaMS);
+
+    rods.forEach((rod, index) => {
+      const rowId = String(rod.row?.id || "");
+      const groupOffset =
+        MOVEMENT_GROUPS.defenders.rowIds.has(rowId)
+          ? MOVEMENT_GROUPS.defenders.offsetY
+          : MOVEMENT_GROUPS.attack.rowIds.has(rowId)
+            ? MOVEMENT_GROUPS.attack.offsetY
+            : 0;
+      rod.y = groupOffset + Math.sin(now / 850 + index * 0.55) * 1.2;
+    });
+
+    for (const player of players) {
+      animatePlayer(player, now, dtSeconds);
+    }
+
     if (state.running) {
-      if (now >= state.freezeUntil) {
-        if (Math.random() < 0.003 * (ticker.deltaMS / 16.66)) {
-          spawnPowerUp();
-        }
-
-        for (let i = powerUpsArray.length - 1; i >= 0; i--) {
-          const pup = powerUpsArray[i];
-          pup.life -= dtSeconds;
-          pup.sprite.rotation += Math.PI * dtSeconds;
-
-          if (pup.life <= 0) {
-            powerUpContainer.removeChild(pup.sprite);
-            pup.sprite.destroy();
-            powerUpsArray.splice(i, 1);
-            continue;
-          }
-
-          let collectedBy = null;
-          for (const player of players) {
-            const dx = player.x - pup.x;
-            const dy = player.y - pup.y;
-            const distSq = dx * dx + dy * dy;
-            if (distSq < (player.radius + pup.radius) * (player.radius + pup.radius)) {
-              collectedBy = player;
-              break;
-            }
-          }
-
-          if (collectedBy) {
-            switch (pup.type) {
-              case "giant": collectedBy.powerGiantTime = 7.0; break;
-              case "speed": collectedBy.powerSpeedTime = 7.0; break;
-              case "stamina": state[collectedBy.team === "blue" ? "blueStamina" : "goldStamina"] = 100; break;
-              case "super": collectedBy.powerSuperTime = 7.0; break;
-              case "magnet": collectedBy.powerMagnetTime = 7.0; break;
-              case "freeze":
-                for (let p of players) {
-                  if (p.team !== collectedBy.team) p.powerFreezeTime = 3.0;
-                }
-                break;
-            }
-            for (let k = 0; k < 12; k++) createParticle(pup.x, pup.y, powerUpColors[pup.type]);
-            setNotice(`${collectedBy.name} got ${powerUpLabels[pup.type]}!`, "good");
-            powerUpContainer.removeChild(pup.sprite);
-            pup.sprite.destroy();
-            powerUpsArray.splice(i, 1);
-          }
-        }
-      }
-
-      for (const player of players) {
-        updatePlayer(player, ticker.deltaMS);
-        animatePlayer(player, now, dtSeconds);
-      }
-
-      for (let i = 0; i < players.length; i++) {
-        for (let j = i + 1; j < players.length; j++) {
-          const p1 = players[i];
-          const p2 = players[j];
-          const dx = p2.x - p1.x;
-          const dy = p2.y - p1.y;
-          const distSq = dx * dx + dy * dy;
-          const minDist = p1.radius + p2.radius;
-          if (distSq < minDist * minDist) {
-            const dist = Math.sqrt(distSq) || 0.001;
-            const overlap = minDist - dist;
-            const nx = dx / dist;
-            const ny = dy / dist;
-
-            p1.x -= nx * overlap * 0.5;
-            p1.y -= ny * overlap * 0.5;
-            p2.x += nx * overlap * 0.5;
-            p2.y += ny * overlap * 0.5;
-
-            const relVx = p2.vx - p1.vx;
-            const relVy = p2.vy - p1.vy;
-            const dot = (relVx * nx + relVy * ny);
-            if (dot < 0) {
-              p1.vx += nx * dot * 0.6;
-              p1.vy += ny * dot * 0.6;
-              p2.vx -= nx * dot * 0.6;
-              p2.vy -= ny * dot * 0.6;
-            }
-          }
-        }
-      }
-
-      for (const player of players) {
-        collideBallWithPlayer(player);
-        if (player.powerMagnetTime > 0) {
-          const mdx = player.x - ballState.x;
-          const mdy = player.y - ballState.y;
-          const distSq = mdx * mdx + mdy * mdy;
-          if (distSq < 200 * 200 && distSq > 0) {
-            const dist = Math.sqrt(distSq);
-            ballState.vx += (mdx / dist) * 700 * dtSeconds;
-            ballState.vy += (mdy / dist) * 700 * dtSeconds;
-          }
-        }
-      }
-
-
-
+      maybeCpuKick();
       updateBall(ticker.deltaMS);
     }
 
@@ -1387,46 +907,46 @@
           state.freezeUntil = now + 3000;
           state.endAt += 3000;
         } else if (state.statusText !== "GOAL!") {
-          const cd = Math.ceil(waitMsLeft / 1000);
-          bigStatusText.text = cd > 0 ? cd.toString() : "GO!";
+          const count = Math.ceil(waitMsLeft / 1000);
+          bigStatusText.text = count > 0 ? count.toString() : "GO!";
           bigStatusText.scale.set(1 + (waitMsLeft % 1000) / 1000 * 0.5);
           bigStatusText.alpha = (waitMsLeft % 1000) / 1000 + 0.2;
         } else {
           bigStatusText.text = "GOAL!";
-          bigStatusText.scale.set(2.0 + Math.sin(now / 100) * 0.2);
+          bigStatusText.scale.set(2 + Math.sin(now / 100) * 0.2);
           bigStatusText.alpha = 1;
         }
-      } else {
-        if (bigStatusText.text === "1" || bigStatusText.text === "GO!") {
-          bigStatusText.text = "GO!";
-          bigStatusText.alpha -= dtSeconds * 2;
-          if (bigStatusText.alpha <= 0) bigStatusText.text = "";
-        } else {
+      } else if (bigStatusText.text === "1" || bigStatusText.text === "GO!") {
+        bigStatusText.text = "GO!";
+        bigStatusText.alpha -= dtSeconds * 2;
+        if (bigStatusText.alpha <= 0) {
           bigStatusText.text = "";
         }
+      } else {
+        bigStatusText.text = "";
       }
     }
 
-    const scaleMult = 1 + (ballState.z / 150);
+    const scaleMult = 1 + ballState.z / 150;
     ball.scale.set(scaleMult);
     ball.x = ballState.x;
     ball.y = ballState.y - ballState.z;
     ballShadow.x = ballState.x;
     ballShadow.y = ballState.y;
-    ballShadow.scale.set(1 - (ballState.z / 300));
-    ballShadow.alpha = 0.3 * Math.max(0, 1 - (ballState.z / 200));
-
-    ball.rotation += (ballState.vx * 0.0006 + ballState.vy * 0.0006) * ticker.deltaMS;
+    ballShadow.scale.set(1 - ballState.z / 300);
+    ballShadow.alpha = 0.28 * Math.max(0, 1 - ballState.z / 200);
+    ball.rotation += (ballState.vx * 0.0005 + ballState.vy * 0.0005) * ticker.deltaMS;
 
     if (state.running && now >= state.freezeUntil) {
       trailPoints.unshift({ x: ballState.x, y: ballState.y });
-      if (trailPoints.length > 12) trailPoints.pop();
-
+      if (trailPoints.length > 10) {
+        trailPoints.pop();
+      }
       ballTrail.clear();
-      for (let i = 1; i < trailPoints.length; i++) {
+      for (let i = 1; i < trailPoints.length; i += 1) {
         const p1 = trailPoints[i - 1];
         const p2 = trailPoints[i];
-        ballTrail.lineStyle(14 * (1 - i / trailPoints.length), 0xFFFFFF, 0.4 * (1 - i / trailPoints.length));
+        ballTrail.lineStyle(12 * (1 - i / trailPoints.length), 0xffffff, 0.35 * (1 - i / trailPoints.length));
         ballTrail.moveTo(p1.x, p1.y);
         ballTrail.lineTo(p2.x, p2.y);
       }
@@ -1435,42 +955,35 @@
       ballTrail.clear();
     }
 
-    for (let i = particles.length - 1; i >= 0; i--) {
-      const p = particles[i];
-      p.life -= dtSeconds * 1.5;
-      if (p.life <= 0) {
-        fxLayer.removeChild(p.sprite);
-        p.sprite.destroy();
+    for (let i = particles.length - 1; i >= 0; i -= 1) {
+      const particle = particles[i];
+      particle.life -= dtSeconds * 1.4;
+      if (particle.life <= 0) {
+        fxLayer.removeChild(particle.sprite);
+        particle.sprite.destroy();
         particles.splice(i, 1);
       } else {
-        p.x += p.vx * dtSeconds;
-        p.y += p.vy * dtSeconds;
-        p.sprite.x = p.x;
-        p.sprite.y = p.y;
-        p.sprite.alpha = p.life;
+        particle.x += particle.vx * dtSeconds;
+        particle.y += particle.vy * dtSeconds;
+        particle.sprite.x = particle.x;
+        particle.sprite.y = particle.y;
+        particle.sprite.alpha = particle.life;
       }
     }
 
     if (shakeTime > 0) {
       shakeTime -= dtSeconds;
-      const mag = Math.min(shakeTime * 40, 15);
-      app.stage.x = (Math.random() - 0.5) * mag;
-      app.stage.y = (Math.random() - 0.5) * mag;
+      const magnitude = Math.min(shakeTime * 40, 12);
+      app.stage.x = (Math.random() - 0.5) * magnitude;
+      app.stage.y = (Math.random() - 0.5) * magnitude;
     } else {
-      shakeTime = 0;
       app.stage.x = 0;
       app.stage.y = 0;
     }
 
-    if (blueStaminaEl) blueStaminaEl.style.width = `${state.blueStamina}%`;
-    if (goldStaminaEl) goldStaminaEl.style.width = `${state.goldStamina}%`;
-
-    const boardSeconds = Math.ceil(msLeft / 1000)
-      .toString()
-      .padStart(2, "0");
+    const boardSeconds = Math.ceil(msLeft / 1000).toString().padStart(2, "0");
     const leftScore = String(state.blueGoals).padStart(2, "0");
     const rightScore = String(state.goldGoals).padStart(2, "0");
-
     boardScoreTop.text = `${leftScore}  ${boardSeconds}  ${rightScore}`;
     boardScoreTop.x = width / 2 - boardScoreTop.width / 2;
 

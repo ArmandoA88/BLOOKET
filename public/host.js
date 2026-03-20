@@ -295,7 +295,7 @@ const requestedMiniGameType = String(hostPageParams.get("mini") || "")
 const requestedQuestionSetId = String(hostPageParams.get("set") || "").trim();
 const requestedHostName = String(hostPageParams.get("hostName") || "").trim();
 const FALLBACK_MINI_GAMES = [
-  { id: "foosball_frenzy", name: "Foosball Frenzy", description: "Fast table soccer duel with lane + power shots." },
+  { id: "foosball_frenzy", name: "Foosball Frenzy", description: "Foosball bars stay in formation. Slide laterally and kick." },
   { id: "soccer_shootout", name: "Soccer Shootout", description: "Penalty kicks with lane + power choice." },
   { id: "tap_rush", name: "Tap Rush", description: "Tap fast for bonus points." },
   { id: "reaction_duel", name: "Reaction Duel", description: "Wait for GO and react fast." },

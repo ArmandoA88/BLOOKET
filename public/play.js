@@ -246,11 +246,11 @@ const SOCCER_FIELD_PLAYERS_FALLBACK = [
 ];
 const MINI_GAME_TUTORIALS = {
   foosball_frenzy: {
-    intro: "Move lane, pick power, then shoot quickly before time runs out.",
+    intro: "The foosball lines stay in formation. Slide them laterally, then kick with space.",
     steps: [
-      "Use Left and Right arrows or lane buttons to position your striker.",
-      "Set power to balance speed and control.",
-      "Press Space or Kick to shoot and score before the bot adapts."
+      "Use Left and Right arrows or the lane buttons to slide your bars side to side.",
+      "Your players stay fixed on each rod like a real foosball table.",
+      "Press Space or Kick to fire the ball before the bot bars close the lane."
     ]
   },
   soccer_shootout: {
@@ -374,7 +374,7 @@ const FALLBACK_BLOOKS = [
 ];
 
 const FALLBACK_MINI_GAMES = [
-  { id: "foosball_frenzy", name: "Foosball Frenzy", description: "Fast table soccer duel with lane + power shots." },
+  { id: "foosball_frenzy", name: "Foosball Frenzy", description: "Foosball bars stay in formation. Slide laterally and kick." },
   { id: "soccer_shootout", name: "Soccer Shootout", description: "Penalty kicks with lane + power choice." },
   { id: "tap_rush", name: "Tap Rush", description: "Tap fast for bonus points." },
   { id: "reaction_duel", name: "Reaction Duel", description: "Wait for GO and react fast." },
@@ -1607,7 +1607,13 @@ function clampMiniFoosballLane(value) {
   return clamp(Math.round(Number(value ?? 1)), 0, 2);
 }
 
-function miniFoosballLaneX(index, width = 720) {
+function miniFoosballLaneOffset(index, width = 720) {
+  const lane = clampMiniFoosballLane(index);
+  const points = [Math.round(width * -0.06), 0, Math.round(width * 0.06)];
+  return points[lane];
+}
+
+function miniFoosballShotX(index, width = 720) {
   const lane = clampMiniFoosballLane(index);
   const points = [Math.round(width * 0.24), Math.round(width * 0.5), Math.round(width * 0.76)];
   return points[lane];
@@ -1616,11 +1622,11 @@ function miniFoosballLaneX(index, width = 720) {
 function miniFoosballEventText(payload) {
   const eventType = String(payload?.lastEvent?.type || "");
   if (eventType === "player_goal") return "GOAL! Your shot found the corner.";
-  if (eventType === "player_saved") return "Saved by the bot keeper. Try a new lane.";
-  if (eventType === "bot_goal") return "Bot scores. Block with your current lane.";
+  if (eventType === "player_saved") return "The bot bars blocked it. Slide and try again.";
+  if (eventType === "bot_goal") return "Bot scores. Keep your bars in that lane to block.";
   if (eventType === "bot_saved") return "Great block! You stopped the bot shot.";
-  if (eventType === "goalie_shift") return "Keeper moved. Time your next shot.";
-  return "Move lane with Left/Right, then press Space to shoot.";
+  if (eventType === "goalie_shift") return "The bot bars slid into a new lane.";
+  return "Slide the bars with Left/Right, then press Space to kick.";
 }
 
 function ensureMiniFoosballPixiLoaded() {
@@ -1711,23 +1717,23 @@ async function initMiniFoosballPixi() {
     stripe.alpha = 0.42;
     root.addChild(stripe);
 
-    const leftGoal = new PIXI.Sprite(PIXI.Texture.WHITE);
-    leftGoal.width = 14;
-    leftGoal.height = 112;
-    leftGoal.x = 8;
-    leftGoal.y = 124;
-    leftGoal.tint = 0xecf7ff;
-    leftGoal.alpha = 0.9;
-    root.addChild(leftGoal);
+    const topGoal = new PIXI.Sprite(PIXI.Texture.WHITE);
+    topGoal.width = 112;
+    topGoal.height = 14;
+    topGoal.x = width / 2 - 56;
+    topGoal.y = 8;
+    topGoal.tint = 0xecf7ff;
+    topGoal.alpha = 0.9;
+    root.addChild(topGoal);
 
-    const rightGoal = new PIXI.Sprite(PIXI.Texture.WHITE);
-    rightGoal.width = 14;
-    rightGoal.height = 112;
-    rightGoal.x = width - 22;
-    rightGoal.y = 124;
-    rightGoal.tint = 0xecf7ff;
-    rightGoal.alpha = 0.9;
-    root.addChild(rightGoal);
+    const bottomGoal = new PIXI.Sprite(PIXI.Texture.WHITE);
+    bottomGoal.width = 112;
+    bottomGoal.height = 14;
+    bottomGoal.x = width / 2 - 56;
+    bottomGoal.y = height - 22;
+    bottomGoal.tint = 0xecf7ff;
+    bottomGoal.alpha = 0.9;
+    root.addChild(bottomGoal);
 
     const fieldBorder = new PIXI.Sprite(PIXI.Texture.WHITE);
     fieldBorder.width = width - 24;
@@ -1737,23 +1743,116 @@ async function initMiniFoosballPixi() {
     fieldBorder.alpha = 0.16;
     root.addChild(fieldBorder);
 
-    const striker = new PIXI.Container();
-    const strikerBar = new PIXI.Sprite(PIXI.Texture.WHITE);
-    strikerBar.anchor.set(0.5);
-    strikerBar.width = 126;
-    strikerBar.height = 16;
-    strikerBar.tint = 0xffd447;
-    striker.addChild(strikerBar);
-    root.addChild(striker);
+    const centerCircle = new PIXI.Graphics();
+    centerCircle.lineStyle(3, 0xf7fbff, 0.45);
+    centerCircle.drawCircle(width / 2, height / 2, 42);
+    centerCircle.moveTo(14, height / 2);
+    centerCircle.lineTo(width - 14, height / 2);
+    centerCircle.beginFill(0xf7fbff, 0.7);
+    centerCircle.drawCircle(width / 2, height / 2, 4);
+    centerCircle.endFill();
+    root.addChild(centerCircle);
 
-    const goalie = new PIXI.Container();
-    const goalieBar = new PIXI.Sprite(PIXI.Texture.WHITE);
-    goalieBar.anchor.set(0.5);
-    goalieBar.width = 126;
-    goalieBar.height = 16;
-    goalieBar.tint = 0xff6f61;
-    goalie.addChild(goalieBar);
-    root.addChild(goalie);
+    const penaltyMarks = new PIXI.Graphics();
+    penaltyMarks.beginFill(0xf7fbff, 0.7);
+    penaltyMarks.drawCircle(width / 2, 72, 3);
+    penaltyMarks.drawCircle(width / 2, height - 72, 3);
+    penaltyMarks.endFill();
+    root.addChild(penaltyMarks);
+
+    function createFoosballFigure(team, isKeeper = false) {
+      const figure = new PIXI.Container();
+      const body = new PIXI.Graphics();
+      const shirt = team === "you" ? 0xffd447 : 0x2d4057;
+      const trim = team === "you" ? 0x7a5312 : 0xd7ecff;
+      const shorts = team === "you" ? 0xc07d11 : 0x182332;
+      const skin = team === "you" ? 0xf4c68f : 0xe9d3b8;
+      const bodyWidth = isKeeper ? 18 : 16;
+      const bodyHeight = isKeeper ? 28 : 24;
+
+      body.lineStyle(2, trim, 0.95);
+      body.beginFill(shirt);
+      body.drawRoundedRect(-bodyWidth / 2, -bodyHeight / 2, bodyWidth, bodyHeight, 5);
+      body.endFill();
+
+      body.lineStyle(0);
+      body.beginFill(shorts);
+      body.drawRoundedRect(-bodyWidth / 2, 2, bodyWidth, 8, 3);
+      body.endFill();
+
+      body.beginFill(skin);
+      body.drawCircle(0, -bodyHeight / 2 - 9, 7);
+      body.endFill();
+
+      body.beginFill(trim, 0.95);
+      body.drawRect(-2, bodyHeight / 2 - 2, 4, 7);
+      body.endFill();
+      figure.addChild(body);
+
+      const marker = new PIXI.Graphics();
+      marker.beginFill(isKeeper ? 0x67d8ff : trim, 0.95);
+      marker.drawCircle(0, 0, isKeeper ? 3.5 : 2.8);
+      marker.endFill();
+      marker.y = -bodyHeight / 2 - 9;
+      figure.addChild(marker);
+      return figure;
+    }
+
+    function createFoosballRow(config) {
+      const row = new PIXI.Container();
+      row.x = width / 2;
+      row.y = config.y;
+
+      const rod = new PIXI.Sprite(PIXI.Texture.WHITE);
+      rod.anchor.set(0.5);
+      rod.width = width + 80;
+      rod.height = 5;
+      rod.tint = 0xe4edf5;
+      rod.alpha = 0.92;
+      row.addChild(rod);
+
+      const leftHandle = new PIXI.Graphics();
+      leftHandle.beginFill(0x334454);
+      leftHandle.drawRoundedRect(-width / 2 - 48, -9, 24, 18, 6);
+      leftHandle.endFill();
+      row.addChild(leftHandle);
+
+      const rightHandle = new PIXI.Graphics();
+      rightHandle.beginFill(0x334454);
+      rightHandle.drawRoundedRect(width / 2 + 24, -9, 24, 18, 6);
+      rightHandle.endFill();
+      row.addChild(rightHandle);
+
+      config.xPositions.forEach((ratio, index) => {
+        const figure = createFoosballFigure(config.team, config.keeperIndex === index);
+        figure.x = Math.round((ratio - 0.5) * width);
+        row.addChild(figure);
+      });
+      root.addChild(row);
+      return row;
+    }
+
+    const rowConfigs = [
+      { team: "bot", y: 38, xPositions: [0.3, 0.5, 0.7], keeperIndex: 1 },
+      { team: "bot", y: 76, xPositions: [0.18, 0.82] },
+      { team: "you", y: 116, xPositions: [0.23, 0.5, 0.77] },
+      { team: "bot", y: 158, xPositions: [0.12, 0.31, 0.5, 0.69, 0.88] },
+      { team: "you", y: 202, xPositions: [0.12, 0.31, 0.5, 0.69, 0.88] },
+      { team: "bot", y: 244, xPositions: [0.23, 0.5, 0.77] },
+      { team: "you", y: 286, xPositions: [0.18, 0.82] },
+      { team: "you", y: 322, xPositions: [0.3, 0.5, 0.7], keeperIndex: 1 }
+    ];
+
+    const friendlyRows = [];
+    const enemyRows = [];
+    rowConfigs.forEach((config) => {
+      const row = createFoosballRow(config);
+      if (config.team === "you") {
+        friendlyRows.push(row);
+      } else {
+        enemyRows.push(row);
+      }
+    });
 
     const ball = PIXI.Sprite.from("/assets/minigames/soccer_shootout/soccer.svg");
     ball.anchor.set(0.5);
@@ -1767,23 +1866,35 @@ async function initMiniFoosballPixi() {
     flash.alpha = 0;
     root.addChild(flash);
 
-    const laneXs = [miniFoosballLaneX(0, width), miniFoosballLaneX(1, width), miniFoosballLaneX(2, width)];
-    striker.x = laneXs[clampMiniFoosballLane(miniFoosballSelectedLane)];
-    striker.y = height - 58;
-    goalie.x = laneXs[clampMiniFoosballLane(miniFoosballGoalieLane)];
-    goalie.y = 66;
-    ball.x = striker.x;
-    ball.y = striker.y - 24;
+    const shotTargets = [
+      miniFoosballShotX(0, width),
+      miniFoosballShotX(1, width),
+      miniFoosballShotX(2, width)
+    ];
+    const friendlyStartOffset = miniFoosballLaneOffset(miniFoosballSelectedLane, width);
+    const enemyStartOffset = miniFoosballLaneOffset(miniFoosballGoalieLane, width);
+    friendlyRows.forEach((row) => {
+      row.x = width / 2 + friendlyStartOffset;
+    });
+    enemyRows.forEach((row) => {
+      row.x = width / 2 + enemyStartOffset;
+    });
+    ball.x = width / 2 + friendlyStartOffset;
+    ball.y = height - 126;
 
     miniFoosballPixiApp = app;
     miniFoosballPixiScene = {
-      laneXs,
-      striker,
-      goalie,
+      width,
+      friendlyRows,
+      enemyRows,
       ball,
       flash,
-      strikerTargetX: striker.x,
-      goalieTargetX: goalie.x
+      shotTargets,
+      friendlyOffset: friendlyStartOffset,
+      enemyOffset: enemyStartOffset,
+      friendlyTargetOffset: friendlyStartOffset,
+      enemyTargetOffset: enemyStartOffset,
+      ballRestY: height - 126
     };
 
     miniFoosballPixiTicker = () => {
@@ -1791,19 +1902,25 @@ async function initMiniFoosballPixi() {
         return;
       }
       const scene = miniFoosballPixiScene;
-      scene.striker.x += (scene.strikerTargetX - scene.striker.x) * 0.22;
-      scene.goalie.x += (scene.goalieTargetX - scene.goalie.x) * 0.2;
+      scene.friendlyOffset += (scene.friendlyTargetOffset - scene.friendlyOffset) * 0.18;
+      scene.enemyOffset += (scene.enemyTargetOffset - scene.enemyOffset) * 0.18;
+      scene.friendlyRows.forEach((row) => {
+        row.x = width / 2 + scene.friendlyOffset;
+      });
+      scene.enemyRows.forEach((row) => {
+        row.x = width / 2 + scene.enemyOffset;
+      });
 
       const tween = miniFoosballBallTween;
       if (!tween) {
-        scene.ball.x += (scene.striker.x - scene.ball.x) * 0.22;
-        scene.ball.y += (scene.striker.y - 24 - scene.ball.y) * 0.22;
+        scene.ball.x += (width / 2 + scene.friendlyOffset - scene.ball.x) * 0.18;
+        scene.ball.y += (scene.ballRestY - scene.ball.y) * 0.18;
       } else {
         const elapsed = performance.now() - tween.start;
         const t = clamp(elapsed / tween.duration, 0, 1);
         const eased = 1 - Math.pow(1 - t, 3);
         scene.ball.x = tween.fromX + (tween.toX - tween.fromX) * eased;
-        scene.ball.y = tween.fromY + (tween.toY - tween.fromY) * t;
+        scene.ball.y = tween.fromY + (tween.toY - tween.fromY) * eased;
         if (t >= 1) {
           miniFoosballBallTween = null;
         }
@@ -1826,7 +1943,7 @@ function setMiniFoosballLane(lane, syncToServer = false) {
   });
 
   if (miniFoosballPixiScene) {
-    miniFoosballPixiScene.strikerTargetX = miniFoosballPixiScene.laneXs[miniFoosballSelectedLane];
+    miniFoosballPixiScene.friendlyTargetOffset = miniFoosballLaneOffset(miniFoosballSelectedLane, miniFoosballPixiScene.width);
   }
 
   if (!syncToServer || !roomCode) {
@@ -1847,15 +1964,15 @@ function playMiniFoosballShot(lastShot, goalieLane) {
   const scene = miniFoosballPixiScene;
   const lane = clampMiniFoosballLane(lastShot.lane);
   const keeperLane = clampMiniFoosballLane(goalieLane ?? lastShot.goalieLane);
-  scene.goalieTargetX = scene.laneXs[keeperLane];
+  scene.enemyTargetOffset = miniFoosballLaneOffset(keeperLane, scene.width);
 
   miniFoosballBallTween = {
     start: performance.now(),
     duration: lastShot.goal ? 410 : 360,
-    fromX: scene.striker.x,
-    fromY: scene.striker.y - 24,
-    toX: scene.laneXs[lane],
-    toY: lastShot.goal ? 78 : 102
+    fromX: scene.ball.x,
+    fromY: scene.ball.y,
+    toX: scene.shotTargets[lane],
+    toY: lastShot.goal ? 52 : 88
   };
   scene.flash.tint = lastShot.goal ? 0x52ef92 : 0xffbf59;
   scene.flash.alpha = lastShot.goal ? 0.2 : 0.14;
@@ -1873,7 +1990,7 @@ function applyMiniFoosballState(payload, options = {}) {
 
   setMiniFoosballLane(lane, false);
   if (miniFoosballPixiScene) {
-    miniFoosballPixiScene.goalieTargetX = miniFoosballPixiScene.laneXs[goalieLane];
+    miniFoosballPixiScene.enemyTargetOffset = miniFoosballLaneOffset(goalieLane, miniFoosballPixiScene.width);
   }
 
   const scoreEl = document.getElementById("miniFoosScore");
@@ -1897,11 +2014,11 @@ function applyMiniFoosballState(payload, options = {}) {
       setNotice("Goal! Keep pressing the advantage.", "good");
       playMiniGameSfx("goal");
     } else {
-      setNotice("Saved. Switch lane or power and shoot again.", "");
+      setNotice("Saved. Slide the bars and shoot again.", "");
       playMiniGameSfx("save");
     }
   } else if (options.forceSummaryText) {
-    setNotice("Foosball live: move lane with arrow keys and press Space to shoot.", "");
+    setNotice("Foosball live: slide the bars with arrow keys and press Space to kick.", "");
   }
 
   if (payload?.completed) {
@@ -1927,13 +2044,11 @@ function renderMiniGame(type, data, actionLabel) {
     chests.innerHTML = `
       <div class="chest mini-foosball-chest">
         <h4>Foosball Frenzy</h4>
-        <p class="help">Move lanes with <strong>Left/Right</strong> then shoot with <strong>Space</strong>.</p>
+        <p class="help">The players stay on fixed rods. Slide the bars with <strong>Left/Right</strong> and kick with <strong>Space</strong>.</p>
         <div id="miniFoosScore" class="notice">You 0 - 0 Bot</div>
         <div id="miniFoosStats" class="help">0 shots | 0% accuracy | 0 saves</div>
         <div id="miniFoosballStage" class="mini-foosball-stage"></div>
         <div class="mini-foosball-controls">
-          <label for="miniFoosPower">Power</label>
-          <input id="miniFoosPower" type="range" min="1" max="3" value="2" />
           <div class="answers mini-foosball-lanes">
             <button class="answer" data-mini-action="foos_lane" data-mini-value="0">Left</button>
             <button class="answer" data-mini-action="foos_lane" data-mini-value="1">Center</button>
@@ -1941,7 +2056,7 @@ function renderMiniGame(type, data, actionLabel) {
           </div>
           <button id="miniFoosKickBtn" class="answer" data-mini-action="foos_kick">${escapeHtml(actionLabel || "Kick")} (Space)</button>
         </div>
-        <div id="miniFoosLast" class="help">Get ready to score.</div>
+        <div id="miniFoosLast" class="help">Get ready. Keep your bars lined up and kick.</div>
       </div>`;
     initMiniFoosballPixi();
     applyMiniFoosballState(data, { forceSummaryText: true });
@@ -3071,11 +3186,9 @@ chests.addEventListener("click", (event) => {
 
   const payload = { code: roomCode, action };
   if (action === "foos_kick") {
-    const powerInput = document.getElementById("miniFoosPower");
     payload.action = "kick";
     payload.value = {
-      lane: miniFoosballSelectedLane,
-      power: Math.max(1, Math.min(3, Math.round(Number(powerInput?.value || 2))))
+      lane: miniFoosballSelectedLane
     };
     const kickButton = document.getElementById("miniFoosKickBtn");
     if (kickButton) {

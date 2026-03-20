@@ -1187,11 +1187,11 @@ const MODE_CONFIG = {
 };
 
 const MODE_MINI_GAMES = {
-  classic: ["foosball_frenzy", "tower_stacker", "space_invaders"],
-  gold: ["tower_stacker"],
-  crypto: ["foosball_frenzy", "tower_stacker", "space_invaders"],
-  fishing: ["foosball_frenzy", "tower_stacker", "space_invaders"],
-  brawl: ["space_invaders"]
+  classic: ["foosball_frenzy", "tower_stacker", "space_invaders", "snake"],
+  gold: ["tower_stacker", "snake"],
+  crypto: ["foosball_frenzy", "tower_stacker", "space_invaders", "snake"],
+  fishing: ["foosball_frenzy", "tower_stacker", "space_invaders", "snake"],
+  brawl: ["space_invaders", "snake"]
 };
 
 const MINI_GAME_CATALOG = [
@@ -1209,6 +1209,11 @@ const MINI_GAME_CATALOG = [
     id: "space_invaders",
     name: "Space Invaders",
     description: "Move your ship, shoot aliens, and survive the waves."
+  },
+  {
+    id: "snake",
+    name: "Snake Strategy",
+    description: "Guide the snake with simple controls, plan safe turns, and grow with each snack."
   },
   {
     id: "tower_stacker",
@@ -1319,6 +1324,9 @@ const TOWER_STACKER_GROUND_Y = 92;
 const TOWER_STACKER_PIECE_SCALE = 0.54;
 const TOWER_STACKER_SPAWN_HEADROOM = 18;
 const TOWER_STACKER_MIN_VISIBLE_HEADROOM = 10;
+const SNAKE_GRID_WIDTH = 18;
+const SNAKE_GRID_HEIGHT = 18;
+const SNAKE_START_LENGTH = 4;
 
 function publicMiniGameCatalog() {
   return MINI_GAME_CATALOG.map((game) => ({
@@ -3519,7 +3527,13 @@ function restartActiveMiniGameTick(game) {
     game.minigameTick = null;
   }
 
-  if (game.minigameType === "soccer_shootout" || game.minigameType === "space_invaders" || game.minigameType === "foosball_frenzy" || game.minigameType === "tower_stacker") {
+  if (
+    game.minigameType === "soccer_shootout" ||
+    game.minigameType === "space_invaders" ||
+    game.minigameType === "foosball_frenzy" ||
+    game.minigameType === "tower_stacker" ||
+    game.minigameType === "snake"
+  ) {
     game.minigameTick = setInterval(() => {
       if (game.minigameType === "soccer_shootout") {
         tickSoccerMatch(game);
@@ -3535,6 +3549,10 @@ function restartActiveMiniGameTick(game) {
       }
       if (game.minigameType === "tower_stacker") {
         tickTowerStackerMatch(game);
+        return;
+      }
+      if (game.minigameType === "snake") {
+        tickSnakeMatch(game);
       }
     }, 90);
 
@@ -3544,6 +3562,8 @@ function restartActiveMiniGameTick(game) {
       broadcastSpaceInvadersState(game);
     } else if (game.minigameType === "tower_stacker") {
       broadcastTowerStackerState(game);
+    } else if (game.minigameType === "snake") {
+      broadcastSnakeState(game);
     } else {
       broadcastFoosballState(game);
     }
@@ -3879,6 +3899,9 @@ function miniGameHostGoal(game, type) {
   if (type === "space_invaders") {
     return 8 + tier * 4;
   }
+  if (type === "snake") {
+    return 3 + tier * 2;
+  }
   if (type === "tower_stacker") {
     return 5 + tier * 2;
   }
@@ -3931,6 +3954,22 @@ function hostMiniGameProgressRow(state) {
       wave,
       lives,
       accuracy,
+      completed: state.completed === true
+    };
+  }
+
+  if (state.type === "snake") {
+    const foodsEaten = Math.max(0, Number(state.foodsEaten || 0));
+    const moves = Math.max(0, Number(state.moves || 0));
+    const length = Math.max(0, Array.isArray(state.body) ? state.body.length : Number(state.length || 0));
+    return {
+      metric: Math.max(0, Number(state.score || 0)),
+      progress: foodsEaten,
+      foodsEaten,
+      moves,
+      length,
+      alive: state.alive !== false,
+      won: state.won === true,
       completed: state.completed === true
     };
   }
@@ -4348,6 +4387,226 @@ function tickFoosballMatch(game) {
 
   if (progressChanged) {
     broadcastMiniGameProgress(game);
+  }
+}
+
+function snakeMoveIntervalMs(difficultyTier = 1) {
+  const tier = clamp(Number(difficultyTier || 1), 1, 4);
+  return Math.max(120, 230 - (tier - 1) * 28);
+}
+
+function snakeDirectionVector(direction) {
+  const key = String(direction || "").trim().toLowerCase();
+  if (key === "up") {
+    return { x: 0, y: -1, key: "up" };
+  }
+  if (key === "down") {
+    return { x: 0, y: 1, key: "down" };
+  }
+  if (key === "left") {
+    return { x: -1, y: 0, key: "left" };
+  }
+  return { x: 1, y: 0, key: "right" };
+}
+
+function snakeDirectionsOpposite(left, right) {
+  const a = snakeDirectionVector(left);
+  const b = snakeDirectionVector(right);
+  return a.x === -b.x && a.y === -b.y;
+}
+
+function snakeStartBody() {
+  const startX = Math.floor(SNAKE_GRID_WIDTH / 2);
+  const startY = Math.floor(SNAKE_GRID_HEIGHT / 2);
+  const segments = [];
+  for (let index = 0; index < SNAKE_START_LENGTH; index += 1) {
+    segments.push({ x: startX - index, y: startY });
+  }
+  return segments;
+}
+
+function snakeBodyContains(body, x, y) {
+  return Array.isArray(body) && body.some((segment) => Number(segment?.x || 0) === x && Number(segment?.y || 0) === y);
+}
+
+function createSnakeFood(body, gridWidth = SNAKE_GRID_WIDTH, gridHeight = SNAKE_GRID_HEIGHT) {
+  const openCells = [];
+  for (let y = 0; y < gridHeight; y += 1) {
+    for (let x = 0; x < gridWidth; x += 1) {
+      if (!snakeBodyContains(body, x, y)) {
+        openCells.push({ x, y });
+      }
+    }
+  }
+  if (openCells.length === 0) {
+    return null;
+  }
+  return openCells[randomInt(0, openCells.length - 1)];
+}
+
+function snakePayload(state) {
+  const body = Array.isArray(state?.body)
+    ? state.body.map((segment) => ({
+      x: clamp(Math.round(Number(segment?.x || 0)), 0, Math.max(0, Number(state?.gridWidth || SNAKE_GRID_WIDTH) - 1)),
+      y: clamp(Math.round(Number(segment?.y || 0)), 0, Math.max(0, Number(state?.gridHeight || SNAKE_GRID_HEIGHT) - 1))
+    }))
+    : [];
+  const direction = snakeDirectionVector(state?.direction || "right").key;
+  const queuedDirection = snakeDirectionVector(state?.queuedDirection || direction).key;
+  return {
+    type: "snake",
+    gridWidth: Math.max(8, Number(state?.gridWidth || SNAKE_GRID_WIDTH)),
+    gridHeight: Math.max(8, Number(state?.gridHeight || SNAKE_GRID_HEIGHT)),
+    body,
+    direction,
+    queuedDirection,
+    head: body[0] || null,
+    food: state?.food ? { x: Math.max(0, Number(state.food.x || 0)), y: Math.max(0, Number(state.food.y || 0)) } : null,
+    foodsEaten: Math.max(0, Number(state?.foodsEaten || 0)),
+    moves: Math.max(0, Number(state?.moves || 0)),
+    length: Math.max(0, Number(body.length || 0)),
+    score: Math.max(0, Number(state?.score || 0)),
+    alive: state?.alive !== false,
+    completed: state?.completed === true,
+    won: state?.won === true,
+    moveIntervalMs: snakeMoveIntervalMs(state?.difficultyTier || 1),
+    lastEvent: state?.lastEvent || null
+  };
+}
+
+function broadcastSnakeState(game) {
+  if (!game || game.phase !== "minigame" || game.minigameType !== "snake") {
+    return;
+  }
+
+  for (const [playerId, state] of game.chestPhase.entries()) {
+    if (!state || state.type !== "snake") {
+      continue;
+    }
+    io.to(playerId).emit("minigame:state", snakePayload(state));
+  }
+}
+
+function tickSnakeMatch(game) {
+  if (!game || game.phase !== "minigame" || game.minigameType !== "snake") {
+    return;
+  }
+
+  const now = Date.now();
+  let shouldBroadcastState = false;
+  let shouldBroadcastProgress = false;
+
+  for (const [playerId, state] of game.chestPhase.entries()) {
+    if (!state || state.type !== "snake" || state.completed === true) {
+      continue;
+    }
+
+    const intervalMs = snakeMoveIntervalMs(state.difficultyTier || 1);
+    if (now - Number(state.lastMoveAt || 0) < intervalMs) {
+      continue;
+    }
+
+    const direction = snakeDirectionsOpposite(state.direction, state.queuedDirection) ? state.direction : state.queuedDirection;
+    const vector = snakeDirectionVector(direction);
+    const body = Array.isArray(state.body) ? state.body.map((segment) => ({ x: Number(segment.x || 0), y: Number(segment.y || 0) })) : [];
+    const head = body[0];
+    if (!head) {
+      continue;
+    }
+
+    state.direction = vector.key;
+    state.queuedDirection = vector.key;
+    state.lastMoveAt = now;
+    state.tick = Math.max(0, Number(state.tick || 0)) + 1;
+    state.moves = Math.max(0, Number(state.moves || 0)) + 1;
+
+    const nextHead = {
+      x: head.x + vector.x,
+      y: head.y + vector.y
+    };
+    const food = state.food && typeof state.food === "object" ? state.food : null;
+    const grows = food && nextHead.x === Number(food.x || 0) && nextHead.y === Number(food.y || 0);
+    const collisionBody = grows ? body : body.slice(0, -1);
+    const hitWall =
+      nextHead.x < 0 ||
+      nextHead.y < 0 ||
+      nextHead.x >= Number(state.gridWidth || SNAKE_GRID_WIDTH) ||
+      nextHead.y >= Number(state.gridHeight || SNAKE_GRID_HEIGHT);
+    const hitBody = snakeBodyContains(collisionBody, nextHead.x, nextHead.y);
+
+    state.lastEventSeq = Math.max(0, Number(state.lastEventSeq || 0)) + 1;
+    if (hitWall || hitBody) {
+      state.alive = false;
+      state.completed = true;
+      state.won = false;
+      state.lastEvent = {
+        seq: state.lastEventSeq,
+        type: "crash",
+        crashedInto: hitWall ? "wall" : "tail",
+        x: nextHead.x,
+        y: nextHead.y
+      };
+      shouldBroadcastState = true;
+      shouldBroadcastProgress = true;
+      continue;
+    }
+
+    body.unshift(nextHead);
+    if (grows) {
+      state.foodsEaten = Math.max(0, Number(state.foodsEaten || 0)) + 1;
+      state.food = createSnakeFood(body, state.gridWidth, state.gridHeight);
+      state.lastEvent = {
+        seq: state.lastEventSeq,
+        type: "food",
+        x: nextHead.x,
+        y: nextHead.y
+      };
+      shouldBroadcastProgress = true;
+    } else {
+      body.pop();
+      state.lastEvent = {
+        seq: state.lastEventSeq,
+        type: "move",
+        x: nextHead.x,
+        y: nextHead.y
+      };
+    }
+
+    state.body = body;
+    state.score =
+      Math.max(0, Number(state.foodsEaten || 0)) * 240 +
+      Math.max(0, body.length - SNAKE_START_LENGTH) * 48 +
+      Math.max(0, Number(state.moves || 0));
+    shouldBroadcastProgress = true;
+
+    if (!state.food) {
+      state.completed = true;
+      state.won = true;
+      state.lastEvent = {
+        seq: state.lastEventSeq,
+        type: "board_clear",
+        length: body.length
+      };
+      shouldBroadcastProgress = true;
+    }
+
+    shouldBroadcastState = true;
+
+    if (state.completed === true) {
+      io.to(playerId).emit("minigame:state", snakePayload(state));
+    }
+  }
+
+  if (shouldBroadcastState) {
+    broadcastSnakeState(game);
+  }
+
+  if (shouldBroadcastProgress) {
+    broadcastMiniGameProgress(game);
+  }
+
+  if (allMiniGamesResolved(game)) {
+    finalizeMiniGamePhase(game);
   }
 }
 
@@ -5093,6 +5352,30 @@ function createMiniGameState(type, difficulty = null) {
     };
   }
 
+  if (type === "snake") {
+    const body = snakeStartBody();
+    return {
+      type,
+      gridWidth: SNAKE_GRID_WIDTH,
+      gridHeight: SNAKE_GRID_HEIGHT,
+      body,
+      direction: "right",
+      queuedDirection: "right",
+      food: createSnakeFood(body, SNAKE_GRID_WIDTH, SNAKE_GRID_HEIGHT),
+      foodsEaten: 0,
+      moves: 0,
+      score: 0,
+      alive: true,
+      completed: false,
+      won: false,
+      lastMoveAt: Date.now(),
+      lastEventSeq: 0,
+      lastEvent: null,
+      tick: 0,
+      difficultyTier: safeTier
+    };
+  }
+
   if (type === "tower_stacker") {
     const state = {
       type,
@@ -5177,6 +5460,13 @@ function miniGamePublicData(state, game, playerId = "") {
     };
   }
 
+  if (state.type === "snake") {
+    return {
+      ...snakePayload(state),
+      difficultyTier
+    };
+  }
+
   if (state.type === "tower_stacker") {
     return {
       ...towerStackerPayload(state),
@@ -5197,6 +5487,10 @@ function isMiniGameStateResolved(state) {
   }
 
   if (state.type === "space_invaders") {
+    return state.completed === true;
+  }
+
+  if (state.type === "snake") {
     return state.completed === true;
   }
 
@@ -5278,6 +5572,27 @@ function miniGameResult(game, player, state) {
     return {
       bonus,
       text: `${player.name} blasted ${hits} invaders, reached wave ${wave}, and earned +${bonus} ${unit}.`
+    };
+  }
+
+  if (state.type === "snake") {
+    const foodsEaten = Math.max(0, Number(state.foodsEaten || 0));
+    const moves = Math.max(0, Number(state.moves || 0));
+    const length = Math.max(0, Array.isArray(state.body) ? state.body.length : 0);
+    const growth = Math.max(0, length - SNAKE_START_LENGTH);
+    const survivalBonus = state.alive !== false ? 70 : 0;
+    const winBonus = state.won === true ? 220 : 0;
+    const crashPenalty = state.alive === false ? 55 : 0;
+    const bonus = Math.max(120, 140 + foodsEaten * 180 + growth * 42 + Math.round(moves * 1.2) + survivalBonus + winBonus - crashPenalty);
+    const resultText =
+      state.won === true
+        ? "cleared the board"
+        : state.alive === false
+          ? "crashed"
+          : "survived";
+    return {
+      bonus,
+      text: `${player.name} ate ${foodsEaten} snacks, reached length ${length}, ${resultText}, and earned +${bonus} ${unit}.`
     };
   }
 
@@ -5644,6 +5959,23 @@ function handleMiniGameAction(game, socketId, action, value) {
     broadcastSoccerMatchState(game);
     broadcastMiniGameProgress(game);
     return { ok: true };
+  }
+
+  if (state.type === "snake") {
+    if (action !== "set_direction" && action !== "snake_turn") {
+      return { ok: false, message: "Invalid action for snake." };
+    }
+
+    if (state.completed === true) {
+      return { ok: true, completed: true };
+    }
+
+    const nextDirection = snakeDirectionVector(value?.direction || value?.dir || value).key;
+    if (!snakeDirectionsOpposite(state.direction, nextDirection)) {
+      state.queuedDirection = nextDirection;
+    }
+    io.to(socketId).emit("minigame:state", snakePayload(state));
+    return { ok: true, direction: state.queuedDirection };
   }
 
   if (state.type === "tower_stacker") {

@@ -15,6 +15,7 @@ const GAME_IMAGE_MAP = {
   question: "/assets/minigames/shared/question.svg",
   foosball_frenzy: "/assets/minigames/soccer_shootout/soccer.svg",
   soccer_shootout: "/assets/minigames/soccer_shootout/soccer.svg",
+  snake: "/assets/minigames/snake/snake.svg",
   tower_stacker: "/assets/minigames/tower_stacker/tower.svg",
   tap_rush: "/assets/minigames/tap_rush/tap.svg",
   reaction_duel: "/assets/minigames/reaction_duel/tap.svg",
@@ -98,6 +99,7 @@ const PHASE_CLASS_CANDIDATES = [
 const MINI_GAME_LABELS = {
   foosball_frenzy: "Foosball Frenzy",
   soccer_shootout: "Soccer Shootout",
+  snake: "Snake Strategy",
   tower_stacker: "Tower Stacker",
   space_invaders: "Space Invaders",
   tap_rush: "Tap Rush",
@@ -136,7 +138,7 @@ const MODE_PREVIEW_COPY = {
     players: "2 - 300"
   }
 };
-const HOST_VISIBLE_MINI_GAME_IDS = new Set(["foosball_frenzy", "tower_stacker", "space_invaders"]);
+const HOST_VISIBLE_MINI_GAME_IDS = new Set(["foosball_frenzy", "tower_stacker", "space_invaders", "snake"]);
 
 const setupCard = document.getElementById("setupCard");
 const gameCard = document.getElementById("gameCard");
@@ -282,6 +284,7 @@ const requestedQuestionSetId = String(hostPageParams.get("set") || "").trim();
 const requestedHostName = String(hostPageParams.get("hostName") || "").trim();
 const FALLBACK_MINI_GAMES = [
   { id: "foosball_frenzy", name: "Foosball Frenzy", description: "Foosball bars stay in formation. Slide laterally and kick." },
+  { id: "snake", name: "Snake Strategy", description: "Simple controls, careful turns, and growing path strategy." },
   { id: "tower_stacker", name: "Tower Stacker", description: "Stack themed critters into the tallest tower you can keep standing." },
   { id: "space_invaders", name: "Space Invaders", description: "Arcade survival shooter with classroom-friendly pacing." }
 ];
@@ -1410,6 +1413,30 @@ function renderMiniGameDashboard(payload) {
               </div>
               <div class="host-soccer-score">Height ${height} | ${Math.round(Number(player.metric || 0))} pts</div>
               <div class="help">${piecesPlaced} stacked | ${perfectDrops} perfect | Combo ${combo}${player.collapsed ? " | Collapsed" : ""}</div>
+            </article>`;
+          })
+          .join("")}
+      </div>`;
+    return;
+  }
+
+  if (type === "snake") {
+    miniGameDashboardBody.innerHTML = `
+      <div class="host-soccer-grid">
+        ${players
+          .map((player) => {
+            const foods = Number(player.foodsEaten || 0);
+            const length = Number(player.length || 0);
+            const moves = Number(player.moves || 0);
+            const status = player.won ? "Cleared Board" : player.alive === false ? "Crashed" : "Alive";
+            return `
+            <article class="host-soccer-card theme-lime">
+              <div class="host-mini-player">
+                <span class="blook-top-icon">${escapeHtml(player.blook?.icon || "?")}</span>
+                <strong>${escapeHtml(player.name)}</strong>
+              </div>
+              <div class="host-soccer-score">Snacks ${foods} | Length ${length}</div>
+              <div class="help">${moves} moves | ${Math.round(Number(player.metric || 0))} pts | ${status}</div>
             </article>`;
           })
           .join("")}

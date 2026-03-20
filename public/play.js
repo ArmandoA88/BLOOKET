@@ -31,6 +31,7 @@ const GAME_IMAGE_MAP = {
   question: "/assets/minigames/shared/question.svg",
   foosball_frenzy: "/assets/minigames/soccer_shootout/soccer.svg",
   soccer_shootout: "/assets/minigames/soccer_shootout/soccer.svg",
+  snake: "/assets/minigames/snake/snake.svg",
   tower_stacker: "/assets/minigames/tower_stacker/tower.svg",
   tap_rush: "/assets/minigames/tap_rush/tap.svg",
   reaction_duel: "/assets/minigames/reaction_duel/tap.svg",
@@ -270,6 +271,14 @@ const MINI_GAME_TUTORIALS = {
       "Higher power is faster but can reduce control."
     ]
   },
+  snake: {
+    intro: "Use simple turns to guide the snake, collect snacks, and avoid walls or your own tail.",
+    steps: [
+      "Use Arrow keys or WASD to turn up, down, left, or right.",
+      "Plan one move ahead because you cannot reverse straight into your own body.",
+      "Each snack grows the snake, so the path gets tighter as the round goes on."
+    ]
+  },
   tap_rush: {
     intro: "Rapid taps convert directly into bonus progress.",
     steps: [
@@ -346,6 +355,11 @@ let miniFoosballPixiApp = null;
 let miniFoosballPixiScene = null;
 let miniFoosballPixiTicker = null;
 let miniFoosballBallTween = null;
+let miniSnakeState = null;
+let miniSnakeCanvas = null;
+let miniSnakeCtx = null;
+let miniSnakeAnimationFrame = 0;
+let miniSnakeLastEventSeq = 0;
 let miniTowerStackerState = null;
 let miniTowerStackerCanvas = null;
 let miniTowerStackerCtx = null;
@@ -391,6 +405,7 @@ const FALLBACK_BLOOKS = [
 const FALLBACK_MINI_GAMES = [
   { id: "foosball_frenzy", name: "Foosball Frenzy", description: "Foosball bars stay in formation. Slide laterally and kick." },
   { id: "soccer_shootout", name: "Soccer Shootout", description: "Penalty kicks with lane + power choice." },
+  { id: "snake", name: "Snake Strategy", description: "Simple controls, careful turns, and growing path strategy." },
   { id: "tower_stacker", name: "Tower Stacker", description: "Drop cute themed pieces and build a happy tower." },
   { id: "tap_rush", name: "Tap Rush", description: "Tap fast for bonus points." },
   { id: "reaction_duel", name: "Reaction Duel", description: "Wait for GO and react fast." },
@@ -1142,6 +1157,14 @@ function stopMiniTickers() {
   stopMiniReactionTicker();
   stopMiniSoccerTicker();
   destroyMiniFoosballPixi();
+  if (miniSnakeAnimationFrame) {
+    cancelAnimationFrame(miniSnakeAnimationFrame);
+    miniSnakeAnimationFrame = 0;
+  }
+  miniSnakeCanvas = null;
+  miniSnakeCtx = null;
+  miniSnakeState = null;
+  miniSnakeLastEventSeq = 0;
   if (miniTowerStackerAnimationFrame) {
     cancelAnimationFrame(miniTowerStackerAnimationFrame);
     miniTowerStackerAnimationFrame = 0;
@@ -1157,6 +1180,7 @@ function miniGameTypeLabel(type) {
   if (type === "tower_stacker") return "Tower Stacker";
   if (type === "foosball_frenzy") return "Foosball Frenzy";
   if (type === "soccer_shootout") return "Soccer Shootout";
+  if (type === "snake") return "Snake Strategy";
   if (type === "tap_rush") return "Tap Rush";
   if (type === "reaction_duel") return "Reaction Duel";
   if (type === "sequence_memory") return "Sequence Memory";
@@ -2058,6 +2082,168 @@ function applyMiniFoosballState(payload, options = {}) {
   }
 }
 
+function miniSnakeDirectionKey(value) {
+  const key = String(value || "").trim().toLowerCase();
+  if (key === "up" || key === "down" || key === "left") {
+    return key;
+  }
+  return "right";
+}
+
+function sendMiniSnakeDirection(direction) {
+  if (!roomCode || activeMiniGameType !== "snake") {
+    return;
+  }
+  socket.emit("player:minigameAction", { code: roomCode, action: "set_direction", value: { direction } }, (res) => {
+    if (res?.ok !== true) {
+      setNotice(res?.message || "Could not turn the snake.", "bad");
+    }
+  });
+}
+
+function drawMiniSnakeCanvas() {
+  if (!miniSnakeCanvas || !miniSnakeCtx || !miniSnakeState) {
+    return;
+  }
+
+  const canvas = miniSnakeCanvas;
+  const ctx = miniSnakeCtx;
+  const gridWidth = Math.max(8, Number(miniSnakeState.gridWidth || 18));
+  const gridHeight = Math.max(8, Number(miniSnakeState.gridHeight || 18));
+  const cellSize = Math.min(canvas.width / gridWidth, canvas.height / gridHeight);
+  const boardWidth = cellSize * gridWidth;
+  const boardHeight = cellSize * gridHeight;
+  const offsetX = (canvas.width - boardWidth) / 2;
+  const offsetY = (canvas.height - boardHeight) / 2;
+
+  const background = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  background.addColorStop(0, "#12314e");
+  background.addColorStop(1, "#091621");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = background;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.save();
+  ctx.translate(offsetX, offsetY);
+
+  for (let y = 0; y < gridHeight; y += 1) {
+    for (let x = 0; x < gridWidth; x += 1) {
+      ctx.fillStyle = (x + y) % 2 === 0 ? "rgba(95, 173, 110, 0.22)" : "rgba(129, 205, 124, 0.14)";
+      ctx.fillRect(x * cellSize, y * cellSize, cellSize - 1, cellSize - 1);
+    }
+  }
+
+  if (miniSnakeState.food) {
+    const foodX = Number(miniSnakeState.food.x || 0) * cellSize + cellSize / 2;
+    const foodY = Number(miniSnakeState.food.y || 0) * cellSize + cellSize / 2;
+    ctx.fillStyle = "#ff6f61";
+    ctx.beginPath();
+    ctx.arc(foodX, foodY, cellSize * 0.28, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#7ed36d";
+    ctx.beginPath();
+    ctx.ellipse(foodX + cellSize * 0.08, foodY - cellSize * 0.2, cellSize * 0.12, cellSize * 0.06, -0.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const body = Array.isArray(miniSnakeState.body) ? miniSnakeState.body : [];
+  body.forEach((segment, index) => {
+    const x = Number(segment?.x || 0) * cellSize + 1.5;
+    const y = Number(segment?.y || 0) * cellSize + 1.5;
+    const segmentWidth = cellSize - 3;
+    const segmentHeight = cellSize - 3;
+    ctx.fillStyle = index === 0 ? "#ffd447" : "rgba(84, 232, 148, 0.95)";
+    if (typeof ctx.roundRect === "function") {
+      ctx.beginPath();
+      ctx.roundRect(x, y, segmentWidth, segmentHeight, Math.max(6, cellSize * 0.22));
+      ctx.fill();
+    } else {
+      ctx.fillRect(x, y, segmentWidth, segmentHeight);
+    }
+    if (index === 0) {
+      ctx.fillStyle = "#173255";
+      const eyeY = y + segmentHeight * 0.34;
+      ctx.beginPath();
+      ctx.arc(x + segmentWidth * 0.33, eyeY, Math.max(1.8, cellSize * 0.08), 0, Math.PI * 2);
+      ctx.arc(x + segmentWidth * 0.67, eyeY, Math.max(1.8, cellSize * 0.08), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+
+  if (miniSnakeState.alive === false) {
+    ctx.fillStyle = "rgba(6, 13, 20, 0.6)";
+    ctx.fillRect(0, 0, boardWidth, boardHeight);
+  }
+
+  ctx.restore();
+
+  if (miniSnakeState.alive === false || miniSnakeState.won === true) {
+    ctx.fillStyle = "rgba(247, 251, 255, 0.92)";
+    ctx.fillRect(canvas.width / 2 - 152, canvas.height / 2 - 44, 304, 88);
+    ctx.fillStyle = "#173255";
+    ctx.font = "900 28px Arial";
+    ctx.fillText(miniSnakeState.won === true ? "Board Cleared!" : "Snake Crashed", canvas.width / 2 - 116, canvas.height / 2 - 4);
+    ctx.font = "700 16px Arial";
+    ctx.fillText("Keep the route clean and collect more snacks.", canvas.width / 2 - 138, canvas.height / 2 + 24);
+  }
+
+  miniSnakeAnimationFrame = requestAnimationFrame(drawMiniSnakeCanvas);
+}
+
+function initMiniSnakeCanvas() {
+  miniSnakeCanvas = document.getElementById("miniSnakeCanvas");
+  if (!(miniSnakeCanvas instanceof HTMLCanvasElement)) {
+    return;
+  }
+  miniSnakeCtx = miniSnakeCanvas.getContext("2d");
+  if (!miniSnakeCtx) {
+    return;
+  }
+  miniSnakeAnimationFrame = requestAnimationFrame(drawMiniSnakeCanvas);
+}
+
+function applyMiniSnakeState(payload = {}, options = {}) {
+  miniSnakeState = payload;
+  const hudEl = document.getElementById("miniSnakeHud");
+  const statsEl = document.getElementById("miniSnakeStats");
+  const summaryEl = document.getElementById("miniSnakeSummary");
+  const direction = miniSnakeDirectionKey(payload.direction || payload.queuedDirection || "right");
+
+  chests.querySelectorAll("button[data-mini-action='snake_dir']").forEach((button) => {
+    button.classList.toggle("selected", button.getAttribute("data-mini-value") === direction);
+    button.disabled = payload.completed === true;
+  });
+
+  if (hudEl) {
+    hudEl.textContent = `Snacks ${Number(payload.foodsEaten || 0)} | Length ${Number(payload.length || 0)} | Score ${Math.round(Number(payload.score || 0))}`;
+  }
+  if (statsEl) {
+    const speedMs = Math.max(80, Number(payload.moveIntervalMs || 180));
+    statsEl.textContent = `${Number(payload.moves || 0)} moves | ${speedMs} ms step speed | ${payload.alive === false ? "Crashed" : payload.won === true ? "Cleared board" : "Alive"}`;
+  }
+
+  if (summaryEl) {
+    const eventSeq = Number(payload?.lastEvent?.seq || 0);
+    const forceSummaryText = options.forceSummaryText === true;
+    if (forceSummaryText || eventSeq !== miniSnakeLastEventSeq) {
+      miniSnakeLastEventSeq = eventSeq;
+      const eventType = String(payload?.lastEvent?.type || "");
+      if (payload.won === true || eventType === "board_clear") {
+        summaryEl.textContent = "Perfect path. You filled the board and cleared the round.";
+        setNotice("Snake board cleared. Waiting for results...", "good");
+      } else if (payload.alive === false || eventType === "crash") {
+        summaryEl.textContent = "Crash. Walls and your own tail both end the run.";
+        setNotice("Snake crashed. Waiting for results...", "bad");
+      } else if (eventType === "food") {
+        summaryEl.textContent = "Snack collected. Longer snake, tighter route.";
+        setNotice("Snack collected. Keep the route clean.", "good");
+      } else {
+        summaryEl.textContent = "Use Arrow keys or WASD to turn. Plan ahead because reverse turns are blocked.";
+      }
+    }
+  }
+}
+
 const TOWER_STACKER_THEME_STYLES = {
   cats: {
     accent: "#ff9b5c",
@@ -2639,6 +2825,33 @@ function renderMiniGame(type, data, actionLabel) {
   stopMiniTickers();
   activeMiniGameType = type;
   applyMiniTutorialButtonVisibility(type);
+
+  if (type === "snake") {
+    miniSnakeLastEventSeq = Number(data?.lastEvent?.seq || 0);
+    chests.innerHTML = `
+      <div class="chest mini-snake-chest">
+        <h4>Snake Strategy</h4>
+        <p class="help">Simple controls, clean turns, and planning ahead. Use <strong>Arrow keys</strong> or <strong>WASD</strong>.</p>
+        <div id="miniSnakeHud" class="notice">Snacks 0 | Length 0 | Score 0</div>
+        <div id="miniSnakeStats" class="help">0 moves | 180 ms step speed | Alive</div>
+        <div class="mini-snake-stage">
+          <canvas id="miniSnakeCanvas" class="mini-snake-canvas" width="760" height="420"></canvas>
+        </div>
+        <div class="mini-snake-controls">
+          <div class="mini-snake-dpad">
+            <button type="button" class="answer" data-mini-action="snake_dir" data-mini-value="up">Up</button>
+            <button type="button" class="answer" data-mini-action="snake_dir" data-mini-value="left">Left</button>
+            <button type="button" class="answer" data-mini-action="snake_dir" data-mini-value="down">Down</button>
+            <button type="button" class="answer" data-mini-action="snake_dir" data-mini-value="right">Right</button>
+          </div>
+          <div class="help">Collect snacks, avoid walls, and do not fold into your own tail.</div>
+        </div>
+        <div id="miniSnakeSummary" class="help">Use Arrow keys or WASD to turn. Plan ahead because reverse turns are blocked.</div>
+      </div>`;
+    initMiniSnakeCanvas();
+    applyMiniSnakeState(data, { forceSummaryText: true });
+    return;
+  }
 
   if (type === "tower_stacker") {
     const themes = Array.isArray(data?.themes) && data.themes.length > 0
@@ -3824,6 +4037,10 @@ chests.addEventListener("click", (event) => {
   }
 
   const payload = { code: roomCode, action };
+  if (action === "snake_dir") {
+    payload.action = "set_direction";
+    payload.value = { direction: button.dataset.miniValue || "right" };
+  }
   if (action === "foos_kick") {
     payload.action = "kick";
     payload.value = {
@@ -3932,6 +4149,20 @@ window.addEventListener("keydown", (event) => {
     event.target instanceof HTMLSelectElement;
   if (isTextEntry) {
     return;
+  }
+
+  const snakeKey = String(event.key || "").toLowerCase();
+  if (activeMiniGameType === "snake") {
+    let nextDirection = "";
+    if (event.key === "ArrowUp" || snakeKey === "w") nextDirection = "up";
+    if (event.key === "ArrowDown" || snakeKey === "s") nextDirection = "down";
+    if (event.key === "ArrowLeft" || snakeKey === "a") nextDirection = "left";
+    if (event.key === "ArrowRight" || snakeKey === "d") nextDirection = "right";
+    if (nextDirection) {
+      event.preventDefault();
+      sendMiniSnakeDirection(nextDirection);
+      return;
+    }
   }
 
   if (event.key === "ArrowLeft" && activeMiniGameType === "foosball_frenzy") {
@@ -4195,6 +4426,11 @@ socket.on("minigame:state", (payload) => {
 
   if (payload.type === "tower_stacker") {
     applyMiniTowerStackerState(payload, { forceSummaryText: false });
+    return;
+  }
+
+  if (payload.type === "snake") {
+    applyMiniSnakeState(payload, { forceSummaryText: false });
     return;
   }
 

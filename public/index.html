@@ -156,6 +156,11 @@
       --card-glow: rgba(0, 255, 136, 0.2);
     }
 
+    .card-snake {
+      --card-accent: #54e894;
+      --card-glow: rgba(84, 232, 148, 0.24);
+    }
+
     .card-air {
       --card-accent: #ff7c6a;
       --card-glow: rgba(255, 124, 106, 0.24);
@@ -214,6 +219,85 @@
       position: absolute;
       inset: 0;
       background: radial-gradient(ellipse at center, rgba(0, 255, 136, 0.1) 0%, transparent 65%);
+    }
+
+    .snake-preview {
+      position: relative;
+      background: linear-gradient(180deg, #183f2a 0%, #0f2419 100%);
+      overflow: hidden;
+    }
+
+    .snake-preview::before {
+      content: '';
+      position: absolute;
+      inset: 14px;
+      border-radius: 20px;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px) 0 0 / 28px 28px,
+        linear-gradient(0deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px) 0 0 / 28px 28px,
+        rgba(0, 0, 0, 0.18);
+      border: 1px solid rgba(132, 255, 173, 0.16);
+    }
+
+    .snake-segment,
+    .snake-food {
+      position: absolute;
+      z-index: 2;
+    }
+
+    .snake-segment {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #54e894, #2cbc6d);
+      box-shadow: 0 10px 18px rgba(0, 0, 0, 0.18);
+    }
+
+    .snake-segment.head {
+      background: linear-gradient(135deg, #ffd447, #ffb95a);
+      animation: snakeHeadBob 1.2s ease-in-out infinite alternate;
+    }
+
+    .snake-segment.head::before,
+    .snake-segment.head::after {
+      content: '';
+      position: absolute;
+      top: 10px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #173255;
+    }
+
+    .snake-segment.head::before {
+      left: 9px;
+    }
+
+    .snake-segment.head::after {
+      right: 9px;
+    }
+
+    .snake-food {
+      width: 24px;
+      height: 24px;
+      left: 252px;
+      top: 64px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #ffd0cc, #ff6f61 58%, #d33f35 100%);
+      box-shadow: 0 0 20px rgba(255, 111, 97, 0.38);
+      animation: snakeFoodBlink 1s ease-in-out infinite alternate;
+    }
+
+    .snake-food::before {
+      content: '';
+      position: absolute;
+      width: 12px;
+      height: 6px;
+      left: 13px;
+      top: -5px;
+      border-radius: 8px 8px 0 8px;
+      background: #7ed36d;
+      transform: rotate(-22deg);
     }
 
     .air-preview {
@@ -417,6 +501,26 @@
       }
     }
 
+    @keyframes snakeHeadBob {
+      from {
+        transform: translate(0, 0);
+      }
+
+      to {
+        transform: translate(6px, -2px);
+      }
+    }
+
+    @keyframes snakeFoodBlink {
+      from {
+        transform: scale(0.94);
+      }
+
+      to {
+        transform: scale(1.05);
+      }
+    }
+
     /* Card badge */
     .card-badge {
       position: absolute;
@@ -525,6 +629,17 @@
       filter: brightness(1.1);
     }
 
+    .card-snake .card-btn {
+      background: linear-gradient(135deg, #1f7a47, #54e894);
+      color: #ecfff3;
+      box-shadow: 0 4px 20px rgba(84, 232, 148, 0.24);
+    }
+
+    .card-snake .card-btn:hover {
+      box-shadow: 0 6px 30px rgba(84, 232, 148, 0.42);
+      filter: brightness(1.08);
+    }
+
     .card-air .card-btn {
       background: linear-gradient(135deg, #ff8759, #ff4e72);
       color: #fff6f1;
@@ -568,6 +683,18 @@
       right: 0;
       height: 2px;
       background: linear-gradient(90deg, transparent, #00ff88, transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .card-snake::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #54e894, transparent);
       opacity: 0;
       transition: opacity 0.3s;
     }
@@ -935,6 +1062,30 @@
             <span class="pill">🔥 Boss Fights</span>
           </div>
           <a class="card-btn" href="/space-invaders/">▶ PLAY NOW</a>
+        </div>
+      </div>
+
+      <!-- Snake -->
+      <div class="game-card card-snake">
+        <div class="card-preview snake-preview">
+          <span class="card-badge badge-single">Solo</span>
+          <span class="snake-segment head" style="left: 72px; top: 116px;"></span>
+          <span class="snake-segment" style="left: 110px; top: 116px;"></span>
+          <span class="snake-segment" style="left: 148px; top: 116px;"></span>
+          <span class="snake-segment" style="left: 186px; top: 116px;"></span>
+          <span class="snake-food"></span>
+        </div>
+        <div class="card-body">
+          <div class="card-icon">🐍</div>
+          <div class="card-title">Snake</div>
+          <div class="card-desc">Simple controls, clean strategy, and fast arcade pressure. Grow the snake, plan your turns, and stay alive as the board gets tighter.</div>
+          <div class="card-pills">
+            <span class="pill">⌨️ Arrows + WASD</span>
+            <span class="pill">🧠 Route Planning</span>
+            <span class="pill">🍎 Growth Pressure</span>
+            <span class="pill">⚡ Fast Rounds</span>
+          </div>
+          <a class="card-btn" href="/snake.html">▶ PLAY NOW</a>
         </div>
       </div>
 

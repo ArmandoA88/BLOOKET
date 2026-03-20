@@ -4025,7 +4025,52 @@ body.play-fishing-mode #playCard.fishing-final-active .fishing-hud-right {
   touch-action: manipulation;
 }
 
+.mini-snake-chest {
+  background:
+    radial-gradient(500px 220px at 12% 10%, rgba(255, 212, 71, 0.16), transparent 52%),
+    linear-gradient(180deg, rgba(28, 78, 53, 0.92), rgba(7, 22, 16, 0.96));
+}
+
+.mini-snake-stage {
+  margin-top: 14px;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(151, 193, 255, 0.38);
+  background: linear-gradient(180deg, rgba(8, 20, 29, 0.45), rgba(6, 14, 22, 0.82));
+}
+
+.mini-snake-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.mini-snake-controls {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.mini-snake-dpad {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.mini-snake-dpad .answer {
+  text-align: center;
+}
+
+.mini-snake-dpad .answer.selected {
+  border-color: rgba(255, 212, 71, 0.88);
+  background: rgba(255, 212, 71, 0.18);
+}
+
 @media (max-width: 760px) {
+  .mini-snake-dpad {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .mini-tower-theme-row {
     grid-template-columns: repeat(2, minmax(120px, 1fr));
   }

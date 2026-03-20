@@ -5,11 +5,11 @@ let phase = "lobby";
 let tickInterval = null;
 let currentQuestionOptions = [];
 const MODE_LABELS = {
-  classic: "Classic Quiz",
-  gold: "Gold Quest",
-  crypto: "Crypto Hack",
-  fishing: "Fishing Frenzy",
-  brawl: "Monster Brawl"
+  classic: "Foosball",
+  gold: "Foosball",
+  crypto: "Foosball",
+  fishing: "Foosball",
+  brawl: "Space Invaders"
 };
 const GAME_IMAGE_MAP = {
   question: "/assets/minigames/shared/question.svg",
@@ -97,6 +97,7 @@ const PHASE_CLASS_CANDIDATES = [
 const MINI_GAME_LABELS = {
   foosball_frenzy: "Foosball Frenzy",
   soccer_shootout: "Soccer Shootout",
+  space_invaders: "Space Invaders",
   tap_rush: "Tap Rush",
   reaction_duel: "Reaction Duel",
   sequence_memory: "Sequence Memory",
@@ -105,52 +106,26 @@ const MINI_GAME_LABELS = {
   word_scramble: "Word Scramble"
 };
 const MODE_PREVIEW_COPY = {
-  gold: {
-    title: "Gold Quest",
-    tagline: "Exciting twists and chests full of gold!",
+  classic: {
+    title: "Foosball",
+    tagline: "Fast classroom table soccer with clear student action.",
     difficulty: "Simple",
-    skills: "Luck & Speed",
-    idealTime: "7 min",
-    questions: "Self-paced",
-    players: "2 - 300"
-  },
-  fishing: {
-    title: "Fishing Frenzy",
-    tagline: "Cast lines, catch loot, and snowball points.",
-    difficulty: "Simple",
-    skills: "Risk & Timing",
-    idealTime: "6 min",
-    questions: "Standard pace",
-    players: "2 - 300"
-  },
-  crypto: {
-    title: "Crypto Hack",
-    tagline: "Invest, steal, and defend your wallet.",
-    difficulty: "Medium",
-    skills: "Strategy",
-    idealTime: "8 min",
-    questions: "Standard pace",
+    skills: "Timing",
+    idealTime: "5 min",
+    questions: "Fast rounds",
     players: "2 - 300"
   },
   brawl: {
-    title: "Monster Brawl",
-    tagline: "Build power and battle for top rank.",
+    title: "Space Invaders",
+    tagline: "Arcade shooting with live classroom pressure.",
     difficulty: "Medium",
-    skills: "Planning",
-    idealTime: "8 min",
-    questions: "Standard pace",
-    players: "2 - 300"
-  },
-  classic: {
-    title: "Classic",
-    tagline: "Fast classroom quiz flow with live leaderboard.",
-    difficulty: "Simple",
-    skills: "Accuracy",
-    idealTime: "5 min",
-    questions: "Speed + streak",
+    skills: "Focus",
+    idealTime: "6 min",
+    questions: "Wave-based",
     players: "2 - 300"
   }
 };
+const HOST_VISIBLE_MINI_GAME_IDS = new Set(["foosball_frenzy", "space_invaders"]);
 
 const setupCard = document.getElementById("setupCard");
 const gameCard = document.getElementById("gameCard");
@@ -296,13 +271,7 @@ const requestedQuestionSetId = String(hostPageParams.get("set") || "").trim();
 const requestedHostName = String(hostPageParams.get("hostName") || "").trim();
 const FALLBACK_MINI_GAMES = [
   { id: "foosball_frenzy", name: "Foosball Frenzy", description: "Foosball bars stay in formation. Slide laterally and kick." },
-  { id: "soccer_shootout", name: "Soccer Shootout", description: "Penalty kicks with lane + power choice." },
-  { id: "tap_rush", name: "Tap Rush", description: "Tap fast for bonus points." },
-  { id: "reaction_duel", name: "Reaction Duel", description: "Wait for GO and react fast." },
-  { id: "sequence_memory", name: "Sequence Memory", description: "Repeat the color order to score." },
-  { id: "obstacle_dodge", name: "Obstacle Dodge", description: "Pick safe lanes across turns." },
-  { id: "precision_stop", name: "Precision Stop", description: "Stop the marker near the target zone." },
-  { id: "word_scramble", name: "Word Scramble", description: "Unscramble words before attempts run out." }
+  { id: "space_invaders", name: "Space Invaders", description: "Arcade survival shooter with classroom-friendly pacing." }
 ];
 
 function normalizePhase(value) {
@@ -426,6 +395,17 @@ function hideSetupNotice() {
 
 function modePreviewById(mode) {
   return MODE_PREVIEW_COPY[mode] || MODE_PREVIEW_COPY.classic;
+}
+
+function filterVisibleMiniGames(games = []) {
+  if (!Array.isArray(games)) {
+    return [];
+  }
+  return games.filter((game) => HOST_VISIBLE_MINI_GAME_IDS.has(String(game?.id || "")));
+}
+
+function filterVisibleMiniGameTrend(row) {
+  return row && HOST_VISIBLE_MINI_GAME_IDS.has(String(row.id || "")) ? row : null;
 }
 
 function renderModePreview(mode) {
@@ -1230,8 +1210,8 @@ function renderMiniGamePopularity(data = {}) {
   if (!miniGamePopularity) {
     return;
   }
-  const mostPlayed = data.mostPlayed || null;
-  const mostMatched = data.mostMatched || null;
+  const mostPlayed = filterVisibleMiniGameTrend(data.mostPlayed || null);
+  const mostMatched = filterVisibleMiniGameTrend(data.mostMatched || null);
   if (!mostPlayed && !mostMatched) {
     miniGamePopularity.textContent = "Mini-game trends unavailable.";
     return;
@@ -1835,7 +1815,8 @@ function renderMiniGameCatalog(games, stats = []) {
     return;
   }
 
-  if (!Array.isArray(games) || games.length === 0) {
+  const visibleGames = filterVisibleMiniGames(games);
+  if (visibleGames.length === 0) {
     miniGamesList.innerHTML = `<div class="help">No mini-games loaded.</div>`;
     return;
   }
@@ -1849,7 +1830,7 @@ function renderMiniGameCatalog(games, stats = []) {
     }
   }
 
-  miniGamesList.innerHTML = games
+  miniGamesList.innerHTML = visibleGames
     .map(
       (game, index) => {
         const stats = statsById.get(game.id);
@@ -1865,15 +1846,15 @@ function renderMiniGameCatalog(games, stats = []) {
 
   if (testMiniGameType) {
     const previous = testMiniGameType.value;
-    testMiniGameType.innerHTML = games
+    testMiniGameType.innerHTML = visibleGames
       .map((game) => `<option value="${escapeHtml(game.id)}">${escapeHtml(game.name)}</option>`)
       .join("");
 
     const preferred =
-      (requestedMiniGameType && games.some((game) => game.id === requestedMiniGameType) ? requestedMiniGameType : "") ||
+      (requestedMiniGameType && visibleGames.some((game) => game.id === requestedMiniGameType) ? requestedMiniGameType : "") ||
       previous;
-    const exists = games.some((game) => game.id === preferred);
-    testMiniGameType.value = exists ? preferred : games[0].id;
+    const exists = visibleGames.some((game) => game.id === preferred);
+    testMiniGameType.value = exists ? preferred : visibleGames[0].id;
   }
 }
 
@@ -2028,7 +2009,7 @@ async function loadMiniGames() {
     }
 
     const payload = await response.json();
-    renderMiniGameCatalog(payload?.games, payload?.stats);
+    renderMiniGameCatalog(filterVisibleMiniGames(payload?.games), payload?.stats);
     renderMiniGamePopularity({
       mostPlayed: payload?.mostPlayed,
       mostMatched: payload?.mostMatched

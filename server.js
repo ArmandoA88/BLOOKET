@@ -4444,6 +4444,11 @@ function createTowerStackerPiece(themeId, difficultyTier = 1) {
   const heightScale = 1 + randomFloat(-0.06, 0.08);
   const width = clamp(Math.round(variant.w * TOWER_STACKER_PIECE_SCALE * widthScale * 10) / 10, 4.8, 10.8);
   const height = clamp(Math.round(variant.h * TOWER_STACKER_PIECE_SCALE * heightScale * 10) / 10, 4.2, 8.6);
+  const horizontalPadding = width / 2 + 8;
+  const centerMin = horizontalPadding + 8;
+  const centerMax = 100 - horizontalPadding - 8;
+  const hoverCenter = centerMin + Math.random() * Math.max(0, centerMax - centerMin);
+  const edgeAllowance = Math.max(4, Math.min(hoverCenter - horizontalPadding, 100 - horizontalPadding - hoverCenter));
   return {
     id: `tower_piece_${Math.random().toString(36).slice(2, 9)}`,
     theme: theme.id,
@@ -4470,7 +4475,14 @@ function createTowerStackerPiece(themeId, difficultyTier = 1) {
     settledAt: 0,
     supportId: "",
     supportOverlap: 1,
-    blinkSeed: Math.random()
+    blinkSeed: Math.random(),
+    hoverCenter,
+    hoverAmplitude: clamp(7 + Math.random() * 10, 6, edgeAllowance),
+    hoverSpeed: 0.0014 + Math.random() * 0.0011,
+    hoverPhase: Math.random() * Math.PI * 2,
+    hoverYPhase: Math.random() * Math.PI * 2,
+    hoverAnglePhase: Math.random() * Math.PI * 2,
+    hoverVx: 0
   };
 }
 
@@ -4480,7 +4492,12 @@ function towerStackerSpawnPreview(state) {
   }
   const piece = createTowerStackerPiece(state.theme, state.difficultyTier || 1);
   const towerTopWorld = getTowerTopWorldY(state.settledPieces || []);
-  piece.x = 50;
+  const horizontalPadding = Number(piece.w || 0) / 2 + 6;
+  piece.x = clamp(
+    Number(piece.hoverCenter || 50) + Math.sin(Number(piece.hoverPhase || 0)) * Number(piece.hoverAmplitude || 0),
+    horizontalPadding,
+    100 - horizontalPadding
+  );
   piece.y = towerTopWorld - TOWER_STACKER_SPAWN_HEADROOM;
   piece.spawnedAt = Date.now();
   state.previewPiece = piece;
@@ -4680,12 +4697,18 @@ function towerStackerTickState(state, now) {
 
   if (state.collapsed !== true && state.previewPiece && state.previewPiece.dropped !== true) {
     const preview = state.previewPiece;
-    const hoverAmplitude = Math.max(8, 18 - tier * 1.4);
-    const hoverSpeed = 0.0011 + tier * 0.00018;
     const towerTop = getTowerTopWorldY(state.settledPieces || []);
-    preview.x = 50 + Math.sin((now - Number(preview.spawnedAt || now)) * hoverSpeed) * hoverAmplitude;
-    preview.y = towerTop - TOWER_STACKER_SPAWN_HEADROOM + Math.sin((now - Number(preview.spawnedAt || now)) * 0.003) * 1.2;
-    preview.angle = Math.sin((now - Number(preview.spawnedAt || now)) * 0.004) * 0.05;
+    const elapsed = now - Number(preview.spawnedAt || now);
+    const orbit = elapsed * Number(preview.hoverSpeed || (0.0014 + tier * 0.00012)) + Number(preview.hoverPhase || 0);
+    const horizontalPadding = Number(preview.w || 0) / 2 + 6;
+    preview.x = clamp(
+      Number(preview.hoverCenter || 50) + Math.sin(orbit) * Number(preview.hoverAmplitude || 8),
+      horizontalPadding,
+      100 - horizontalPadding
+    );
+    preview.hoverVx = Math.cos(orbit) * Number(preview.hoverAmplitude || 8) * Number(preview.hoverSpeed || 0.0017) * 60;
+    preview.y = towerTop - TOWER_STACKER_SPAWN_HEADROOM + Math.sin(elapsed * 0.003 + Number(preview.hoverYPhase || 0)) * 1.2;
+    preview.angle = Math.sin(elapsed * 0.004 + Number(preview.hoverAnglePhase || 0)) * 0.05;
     changed = true;
   }
 
@@ -5670,7 +5693,7 @@ function handleMiniGameAction(game, socketId, action, value) {
     state.previewPiece.dropped = true;
     state.previewPiece.spawnedAt = now;
     state.previewPiece.vy = 0.6;
-    state.previewPiece.vx = Math.sin(now * 0.0013) * 0.08;
+    state.previewPiece.vx = Number(state.previewPiece.hoverVx || 0) * 0.18 || randomFloat(-0.08, 0.08);
     state.previewPiece.rotationSpeed = randomFloat(-0.012, 0.012);
     state.lastEventSeq = Math.max(0, Number(state.lastEventSeq || 0)) + 1;
     state.lastEvent = {

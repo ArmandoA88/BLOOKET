@@ -78,10 +78,57 @@ class TowerStackerGame {
     return 92;
   }
 
+  pieceTop(piece) {
+    return this.pieceBounds(piece).top;
+  }
+
+  pieceBottom(piece) {
+    return this.pieceBounds(piece).bottom;
+  }
+
+  getTowerTopWorldY(pieces = this.settled) {
+    if (!Array.isArray(pieces) || pieces.length === 0) {
+      return this.groundWorldY();
+    }
+    return pieces.reduce((min, piece) => Math.min(min, this.pieceTop(piece)), this.groundWorldY());
+  }
+
+  getTowerHeightWorldUnits(pieces = this.settled) {
+    return Math.max(0, this.groundWorldY() - this.getTowerTopWorldY(pieces));
+  }
+
+  nextSpawnWorldY() {
+    return this.getTowerTopWorldY() - 18;
+  }
+
+  clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  configurePreviewMotion(piece) {
+    const horizontalPadding = piece.w / 2 + 8;
+    const centerMin = horizontalPadding + 8;
+    const centerMax = 100 - horizontalPadding - 8;
+    const hoverCenter = centerMin + Math.random() * Math.max(0, centerMax - centerMin);
+    const edgeAllowance = Math.max(4, Math.min(hoverCenter - horizontalPadding, 100 - horizontalPadding - hoverCenter));
+    piece.hoverCenter = hoverCenter;
+    piece.hoverAmplitude = this.clamp(7 + Math.random() * 10, 6, edgeAllowance);
+    piece.hoverSpeed = 0.0014 + Math.random() * 0.0011;
+    piece.hoverPhase = Math.random() * Math.PI * 2;
+    piece.hoverYPhase = Math.random() * Math.PI * 2;
+    piece.hoverAnglePhase = Math.random() * Math.PI * 2;
+    piece.hoverVx = 0;
+    piece.x = this.clamp(
+      piece.hoverCenter + Math.sin(piece.hoverPhase) * piece.hoverAmplitude,
+      horizontalPadding,
+      100 - horizontalPadding
+    );
+  }
+
   makePiece() {
     const theme = this.currentTheme();
     const variant = theme.pieces[Math.floor(Math.random() * theme.pieces.length)];
-    return {
+    const piece = {
       id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       theme: this.activeTheme,
       shape: variant.shape,
@@ -91,7 +138,7 @@ class TowerStackerGame {
       ears: variant.ears,
       accessory: variant.accessory,
       x: 50,
-      y: Math.max(18, this.groundWorldY() - this.height - 18),
+      y: this.nextSpawnWorldY(),
       w: (variant.w / this.canvas.width) * 100,
       h: (variant.h / this.canvas.height) * 100 * 1.6,
       vx: 0,
@@ -104,6 +151,8 @@ class TowerStackerGame {
       perfect: false,
       spawnedAt: performance.now()
     };
+    this.configurePreviewMotion(piece);
+    return piece;
   }
 
   spawnPiece() {
@@ -120,7 +169,7 @@ class TowerStackerGame {
     }
     this.activePiece.dropped = true;
     this.activePiece.vy = 0.7;
-    this.activePiece.vx = Math.sin(performance.now() * 0.004) * 0.12;
+    this.activePiece.vx = (this.activePiece.hoverVx || 0) * 0.18 || ((Math.random() - 0.5) * 0.18);
     this.bannerEl.textContent = "";
   }
 
@@ -150,9 +199,7 @@ class TowerStackerGame {
   }
 
   towerHeight() {
-    if (this.settled.length === 0) return 0;
-    const top = Math.min(...this.settled.map((piece) => this.pieceBounds(piece).top));
-    return Math.max(0, this.groundWorldY() - top);
+    return this.getTowerHeightWorldUnits();
   }
 
   heightScoreForState() {
@@ -169,7 +216,7 @@ class TowerStackerGame {
       .concat(this.falling)
       .concat(this.activePiece ? [this.activePiece] : []);
     if (rows.length === 0) return 0;
-    const highestTop = rows.reduce((min, piece) => Math.min(min, this.pieceBounds(piece).top), this.groundWorldY());
+    const highestTop = rows.reduce((min, piece) => Math.min(min, this.pieceTop(piece)), this.groundWorldY());
     return Math.min(0, highestTop - 24);
   }
 
@@ -187,10 +234,18 @@ class TowerStackerGame {
 
     if (this.activePiece && !this.activePiece.dropped) {
       const theme = this.currentTheme();
-      const amplitude = Math.max(11, 22 - this.pieces * 0.4);
-      this.activePiece.x = 50 + Math.sin((now - this.activePiece.spawnedAt) * 0.0018) * amplitude;
-      this.activePiece.y = Math.max(18, this.groundWorldY() - this.height - 18 + Math.sin((now - this.activePiece.spawnedAt) * 0.004 * theme.idleBob) * 1.6);
-      this.activePiece.angle = Math.sin((now - this.activePiece.spawnedAt) * 0.0038) * 0.05;
+      const spawnY = this.nextSpawnWorldY();
+      const elapsed = now - this.activePiece.spawnedAt;
+      const orbit = elapsed * this.activePiece.hoverSpeed + this.activePiece.hoverPhase;
+      const horizontalPadding = this.activePiece.w / 2 + 6;
+      this.activePiece.x = this.clamp(
+        this.activePiece.hoverCenter + Math.sin(orbit) * this.activePiece.hoverAmplitude,
+        horizontalPadding,
+        100 - horizontalPadding
+      );
+      this.activePiece.hoverVx = Math.cos(orbit) * this.activePiece.hoverAmplitude * this.activePiece.hoverSpeed * 60;
+      this.activePiece.y = spawnY + Math.sin(elapsed * 0.004 * theme.idleBob + this.activePiece.hoverYPhase) * 1.6;
+      this.activePiece.angle = Math.sin(elapsed * 0.0038 + this.activePiece.hoverAnglePhase) * 0.05;
     }
 
     if (this.activePiece && this.activePiece.dropped) {
@@ -251,16 +306,22 @@ class TowerStackerGame {
 
     const standing = [];
     const newlyFalling = [];
-    for (const piece of this.settled) {
+    const orderedSettled = [...this.settled].sort((left, right) => this.pieceTop(right) - this.pieceTop(left));
+    for (const piece of orderedSettled) {
       piece.x += piece.slide * dt * 60;
       piece.slide *= 0.82;
-      const support = this.supportFor(piece, standing);
-      if (standing.length > 0 && !support) {
+      const isGrounded = this.pieceBottom(piece) >= this.groundWorldY() - 0.75;
+      if (isGrounded) {
+        piece.y = this.groundWorldY() - piece.h / 2;
+      }
+      const support = isGrounded ? null : this.supportFor(piece, standing);
+      if (!isGrounded && standing.length > 0 && !support) {
         newlyFalling.push(piece);
         continue;
       }
       if (support) {
         const overlapRatio = Math.min(1, support.overlap / Math.max(1, piece.w));
+        piece.y = support.top - piece.h / 2;
         piece.wobble = (1 - overlapRatio) * 14 + Math.abs(piece.slide) * 18;
         if (overlapRatio < 0.48) {
           piece.slide += Math.sign(piece.x - support.piece.x || (Math.random() > 0.5 ? 1 : -1)) * (0.04 + (0.48 - overlapRatio) * 0.08);

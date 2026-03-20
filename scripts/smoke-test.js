@@ -8,6 +8,7 @@ const BASE_URL = `http://127.0.0.1:${PORT}`;
 const MINI_GAME_TYPES = [
   "foosball_frenzy",
   "soccer_shootout",
+  "tower_stacker",
   "space_invaders"
 ];
 
@@ -196,6 +197,17 @@ async function playMiniGameActions(type, code, studentA, studentB, dataA, dataB)
 
   if (type === "space_invaders") {
     await sleep(1200);
+    return;
+  }
+
+  if (type === "tower_stacker") {
+    await emitAck(studentA, "player:minigameAction", { code, action: "set_theme", value: { theme: "cats" } });
+    await emitAck(studentB, "player:minigameAction", { code, action: "set_theme", value: { theme: "dogs" } });
+    await sleep(220);
+    await emitAck(studentA, "player:minigameAction", { code, action: "drop" });
+    await sleep(180);
+    await emitAck(studentB, "player:minigameAction", { code, action: "drop" });
+    await sleep(1400);
     return;
   }
 

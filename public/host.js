@@ -6,7 +6,7 @@ let tickInterval = null;
 let currentQuestionOptions = [];
 const MODE_LABELS = {
   classic: "Foosball",
-  gold: "Foosball",
+  gold: "Tower Stacker",
   crypto: "Foosball",
   fishing: "Foosball",
   brawl: "Space Invaders"
@@ -15,6 +15,7 @@ const GAME_IMAGE_MAP = {
   question: "/assets/minigames/shared/question.svg",
   foosball_frenzy: "/assets/minigames/soccer_shootout/soccer.svg",
   soccer_shootout: "/assets/minigames/soccer_shootout/soccer.svg",
+  tower_stacker: "/assets/minigames/tower_stacker/tower.svg",
   tap_rush: "/assets/minigames/tap_rush/tap.svg",
   reaction_duel: "/assets/minigames/reaction_duel/tap.svg",
   sequence_memory: "/assets/minigames/sequence_memory/sequence.svg",
@@ -97,6 +98,7 @@ const PHASE_CLASS_CANDIDATES = [
 const MINI_GAME_LABELS = {
   foosball_frenzy: "Foosball Frenzy",
   soccer_shootout: "Soccer Shootout",
+  tower_stacker: "Tower Stacker",
   space_invaders: "Space Invaders",
   tap_rush: "Tap Rush",
   reaction_duel: "Reaction Duel",
@@ -115,6 +117,15 @@ const MODE_PREVIEW_COPY = {
     questions: "Fast rounds",
     players: "2 - 300"
   },
+  gold: {
+    title: "Tower Stacker",
+    tagline: "Cute classroom stacking with one rewarded drop at a time.",
+    difficulty: "Simple",
+    skills: "Timing",
+    idealTime: "5 min",
+    questions: "Reward drops",
+    players: "2 - 300"
+  },
   brawl: {
     title: "Space Invaders",
     tagline: "Arcade shooting with live classroom pressure.",
@@ -125,7 +136,7 @@ const MODE_PREVIEW_COPY = {
     players: "2 - 300"
   }
 };
-const HOST_VISIBLE_MINI_GAME_IDS = new Set(["foosball_frenzy", "space_invaders"]);
+const HOST_VISIBLE_MINI_GAME_IDS = new Set(["foosball_frenzy", "tower_stacker", "space_invaders"]);
 
 const setupCard = document.getElementById("setupCard");
 const gameCard = document.getElementById("gameCard");
@@ -271,6 +282,7 @@ const requestedQuestionSetId = String(hostPageParams.get("set") || "").trim();
 const requestedHostName = String(hostPageParams.get("hostName") || "").trim();
 const FALLBACK_MINI_GAMES = [
   { id: "foosball_frenzy", name: "Foosball Frenzy", description: "Foosball bars stay in formation. Slide laterally and kick." },
+  { id: "tower_stacker", name: "Tower Stacker", description: "Stack themed critters into the tallest tower you can keep standing." },
   { id: "space_invaders", name: "Space Invaders", description: "Arcade survival shooter with classroom-friendly pacing." }
 ];
 
@@ -1374,6 +1386,30 @@ function renderMiniGameDashboard(payload) {
               </div>
               <div class="host-soccer-score">You ${goals} - ${botGoals} Bot</div>
               <div class="help">${shots} shots | ${accuracy}% accuracy | ${saves} saves</div>
+            </article>`;
+          })
+          .join("")}
+      </div>`;
+    return;
+  }
+
+  if (type === "tower_stacker") {
+    miniGameDashboardBody.innerHTML = `
+      <div class="host-soccer-grid">
+        ${players
+          .map((player) => {
+            const height = Math.round(Number(player.height || 0));
+            const piecesPlaced = Number(player.piecesPlaced || 0);
+            const perfectDrops = Number(player.perfectDrops || 0);
+            const combo = Number(player.combo || 0);
+            return `
+            <article class="host-soccer-card theme-cloud">
+              <div class="host-mini-player">
+                <span class="blook-top-icon">${escapeHtml(player.blook?.icon || "?")}</span>
+                <strong>${escapeHtml(player.name)}</strong>
+              </div>
+              <div class="host-soccer-score">Height ${height} | ${Math.round(Number(player.metric || 0))} pts</div>
+              <div class="help">${piecesPlaced} stacked | ${perfectDrops} perfect | Combo ${combo}${player.collapsed ? " | Collapsed" : ""}</div>
             </article>`;
           })
           .join("")}

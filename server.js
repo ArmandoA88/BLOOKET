@@ -1187,11 +1187,11 @@ const MODE_CONFIG = {
 };
 
 const MODE_MINI_GAMES = {
-  classic: ["foosball_frenzy", "soccer_shootout", "space_invaders"],
-  gold: ["foosball_frenzy", "soccer_shootout", "space_invaders"],
-  crypto: ["foosball_frenzy", "soccer_shootout", "space_invaders"],
-  fishing: ["foosball_frenzy", "soccer_shootout", "space_invaders"],
-  brawl: ["foosball_frenzy", "soccer_shootout", "space_invaders"]
+  classic: ["foosball_frenzy", "tower_stacker", "space_invaders"],
+  gold: ["tower_stacker"],
+  crypto: ["foosball_frenzy", "tower_stacker", "space_invaders"],
+  fishing: ["foosball_frenzy", "tower_stacker", "space_invaders"],
+  brawl: ["space_invaders"]
 };
 
 const MINI_GAME_CATALOG = [
@@ -1209,6 +1209,11 @@ const MINI_GAME_CATALOG = [
     id: "space_invaders",
     name: "Space Invaders",
     description: "Move your ship, shoot aliens, and survive the waves."
+  },
+  {
+    id: "tower_stacker",
+    name: "Tower Stacker",
+    description: "Pick a cute theme, drop friendly critters, and build the tallest tower."
   }
 ];
 
@@ -1258,6 +1263,56 @@ const SOCCER_TEAMS = {
   blue: {
     id: "blue",
     name: "Blue Blazers"
+  }
+};
+const TOWER_STACKER_THEMES = {
+  cats: {
+    id: "cats",
+    label: "Cats",
+    accent: "#ff9b5c",
+    secondary: "#ffd971",
+    pieces: [
+      { id: "tall_tabby", w: 13, h: 10, shape: "roundrect", color: "#f59f61", belly: "#ffe3b8", ears: true, face: "smile", accessory: "stripes" },
+      { id: "sleepy_cat", w: 17, h: 8, shape: "capsule", color: "#7f8da6", belly: "#eef3ff", ears: true, face: "sleepy", accessory: "tail" },
+      { id: "kitten", w: 11, h: 9, shape: "roundrect", color: "#ffcf57", belly: "#fff2bc", ears: true, face: "wide", accessory: "whiskers" },
+      { id: "fluffy_cat", w: 15, h: 11, shape: "cloud", color: "#c17853", belly: "#f8d7be", ears: true, face: "grin", accessory: "patch" }
+    ]
+  },
+  dogs: {
+    id: "dogs",
+    label: "Dogs",
+    accent: "#ff8c67",
+    secondary: "#6ec5ff",
+    pieces: [
+      { id: "long_dog", w: 18, h: 8, shape: "capsule", color: "#d28f57", belly: "#f7ddb5", ears: true, face: "happy", accessory: "spots" },
+      { id: "puppy", w: 12, h: 10, shape: "roundrect", color: "#f2c16f", belly: "#fff0ca", ears: true, face: "wide", accessory: "tongue" },
+      { id: "fluffy_dog", w: 15, h: 11, shape: "cloud", color: "#f5f1e8", belly: "#fff8f2", ears: true, face: "smile", accessory: "collar" },
+      { id: "round_pup", w: 13, h: 9, shape: "oval", color: "#8f6947", belly: "#e7d0b9", ears: true, face: "grin", accessory: "tail" }
+    ]
+  },
+  ducks: {
+    id: "ducks",
+    label: "Ducks",
+    accent: "#ffd34f",
+    secondary: "#59d8d2",
+    pieces: [
+      { id: "chubby_duck", w: 14, h: 10, shape: "oval", color: "#ffd65c", belly: "#fff2b0", ears: false, face: "wide", accessory: "beak" },
+      { id: "baby_duck", w: 11, h: 8, shape: "roundrect", color: "#ffe27f", belly: "#fff6c7", ears: false, face: "happy", accessory: "beak" },
+      { id: "floatie_duck", w: 16, h: 9, shape: "capsule", color: "#ffcb43", belly: "#fff0a8", ears: false, face: "grin", accessory: "floatie" },
+      { id: "tall_duck", w: 12, h: 11, shape: "roundrect", color: "#f6d24d", belly: "#fff3b8", ears: false, face: "smile", accessory: "blush" }
+    ]
+  },
+  pandas: {
+    id: "pandas",
+    label: "Pandas",
+    accent: "#9fd3ff",
+    secondary: "#9af0a9",
+    pieces: [
+      { id: "baby_panda", w: 12, h: 10, shape: "roundrect", color: "#f8fafc", belly: "#ffffff", ears: true, face: "wide", accessory: "patch" },
+      { id: "rolling_panda", w: 14, h: 9, shape: "oval", color: "#eef2f7", belly: "#ffffff", ears: true, face: "grin", accessory: "roll" },
+      { id: "sleepy_panda", w: 17, h: 8, shape: "capsule", color: "#f3f6fb", belly: "#ffffff", ears: true, face: "sleepy", accessory: "bamboo" },
+      { id: "chunky_panda", w: 15, h: 11, shape: "cloud", color: "#f7f9fc", belly: "#ffffff", ears: true, face: "happy", accessory: "cheeks" }
+    ]
   }
 };
 
@@ -3460,7 +3515,7 @@ function restartActiveMiniGameTick(game) {
     game.minigameTick = null;
   }
 
-  if (game.minigameType === "soccer_shootout" || game.minigameType === "space_invaders" || game.minigameType === "foosball_frenzy") {
+  if (game.minigameType === "soccer_shootout" || game.minigameType === "space_invaders" || game.minigameType === "foosball_frenzy" || game.minigameType === "tower_stacker") {
     game.minigameTick = setInterval(() => {
       if (game.minigameType === "soccer_shootout") {
         tickSoccerMatch(game);
@@ -3472,6 +3527,10 @@ function restartActiveMiniGameTick(game) {
       }
       if (game.minigameType === "foosball_frenzy") {
         tickFoosballMatch(game);
+        return;
+      }
+      if (game.minigameType === "tower_stacker") {
+        tickTowerStackerMatch(game);
       }
     }, 90);
 
@@ -3479,6 +3538,8 @@ function restartActiveMiniGameTick(game) {
       broadcastSoccerMatchState(game);
     } else if (game.minigameType === "space_invaders") {
       broadcastSpaceInvadersState(game);
+    } else if (game.minigameType === "tower_stacker") {
+      broadcastTowerStackerState(game);
     } else {
       broadcastFoosballState(game);
     }
@@ -3814,6 +3875,9 @@ function miniGameHostGoal(game, type) {
   if (type === "space_invaders") {
     return 8 + tier * 4;
   }
+  if (type === "tower_stacker") {
+    return 5 + tier * 2;
+  }
   return 0;
 }
 
@@ -3864,6 +3928,25 @@ function hostMiniGameProgressRow(state) {
       lives,
       accuracy,
       completed: state.completed === true
+    };
+  }
+
+  if (state.type === "tower_stacker") {
+    const height = Math.max(0, Number(state.towerHeight || 0));
+    const piecesPlaced = Math.max(0, Number(state.piecesPlaced || 0));
+    const perfectDrops = Math.max(0, Number(state.perfectDrops || 0));
+    const combo = Math.max(0, Number(state.bestCombo || state.combo || 0));
+    const stabilityScore = Math.max(0, Number(state.stabilityScore || 0));
+    return {
+      metric: Math.max(0, Number(state.score || 0)),
+      progress: height,
+      height,
+      piecesPlaced,
+      perfectDrops,
+      combo,
+      stabilityScore,
+      collapsed: state.collapsed === true,
+      completed: false
     };
   }
 
@@ -4328,6 +4411,387 @@ function spaceInvadersPayload(state, game) {
   };
 }
 
+function towerStackerThemeConfig(themeId) {
+  const key = String(themeId || "").toLowerCase();
+  return TOWER_STACKER_THEMES[key] || TOWER_STACKER_THEMES.cats;
+}
+
+function towerStackerThemeList() {
+  return Object.values(TOWER_STACKER_THEMES).map((theme) => ({
+    id: theme.id,
+    label: theme.label,
+    accent: theme.accent,
+    secondary: theme.secondary
+  }));
+}
+
+function towerStackerVariantById(themeId, variantId) {
+  const theme = towerStackerThemeConfig(themeId);
+  return theme.pieces.find((piece) => piece.id === variantId) || theme.pieces[0];
+}
+
+function createTowerStackerPiece(themeId, difficultyTier = 1) {
+  const theme = towerStackerThemeConfig(themeId);
+  const tier = clamp(Number(difficultyTier || 1), 1, 4);
+  const variant = theme.pieces[randomInt(0, theme.pieces.length - 1)];
+  const widthScale = 1 - (tier - 1) * 0.04 + randomFloat(-0.05, 0.05);
+  const heightScale = 1 + randomFloat(-0.06, 0.08);
+  const width = clamp(Math.round(variant.w * widthScale * 10) / 10, 9.5, 19.5);
+  const height = clamp(Math.round(variant.h * heightScale * 10) / 10, 7.5, 12.5);
+  return {
+    id: `tower_piece_${Math.random().toString(36).slice(2, 9)}`,
+    theme: theme.id,
+    variantId: variant.id,
+    variantLabel: variant.id,
+    shape: variant.shape,
+    color: variant.color,
+    belly: variant.belly,
+    ears: variant.ears === true,
+    face: variant.face,
+    accessory: variant.accessory,
+    w: width,
+    h: height,
+    x: 50,
+    y: 14,
+    vx: 0,
+    vy: 0,
+    slideVx: 0,
+    angle: 0,
+    rotationSpeed: randomFloat(-0.01, 0.01),
+    wobble: 0,
+    dropped: false,
+    perfect: false,
+    settledAt: 0,
+    supportId: "",
+    supportOverlap: 1,
+    blinkSeed: Math.random()
+  };
+}
+
+function towerStackerSpawnPreview(state) {
+  if (!state || state.collapsed || state.previewPiece || Number(state.availableDrops || 0) <= 0) {
+    return;
+  }
+  const piece = createTowerStackerPiece(state.theme, state.difficultyTier || 1);
+  piece.x = 50;
+  piece.y = clamp(92 - Math.max(0, Number(state.towerHeight || 0)) - 16, 12, 30);
+  piece.spawnedAt = Date.now();
+  state.previewPiece = piece;
+}
+
+function grantTowerStackerDrops(state, count = 1) {
+  if (!state || state.type !== "tower_stacker") {
+    return state;
+  }
+  const safeCount = Math.max(0, Math.round(Number(count) || 0));
+  state.availableDrops = Math.max(0, Number(state.availableDrops || 0)) + safeCount;
+  state.totalGrantedDrops = Math.max(0, Number(state.totalGrantedDrops || 0)) + safeCount;
+  towerStackerSpawnPreview(state);
+  return state;
+}
+
+function towerStackerRestartState(state, options = {}) {
+  if (!state) {
+    return;
+  }
+  const preserveTheme = options.preserveTheme !== false;
+  const nextTheme = preserveTheme ? state.theme : towerStackerThemeConfig(options.theme).id;
+  const drops = Number.isFinite(Number(options.availableDrops)) ? Math.max(0, Number(options.availableDrops)) : Math.max(1, Number(state.availableDrops || 0));
+  state.theme = nextTheme;
+  state.previewPiece = null;
+  state.settledPieces = [];
+  state.fallingPieces = [];
+  state.availableDrops = drops;
+  state.totalGrantedDrops = Math.max(0, Number(state.totalGrantedDrops || 0));
+  state.piecesPlaced = 0;
+  state.perfectDrops = 0;
+  state.combo = 0;
+  state.bestCombo = Math.max(0, Number(state.bestCombo || 0));
+  state.towerHeight = 0;
+  state.bestHeight = Math.max(0, Number(state.bestHeight || 0));
+  state.stabilityScore = 0;
+  state.score = 0;
+  state.collapsed = false;
+  state.collapseAmount = 0;
+  state.completed = false;
+  state.lastEvent = null;
+  state.lastSupportQuality = 1;
+  state.lastTickAt = Date.now();
+  state.tick = 0;
+  towerStackerSpawnPreview(state);
+}
+
+function towerPieceTop(piece) {
+  return Number(piece.y || 0) - Number(piece.h || 0) / 2;
+}
+
+function towerPieceBottom(piece) {
+  return Number(piece.y || 0) + Number(piece.h || 0) / 2;
+}
+
+function towerPieceLeft(piece) {
+  return Number(piece.x || 0) - Number(piece.w || 0) / 2;
+}
+
+function towerPieceRight(piece) {
+  return Number(piece.x || 0) + Number(piece.w || 0) / 2;
+}
+
+function towerOverlapWidth(a, b) {
+  return Math.max(0, Math.min(towerPieceRight(a), towerPieceRight(b)) - Math.max(towerPieceLeft(a), towerPieceLeft(b)));
+}
+
+function findTowerSupportPiece(piece, settledPieces) {
+  let best = null;
+  let bestTop = Number.POSITIVE_INFINITY;
+  for (const candidate of settledPieces) {
+    const candidateTop = towerPieceTop(candidate);
+    if (candidateTop < towerPieceBottom(piece) - 4) {
+      continue;
+    }
+    const overlap = towerOverlapWidth(piece, candidate);
+    if (overlap <= 0) {
+      continue;
+    }
+    if (candidateTop < bestTop) {
+      bestTop = candidateTop;
+      best = { piece: candidate, overlap };
+    }
+  }
+  return best;
+}
+
+function towerStackerTowerHeight(state) {
+  if (!Array.isArray(state?.settledPieces) || state.settledPieces.length === 0) {
+    return 0;
+  }
+  const minTop = state.settledPieces.reduce((min, piece) => Math.min(min, towerPieceTop(piece)), 92);
+  return Math.max(0, Math.round((92 - minTop) * 10) / 10);
+}
+
+function towerStackerScore(state) {
+  const heightScore = Math.round(Math.max(0, Number(state.towerHeight || 0)) * 12);
+  const stackScore = Math.max(0, Number(state.piecesPlaced || 0)) * 135;
+  const stability = Math.round(Math.max(0, Number(state.stabilityScore || 0)) * 45);
+  const perfect = Math.max(0, Number(state.perfectDrops || 0)) * 180;
+  const combo = Math.max(0, Number(state.bestCombo || 0)) * 65;
+  return heightScore + stackScore + stability + perfect + combo;
+}
+
+function towerStackerPayload(state) {
+  const theme = towerStackerThemeConfig(state?.theme);
+  const snapshotPieces = (rows = []) =>
+    rows.map((piece) => ({
+      id: String(piece.id || ""),
+      theme: String(piece.theme || theme.id),
+      variantId: String(piece.variantId || ""),
+      shape: String(piece.shape || "roundrect"),
+      color: String(piece.color || "#ffffff"),
+      belly: String(piece.belly || "#ffffff"),
+      ears: piece.ears === true,
+      face: String(piece.face || "smile"),
+      accessory: String(piece.accessory || ""),
+      x: clamp(Number(piece.x || 50), -20, 120),
+      y: clamp(Number(piece.y || 0), -20, 120),
+      w: clamp(Number(piece.w || 12), 6, 24),
+      h: clamp(Number(piece.h || 10), 6, 18),
+      angle: Number(piece.angle || 0),
+      wobble: Number(piece.wobble || 0),
+      perfect: piece.perfect === true,
+      supportOverlap: clamp(Number(piece.supportOverlap ?? 1), 0, 1),
+      blinkSeed: Number(piece.blinkSeed || 0)
+    }));
+  return {
+    type: "tower_stacker",
+    theme: theme.id,
+    themes: towerStackerThemeList(),
+    availableDrops: Math.max(0, Number(state?.availableDrops || 0)),
+    totalGrantedDrops: Math.max(0, Number(state?.totalGrantedDrops || 0)),
+    piecesPlaced: Math.max(0, Number(state?.piecesPlaced || 0)),
+    perfectDrops: Math.max(0, Number(state?.perfectDrops || 0)),
+    combo: Math.max(0, Number(state?.combo || 0)),
+    bestCombo: Math.max(0, Number(state?.bestCombo || 0)),
+    towerHeight: Math.max(0, Number(state?.towerHeight || 0)),
+    bestHeight: Math.max(0, Number(state?.bestHeight || 0)),
+    stabilityScore: Math.max(0, Number(state?.stabilityScore || 0)),
+    score: Math.max(0, Number(state?.score || 0)),
+    collapsed: state?.collapsed === true,
+    collapseAmount: Math.max(0, Number(state?.collapseAmount || 0)),
+    completed: state?.completed === true,
+    lastEvent: state?.lastEvent || null,
+    previewPiece: state?.previewPiece ? snapshotPieces([state.previewPiece])[0] : null,
+    settledPieces: snapshotPieces(state?.settledPieces || []),
+    fallingPieces: snapshotPieces(state?.fallingPieces || [])
+  };
+}
+
+function towerStackerTickState(state, now) {
+  if (!state || state.type !== "tower_stacker") {
+    return false;
+  }
+
+  let changed = false;
+  const tickMs = clamp(now - Number(state.lastTickAt || now), 16, 180);
+  state.lastTickAt = now;
+  state.tick = Math.max(0, Number(state.tick || 0)) + 1;
+  const tier = clamp(Number(state.difficultyTier || 1), 1, 4);
+
+  if (Array.isArray(state.fallingPieces) && state.fallingPieces.length > 0) {
+    for (const piece of state.fallingPieces) {
+      piece.vy = Number(piece.vy || 0) + 0.06 * (tickMs / 16);
+      piece.y = Number(piece.y || 0) + piece.vy * (tickMs / 16);
+      piece.x = Number(piece.x || 0) + Number(piece.vx || 0) * (tickMs / 16);
+      piece.angle = Number(piece.angle || 0) + Number(piece.rotationSpeed || 0) * (tickMs / 16) * 10;
+    }
+    state.fallingPieces = state.fallingPieces.filter((piece) => Number(piece.y || 0) < 124);
+    changed = true;
+  }
+
+  if (state.collapsed !== true && state.previewPiece && state.previewPiece.dropped !== true) {
+    const preview = state.previewPiece;
+    const hoverAmplitude = Math.max(10, 22 - tier * 1.8);
+    const hoverSpeed = 0.0011 + tier * 0.00018;
+    const towerTop = 92 - Math.max(0, Number(state.towerHeight || 0));
+    preview.x = 50 + Math.sin((now - Number(preview.spawnedAt || now)) * hoverSpeed) * hoverAmplitude;
+    preview.y = clamp(towerTop - 18 + Math.sin((now - Number(preview.spawnedAt || now)) * 0.003) * 1.6, 12, 28);
+    preview.angle = Math.sin((now - Number(preview.spawnedAt || now)) * 0.004) * 0.05;
+    changed = true;
+  }
+
+  if (state.previewPiece && state.previewPiece.dropped === true) {
+    const piece = state.previewPiece;
+    piece.vy = Number(piece.vy || 0) + 0.09 * (tickMs / 16);
+    piece.y = Number(piece.y || 0) + piece.vy * (tickMs / 16);
+    piece.x = Number(piece.x || 0) + Number(piece.vx || 0) * (tickMs / 16);
+    piece.angle = Number(piece.angle || 0) + Number(piece.rotationSpeed || 0) * (tickMs / 16) * 16;
+
+    let targetY = 92 - Number(piece.h || 0) / 2;
+    let supportPiece = null;
+    let overlapRatio = 1;
+    const support = findTowerSupportPiece(piece, state.settledPieces || []);
+    if (support) {
+      targetY = towerPieceTop(support.piece) - Number(piece.h || 0) / 2;
+      supportPiece = support.piece;
+      overlapRatio = clamp(support.overlap / Math.max(1, Number(piece.w || 1)), 0, 1);
+    }
+
+    if (towerPieceBottom(piece) >= targetY) {
+      piece.y = targetY;
+      piece.vy = 0;
+      piece.settledAt = now;
+      piece.supportId = supportPiece?.id || "ground";
+      piece.supportOverlap = overlapRatio;
+      piece.perfect = supportPiece ? Math.abs(Number(piece.x || 0) - Number(supportPiece.x || 0)) <= Math.max(1.8, Number(supportPiece.w || 0) * 0.08) : Math.abs(Number(piece.x || 50) - 50) <= 2.2;
+      piece.wobble = clamp((1 - overlapRatio) * 16, 0, 16);
+      if (supportPiece) {
+        piece.slideVx = overlapRatio < 0.56 ? Math.sign(Number(piece.x || 0) - Number(supportPiece.x || 0) || randomFloat(-1, 1)) * (0.02 + (0.56 - overlapRatio) * 0.16) : 0;
+      } else {
+        piece.slideVx = Math.abs(Number(piece.x || 50) - 50) > 7 ? Math.sign(Number(piece.x || 50) - 50) * 0.04 : 0;
+      }
+      state.settledPieces.push(piece);
+      state.previewPiece = null;
+      state.piecesPlaced = Math.max(0, Number(state.piecesPlaced || 0)) + 1;
+      state.combo = piece.perfect ? Math.max(0, Number(state.combo || 0)) + 1 : 0;
+      state.bestCombo = Math.max(Math.max(0, Number(state.bestCombo || 0)), Number(state.combo || 0));
+      if (piece.perfect) {
+        state.perfectDrops = Math.max(0, Number(state.perfectDrops || 0)) + 1;
+      }
+      state.lastSupportQuality = overlapRatio;
+      state.stabilityScore = Math.max(0, Number(state.stabilityScore || 0)) + overlapRatio;
+      state.towerHeight = towerStackerTowerHeight(state);
+      state.bestHeight = Math.max(Math.max(0, Number(state.bestHeight || 0)), Number(state.towerHeight || 0));
+      state.score = towerStackerScore(state);
+      state.lastEventSeq = Math.max(0, Number(state.lastEventSeq || 0)) + 1;
+      state.lastEvent = {
+        seq: state.lastEventSeq,
+        type: piece.perfect ? "perfect_drop" : "drop_landed",
+        perfect: piece.perfect,
+        supportOverlap: overlapRatio,
+        x: piece.x,
+        y: piece.y
+      };
+      changed = true;
+    }
+  }
+
+  if (Array.isArray(state.settledPieces) && state.settledPieces.length > 0) {
+    const stillStanding = [];
+    const newlyFalling = [];
+    for (let index = 0; index < state.settledPieces.length; index += 1) {
+      const piece = state.settledPieces[index];
+      const lowerPieces = stillStanding.filter((candidate) => towerPieceTop(candidate) >= towerPieceBottom(piece) - 1);
+      const support = findTowerSupportPiece(piece, lowerPieces);
+      const overlapRatio = support ? clamp(support.overlap / Math.max(1, Number(piece.w || 1)), 0, 1) : 0;
+      piece.supportOverlap = overlapRatio;
+      piece.wobble = clamp((1 - overlapRatio) * 14 + Math.abs(Number(piece.slideVx || 0)) * 50, 0, 18);
+
+      if (!support && piece.supportId !== "ground" && index !== 0) {
+        piece.vx = Number(piece.slideVx || randomFloat(-0.18, 0.18));
+        piece.vy = 0.12;
+        newlyFalling.push(piece);
+        continue;
+      }
+
+      if (support && overlapRatio < 0.48) {
+        const supportCenter = Number(support.piece.x || 50);
+        piece.slideVx = clamp(Number(piece.slideVx || 0) + Math.sign(Number(piece.x || 0) - supportCenter || randomFloat(-1, 1)) * (0.012 + (0.48 - overlapRatio) * 0.05), -0.32, 0.32);
+      } else {
+        piece.slideVx = Number(piece.slideVx || 0) * 0.82;
+      }
+
+      if (Math.abs(Number(piece.slideVx || 0)) > 0.001) {
+        piece.x = Number(piece.x || 0) + Number(piece.slideVx || 0) * (tickMs / 16);
+        changed = true;
+      }
+
+      if (support && Math.abs(Number(piece.x || 0) - Number(support.piece.x || 0)) > (Number(support.piece.w || 0) + Number(piece.w || 0)) * 0.6) {
+        piece.vx = Number(piece.slideVx || 0);
+        piece.vy = 0.14;
+        newlyFalling.push(piece);
+        continue;
+      }
+
+      stillStanding.push(piece);
+    }
+
+    if (newlyFalling.length > 0) {
+      state.settledPieces = stillStanding;
+      state.fallingPieces.push(...newlyFalling);
+      state.collapseAmount = Math.max(0, Number(state.collapseAmount || 0)) + newlyFalling.length;
+      state.combo = 0;
+      state.lastEventSeq = Math.max(0, Number(state.lastEventSeq || 0)) + 1;
+      state.lastEvent = {
+        seq: state.lastEventSeq,
+        type: "tower_wobble",
+        fallen: newlyFalling.length
+      };
+      changed = true;
+    }
+  }
+
+  state.towerHeight = towerStackerTowerHeight(state);
+  state.bestHeight = Math.max(Math.max(0, Number(state.bestHeight || 0)), Number(state.towerHeight || 0));
+  state.score = towerStackerScore(state);
+
+  if (Number(state.collapseAmount || 0) >= 3 && state.collapsed !== true) {
+    state.collapsed = true;
+    state.lastEventSeq = Math.max(0, Number(state.lastEventSeq || 0)) + 1;
+    state.lastEvent = {
+      seq: state.lastEventSeq,
+      type: "tower_collapse",
+      fallen: Number(state.collapseAmount || 0)
+    };
+    changed = true;
+  }
+
+  if (state.collapsed !== true && !state.previewPiece && Number(state.availableDrops || 0) > 0) {
+    towerStackerSpawnPreview(state);
+    changed = true;
+  }
+
+  return changed || state.tick % 5 === 0;
+}
+
 function broadcastSpaceInvadersState(game) {
   if (!game || game.phase !== "minigame" || game.minigameType !== "space_invaders") {
     return;
@@ -4338,6 +4802,47 @@ function broadcastSpaceInvadersState(game) {
       continue;
     }
     io.to(playerId).emit("minigame:state", spaceInvadersPayload(state, game));
+  }
+}
+
+function broadcastTowerStackerState(game) {
+  if (!game || game.phase !== "minigame" || game.minigameType !== "tower_stacker") {
+    return;
+  }
+
+  for (const [playerId, state] of game.chestPhase.entries()) {
+    if (!state || state.type !== "tower_stacker") {
+      continue;
+    }
+    io.to(playerId).emit("minigame:state", towerStackerPayload(state));
+  }
+}
+
+function tickTowerStackerMatch(game) {
+  if (!game || game.phase !== "minigame" || game.minigameType !== "tower_stacker") {
+    return;
+  }
+
+  const now = Date.now();
+  let shouldBroadcastProgress = false;
+  let shouldBroadcastState = false;
+
+  for (const state of game.chestPhase.values()) {
+    if (!state || state.type !== "tower_stacker") {
+      continue;
+    }
+    const changed = towerStackerTickState(state, now);
+    shouldBroadcastState = shouldBroadcastState || changed;
+    if (changed) {
+      shouldBroadcastProgress = true;
+    }
+  }
+
+  if (shouldBroadcastState) {
+    broadcastTowerStackerState(game);
+  }
+  if (shouldBroadcastProgress) {
+    broadcastMiniGameProgress(game);
   }
 }
 
@@ -4509,6 +5014,37 @@ function createMiniGameState(type, difficulty = null) {
     };
   }
 
+  if (type === "tower_stacker") {
+    const state = {
+      type,
+      theme: "cats",
+      availableDrops: 0,
+      totalGrantedDrops: 0,
+      previewPiece: null,
+      settledPieces: [],
+      fallingPieces: [],
+      piecesPlaced: 0,
+      perfectDrops: 0,
+      combo: 0,
+      bestCombo: 0,
+      towerHeight: 0,
+      bestHeight: 0,
+      stabilityScore: 0,
+      score: 0,
+      collapsed: false,
+      collapseAmount: 0,
+      completed: false,
+      lastEventSeq: 0,
+      lastEvent: null,
+      lastDropAt: 0,
+      tick: 0,
+      lastTickAt: Date.now(),
+      difficultyTier: safeTier
+    };
+    grantTowerStackerDrops(state, 3);
+    return state;
+  }
+
   return createMiniGameState("soccer_shootout", difficulty);
 }
 
@@ -4560,6 +5096,13 @@ function miniGamePublicData(state, game, playerId = "") {
     };
   }
 
+  if (state.type === "tower_stacker") {
+    return {
+      ...towerStackerPayload(state),
+      difficultyTier
+    };
+  }
+
   return {};
 }
 
@@ -4574,6 +5117,10 @@ function isMiniGameStateResolved(state) {
 
   if (state.type === "space_invaders") {
     return state.completed === true;
+  }
+
+  if (state.type === "tower_stacker") {
+    return false;
   }
 
   return false;
@@ -4650,6 +5197,19 @@ function miniGameResult(game, player, state) {
     return {
       bonus,
       text: `${player.name} blasted ${hits} invaders, reached wave ${wave}, and earned +${bonus} ${unit}.`
+    };
+  }
+
+  if (state.type === "tower_stacker") {
+    const height = Math.max(0, Number(state.towerHeight || 0));
+    const piecesPlaced = Math.max(0, Number(state.piecesPlaced || 0));
+    const perfectDrops = Math.max(0, Number(state.perfectDrops || 0));
+    const bestCombo = Math.max(0, Number(state.bestCombo || state.combo || 0));
+    const collapsePenalty = state.collapsed ? 90 : 0;
+    const bonus = Math.max(120, 140 + Math.round(height * 11) + piecesPlaced * 95 + perfectDrops * 120 + bestCombo * 40 - collapsePenalty);
+    return {
+      bonus,
+      text: `${player.name} stacked ${piecesPlaced} pieces, reached height ${Math.round(height)}, and earned +${bonus} ${unit}.`
     };
   }
 
@@ -4757,6 +5317,26 @@ function finalizeMiniGamePhase(game) {
   startRoundSummary(game);
 }
 
+function getTowerStackerSessionState(game, playerId, difficulty) {
+  if (!game.towerStackerSessions) {
+    game.towerStackerSessions = new Map();
+  }
+  let state = game.towerStackerSessions.get(playerId);
+  if (!state || state.type !== "tower_stacker") {
+    state = createMiniGameState("tower_stacker", difficulty);
+    state.availableDrops = 0;
+    state.totalGrantedDrops = 0;
+    state.previewPiece = null;
+    game.towerStackerSessions.set(playerId, state);
+  }
+  state.difficultyTier = clamp(Number(difficulty?.tier || state.difficultyTier || 1), 1, 4);
+  if (state.collapsed === true) {
+    towerStackerRestartState(state, { preserveTheme: true, availableDrops: 0 });
+    state.availableDrops = 0;
+  }
+  return state;
+}
+
 function startMiniGamePhase(game, eligiblePlayerIds, options = {}) {
   const requestedType = typeof options.type === "string" ? options.type.trim() : "";
   const miniGameType = isMiniGameType(requestedType) ? requestedType : pickMiniGameType(game);
@@ -4802,10 +5382,18 @@ function startMiniGamePhase(game, eligiblePlayerIds, options = {}) {
   }
 
   for (const playerId of eligiblePlayerIds) {
-    const state = createMiniGameState(miniGameType, difficulty);
+    const state =
+      miniGameType === "tower_stacker"
+        ? getTowerStackerSessionState(game, playerId, difficulty)
+        : createMiniGameState(miniGameType, difficulty);
     if (miniGameType === "soccer_shootout") {
       const team = String(game.soccerMatch?.assignments?.[playerId] || "red");
       state.team = team === "blue" ? "blue" : "red";
+    } else if (miniGameType === "tower_stacker") {
+      grantTowerStackerDrops(state, 1);
+      state.completed = false;
+      state.collapsed = false;
+      towerStackerSpawnPreview(state);
     }
     game.chestPhase.set(playerId, state);
 
@@ -4971,6 +5559,67 @@ function handleMiniGameAction(game, socketId, action, value) {
       return applied;
     }
     broadcastSoccerMatchState(game);
+    broadcastMiniGameProgress(game);
+    return { ok: true };
+  }
+
+  if (state.type === "tower_stacker") {
+    if (action === "set_theme") {
+      const nextTheme = towerStackerThemeConfig(value?.theme || value?.id || value).id;
+      if (Number(state.piecesPlaced || 0) > 0) {
+        return { ok: false, message: "Theme can only change before the first drop." };
+      }
+      state.theme = nextTheme;
+      state.previewPiece = null;
+      towerStackerSpawnPreview(state);
+      io.to(socketId).emit("minigame:state", towerStackerPayload(state));
+      return { ok: true, theme: nextTheme };
+    }
+
+    if (action === "restart") {
+      towerStackerRestartState(state, {
+        preserveTheme: true,
+        availableDrops: Math.max(1, Number(state.availableDrops || 0))
+      });
+      io.to(socketId).emit("minigame:state", towerStackerPayload(state));
+      broadcastMiniGameProgress(game);
+      return { ok: true };
+    }
+
+    if (action !== "drop") {
+      return { ok: false, message: "Invalid action for tower stacker." };
+    }
+
+    if (state.collapsed === true) {
+      return { ok: false, message: "Tower fell. Press Restart to build again." };
+    }
+    if (!state.previewPiece || state.previewPiece.dropped === true) {
+      return { ok: false, message: "Wait for the next stack piece." };
+    }
+    if (Number(state.availableDrops || 0) <= 0) {
+      return { ok: false, message: "Earn another correct answer for a new drop." };
+    }
+
+    const now = Date.now();
+    if (now - Number(state.lastDropAt || 0) < 150) {
+      return { ok: true, throttled: true };
+    }
+
+    state.lastDropAt = now;
+    state.availableDrops = Math.max(0, Number(state.availableDrops || 0) - 1);
+    state.previewPiece.dropped = true;
+    state.previewPiece.spawnedAt = now;
+    state.previewPiece.vy = 0.6;
+    state.previewPiece.vx = Math.sin(now * 0.0013) * 0.08;
+    state.previewPiece.rotationSpeed = randomFloat(-0.012, 0.012);
+    state.lastEventSeq = Math.max(0, Number(state.lastEventSeq || 0)) + 1;
+    state.lastEvent = {
+      seq: state.lastEventSeq,
+      type: "piece_drop",
+      x: state.previewPiece.x,
+      y: state.previewPiece.y
+    };
+    io.to(socketId).emit("minigame:state", towerStackerPayload(state));
     broadcastMiniGameProgress(game);
     return { ok: true };
   }
@@ -5518,6 +6167,7 @@ io.on("connection", (socket) => {
       minigameReturnPhase: "round_summary",
       minigameRotationIndex: 0,
       soccerMatch: null,
+      towerStackerSessions: new Map(),
       report: {
         startedAt: Date.now(),
         questionStats: [],

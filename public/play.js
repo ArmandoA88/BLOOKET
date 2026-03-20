@@ -21,16 +21,17 @@ let activeEventName = "Event Card";
 let activeActionLabel = "Open";
 const ALL_BLOOKS_AVAILABLE = true;
 const MODE_LABELS = {
-  classic: "Classic Quiz",
-  gold: "Gold Quest",
+  classic: "Foosball",
+  gold: "Tower Stacker",
   crypto: "Crypto Hack",
   fishing: "Fishing Frenzy",
-  brawl: "Monster Brawl"
+  brawl: "Space Invaders"
 };
 const GAME_IMAGE_MAP = {
   question: "/assets/minigames/shared/question.svg",
   foosball_frenzy: "/assets/minigames/soccer_shootout/soccer.svg",
   soccer_shootout: "/assets/minigames/soccer_shootout/soccer.svg",
+  tower_stacker: "/assets/minigames/tower_stacker/tower.svg",
   tap_rush: "/assets/minigames/tap_rush/tap.svg",
   reaction_duel: "/assets/minigames/reaction_duel/tap.svg",
   sequence_memory: "/assets/minigames/sequence_memory/sequence.svg",
@@ -245,6 +246,14 @@ const SOCCER_FIELD_PLAYERS_FALLBACK = [
   { id: "kylian_support", starId: "kylian", lane: 2, row: 1 }
 ];
 const MINI_GAME_TUTORIALS = {
+  tower_stacker: {
+    intro: "Build a cute tower one drop at a time. Pick a theme, then press Space or tap to drop the next piece.",
+    steps: [
+      "Choose Cats, Dogs, Ducks, or Pandas before your first drop.",
+      "Wait for the piece to glide across the top, then press Space, click Drop, or tap the stage.",
+      "Perfect placements keep your combo alive and help the tower stay stable."
+    ]
+  },
   foosball_frenzy: {
     intro: "The foosball lines stay in formation. Slide them laterally, then kick with space.",
     steps: [
@@ -337,6 +346,11 @@ let miniFoosballPixiApp = null;
 let miniFoosballPixiScene = null;
 let miniFoosballPixiTicker = null;
 let miniFoosballBallTween = null;
+let miniTowerStackerState = null;
+let miniTowerStackerCanvas = null;
+let miniTowerStackerCtx = null;
+let miniTowerStackerAnimationFrame = 0;
+let miniTowerStackerLastEventSeq = 0;
 let latestLeaderboardRows = [];
 let fishingGameEndsAt = 0;
 let fishingHudTicker = null;
@@ -376,6 +390,7 @@ const FALLBACK_BLOOKS = [
 const FALLBACK_MINI_GAMES = [
   { id: "foosball_frenzy", name: "Foosball Frenzy", description: "Foosball bars stay in formation. Slide laterally and kick." },
   { id: "soccer_shootout", name: "Soccer Shootout", description: "Penalty kicks with lane + power choice." },
+  { id: "tower_stacker", name: "Tower Stacker", description: "Drop cute themed pieces and build a happy tower." },
   { id: "tap_rush", name: "Tap Rush", description: "Tap fast for bonus points." },
   { id: "reaction_duel", name: "Reaction Duel", description: "Wait for GO and react fast." },
   { id: "sequence_memory", name: "Sequence Memory", description: "Repeat the color order to score." },
@@ -1126,9 +1141,18 @@ function stopMiniTickers() {
   stopMiniReactionTicker();
   stopMiniSoccerTicker();
   destroyMiniFoosballPixi();
+  if (miniTowerStackerAnimationFrame) {
+    cancelAnimationFrame(miniTowerStackerAnimationFrame);
+    miniTowerStackerAnimationFrame = 0;
+  }
+  miniTowerStackerCanvas = null;
+  miniTowerStackerCtx = null;
+  miniTowerStackerState = null;
+  miniTowerStackerLastEventSeq = 0;
 }
 
 function miniGameTypeLabel(type) {
+  if (type === "tower_stacker") return "Tower Stacker";
   if (type === "foosball_frenzy") return "Foosball Frenzy";
   if (type === "soccer_shootout") return "Soccer Shootout";
   if (type === "tap_rush") return "Tap Rush";
@@ -2032,10 +2056,382 @@ function applyMiniFoosballState(payload, options = {}) {
   }
 }
 
+const TOWER_STACKER_THEME_STYLES = {
+  cats: { accent: "#ff9b5c", secondary: "#ffd971", skyTop: "#9ae7f3", skyBottom: "#d6fff6", ground: "#6c4d39" },
+  dogs: { accent: "#ff8c67", secondary: "#6ec5ff", skyTop: "#a8d7ff", skyBottom: "#eefbff", ground: "#735440" },
+  ducks: { accent: "#ffd34f", secondary: "#59d8d2", skyTop: "#8ce0ff", skyBottom: "#edfff5", ground: "#7d5f3f" },
+  pandas: { accent: "#9fd3ff", secondary: "#9af0a9", skyTop: "#b9ddff", skyBottom: "#f7fdff", ground: "#505564" }
+};
+
+function towerThemeStyle(themeId) {
+  return TOWER_STACKER_THEME_STYLES[String(themeId || "").toLowerCase()] || TOWER_STACKER_THEME_STYLES.cats;
+}
+
+function towerCanvasX(value, width) {
+  return (Number(value || 0) / 100) * width;
+}
+
+function towerCanvasY(value, height) {
+  return (Number(value || 0) / 100) * height;
+}
+
+function towerRoundRect(ctx, x, y, width, height, radius) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.arcTo(x + width, y, x + width, y + height, radius);
+  ctx.arcTo(x + width, y + height, x, y + height, radius);
+  ctx.arcTo(x, y + height, x, y, radius);
+  ctx.arcTo(x, y, x + width, y, radius);
+  ctx.closePath();
+}
+
+function drawTowerPiece(ctx, piece, canvas, options = {}) {
+  if (!piece) {
+    return;
+  }
+  const style = towerThemeStyle(piece.theme);
+  const width = (Number(piece.w || 12) / 100) * canvas.width * 2.6;
+  const height = (Number(piece.h || 10) / 100) * canvas.height * 1.6;
+  const centerX = towerCanvasX(piece.x, canvas.width);
+  const centerY = towerCanvasY(piece.y, canvas.height);
+  const wobble = Number(piece.wobble || 0) * 0.007 * Math.sin(performance.now() * 0.01 + Number(piece.blinkSeed || 0) * 13);
+  const angle = Number(piece.angle || 0) + wobble;
+  const blinkOpen = Math.sin(performance.now() * 0.0025 + Number(piece.blinkSeed || 0) * 4) > -0.95;
+  const bodyColor = piece.color || style.accent;
+  const bellyColor = piece.belly || "#fff6dd";
+  const accent = style.secondary;
+
+  ctx.save();
+  ctx.translate(centerX, centerY);
+  ctx.rotate(angle);
+
+  ctx.shadowColor = "rgba(9, 20, 34, 0.18)";
+  ctx.shadowBlur = options.shadow ? 18 : 8;
+  ctx.shadowOffsetY = options.shadow ? 8 : 4;
+  ctx.fillStyle = bodyColor;
+
+  if (piece.shape === "oval") {
+    ctx.beginPath();
+    ctx.ellipse(0, 0, width / 2, height / 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (piece.shape === "capsule") {
+    towerRoundRect(ctx, -width / 2, -height / 2, width, height, Math.min(height / 2, 22));
+    ctx.fill();
+  } else if (piece.shape === "cloud") {
+    ctx.beginPath();
+    ctx.arc(-width * 0.22, 0, height * 0.34, 0, Math.PI * 2);
+    ctx.arc(0, -height * 0.08, height * 0.42, 0, Math.PI * 2);
+    ctx.arc(width * 0.24, 0, height * 0.32, 0, Math.PI * 2);
+    ctx.fill();
+    towerRoundRect(ctx, -width * 0.44, -height * 0.18, width * 0.88, height * 0.52, 20);
+    ctx.fill();
+  } else {
+    towerRoundRect(ctx, -width / 2, -height / 2, width, height, Math.min(24, height * 0.32));
+    ctx.fill();
+  }
+
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = bellyColor;
+  if (piece.shape === "capsule" || piece.shape === "cloud") {
+    towerRoundRect(ctx, -width * 0.24, -height * 0.05, width * 0.48, height * 0.38, Math.min(18, height * 0.18));
+  } else {
+    ctx.beginPath();
+    ctx.ellipse(0, height * 0.1, width * 0.24, height * 0.2, 0, 0, Math.PI * 2);
+  }
+  ctx.fill();
+
+  if (piece.ears) {
+    ctx.fillStyle = bodyColor;
+    ctx.beginPath();
+    ctx.moveTo(-width * 0.22, -height * 0.28);
+    ctx.lineTo(-width * 0.08, -height * 0.62);
+    ctx.lineTo(0, -height * 0.24);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(width * 0.22, -height * 0.28);
+    ctx.lineTo(width * 0.08, -height * 0.62);
+    ctx.lineTo(0, -height * 0.24);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  ctx.fillStyle = "#24344c";
+  const eyeY = -height * 0.05;
+  if (blinkOpen) {
+    ctx.beginPath();
+    ctx.arc(-width * 0.14, eyeY, Math.max(2.4, width * 0.035), 0, Math.PI * 2);
+    ctx.arc(width * 0.14, eyeY, Math.max(2.4, width * 0.035), 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    ctx.lineWidth = 2.3;
+    ctx.beginPath();
+    ctx.moveTo(-width * 0.2, eyeY);
+    ctx.lineTo(-width * 0.08, eyeY);
+    ctx.moveTo(width * 0.08, eyeY);
+    ctx.lineTo(width * 0.2, eyeY);
+    ctx.strokeStyle = "#24344c";
+    ctx.stroke();
+  }
+
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = "#24344c";
+  ctx.beginPath();
+  if (piece.face === "sleepy") {
+    ctx.moveTo(-width * 0.08, height * 0.12);
+    ctx.quadraticCurveTo(0, height * 0.17, width * 0.08, height * 0.12);
+  } else if (piece.face === "wide" || piece.face === "grin" || piece.face === "happy") {
+    ctx.moveTo(-width * 0.12, height * 0.08);
+    ctx.quadraticCurveTo(0, height * 0.2, width * 0.12, height * 0.08);
+  } else {
+    ctx.moveTo(-width * 0.08, height * 0.11);
+    ctx.quadraticCurveTo(0, height * 0.17, width * 0.08, height * 0.11);
+  }
+  ctx.stroke();
+
+  if (piece.accessory === "beak") {
+    ctx.fillStyle = "#ff9855";
+    ctx.beginPath();
+    ctx.moveTo(0, height * 0.02);
+    ctx.lineTo(width * 0.12, height * 0.08);
+    ctx.lineTo(0, height * 0.14);
+    ctx.closePath();
+    ctx.fill();
+  }
+  if (piece.accessory === "floatie") {
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.arc(0, height * 0.14, Math.max(8, height * 0.18), 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  if (piece.accessory === "collar") {
+    ctx.fillStyle = accent;
+    ctx.fillRect(-width * 0.22, height * 0.02, width * 0.44, Math.max(4, height * 0.07));
+  }
+  if (piece.accessory === "patch") {
+    ctx.fillStyle = "rgba(36, 52, 76, 0.12)";
+    ctx.beginPath();
+    ctx.ellipse(width * 0.18, -height * 0.02, width * 0.1, height * 0.12, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  if (piece.perfect) {
+    ctx.strokeStyle = "rgba(255, 226, 128, 0.9)";
+    ctx.lineWidth = 3;
+    towerRoundRect(ctx, -width / 2 - 3, -height / 2 - 3, width + 6, height + 6, Math.min(24, height * 0.34));
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function drawTowerStackerCanvas() {
+  if (!miniTowerStackerCanvas || !miniTowerStackerCtx || !miniTowerStackerState) {
+    return;
+  }
+  const canvas = miniTowerStackerCanvas;
+  const ctx = miniTowerStackerCtx;
+  const themeStyle = towerThemeStyle(miniTowerStackerState.theme);
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, themeStyle.skyTop);
+  gradient.addColorStop(1, themeStyle.skyBottom);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "rgba(255,255,255,0.18)";
+  for (let i = 0; i < 10; i += 1) {
+    const x = ((i * 93 + 40) % canvas.width);
+    ctx.beginPath();
+    ctx.arc(x, 72 + Math.sin((performance.now() * 0.001) + i) * 10, 10 + (i % 3) * 5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const groundY = towerCanvasY(92, canvas.height);
+  ctx.fillStyle = themeStyle.ground;
+  ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+  ctx.fillStyle = "rgba(255,255,255,0.22)";
+  ctx.fillRect(0, groundY, canvas.width, 6);
+
+  const settledPieces = Array.isArray(miniTowerStackerState.settledPieces) ? [...miniTowerStackerState.settledPieces].sort((a, b) => Number(a.y || 0) - Number(b.y || 0)) : [];
+  for (const piece of settledPieces) {
+    drawTowerPiece(ctx, piece, canvas, { shadow: true });
+  }
+  for (const piece of miniTowerStackerState.fallingPieces || []) {
+    drawTowerPiece(ctx, piece, canvas, { shadow: true });
+  }
+  drawTowerPiece(ctx, miniTowerStackerState.previewPiece, canvas, { shadow: true });
+
+  if (miniTowerStackerState.previewPiece && miniTowerStackerState.previewPiece.dropped !== true) {
+    ctx.strokeStyle = "rgba(36,52,76,0.15)";
+    ctx.setLineDash([8, 10]);
+    ctx.beginPath();
+    ctx.moveTo(towerCanvasX(miniTowerStackerState.previewPiece.x, canvas.width), towerCanvasY(miniTowerStackerState.previewPiece.y, canvas.height));
+    ctx.lineTo(towerCanvasX(miniTowerStackerState.previewPiece.x, canvas.width), groundY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  ctx.fillStyle = "rgba(36,52,76,0.78)";
+  ctx.font = "800 22px Arial";
+  ctx.fillText("Tower Stacker", 22, 34);
+  ctx.font = "700 16px Arial";
+  ctx.fillText("Drop cleanly. Keep it cute. Keep it standing.", 22, 58);
+
+  if (miniTowerStackerState.lastEvent?.type === "perfect_drop" && (performance.now() % 900) < 540) {
+    ctx.fillStyle = "#fff7b5";
+    ctx.font = "900 28px Arial";
+    ctx.fillText("Perfect Drop!", canvas.width - 210, 42);
+  }
+  if (miniTowerStackerState.collapsed) {
+    ctx.fillStyle = "rgba(255,255,255,0.86)";
+    ctx.fillRect(canvas.width / 2 - 150, 84, 300, 86);
+    ctx.fillStyle = "#28415b";
+    ctx.font = "900 30px Arial";
+    ctx.fillText("Oops! Try again!", canvas.width / 2 - 120, 120);
+    ctx.font = "700 17px Arial";
+    ctx.fillText("Press Restart and build another tower.", canvas.width / 2 - 130, 148);
+  }
+
+  miniTowerStackerAnimationFrame = requestAnimationFrame(drawTowerStackerCanvas);
+}
+
+function initTowerStackerCanvas() {
+  miniTowerStackerCanvas = document.getElementById("miniTowerStackerCanvas");
+  if (!(miniTowerStackerCanvas instanceof HTMLCanvasElement)) {
+    return;
+  }
+  miniTowerStackerCtx = miniTowerStackerCanvas.getContext("2d");
+  if (!miniTowerStackerCtx) {
+    return;
+  }
+  miniTowerStackerAnimationFrame = requestAnimationFrame(drawTowerStackerCanvas);
+}
+
+function bindTowerStackerStageDrop() {
+  const stage = document.getElementById("miniTowerStackerStage");
+  if (!stage) {
+    return;
+  }
+  const triggerDrop = () => {
+    if (activeMiniGameType !== "tower_stacker") {
+      return;
+    }
+    const button = document.getElementById("miniTowerDropBtn");
+    if (button instanceof HTMLButtonElement && !button.disabled) {
+      button.click();
+    }
+  };
+  stage.addEventListener("click", triggerDrop);
+  stage.addEventListener("touchstart", (event) => {
+    event.preventDefault();
+    triggerDrop();
+  }, { passive: false });
+}
+
+function applyMiniTowerStackerState(payload = {}, options = {}) {
+  miniTowerStackerState = payload;
+  const seq = Number(payload?.lastEvent?.seq || 0);
+  const summaryEl = document.getElementById("miniTowerSummary");
+  const dropBtn = document.getElementById("miniTowerDropBtn");
+  const restartBtn = document.getElementById("miniTowerRestartBtn");
+  const themeButtons = chests.querySelectorAll("button[data-mini-action='tower_theme']");
+  themeButtons.forEach((button) => {
+    const themeId = String(button.getAttribute("data-mini-value") || "");
+    button.classList.toggle("selected", themeId === String(payload.theme || ""));
+    button.disabled = Number(payload?.piecesPlaced || 0) > 0;
+  });
+
+  if (dropBtn instanceof HTMLButtonElement) {
+    dropBtn.disabled = payload.collapsed === true || !payload.previewPiece || Number(payload.availableDrops || 0) <= 0 || payload.previewPiece?.dropped === true;
+  }
+  if (restartBtn instanceof HTMLButtonElement) {
+    restartBtn.disabled = false;
+  }
+
+  const scoreEl = document.getElementById("miniTowerScore");
+  const statsEl = document.getElementById("miniTowerStats");
+  const dropsEl = document.getElementById("miniTowerDrops");
+  if (scoreEl) {
+    scoreEl.textContent = `Height ${Math.round(Number(payload.towerHeight || 0))} | Score ${Math.round(Number(payload.score || 0))}`;
+  }
+  if (statsEl) {
+    statsEl.textContent = `${Number(payload.piecesPlaced || 0)} stacked | ${Number(payload.perfectDrops || 0)} perfect | Best combo ${Number(payload.bestCombo || payload.combo || 0)}`;
+  }
+  if (dropsEl) {
+    dropsEl.textContent = `${Number(payload.availableDrops || 0)} drop${Number(payload.availableDrops || 0) === 1 ? "" : "s"} ready`;
+  }
+  if (summaryEl) {
+    const lastEventType = String(payload?.lastEvent?.type || "");
+    if (lastEventType === "perfect_drop") {
+      summaryEl.textContent = "Perfect placement! The tower feels extra stable.";
+    } else if (lastEventType === "tower_collapse") {
+      summaryEl.textContent = "Oops! Too many pieces slipped. Restart and try again.";
+    } else if (payload.collapsed) {
+      summaryEl.textContent = "Tower collapsed. Restart to build another one.";
+    } else if (Number(payload.availableDrops || 0) <= 0 && !payload.previewPiece) {
+      summaryEl.textContent = "Nice stack. Earn another correct answer for your next drop.";
+    } else {
+      summaryEl.textContent = "Press Space, click Drop, or tap the stage when the piece lines up.";
+    }
+  }
+
+  if (seq > miniTowerStackerLastEventSeq) {
+    miniTowerStackerLastEventSeq = seq;
+    if (String(payload?.lastEvent?.type || "") === "perfect_drop") {
+      setNotice("Perfect drop! Keep the combo going.", "good");
+      playMiniGameSfx("goal");
+    } else if (String(payload?.lastEvent?.type || "") === "tower_collapse") {
+      setNotice("Oops! The tower wobbled apart. Restart and try again.", "bad");
+      playMiniGameSfx("miss");
+    } else if (String(payload?.lastEvent?.type || "") === "drop_landed" && options.forceSummaryText !== true) {
+      setNotice("Nice landing. Keep stacking.", "good");
+    }
+  } else if (options.forceSummaryText) {
+    setNotice("Tower Stacker live. Pick a theme, then press Space to drop.", "");
+  }
+}
+
 function renderMiniGame(type, data, actionLabel) {
   stopMiniTickers();
   activeMiniGameType = type;
   applyMiniTutorialButtonVisibility(type);
+
+  if (type === "tower_stacker") {
+    const themes = Array.isArray(data?.themes) && data.themes.length > 0
+      ? data.themes
+      : [
+        { id: "cats", label: "Cats" },
+        { id: "dogs", label: "Dogs" },
+        { id: "ducks", label: "Ducks" },
+        { id: "pandas", label: "Pandas" }
+      ];
+    chests.innerHTML = `
+      <div class="chest mini-tower-chest">
+        <h4>Tower Stacker</h4>
+        <p class="help">Pick a cute theme, then press <strong>Space</strong>, click <strong>Drop</strong>, or tap the stage to release the next piece.</p>
+        <div class="mini-tower-topbar">
+          <div id="miniTowerScore" class="notice">Height 0 | Score 0</div>
+          <div id="miniTowerDrops" class="notice">0 drops ready</div>
+        </div>
+        <div id="miniTowerStats" class="help">0 stacked | 0 perfect | Best combo 0</div>
+        <div class="mini-tower-theme-row">
+          ${themes.map((theme) => `<button type="button" class="answer mini-theme-btn" data-mini-action="tower_theme" data-mini-value="${escapeHtml(theme.id)}">${escapeHtml(theme.label)}</button>`).join("")}
+        </div>
+        <div id="miniTowerStackerStage" class="mini-tower-stage">
+          <canvas id="miniTowerStackerCanvas" class="mini-tower-canvas" width="760" height="500"></canvas>
+        </div>
+        <div class="mini-tower-controls">
+          <button id="miniTowerDropBtn" class="answer" data-mini-action="tower_drop">${escapeHtml(actionLabel || "Drop")} (Space)</button>
+          <button id="miniTowerRestartBtn" class="answer" data-mini-action="tower_restart">Restart Tower</button>
+        </div>
+        <div id="miniTowerSummary" class="help">Press Space, click Drop, or tap the stage when the piece lines up.</div>
+      </div>`;
+    initTowerStackerCanvas();
+    bindTowerStackerStageDrop();
+    applyMiniTowerStackerState(data, { forceSummaryText: true });
+    return;
+  }
 
   if (type === "foosball_frenzy") {
     miniFoosballSelectedLane = clampMiniFoosballLane(data?.lane);
@@ -3228,6 +3624,20 @@ chests.addEventListener("click", (event) => {
   if (action === "react") {
     button.disabled = true;
   }
+  if (action === "tower_theme") {
+    payload.action = "set_theme";
+    payload.value = { theme: button.dataset.miniValue };
+  }
+  if (action === "tower_drop") {
+    payload.action = "drop";
+    const dropButton = document.getElementById("miniTowerDropBtn");
+    if (dropButton) {
+      dropButton.disabled = true;
+    }
+  }
+  if (action === "tower_restart") {
+    payload.action = "restart";
+  }
 
   socket.emit("player:minigameAction", payload, (res) => {
     if (!res?.ok) {
@@ -3245,6 +3655,12 @@ chests.addEventListener("click", (event) => {
         const kickButton = document.getElementById("miniFoosKickBtn");
         if (kickButton) {
           kickButton.disabled = false;
+        }
+      }
+      if (action === "tower_drop") {
+        const dropButton = document.getElementById("miniTowerDropBtn");
+        if (dropButton) {
+          dropButton.disabled = false;
         }
       }
     }
@@ -3311,6 +3727,16 @@ window.addEventListener("keydown", (event) => {
     }
     event.preventDefault();
     kickBtn.click();
+    return;
+  }
+
+  if (activeMiniGameType === "tower_stacker") {
+    const dropBtn = document.getElementById("miniTowerDropBtn");
+    if (!(dropBtn instanceof HTMLButtonElement) || dropBtn.disabled) {
+      return;
+    }
+    event.preventDefault();
+    dropBtn.click();
   }
 });
 
@@ -3521,6 +3947,11 @@ socket.on("minigame:state", (payload) => {
       }
       setNotice("Soccer round complete. Waiting for results...", "good");
     }
+    return;
+  }
+
+  if (payload.type === "tower_stacker") {
+    applyMiniTowerStackerState(payload, { forceSummaryText: false });
     return;
   }
 

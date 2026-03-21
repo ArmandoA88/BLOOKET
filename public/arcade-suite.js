@@ -51,6 +51,10 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
+function lerp(start, end, amount) {
+  return start + (end - start) * amount;
+}
+
 function rand(min, max) {
   return Math.random() * (max - min) + min;
 }
@@ -167,6 +171,69 @@ function drawSprite(image, x, y, w, h, options = {}) {
   } else {
     ctx.drawImage(image, sx, sy, sw, sh, x, y, w, h);
   }
+  ctx.restore();
+}
+
+function drawTintedSprite(image, x, y, w, h, tint, options = {}) {
+  if (!image || !image.complete || !image.naturalWidth) {
+    return;
+  }
+
+  drawSprite(image, x, y, w, h, options);
+  ctx.save();
+  ctx.globalCompositeOperation = "source-atop";
+  ctx.fillStyle = tint;
+  ctx.globalAlpha = options.alpha ?? 1;
+  ctx.fillRect(x, y, w, h);
+  ctx.restore();
+}
+
+function drawRotatedSprite(image, cx, cy, w, h, options = {}) {
+  if (!image || !image.complete || !image.naturalWidth) {
+    return;
+  }
+
+  const {
+    sx = 0,
+    sy = 0,
+    sw = image.width,
+    sh = image.height,
+    angle = 0,
+    alpha = 1
+  } = options;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(angle);
+  ctx.globalAlpha = alpha;
+  ctx.drawImage(image, sx, sy, sw, sh, -w / 2, -h / 2, w, h);
+  ctx.restore();
+}
+
+function drawRotatedTintedSprite(image, cx, cy, w, h, tint, options = {}) {
+  if (!image || !image.complete || !image.naturalWidth) {
+    return;
+  }
+
+  const {
+    sx = 0,
+    sy = 0,
+    sw = image.width,
+    sh = image.height,
+    angle = 0,
+    alpha = 1,
+    tintAlpha = 0.8
+  } = options;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(angle);
+  ctx.globalAlpha = alpha;
+  ctx.drawImage(image, sx, sy, sw, sh, -w / 2, -h / 2, w, h);
+  ctx.globalCompositeOperation = "source-atop";
+  ctx.globalAlpha = tintAlpha;
+  ctx.fillStyle = tint;
+  ctx.fillRect(-w / 2, -h / 2, w, h);
   ctx.restore();
 }
 
@@ -660,28 +727,237 @@ const mazeGame = (() => {
 })();
 
 const crossingGame = (() => {
+  const stageInsetX = 18;
   const cols = 13;
   const tile = 72;
   const laneHeight = 64;
-  const boardW = cols * tile;
+  const boardW = W - stageInsetX * 2;
   const boardH = 11 * laneHeight;
-  const boardX = (W - boardW) / 2;
+  const boardX = stageInsetX;
   const boardY = (H - boardH) / 2;
   const startRow = 10;
+  const hopDuration = 0.14;
+  const riverSpriteRoot = "/assets/arcade/river-crossing";
+  const realisticVehicleRoot = `${riverSpriteRoot}/unlucky`;
+  const fishingSpriteRoot = "/assets/arcade/fishing";
+
+  const vehicleSprites = {
+    bus: loadSprite(`${realisticVehicleRoot}/vehicle_bus_top.png`),
+    audi: loadSprite(`${realisticVehicleRoot}/vehicle_audi_top.png`),
+    hatchback: loadSprite(`${realisticVehicleRoot}/vehicle_car_top.png`),
+    minivan: loadSprite(`${realisticVehicleRoot}/vehicle_minivan_top.png`),
+    pickup: loadSprite(`${realisticVehicleRoot}/vehicle_mini_truck_top.png`),
+    sports: loadSprite(`${realisticVehicleRoot}/vehicle_viper_top.png`),
+    taxi: loadSprite(`${realisticVehicleRoot}/vehicle_taxi_top.png`),
+    truck: loadSprite(`${realisticVehicleRoot}/vehicle_truck_top.png`),
+    police: loadSprite(`${realisticVehicleRoot}/vehicle_police_top.png`),
+    policeFrames: [
+      loadSprite(`${realisticVehicleRoot}/vehicle_police_anim_1.png`),
+      loadSprite(`${realisticVehicleRoot}/vehicle_police_anim_2.png`),
+      loadSprite(`${realisticVehicleRoot}/vehicle_police_anim_3.png`)
+    ],
+    ambulance: loadSprite(`${realisticVehicleRoot}/vehicle_ambulance_top.png`),
+    ambulanceFrames: [
+      loadSprite(`${realisticVehicleRoot}/vehicle_ambulance_anim_1.png`),
+      loadSprite(`${realisticVehicleRoot}/vehicle_ambulance_anim_2.png`),
+      loadSprite(`${realisticVehicleRoot}/vehicle_ambulance_anim_3.png`)
+    ]
+  };
+
+  const frogSprites = {
+    idle: loadSprite(`${riverSpriteRoot}/frog_idle.svg`),
+    jump: loadSprite(`${riverSpriteRoot}/frog_jump.svg`)
+  };
+  const riverVesselSprites = {
+    rowboat: loadSprite(`${fishingSpriteRoot}/boat_rowboat.png`),
+    oldship: loadSprite(`${fishingSpriteRoot}/boat_oldship.png`),
+    trawler: loadSprite(`${fishingSpriteRoot}/boat_trawler.png`),
+    sailboat: loadSprite(`${fishingSpriteRoot}/boat_sailboat.svg`),
+    yacht: loadSprite(`${fishingSpriteRoot}/boat_yacht.svg`),
+    speedboat: loadSprite(`${fishingSpriteRoot}/boat_speedboat.svg`)
+  };
+  const frogHitbox = { width: 24, height: 22 };
+  const spriteBounds = {
+    taxi: { x: 67, y: 13, w: 114, h: 223 },
+    sports: { x: 67, y: 16, w: 103, h: 216 },
+    police: { x: 77, y: 25, w: 98, h: 214 },
+    ambulance: { x: 73, y: 31, w: 102, h: 207 },
+    sedan: { x: 77, y: 25, w: 98, h: 214 },
+    hatchback: { x: 80, y: 16, w: 92, h: 216 },
+    minivan: { x: 74, y: 25, w: 93, h: 196 },
+    pickup: { x: 63, y: 35, w: 111, h: 204 },
+    truck: { x: 76, y: 21, w: 89, h: 216 },
+    bus: { x: 0, y: 0, w: 302, h: 709 }
+  };
+
+  const vehicleTypes = {
+    taxi: { sprite: vehicleSprites.taxi, crop: spriteBounds.taxi, length: 104, native: true, rotateToLane: true },
+    sports: { sprite: vehicleSprites.sports, crop: spriteBounds.sports, length: 102, native: true, rotateToLane: true },
+    police: { sprite: vehicleSprites.police, frames: vehicleSprites.policeFrames, crop: spriteBounds.police, length: 102, native: true, rotateToLane: true },
+    ambulance: { sprite: vehicleSprites.ambulance, frames: vehicleSprites.ambulanceFrames, crop: spriteBounds.ambulance, length: 104, native: true, rotateToLane: true },
+    sedan: { sprite: vehicleSprites.audi, crop: spriteBounds.sedan, length: 102, native: true, rotateToLane: true },
+    hatchback: { sprite: vehicleSprites.hatchback, crop: spriteBounds.hatchback, length: 96, native: true, rotateToLane: true },
+    minivan: { sprite: vehicleSprites.minivan, crop: spriteBounds.minivan, length: 100, native: true, rotateToLane: true },
+    pickup: { sprite: vehicleSprites.pickup, crop: spriteBounds.pickup, length: 104, native: true, rotateToLane: true },
+    truck: { sprite: vehicleSprites.truck, crop: spriteBounds.truck, length: 108, native: true, rotateToLane: true },
+    citybus: { sprite: vehicleSprites.bus, crop: spriteBounds.bus, length: 166, native: true, rotateToLane: true, tint: "#38bdf8", tintAlpha: 0.78, badgeFill: "#0f172a", badgeText: "CITY", badgeColor: "#e0f2fe" },
+    schoolbus: { sprite: vehicleSprites.bus, crop: spriteBounds.bus, length: 166, native: true, rotateToLane: true, tint: "#facc15", tintAlpha: 0.55, badgeFill: "#78350f", badgeText: "BUS", badgeColor: "#fef3c7" }
+  };
 
   const laneConfigs = [
     { type: "goal" },
-    { type: "river", speed: 110, size: 190, gap: 120, offset: 0 },
-    { type: "river", speed: -140, size: 210, gap: 130, offset: 120 },
+    { type: "river", speed: 110, size: 196, gap: 120, offset: 0, pool: ["rowboat", "oldship", "speedboat", "yacht"] },
+    { type: "river", speed: -140, size: 210, gap: 130, offset: 120, pool: ["speedboat", "yacht", "oldship", "rowboat"] },
     { type: "safe" },
-    { type: "road", speed: 190, size: 120, gap: 140, offset: 20, color: "#ffb347" },
-    { type: "road", speed: -240, size: 170, gap: 110, offset: 130, color: "#60a5fa" },
-    { type: "road", speed: 210, size: 100, gap: 150, offset: 60, color: "#4ade80" },
+    { type: "road", speed: 170, size: 164, gap: 180, offset: 20, spacing: [170, 260], pool: ["schoolbus", "taxi", "sedan", "hatchback"] },
+    { type: "road", speed: -210, size: 182, gap: 195, offset: 130, spacing: [190, 300], pool: ["citybus", "police", "sports", "truck"] },
+    { type: "road", speed: 185, size: 136, gap: 185, offset: 60, spacing: [180, 290], pool: ["pickup", "taxi", "ambulance", "minivan"] },
     { type: "safe" },
-    { type: "road", speed: -260, size: 200, gap: 170, offset: 170, color: "#fb7185" },
+    { type: "road", speed: -225, size: 184, gap: 225, offset: 170, spacing: [210, 340], pool: ["sports", "sedan", "police", "citybus", "truck", "hatchback"] },
     { type: "safe" },
     { type: "start" }
   ];
+
+  function centerYForRow(row) {
+    return boardY + row * laneHeight + laneHeight / 2;
+  }
+
+  function makeVehicle(config) {
+    const typeId = pick(config.pool);
+    const profile = vehicleTypes[typeId];
+    return {
+      typeId,
+      profile
+    };
+  }
+
+  function makeRiverVessel(config) {
+    const typeId = pick(config.pool);
+    const vesselTypes = {
+      rowboat: { sprite: riverVesselSprites.rowboat, width: 94, height: 58, rideWidth: 70, rideInset: 12, bob: 1.8 },
+      oldship: { sprite: riverVesselSprites.oldship, width: 164, height: 54, rideWidth: 136, rideInset: 12, bob: 2.8 },
+      trawler: { sprite: riverVesselSprites.trawler, width: 142, height: 58, rideWidth: 114, rideInset: 14, bob: 2.4 },
+      sailboat: { sprite: riverVesselSprites.sailboat, width: 62, height: 62, rideWidth: 46, rideInset: 8, bob: 1.7 },
+      yacht: { sprite: riverVesselSprites.yacht, width: 134, height: 56, rideWidth: 110, rideInset: 10, bob: 2.1 },
+      speedboat: { sprite: riverVesselSprites.speedboat, width: 138, height: 54, rideWidth: 112, rideInset: 10, bob: 1.9 }
+    };
+    return {
+      typeId,
+      profile: vesselTypes[typeId]
+    };
+  }
+
+  function getTrafficSpacing(config) {
+    const [minSpacing, maxSpacing] = config.spacing ?? [config.gap, config.gap + 80];
+    return rand(minSpacing, maxSpacing);
+  }
+
+  function getVehicleMetrics(profile) {
+    const crop = profile.crop ?? { x: 0, y: 0, w: profile.sprite?.naturalWidth ?? 1, h: profile.sprite?.naturalHeight ?? 1 };
+    const length = profile.length ?? profile.bodyWidth ?? profile.width;
+    const ratio = crop.w / crop.h;
+    const thickness = profile.thickness ?? Math.max(34, length * ratio);
+    if (profile.native && profile.rotateToLane) {
+      return {
+        crop,
+        bodyWidth: length * (profile.hitScaleX ?? 0.88),
+        bodyHeight: thickness * (profile.hitScaleY ?? 0.84),
+        displayWidth: length,
+        displayHeight: thickness,
+        drawWidth: thickness,
+        drawHeight: length
+      };
+    }
+    return {
+      crop,
+      bodyWidth: length,
+      bodyHeight: thickness,
+      displayWidth: length,
+      displayHeight: thickness,
+      drawWidth: length,
+      drawHeight: thickness
+    };
+  }
+
+  function drawVehicle(vehicle, x, centerY, facingRight, time) {
+    const { profile } = vehicle;
+    const metrics = getVehicleMetrics(profile);
+    const y = centerY - metrics.drawHeight / 2;
+    const frame = profile.frames ? profile.frames[Math.floor(time * 10) % profile.frames.length] : profile.sprite;
+
+    if (profile.native) {
+      const angle = profile.rotateToLane ? (facingRight ? Math.PI / 2 : -Math.PI / 2) : 0;
+      ctx.save();
+      ctx.globalAlpha = 0.24;
+      ctx.fillStyle = "#020617";
+      ctx.beginPath();
+      ctx.ellipse(x + metrics.displayWidth / 2, centerY + 14, metrics.displayWidth * 0.32, 9, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      const drawCx = x + metrics.displayWidth / 2;
+      if (profile.tint) {
+        drawRotatedTintedSprite(frame, drawCx, centerY, metrics.drawWidth, metrics.drawHeight, profile.tint, {
+          angle,
+          sx: metrics.crop.x,
+          sy: metrics.crop.y,
+          sw: metrics.crop.w,
+          sh: metrics.crop.h,
+          tintAlpha: profile.tintAlpha ?? 0.8
+        });
+      } else {
+        drawRotatedSprite(frame, drawCx, centerY, metrics.drawWidth, metrics.drawHeight, {
+          angle,
+          sx: metrics.crop.x,
+          sy: metrics.crop.y,
+          sw: metrics.crop.w,
+          sh: metrics.crop.h
+        });
+      }
+      if (profile.badgeFill && profile.badgeText) {
+        drawRoundedRect(x + metrics.displayWidth * 0.26, centerY - 18, metrics.displayWidth * 0.48, 12, 4, profile.badgeFill);
+        drawLabel(profile.badgeText, x + metrics.displayWidth * 0.5, centerY - 8, 10, profile.badgeColor ?? "#f8fafc", "center");
+      }
+      return;
+    }
+
+    drawTintedSprite(frame, x, y, metrics.drawWidth, metrics.drawHeight, profile.tint, { flip: facingRight });
+
+    ctx.save();
+    if (profile.stripe === "sport") {
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      ctx.fillRect(x + profile.width * 0.46, y + 8, profile.width * 0.08, profile.height - 16);
+    }
+    if (profile.roof === "taxi") {
+      drawRoundedRect(x + profile.width * 0.37, y + 12, profile.width * 0.26, 10, 4, "#111827");
+      drawLabel("T", x + profile.width * 0.5, y + 21, 10, "#fde68a", "center");
+    }
+    if (profile.roof === "lightbar") {
+      drawRoundedRect(x + profile.width * 0.34, y + 12, profile.width * 0.32, 10, 4, "#0f172a");
+      ctx.fillStyle = "#60a5fa";
+      ctx.fillRect(x + profile.width * 0.37, y + 14, profile.width * 0.1, 6);
+      ctx.fillStyle = "#fca5a5";
+      ctx.fillRect(x + profile.width * 0.53, y + 14, profile.width * 0.1, 6);
+    }
+    if (profile.roof === "medical") {
+      drawRoundedRect(x + profile.width * 0.34, y + 11, profile.width * 0.32, 12, 4, "#fee2e2");
+      ctx.fillStyle = "#dc2626";
+      ctx.fillRect(x + profile.width * 0.47, y + 12, 6, 10);
+      ctx.fillRect(x + profile.width * 0.43, y + 15, 14, 4);
+    }
+    if (profile.roof === "route") {
+      drawRoundedRect(x + profile.width * 0.25, y + 9, profile.width * 0.5, 12, 4, "#082f49");
+      drawLabel("CITY", x + profile.width * 0.5, y + 19, 10, "#bae6fd", "center");
+    }
+    if (profile.roof === "school") {
+      drawRoundedRect(x + profile.width * 0.25, y + 9, profile.width * 0.5, 12, 4, "#78350f");
+      drawLabel("BUS", x + profile.width * 0.5, y + 19, 10, "#fde68a", "center");
+    }
+    ctx.strokeStyle = profile.accent;
+    ctx.lineWidth = 3;
+    ctx.globalAlpha = 0.9;
+    ctx.strokeRect(x + 10, y + 8, profile.width - 20, profile.height - 16);
+    ctx.restore();
+  }
 
   function buildLanes() {
     return laneConfigs.map((config) => {
@@ -690,9 +966,22 @@ const crossingGame = (() => {
       }
 
       const items = [];
-      const span = config.size + config.gap;
-      for (let x = -config.offset; x < boardW + span; x += span) {
-        items.push({ x });
+      if (config.type === "road") {
+        let x = -config.offset;
+        while (x < boardW + config.size + 40) {
+          items.push({ x, vehicle: makeVehicle(config) });
+          x += config.size + getTrafficSpacing(config);
+        }
+      } else if (config.type === "river") {
+        const span = config.size + config.gap;
+        for (let x = -config.offset; x < boardW + span; x += span) {
+          items.push({ x, vessel: makeRiverVessel(config) });
+        }
+      } else {
+        const span = config.size + config.gap;
+        for (let x = -config.offset; x < boardW + span; x += span) {
+          items.push({ x });
+        }
       }
       return { ...config, items };
     });
@@ -701,25 +990,69 @@ const crossingGame = (() => {
   function resetFrog(state) {
     state.row = startRow;
     state.x = boardW / 2;
+    state.hopTimer = 0;
+    state.hopFromX = state.x;
+    state.hopToX = state.x;
+    state.hopFromRow = state.row;
+    state.hopToRow = state.row;
+    state.queuedDir = null;
+    state.facing = "up";
   }
 
   function loseLife(state, reason) {
     state.lives -= 1;
+    state.status = reason;
+    state.hopTimer = 0;
+    state.queuedDir = null;
     if (state.lives <= 0) {
       state.gameOver = true;
-      state.status = reason;
-    } else {
-      resetFrog(state);
-      state.status = reason;
+      return;
     }
+    resetFrog(state);
+  }
+
+  function beginHop(state, dir) {
+    const previousX = state.x;
+    const previousRow = state.row;
+    let nextX = previousX;
+    let nextRow = previousRow;
+
+    if (dir === "left") {
+      nextX -= tile;
+    } else if (dir === "right") {
+      nextX += tile;
+    } else if (dir === "up") {
+      nextRow -= 1;
+    } else if (dir === "down") {
+      nextRow += 1;
+    } else {
+      return false;
+    }
+
+    nextX = clamp(nextX, tile / 2, boardW - tile / 2);
+    nextRow = clamp(nextRow, 0, laneConfigs.length - 1);
+    if (nextX === previousX && nextRow === previousRow) {
+      return false;
+    }
+
+    state.x = nextX;
+    state.row = nextRow;
+    state.hopFromX = previousX;
+    state.hopToX = nextX;
+    state.hopFromRow = previousRow;
+    state.hopToRow = nextRow;
+    state.hopTimer = hopDuration;
+    state.facing = dir;
+    state.status = nextRow === 0 ? "Stick the landing" : "Hop clean";
+    return true;
   }
 
   return {
     name: "River Crossing",
-    description: "A Frogger style crossing run with roads, river logs, and quick safe-zone resets.",
-    controls: "Tap Arrow keys or WASD to hop one lane at a time.",
+    description: "A Frogger style crossing run with sprite traffic, buses, and quick jumping frog animation.",
+    controls: "Arrow keys or WASD. Each tap buffers one hop, so the frog moves exactly where you press.",
     stageTitle: "River Crossing",
-    stageHelp: "Reach the top grass. Cars hit hard and river lanes need a floating log under you.",
+    stageHelp: "Reach the top grass. Random traffic uses top-down sprites, and river lanes still need a log under you.",
     createState() {
       const state = {
         row: startRow,
@@ -728,12 +1061,19 @@ const crossingGame = (() => {
         score: 0,
         lives: 4,
         status: "Hop to the top",
-        gameOver: false
+        gameOver: false,
+        hopTimer: 0,
+        hopFromX: boardW / 2,
+        hopToX: boardW / 2,
+        hopFromRow: startRow,
+        hopToRow: startRow,
+        queuedDir: null,
+        facing: "up"
       };
       resetFrog(state);
       return state;
     },
-    keydown(state, key) {
+    keydown(state, key, event) {
       if (state.gameOver && key === " ") {
         resetCurrentGame();
         return;
@@ -743,16 +1083,14 @@ const crossingGame = (() => {
       if (!dir || state.gameOver) {
         return;
       }
-      if (dir === "left") {
-        state.x -= tile;
-      } else if (dir === "right") {
-        state.x += tile;
-      } else if (dir === "up") {
-        state.row -= 1;
-      } else if (dir === "down") {
-        state.row += 1;
+      if (event?.repeat) {
+        return;
       }
-      state.row = clamp(state.row, 0, laneConfigs.length - 1);
+      if (state.hopTimer > 0) {
+        state.queuedDir = dir;
+        return;
+      }
+      beginHop(state, dir);
     },
     update(state, dt) {
       if (state.gameOver) {
@@ -760,23 +1098,66 @@ const crossingGame = (() => {
       }
 
       for (const lane of state.lanes) {
+        if (!lane.speed) {
+          continue;
+        }
         for (const item of lane.items) {
           item.x += lane.speed * dt;
           if (lane.speed > 0 && item.x > boardW + lane.size) {
-            item.x -= lane.items.length * (lane.size + lane.gap);
+            if (lane.type === "road") {
+              let leftmost = boardW;
+              for (const other of lane.items) {
+                if (other !== item) {
+                  leftmost = Math.min(leftmost, other.x);
+                }
+              }
+              item.x = leftmost - lane.size - getTrafficSpacing(lane);
+              item.vehicle = makeVehicle(lane);
+            } else if (lane.type === "river") {
+              item.x -= lane.items.length * (lane.size + lane.gap);
+              item.vessel = makeRiverVessel(lane);
+            } else {
+              item.x -= lane.items.length * (lane.size + lane.gap);
+            }
           }
           if (lane.speed < 0 && item.x < -lane.size - lane.gap) {
-            item.x += lane.items.length * (lane.size + lane.gap);
+            if (lane.type === "road") {
+              let rightmost = -lane.size;
+              for (const other of lane.items) {
+                if (other !== item) {
+                  rightmost = Math.max(rightmost, other.x);
+                }
+              }
+              item.x = rightmost + lane.size + getTrafficSpacing(lane);
+              item.vehicle = makeVehicle(lane);
+            } else if (lane.type === "river") {
+              item.x += lane.items.length * (lane.size + lane.gap);
+              item.vessel = makeRiverVessel(lane);
+            } else {
+              item.x += lane.items.length * (lane.size + lane.gap);
+            }
           }
         }
       }
 
-      const lane = state.lanes[state.row];
-      const frogRect = { x: state.x - 18, y: 0, w: 36, h: 36 };
+      if (state.hopTimer > 0) {
+        state.hopTimer = Math.max(0, state.hopTimer - dt);
+      }
 
+      const lane = state.lanes[state.row];
       if (lane.type === "road") {
-        for (const car of lane.items) {
-          const carRect = { x: car.x + 4, y: 12, w: lane.size - 8, h: 38 };
+        const frogRect = {
+          x: state.x - frogHitbox.width / 2,
+          y: 0,
+          w: frogHitbox.width,
+          h: frogHitbox.height
+        };
+        for (const traffic of lane.items) {
+          const profile = traffic.vehicle.profile;
+          const metrics = getVehicleMetrics(profile);
+          const displayLeft = traffic.x + (lane.size - metrics.displayWidth) / 2;
+          const carLeft = displayLeft + (metrics.displayWidth - metrics.bodyWidth) / 2;
+          const carRect = { x: carLeft, y: 0, w: metrics.bodyWidth, h: metrics.bodyHeight };
           if (rectsOverlap(frogRect, carRect)) {
             loseLife(state, "Traffic got the frog");
             return;
@@ -787,9 +1168,16 @@ const crossingGame = (() => {
       if (lane.type === "river") {
         let onLog = false;
         for (const log of lane.items) {
-          if (state.x > log.x && state.x < log.x + lane.size) {
+          const vessel = log.vessel?.profile;
+          const rideInset = vessel?.rideInset ?? 8;
+          const rideWidth = vessel?.rideWidth ?? lane.size - rideInset * 2;
+          const rideLeft = log.x + (lane.size - rideWidth) / 2 + rideInset / 2;
+          const rideRight = rideLeft + rideWidth;
+          if (state.x > rideLeft && state.x < rideRight) {
             onLog = true;
             state.x += lane.speed * dt;
+            state.hopFromX += lane.speed * dt;
+            state.hopToX += lane.speed * dt;
             break;
           }
         }
@@ -804,14 +1192,20 @@ const crossingGame = (() => {
         return;
       }
 
-      if (state.row === 0) {
+      if (state.hopTimer === 0 && state.queuedDir) {
+        const bufferedDir = state.queuedDir;
+        state.queuedDir = null;
+        beginHop(state, bufferedDir);
+      }
+
+      if (state.row === 0 && state.hopTimer === 0) {
         state.score += 1;
         state.status = "Goal reached";
         resetFrog(state);
       }
     },
     draw(state, time) {
-      drawBackground("#07131f", "#10253d", time, "rgba(45,212,191,0.85)");
+      drawBackground("#081521", "#103453", time, "rgba(34,197,94,0.6)");
 
       for (let row = 0; row < laneConfigs.length; row += 1) {
         const lane = state.lanes[row];
@@ -820,51 +1214,94 @@ const crossingGame = (() => {
         if (lane.type === "road") {
           fill = "#374151";
         } else if (lane.type === "river") {
-          fill = "#1d4ed8";
+          fill = "#2563eb";
         } else if (lane.type === "goal") {
           fill = "#166534";
         }
-        ctx.fillStyle = fill;
         drawRoundedRect(boardX, y + 2, boardW, laneHeight - 4, 18, fill);
 
         if (lane.type === "road") {
-          ctx.fillStyle = "rgba(255,255,255,0.18)";
-          for (let x = boardX + 24; x < boardX + boardW; x += 90) {
-            ctx.fillRect(x, y + laneHeight / 2 - 4, 48, 8);
+          ctx.fillStyle = "rgba(255,255,255,0.16)";
+          for (let x = boardX + 24; x < boardX + boardW; x += 94) {
+            ctx.fillRect(x, y + laneHeight / 2 - 4, 46, 8);
+          }
+        }
+
+        if (lane.type === "river") {
+          ctx.fillStyle = "rgba(255,255,255,0.09)";
+          for (let wave = 0; wave < 10; wave += 1) {
+            const waveX = boardX + ((wave * 110 + time * lane.speed * 0.14) % (boardW + 120)) - 60;
+            ctx.fillRect(waveX, y + 12 + (wave % 2) * 20, 52, 4);
+          }
+        }
+
+        if (lane.type === "goal") {
+          for (let pad = 0; pad < cols; pad += 2) {
+            ctx.fillStyle = "rgba(187,247,208,0.25)";
+            ctx.beginPath();
+            ctx.arc(boardX + pad * tile + tile / 2, y + laneHeight / 2, 14, 0, Math.PI * 2);
+            ctx.fill();
           }
         }
 
         for (const item of lane.items) {
           if (lane.type === "road") {
-            drawRoundedRect(boardX + item.x, y + 12, lane.size, 38, 12, lane.color, "rgba(255,255,255,0.16)");
-            ctx.fillStyle = "rgba(255,255,255,0.24)";
-            ctx.fillRect(boardX + item.x + 18, y + 22, lane.size - 36, 8);
+            const profile = item.vehicle.profile;
+            const metrics = getVehicleMetrics(profile);
+            const spriteX = boardX + item.x + (lane.size - metrics.displayWidth) / 2;
+            drawVehicle(item.vehicle, spriteX, y + laneHeight / 2, lane.speed > 0, time);
           } else if (lane.type === "river") {
-            drawRoundedRect(boardX + item.x, y + 10, lane.size, 44, 16, "#9a6b35");
-            ctx.fillStyle = "rgba(255,255,255,0.08)";
-            ctx.fillRect(boardX + item.x + 12, y + 18, lane.size - 24, 8);
+            const vessel = item.vessel?.profile;
+            if (vessel?.sprite && vessel.sprite.complete && vessel.sprite.naturalWidth) {
+              const vesselX = boardX + item.x + (lane.size - vessel.width) / 2;
+              const bob = Math.sin(time * 2.4 + item.x * 0.02) * (vessel.bob ?? 2);
+              ctx.save();
+              ctx.globalAlpha = 0.18;
+              ctx.fillStyle = "#0f172a";
+              ctx.beginPath();
+              ctx.ellipse(vesselX + vessel.width / 2, y + laneHeight / 2 + 18, vessel.width * 0.34, 8, 0, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.restore();
+              drawSprite(vessel.sprite, vesselX, y + laneHeight / 2 - vessel.height / 2 + bob, vessel.width, vessel.height, { flip: lane.speed < 0 });
+            } else {
+              drawRoundedRect(boardX + item.x, y + 10, lane.size, 44, 16, "#9a6b35");
+              ctx.fillStyle = "rgba(255,255,255,0.08)";
+              ctx.fillRect(boardX + item.x + 14, y + 18, lane.size - 28, 8);
+            }
           }
         }
       }
 
-      const frogX = boardX + state.x;
-      const frogY = boardY + state.row * laneHeight + laneHeight / 2;
-      ctx.fillStyle = "#4ade80";
+      const hopProgress = state.hopTimer > 0 ? 1 - state.hopTimer / hopDuration : 1;
+      const frogLane = state.hopTimer > 0 ? lerp(state.hopFromRow, state.hopToRow, hopProgress) : state.row;
+      const frogX = boardX + (state.hopTimer > 0 ? lerp(state.hopFromX, state.hopToX, hopProgress) : state.x);
+      const frogY = centerYForRow(frogLane);
+      const jumpLift = state.hopTimer > 0 ? Math.sin(hopProgress * Math.PI) * 18 : 0;
+      const frogSprite = state.hopTimer > 0 ? frogSprites.jump : frogSprites.idle;
+
+      ctx.save();
+      ctx.globalAlpha = 0.25;
+      ctx.fillStyle = "#020617";
       ctx.beginPath();
-      ctx.arc(frogX, frogY, 20, 0, Math.PI * 2);
+      ctx.ellipse(frogX, frogY + 20, 18, 8, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = "#06281a";
-      ctx.beginPath();
-      ctx.arc(frogX - 8, frogY - 6, 3, 0, Math.PI * 2);
-      ctx.arc(frogX + 8, frogY - 6, 3, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.restore();
+
+      if (frogSprite && frogSprite.complete && frogSprite.naturalWidth) {
+        drawSprite(frogSprite, frogX - 28, frogY - 28 - jumpLift, 56, 56);
+      } else {
+        ctx.fillStyle = "#4ade80";
+        ctx.beginPath();
+        ctx.arc(frogX, frogY - jumpLift, 20, 0, Math.PI * 2);
+        ctx.fill();
+      }
     },
     hud(state) {
       return {
         value: `${state.score}`,
         copy: `Goals reached ${state.score} | Lives ${state.lives}`,
         banner: state.gameOver ? "Run ended" : state.status,
-        footer: "The frog drifts with the log, so lane timing matters just as much as the jump."
+        footer: "Sprite traffic rerolls every pass, buses mix with cars, and a buffered jump keeps each tap going the right way."
       };
     }
   };

@@ -1,0 +1,642 @@
+[
+  {
+    "file": "students1_face_01.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 1192,
+      "y": 60,
+      "w": 95,
+      "h": 95
+    },
+    "crop": {
+      "left": 1133,
+      "top": 0,
+      "right": 1346,
+      "bottom": 213
+    }
+  },
+  {
+    "file": "students1_face_02.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 377,
+      "y": 136,
+      "w": 42,
+      "h": 42
+    },
+    "crop": {
+      "left": 351,
+      "top": 106,
+      "right": 445,
+      "bottom": 200
+    }
+  },
+  {
+    "file": "students1_face_03.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 940,
+      "y": 137,
+      "w": 45,
+      "h": 45
+    },
+    "crop": {
+      "left": 912,
+      "top": 105,
+      "right": 1013,
+      "bottom": 206
+    }
+  },
+  {
+    "file": "students1_face_04.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 606,
+      "y": 138,
+      "w": 47,
+      "h": 47
+    },
+    "crop": {
+      "left": 577,
+      "top": 105,
+      "right": 682,
+      "bottom": 210
+    }
+  },
+  {
+    "file": "students1_face_05.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 539,
+      "y": 147,
+      "w": 42,
+      "h": 42
+    },
+    "crop": {
+      "left": 513,
+      "top": 117,
+      "right": 607,
+      "bottom": 211
+    }
+  },
+  {
+    "file": "students1_face_06.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 461,
+      "y": 149,
+      "w": 41,
+      "h": 41
+    },
+    "crop": {
+      "left": 435,
+      "top": 120,
+      "right": 527,
+      "bottom": 212
+    }
+  },
+  {
+    "file": "students1_face_07.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 748,
+      "y": 149,
+      "w": 41,
+      "h": 41
+    },
+    "crop": {
+      "left": 722,
+      "top": 120,
+      "right": 814,
+      "bottom": 212
+    }
+  },
+  {
+    "file": "students1_face_08.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 698,
+      "y": 152,
+      "w": 42,
+      "h": 42
+    },
+    "crop": {
+      "left": 672,
+      "top": 122,
+      "right": 766,
+      "bottom": 216
+    }
+  },
+  {
+    "file": "students1_face_09.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 878,
+      "y": 216,
+      "w": 51,
+      "h": 51
+    },
+    "crop": {
+      "left": 846,
+      "top": 180,
+      "right": 960,
+      "bottom": 294
+    }
+  },
+  {
+    "file": "students1_face_10.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 777,
+      "y": 221,
+      "w": 50,
+      "h": 50
+    },
+    "crop": {
+      "left": 746,
+      "top": 186,
+      "right": 858,
+      "bottom": 298
+    }
+  },
+  {
+    "file": "students1_face_11.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 1054,
+      "y": 236,
+      "w": 46,
+      "h": 46
+    },
+    "crop": {
+      "left": 1025,
+      "top": 203,
+      "right": 1128,
+      "bottom": 306
+    }
+  },
+  {
+    "file": "students1_face_12.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 566,
+      "y": 237,
+      "w": 45,
+      "h": 45
+    },
+    "crop": {
+      "left": 538,
+      "top": 205,
+      "right": 639,
+      "bottom": 306
+    }
+  },
+  {
+    "file": "students1_face_13.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 979,
+      "y": 246,
+      "w": 49,
+      "h": 49
+    },
+    "crop": {
+      "left": 948,
+      "top": 211,
+      "right": 1058,
+      "bottom": 321
+    }
+  },
+  {
+    "file": "students1_face_14.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 426,
+      "y": 248,
+      "w": 42,
+      "h": 42
+    },
+    "crop": {
+      "left": 400,
+      "top": 218,
+      "right": 494,
+      "bottom": 312
+    }
+  },
+  {
+    "file": "students1_face_15.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 678,
+      "y": 256,
+      "w": 42,
+      "h": 42
+    },
+    "crop": {
+      "left": 652,
+      "top": 226,
+      "right": 746,
+      "bottom": 320
+    }
+  },
+  {
+    "file": "students1_face_16.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 352,
+      "y": 327,
+      "w": 54,
+      "h": 54
+    },
+    "crop": {
+      "left": 318,
+      "top": 289,
+      "right": 439,
+      "bottom": 410
+    }
+  },
+  {
+    "file": "students1_face_17.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 189,
+      "y": 336,
+      "w": 55,
+      "h": 55
+    },
+    "crop": {
+      "left": 155,
+      "top": 297,
+      "right": 278,
+      "bottom": 420
+    }
+  },
+  {
+    "file": "students1_face_18.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 1121,
+      "y": 336,
+      "w": 60,
+      "h": 60
+    },
+    "crop": {
+      "left": 1083,
+      "top": 293,
+      "right": 1218,
+      "bottom": 428
+    }
+  },
+  {
+    "file": "students1_face_19.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 637,
+      "y": 340,
+      "w": 53,
+      "h": 53
+    },
+    "crop": {
+      "left": 604,
+      "top": 302,
+      "right": 723,
+      "bottom": 421
+    }
+  },
+  {
+    "file": "students1_face_20.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 880,
+      "y": 350,
+      "w": 54,
+      "h": 54
+    },
+    "crop": {
+      "left": 846,
+      "top": 312,
+      "right": 967,
+      "bottom": 433
+    }
+  },
+  {
+    "file": "students1_face_21.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 769,
+      "y": 360,
+      "w": 53,
+      "h": 53
+    },
+    "crop": {
+      "left": 736,
+      "top": 322,
+      "right": 855,
+      "bottom": 441
+    }
+  },
+  {
+    "file": "students1_face_22.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 409,
+      "y": 362,
+      "w": 52,
+      "h": 52
+    },
+    "crop": {
+      "left": 376,
+      "top": 325,
+      "right": 493,
+      "bottom": 442
+    }
+  },
+  {
+    "file": "students1_face_23.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 507,
+      "y": 371,
+      "w": 47,
+      "h": 47
+    },
+    "crop": {
+      "left": 478,
+      "top": 338,
+      "right": 583,
+      "bottom": 443
+    }
+  },
+  {
+    "file": "students1_face_24.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 946,
+      "y": 378,
+      "w": 124,
+      "h": 124
+    },
+    "crop": {
+      "left": 868,
+      "top": 290,
+      "right": 1147,
+      "bottom": 569
+    }
+  },
+  {
+    "file": "students1_face_25.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 1248,
+      "y": 400,
+      "w": 58,
+      "h": 58
+    },
+    "crop": {
+      "left": 1212,
+      "top": 359,
+      "right": 1342,
+      "bottom": 489
+    }
+  },
+  {
+    "file": "students1_face_26.png",
+    "source": "students1.jpg",
+    "box": {
+      "x": 396,
+      "y": 486,
+      "w": 80,
+      "h": 80
+    },
+    "crop": {
+      "left": 346,
+      "top": 429,
+      "right": 526,
+      "bottom": 609
+    }
+  },
+  {
+    "file": "students2_face_01.png",
+    "source": "students2.jpg",
+    "box": {
+      "x": 998,
+      "y": 42,
+      "w": 79,
+      "h": 79
+    },
+    "crop": {
+      "left": 949,
+      "top": 0,
+      "right": 1126,
+      "bottom": 177
+    }
+  },
+  {
+    "file": "students2_face_02.png",
+    "source": "students2.jpg",
+    "box": {
+      "x": 732,
+      "y": 178,
+      "w": 42,
+      "h": 42
+    },
+    "crop": {
+      "left": 706,
+      "top": 148,
+      "right": 800,
+      "bottom": 242
+    }
+  },
+  {
+    "file": "students2_face_03.png",
+    "source": "students2.jpg",
+    "box": {
+      "x": 654,
+      "y": 181,
+      "w": 42,
+      "h": 42
+    },
+    "crop": {
+      "left": 628,
+      "top": 151,
+      "right": 722,
+      "bottom": 245
+    }
+  },
+  {
+    "file": "students2_face_04.png",
+    "source": "students2.jpg",
+    "box": {
+      "x": 520,
+      "y": 197,
+      "w": 67,
+      "h": 67
+    },
+    "crop": {
+      "left": 478,
+      "top": 150,
+      "right": 628,
+      "bottom": 300
+    }
+  },
+  {
+    "file": "students2_face_05.png",
+    "source": "students2.jpg",
+    "box": {
+      "x": 869,
+      "y": 197,
+      "w": 40,
+      "h": 40
+    },
+    "crop": {
+      "left": 844,
+      "top": 168,
+      "right": 934,
+      "bottom": 258
+    }
+  },
+  {
+    "file": "students2_face_06.png",
+    "source": "students2.jpg",
+    "box": {
+      "x": 812,
+      "y": 201,
+      "w": 42,
+      "h": 42
+    },
+    "crop": {
+      "left": 786,
+      "top": 171,
+      "right": 880,
+      "bottom": 265
+    }
+  },
+  {
+    "file": "students2_face_07.png",
+    "source": "students2.jpg",
+    "box": {
+      "x": 920,
+      "y": 270,
+      "w": 50,
+      "h": 50
+    },
+    "crop": {
+      "left": 889,
+      "top": 235,
+      "right": 1001,
+      "bottom": 347
+    }
+  },
+  {
+    "file": "students2_face_08.png",
+    "source": "students2.jpg",
+    "box": {
+      "x": 731,
+      "y": 283,
+      "w": 44,
+      "h": 44
+    },
+    "crop": {
+      "left": 703,
+      "top": 251,
+      "right": 802,
+      "bottom": 350
+    }
+  },
+  {
+    "file": "students2_face_09.png",
+    "source": "students2.jpg",
+    "box": {
+      "x": 375,
+      "y": 285,
+      "w": 47,
+      "h": 47
+    },
+    "crop": {
+      "left": 346,
+      "top": 252,
+      "right": 451,
+      "bottom": 357
+    }
+  },
+  {
+    "file": "students2_face_10.png",
+    "source": "students2.jpg",
+    "box": {
+      "x": 212,
+      "y": 287,
+      "w": 43,
+      "h": 43
+    },
+    "crop": {
+      "left": 185,
+      "top": 257,
+      "right": 281,
+      "bottom": 353
+    }
+  },
+  {
+    "file": "students2_face_11.png",
+    "source": "students2.jpg",
+    "box": {
+      "x": 273,
+      "y": 288,
+      "w": 47,
+      "h": 47
+    },
+    "crop": {
+      "left": 244,
+      "top": 255,
+      "right": 349,
+      "bottom": 360
+    }
+  },
+  {
+    "file": "students2_face_12.png",
+    "source": "students2.jpg",
+    "box": {
+      "x": 545,
+      "y": 289,
+      "w": 43,
+      "h": 43
+    },
+    "crop": {
+      "left": 518,
+      "top": 259,
+      "right": 614,
+      "bottom": 355
+    }
+  },
+  {
+    "file": "students2_face_13.png",
+    "source": "students2.jpg",
+    "box": {
+      "x": 642,
+      "y": 291,
+      "w": 44,
+      "h": 44
+    },
+    "crop": {
+      "left": 614,
+      "top": 259,
+      "right": 713,
+      "bottom": 358
+    }
+  },
+  {
+    "file": "students2_face_14.png",
+    "source": "students2.jpg",
+    "box": {
+      "x": 787,
+      "y": 307,
+      "w": 92,
+      "h": 92
+    },
+    "crop": {
+      "left": 729,
+      "top": 242,
+      "right": 936,
+      "bottom": 449
+    }
+  }
+]

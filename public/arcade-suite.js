@@ -249,147 +249,533 @@ function spawnPongBall(direction) {
   return {
     x: W / 2,
     y: H / 2,
-    vx: direction * rand(400, 460),
-    vy: rand(-220, 220)
+    vx: direction * rand(360, 430),
+    vy: rand(-220, 220),
+    r: 16,
+    lastTouch: null
   };
 }
 
-const pongGame = {
-  name: "Modern Pong",
-  description: "Neon paddles, a live CPU opponent, and a rally that speeds up every clean return.",
-  controls: "Move with W/S, Arrow keys, or the mouse inside the stage.",
-  stageTitle: "Modern Pong Arena",
-  stageHelp: "Beat the CPU to seven. Angled hits create sharper returns.",
-  createState() {
-    return {
-      playerY: H / 2 - 90,
-      cpuY: H / 2 - 90,
-      ball: spawnPongBall(Math.random() < 0.5 ? -1 : 1),
-      player: 0,
-      cpu: 0,
-      status: "First to 7 wins",
-      gameOver: false
-    };
-  },
-  keydown(state, key) {
-    if (key === " " && state.gameOver) {
-      resetCurrentGame();
-    }
-  },
-  update(state, dt, time) {
-    if (state.gameOver) {
-      return;
-    }
+const pongPowerThemes = [
+  { id: "nova", prefix: "Nova", color: "#60a5fa", glow: "#dbeafe" },
+  { id: "candy", prefix: "Candy", color: "#fb7185", glow: "#ffe4e6" },
+  { id: "jungle", prefix: "Jungle", color: "#22c55e", glow: "#dcfce7" },
+  { id: "solar", prefix: "Solar", color: "#f59e0b", glow: "#fef3c7" },
+  { id: "frost", prefix: "Frost", color: "#38bdf8", glow: "#e0f2fe" },
+  { id: "pixel", prefix: "Pixel", color: "#a78bfa", glow: "#ede9fe" },
+  { id: "meteor", prefix: "Meteor", color: "#f97316", glow: "#ffedd5" },
+  { id: "prism", prefix: "Prism", color: "#2dd4bf", glow: "#ccfbf1" },
+  { id: "disco", prefix: "Disco", color: "#e879f9", glow: "#fae8ff" },
+  { id: "storm", prefix: "Storm", color: "#94a3b8", glow: "#e2e8f0" }
+];
 
-    const playerSpeed = 580;
-    if (input.keys.has("arrowup") || input.keys.has("w")) {
-      state.playerY -= playerSpeed * dt;
-    }
-    if (input.keys.has("arrowdown") || input.keys.has("s")) {
-      state.playerY += playerSpeed * dt;
-    }
-    if (input.pointer.inside) {
-      state.playerY = input.pointer.y - 90;
-    }
-    state.playerY = clamp(state.playerY, 28, H - 208);
+const pongPowerFamilies = [
+  { id: "titan", label: "Titan Paddle", symbol: "T" },
+  { id: "pinch", label: "Pinch Rival", symbol: "P" },
+  { id: "dash", label: "Dash Drive", symbol: "D" },
+  { id: "jam", label: "Jam Rival", symbol: "J" },
+  { id: "magnet", label: "Magnet Grip", symbol: "M" },
+  { id: "shield", label: "Goal Shield", symbol: "S" },
+  { id: "jackpot", label: "Jackpot Goal", symbol: "J2" },
+  { id: "rocket", label: "Rocket Ball", symbol: "R" },
+  { id: "mist", label: "Mist Slow", symbol: "SL" },
+  { id: "curve", label: "Curve Spin", symbol: "C" }
+];
 
-    const cpuTarget = state.ball.y - 90 + Math.sin(time * 2.8) * 16;
-    const cpuSpeed = 360 + Math.min(180, (state.player + state.cpu) * 12);
-    if (cpuTarget > state.cpuY + 10) {
-      state.cpuY += cpuSpeed * dt;
-    } else if (cpuTarget < state.cpuY - 10) {
-      state.cpuY -= cpuSpeed * dt;
-    }
-    state.cpuY = clamp(state.cpuY, 28, H - 208);
+const pongPowerCatalog = pongPowerFamilies.flatMap((family) =>
+  pongPowerThemes.map((theme, index) => ({
+    id: `${theme.id}-${family.id}`,
+    familyId: family.id,
+    label: `${theme.prefix} ${family.label}`,
+    tier: index + 1,
+    color: theme.color,
+    glow: theme.glow,
+    symbol: family.symbol
+  }))
+);
 
-    const ball = state.ball;
-    ball.x += ball.vx * dt;
-    ball.y += ball.vy * dt;
+function otherPongSide(side) {
+  return side === "player" ? "cpu" : "player";
+}
 
-    if (ball.y < 26 || ball.y > H - 26) {
-      ball.y = clamp(ball.y, 26, H - 26);
-      ball.vy *= -1;
-    }
+function pongSideName(side) {
+  return side === "player" ? "Player" : "CPU";
+}
 
-    const leftPaddle = { x: 56, y: state.playerY, w: 22, h: 180 };
-    const rightPaddle = { x: W - 78, y: state.cpuY, w: 22, h: 180 };
+function createPongModifiers() {
+  return {
+    player: { paddleScale: 1, speedMul: 1, magnet: 0 },
+    cpu: { paddleScale: 1, speedMul: 1, magnet: 0 },
+    ball: { speedMul: 1, spin: 0 }
+  };
+}
 
-    if (circleRectOverlap({ x: ball.x, y: ball.y, r: 18 }, leftPaddle) && ball.vx < 0) {
-      const offset = (ball.y - (state.playerY + 90)) / 90;
-      ball.x = leftPaddle.x + leftPaddle.w + 19;
-      ball.vx = Math.abs(ball.vx) + 24;
-      ball.vy += offset * 260;
-      state.status = "Player return";
-    }
+function clampBallVelocity(ball) {
+  ball.vx = clamp(ball.vx, -860, 860);
+  ball.vy = clamp(ball.vy, -720, 720);
+}
 
-    if (circleRectOverlap({ x: ball.x, y: ball.y, r: 18 }, rightPaddle) && ball.vx > 0) {
-      const offset = (ball.y - (state.cpuY + 90)) / 90;
-      ball.x = rightPaddle.x - 19;
-      ball.vx = -Math.abs(ball.vx) - 24;
-      ball.vy += offset * 260;
-      state.status = "CPU return";
-    }
+function addPongEffect(state, effect) {
+  state.effects.push({ ...effect, timer: effect.duration });
+}
 
-    if (ball.x < -30) {
-      state.cpu += 1;
-      state.ball = spawnPongBall(1);
-      state.status = state.cpu >= 7 ? "CPU wins the match" : "CPU scores";
-      if (state.cpu >= 7) {
-        state.gameOver = true;
+function recalcPongModifiers(state, dt) {
+  state.effects = state.effects
+    .map((effect) => ({ ...effect, timer: effect.timer - dt }))
+    .filter((effect) => effect.timer > 0);
+
+  const modifiers = createPongModifiers();
+  for (const effect of state.effects) {
+    if (effect.target === "ball") {
+      if (effect.kind === "speedMul") {
+        modifiers.ball.speedMul += effect.amount;
+      } else if (effect.kind === "spin") {
+        modifiers.ball.spin += effect.amount;
       }
-    } else if (ball.x > W + 30) {
-      state.player += 1;
-      state.ball = spawnPongBall(-1);
-      state.status = state.player >= 7 ? "You win the match" : "Player scores";
-      if (state.player >= 7) {
-        state.gameOver = true;
-      }
+      continue;
     }
-  },
-  draw(state, time) {
-    drawBackground("#07111d", "#10213a", time, "rgba(92,199,255,0.8)");
 
-    ctx.strokeStyle = "rgba(255,255,255,0.18)";
-    ctx.setLineDash([14, 18]);
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(W / 2, 34);
-    ctx.lineTo(W / 2, H - 34);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    drawRoundedRect(56, state.playerY, 22, 180, 12, "#60a5fa");
-    drawRoundedRect(W - 78, state.cpuY, 22, 180, 12, "#34d399");
-
-    ctx.fillStyle = "rgba(255,255,255,0.06)";
-    drawRoundedRect(34, 20, W - 68, H - 40, 28, null, "rgba(255,255,255,0.08)");
-
-    ctx.fillStyle = "#f8fbff";
-    ctx.beginPath();
-    ctx.arc(state.ball.x, state.ball.y, 18, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.globalAlpha = 0.18;
-    ctx.fillStyle = "#5cc7ff";
-    ctx.beginPath();
-    ctx.arc(state.ball.x, state.ball.y, 42, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
-    drawLabel(String(state.player), W / 2 - 120, 90, 40, "#60a5fa", "center");
-    drawLabel(String(state.cpu), W / 2 + 120, 90, 40, "#34d399", "center");
-  },
-  hud(state) {
-    return {
-      value: `${state.player} - ${state.cpu}`,
-      copy: state.gameOver
-        ? "Match finished. Hit Restart Game or tap Space to play another round."
-        : "The ball accelerates with each paddle touch, so rallies get sharper fast.",
-      banner: state.status,
-      footer: "Mouse control is active here too, which makes it easier for younger players."
-    };
+    const sideMods = modifiers[effect.target];
+    if (effect.kind === "paddleScale") {
+      sideMods.paddleScale += effect.amount;
+    } else if (effect.kind === "speedMul") {
+      sideMods.speedMul += effect.amount;
+    } else if (effect.kind === "magnet") {
+      sideMods.magnet += effect.amount;
+    }
   }
-};
+
+  modifiers.player.paddleScale = clamp(modifiers.player.paddleScale, 0.58, 1.6);
+  modifiers.cpu.paddleScale = clamp(modifiers.cpu.paddleScale, 0.58, 1.6);
+  modifiers.player.speedMul = clamp(modifiers.player.speedMul, 0.45, 1.9);
+  modifiers.cpu.speedMul = clamp(modifiers.cpu.speedMul, 0.45, 1.9);
+  modifiers.player.magnet = clamp(modifiers.player.magnet, 0, 0.8);
+  modifiers.cpu.magnet = clamp(modifiers.cpu.magnet, 0, 0.8);
+  modifiers.ball.speedMul = clamp(modifiers.ball.speedMul, 0.55, 1.85);
+  modifiers.ball.spin = clamp(modifiers.ball.spin, -180, 180);
+  state.modifiers = modifiers;
+}
+
+function getPongArena() {
+  return { x: 34, y: 20, w: W - 68, h: H - 40 };
+}
+
+function getPongPaddle(state, side) {
+  const arena = getPongArena();
+  const mods = state.modifiers[side];
+  const height = clamp(156 * mods.paddleScale, 94, 248);
+  const width = clamp(22 + (mods.paddleScale - 1) * 16, 18, 36);
+  const x = side === "player" ? arena.x + 22 : arena.x + arena.w - 22 - width;
+  const y = side === "player" ? state.playerY : state.cpuY;
+  return { x, y, w: width, h: height };
+}
+
+function spawnPongPickup(state) {
+  const arena = getPongArena();
+  for (let attempt = 0; attempt < 18; attempt += 1) {
+    const candidate = {
+      x: rand(arena.x + 170, arena.x + arena.w - 170),
+      y: rand(arena.y + 90, arena.y + arena.h - 90),
+      radius: 24,
+      pulse: rand(0, Math.PI * 2),
+      power: pick(pongPowerCatalog)
+    };
+    const spaced = state.pickups.every((pickup) => distance(candidate.x, candidate.y, pickup.x, pickup.y) > 120);
+    if (spaced) {
+      return candidate;
+    }
+  }
+
+  return {
+    x: W / 2 + rand(-120, 120),
+    y: H / 2 + rand(-110, 110),
+    radius: 24,
+    pulse: rand(0, Math.PI * 2),
+    power: pick(pongPowerCatalog)
+  };
+}
+
+function logPongPower(state, text, color) {
+  state.recentPowers.unshift({ text, color, timer: 5 });
+  state.recentPowers = state.recentPowers.slice(0, 4);
+}
+
+function applyPongPower(state, owner, power) {
+  const rival = otherPongSide(owner);
+  const tier = power.tier;
+  let message = `${pongSideName(owner)} claimed ${power.label}`;
+
+  if (power.familyId === "titan") {
+    addPongEffect(state, {
+      target: owner,
+      kind: "paddleScale",
+      amount: 0.1 + tier * 0.02,
+      duration: 5.4 + tier * 0.28
+    });
+  } else if (power.familyId === "pinch") {
+    addPongEffect(state, {
+      target: rival,
+      kind: "paddleScale",
+      amount: -(0.06 + tier * 0.012),
+      duration: 4.8 + tier * 0.25
+    });
+  } else if (power.familyId === "dash") {
+    addPongEffect(state, {
+      target: owner,
+      kind: "speedMul",
+      amount: 0.1 + tier * 0.022,
+      duration: 5 + tier * 0.24
+    });
+  } else if (power.familyId === "jam") {
+    addPongEffect(state, {
+      target: rival,
+      kind: "speedMul",
+      amount: -(0.08 + tier * 0.018),
+      duration: 4.4 + tier * 0.24
+    });
+  } else if (power.familyId === "magnet") {
+    addPongEffect(state, {
+      target: owner,
+      kind: "magnet",
+      amount: 0.12 + tier * 0.03,
+      duration: 4.5 + tier * 0.26
+    });
+  } else if (power.familyId === "shield") {
+    state.shields[owner] = clamp(state.shields[owner] + (tier >= 8 ? 2 : 1), 0, 4);
+    message = `${pongSideName(owner)} armed ${state.shields[owner]} shield${state.shields[owner] > 1 ? "s" : ""}`;
+  } else if (power.familyId === "jackpot") {
+    state.scoreBoost[owner] = Math.max(state.scoreBoost[owner], tier >= 9 ? 3 : 2);
+    message = `${pongSideName(owner)} primed a x${state.scoreBoost[owner]} goal`;
+  } else if (power.familyId === "rocket") {
+    const burst = 1.06 + tier * 0.028;
+    state.ball.vx *= burst;
+    state.ball.vy *= burst;
+    addPongEffect(state, {
+      target: "ball",
+      kind: "speedMul",
+      amount: 0.06 + tier * 0.012,
+      duration: 3.8 + tier * 0.18
+    });
+  } else if (power.familyId === "mist") {
+    const damp = clamp(0.95 - tier * 0.018, 0.72, 0.92);
+    state.ball.vx *= damp;
+    state.ball.vy *= damp;
+    addPongEffect(state, {
+      target: "ball",
+      kind: "speedMul",
+      amount: -(0.06 + tier * 0.01),
+      duration: 4.4 + tier * 0.18
+    });
+  } else if (power.familyId === "curve") {
+    const sign = owner === "player" ? 1 : -1;
+    addPongEffect(state, {
+      target: "ball",
+      kind: "spin",
+      amount: sign * (45 + tier * 12),
+      duration: 4 + tier * 0.2
+    });
+  }
+
+  clampBallVelocity(state.ball);
+  state.status = message;
+  logPongPower(state, message, power.color);
+}
+
+function awardPongScore(state, scorer, serveDirection) {
+  const defender = otherPongSide(scorer);
+  if (state.shields[defender] > 0) {
+    state.shields[defender] -= 1;
+    state.ball = spawnPongBall(serveDirection);
+    state.ball.lastTouch = null;
+    state.status = `${pongSideName(defender)} shield blocked the goal`;
+    logPongPower(state, state.status, defender === "player" ? "#60a5fa" : "#34d399");
+    return;
+  }
+
+  const points = state.scoreBoost[scorer];
+  state[scorer] += points;
+  state.scoreBoost[scorer] = 1;
+  state.ball = spawnPongBall(serveDirection);
+  state.ball.lastTouch = null;
+  state.pickups = state.pickups.slice(0, 2);
+  state.pickupTimer = 0.8;
+  state.status = points > 1 ? `${pongSideName(scorer)} scores x${points}` : `${pongSideName(scorer)} scores`;
+  if (state[scorer] >= 7) {
+    state.gameOver = true;
+    state.status = scorer === "player" ? "You win the match" : "CPU wins the match";
+  }
+}
+
+const pongGame = (() => {
+  return {
+    name: "Modern Pong",
+    description: "A powered-up Pong arena with 100 floor pickups, stacked match effects, and a brighter court.",
+    controls: "Move with W/S, Arrow keys, or the mouse. The ball can trigger floor pickups for the last side that touched it.",
+    stageTitle: "Modern Pong Arena",
+    stageHelp: "Beat the CPU to seven, but now the court spawns 100 possible floor power-ups that the ball can activate mid-rally.",
+    createState() {
+      return {
+        playerY: H / 2 - 78,
+        cpuY: H / 2 - 78,
+        ball: spawnPongBall(Math.random() < 0.5 ? -1 : 1),
+        player: 0,
+        cpu: 0,
+        status: "First to 7 wins",
+        gameOver: false,
+        effects: [],
+        modifiers: createPongModifiers(),
+        pickups: [],
+        pickupTimer: 1.2,
+        shields: { player: 0, cpu: 0 },
+        scoreBoost: { player: 1, cpu: 1 },
+        recentPowers: []
+      };
+    },
+    keydown(state, key) {
+      if (key === " " && state.gameOver) {
+        resetCurrentGame();
+      }
+    },
+    update(state, dt, time) {
+      for (const note of state.recentPowers) {
+        note.timer -= dt;
+      }
+      state.recentPowers = state.recentPowers.filter((note) => note.timer > 0);
+
+      recalcPongModifiers(state, dt);
+      const arena = getPongArena();
+
+      if (state.gameOver) {
+        return;
+      }
+
+      const playerPaddle = getPongPaddle(state, "player");
+      const cpuPaddle = getPongPaddle(state, "cpu");
+      const playerSpeed = 560 * state.modifiers.player.speedMul;
+      const cpuSpeed = (350 + Math.min(200, (state.player + state.cpu) * 12)) * state.modifiers.cpu.speedMul;
+
+      if (input.keys.has("arrowup") || input.keys.has("w")) {
+        state.playerY -= playerSpeed * dt;
+      }
+      if (input.keys.has("arrowdown") || input.keys.has("s")) {
+        state.playerY += playerSpeed * dt;
+      }
+      if (input.pointer.inside) {
+        state.playerY = input.pointer.y - playerPaddle.h / 2;
+      }
+      state.playerY = clamp(state.playerY, arena.y + 8, arena.y + arena.h - playerPaddle.h - 8);
+
+      const cpuMistake = Math.sin(time * 2.3 + state.cpu * 0.2) * 18 + Math.cos(time * 1.4) * 10;
+      const cpuTarget = state.ball.y - cpuPaddle.h / 2 + cpuMistake;
+      if (cpuTarget > state.cpuY + 8) {
+        state.cpuY += cpuSpeed * dt;
+      } else if (cpuTarget < state.cpuY - 8) {
+        state.cpuY -= cpuSpeed * dt;
+      }
+      state.cpuY = clamp(state.cpuY, arena.y + 8, arena.y + arena.h - cpuPaddle.h - 8);
+
+      state.pickupTimer -= dt;
+      if (state.pickupTimer <= 0 && state.pickups.length < 4) {
+        state.pickups.push(spawnPongPickup(state));
+        state.pickupTimer = rand(1.2, 2.4);
+      }
+
+      const ball = state.ball;
+      const leftPaddle = getPongPaddle(state, "player");
+      const rightPaddle = getPongPaddle(state, "cpu");
+
+      if (ball.vx < 0 && state.modifiers.player.magnet > 0) {
+        ball.vy += ((leftPaddle.y + leftPaddle.h / 2) - ball.y) * state.modifiers.player.magnet * dt * 1.4;
+      }
+      if (ball.vx > 0 && state.modifiers.cpu.magnet > 0) {
+        ball.vy += ((rightPaddle.y + rightPaddle.h / 2) - ball.y) * state.modifiers.cpu.magnet * dt * 1.4;
+      }
+      ball.vy += state.modifiers.ball.spin * dt;
+
+      const rallySpeed = state.modifiers.ball.speedMul;
+      ball.x += ball.vx * rallySpeed * dt;
+      ball.y += ball.vy * rallySpeed * dt;
+      clampBallVelocity(ball);
+
+      if (ball.y < arena.y + ball.r || ball.y > arena.y + arena.h - ball.r) {
+        ball.y = clamp(ball.y, arena.y + ball.r, arena.y + arena.h - ball.r);
+        ball.vy *= -1;
+        state.status = "Wall ricochet";
+      }
+
+      for (const pickup of state.pickups) {
+        if (distance(ball.x, ball.y, pickup.x, pickup.y) < ball.r + pickup.radius) {
+          const owner = ball.lastTouch ?? (ball.vx > 0 ? "player" : "cpu");
+          applyPongPower(state, owner, pickup.power);
+          state.pickups = state.pickups.filter((item) => item !== pickup);
+          break;
+        }
+      }
+
+      if (circleRectOverlap({ x: ball.x, y: ball.y, r: ball.r }, leftPaddle) && ball.vx < 0) {
+        const offset = (ball.y - (leftPaddle.y + leftPaddle.h / 2)) / (leftPaddle.h / 2);
+        ball.x = leftPaddle.x + leftPaddle.w + ball.r + 1;
+        ball.vx = Math.abs(ball.vx) + 24;
+        ball.vy += offset * 280;
+        ball.lastTouch = "player";
+        state.status = "Player return";
+      }
+
+      if (circleRectOverlap({ x: ball.x, y: ball.y, r: ball.r }, rightPaddle) && ball.vx > 0) {
+        const offset = (ball.y - (rightPaddle.y + rightPaddle.h / 2)) / (rightPaddle.h / 2);
+        ball.x = rightPaddle.x - ball.r - 1;
+        ball.vx = -Math.abs(ball.vx) - 24;
+        ball.vy += offset * 280;
+        ball.lastTouch = "cpu";
+        state.status = "CPU return";
+      }
+      clampBallVelocity(ball);
+
+      if (ball.x < arena.x - 40) {
+        awardPongScore(state, "cpu", 1);
+      } else if (ball.x > arena.x + arena.w + 40) {
+        awardPongScore(state, "player", -1);
+      }
+    },
+    draw(state, time) {
+      drawBackground("#06111f", "#102642", time, "rgba(92,199,255,0.7)");
+
+      const arena = getPongArena();
+      const floor = ctx.createLinearGradient(arena.x, arena.y, arena.x, arena.y + arena.h);
+      floor.addColorStop(0, "#091425");
+      floor.addColorStop(0.55, "#142744");
+      floor.addColorStop(1, "#0f1d31");
+      drawRoundedRect(arena.x, arena.y, arena.w, arena.h, 30, floor, "rgba(255,255,255,0.1)");
+
+      ctx.fillStyle = "rgba(255,255,255,0.06)";
+      for (let row = 0; row < 9; row += 1) {
+        const y = arena.y + 32 + row * 54;
+        ctx.fillRect(arena.x + 28, y, arena.w - 56, 2);
+      }
+
+      ctx.fillStyle = "rgba(255,255,255,0.05)";
+      for (let i = 0; i < 26; i += 1) {
+        const x = arena.x + 28 + i * 46;
+        ctx.fillRect(x, arena.y + 26, 2, arena.h - 52);
+      }
+
+      ctx.strokeStyle = "rgba(148, 163, 184, 0.28)";
+      ctx.setLineDash([16, 18]);
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(W / 2, arena.y + 14);
+      ctx.lineTo(W / 2, arena.y + arena.h - 14);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.strokeStyle = "rgba(255,255,255,0.18)";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(W / 2, H / 2, 88, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(96, 165, 250, 0.18)";
+      ctx.strokeRect(arena.x + 90, arena.y + 86, 140, arena.h - 172);
+      ctx.strokeStyle = "rgba(52, 211, 153, 0.18)";
+      ctx.strokeRect(arena.x + arena.w - 230, arena.y + 86, 140, arena.h - 172);
+
+      ctx.fillStyle = "rgba(255,255,255,0.12)";
+      for (let i = 0; i < 14; i += 1) {
+        const dotX = arena.x + 42 + i * ((arena.w - 84) / 13);
+        ctx.beginPath();
+        ctx.arc(dotX, arena.y - 14, 6 + Math.sin(time * 2 + i) * 1.2, 0, Math.PI * 2);
+        ctx.arc(dotX, arena.y + arena.h + 14, 6 + Math.cos(time * 1.8 + i) * 1.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = "rgba(34,211,238,0.12)";
+      drawRoundedRect(arena.x + 18, arena.y + 18, 110, 20, 10, "rgba(96,165,250,0.18)");
+      drawRoundedRect(arena.x + arena.w - 128, arena.y + 18, 110, 20, 10, "rgba(52,211,153,0.18)");
+      drawRoundedRect(arena.x + 18, arena.y + arena.h - 38, 110, 20, 10, "rgba(96,165,250,0.18)");
+      drawRoundedRect(arena.x + arena.w - 128, arena.y + arena.h - 38, 110, 20, 10, "rgba(52,211,153,0.18)");
+
+      for (const pickup of state.pickups) {
+        const pulse = 0.82 + Math.sin(time * 4 + pickup.pulse) * 0.14;
+        ctx.save();
+        ctx.globalAlpha = 0.18;
+        ctx.fillStyle = pickup.power.color;
+        ctx.beginPath();
+        ctx.arc(pickup.x, pickup.y, pickup.radius * 2.1 * pulse, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        drawRoundedRect(
+          pickup.x - pickup.radius,
+          pickup.y - pickup.radius,
+          pickup.radius * 2,
+          pickup.radius * 2,
+          14,
+          pickup.power.color,
+          pickup.power.glow
+        );
+        ctx.fillStyle = "#08111f";
+        ctx.font = "800 16px Orbitron, monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(pickup.power.symbol, pickup.x, pickup.y + 6);
+      }
+
+      const playerPaddle = getPongPaddle(state, "player");
+      const cpuPaddle = getPongPaddle(state, "cpu");
+      drawRoundedRect(playerPaddle.x, playerPaddle.y, playerPaddle.w, playerPaddle.h, 14, "#60a5fa");
+      drawRoundedRect(cpuPaddle.x, cpuPaddle.y, cpuPaddle.w, cpuPaddle.h, 14, "#34d399");
+
+      ctx.fillStyle = "rgba(255,255,255,0.2)";
+      ctx.fillRect(playerPaddle.x + 5, playerPaddle.y + 18, playerPaddle.w - 10, playerPaddle.h - 36);
+      ctx.fillRect(cpuPaddle.x + 5, cpuPaddle.y + 18, cpuPaddle.w - 10, cpuPaddle.h - 36);
+
+      ctx.fillStyle = "#f8fbff";
+      ctx.beginPath();
+      ctx.arc(state.ball.x, state.ball.y, state.ball.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.save();
+      ctx.globalAlpha = 0.22;
+      ctx.fillStyle = "#5cc7ff";
+      ctx.beginPath();
+      ctx.arc(state.ball.x, state.ball.y, state.ball.r * 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      drawLabel(String(state.player), W / 2 - 120, 90, 40, "#60a5fa", "center");
+      drawLabel(String(state.cpu), W / 2 + 120, 90, 40, "#34d399", "center");
+
+      ctx.textAlign = "left";
+      ctx.font = "700 16px Orbitron, monospace";
+      ctx.fillStyle = "#dbeafe";
+      ctx.fillText(`P Shields ${state.shields.player}`, arena.x + 28, arena.y + 34);
+      ctx.fillStyle = "#d1fae5";
+      ctx.fillText(`CPU Shields ${state.shields.cpu}`, arena.x + arena.w - 196, arena.y + 34);
+
+      ctx.fillStyle = "#cbd5e1";
+      ctx.font = "700 14px Orbitron, monospace";
+      ctx.fillText(`Goal Boost x${state.scoreBoost.player}`, arena.x + 28, arena.y + arena.h - 18);
+      ctx.textAlign = "right";
+      ctx.fillText(`CPU Boost x${state.scoreBoost.cpu}`, arena.x + arena.w - 28, arena.y + arena.h - 18);
+
+      state.recentPowers.forEach((note, index) => {
+        drawRoundedRect(arena.x + 150 + index * 220, arena.y + 18, 196, 26, 12, "rgba(8,17,31,0.72)", note.color);
+        ctx.fillStyle = "#f8fafc";
+        ctx.textAlign = "center";
+        ctx.font = "700 12px Orbitron, monospace";
+        ctx.fillText(note.text.slice(0, 24), arena.x + 248 + index * 220, arena.y + 36);
+      });
+    },
+    hud(state) {
+      return {
+        value: `${state.player} - ${state.cpu}`,
+        copy: state.gameOver
+          ? "Match finished. Tap Restart Game or press Space to play another powered-up round."
+          : `100 floor power-ups are live. Active pads ${state.pickups.length} | Player shields ${state.shields.player} | CPU shields ${state.shields.cpu}`,
+        banner: state.status,
+        footer: "Power tiles spawn on the court floor. If the ball touches one, the side that last hit the ball claims the effect."
+      };
+    }
+  };
+})();
 
 const mazeGame = (() => {
   const layout = [

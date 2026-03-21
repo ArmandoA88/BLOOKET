@@ -22,7 +22,7 @@ const SESSION_SECRET = process.env.SESSION_SECRET || "change-this-local-session-
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
 const GOOGLE_AUTH_ENABLED = GOOGLE_CLIENT_ID.length > 0 && GOOGLE_CLIENT_SECRET.length > 0;
-const HTTPS_MODE = String(process.env.HTTPS || "auto").trim().toLowerCase();
+const HTTPS_MODE = String(process.env.HTTPS || "http").trim().toLowerCase();
 const LISTEN_HOST = process.env.HOST || "0.0.0.0";
 
 const QUESTION_BANK = [
@@ -192,6 +192,71 @@ const CUSTOM_QUIZZES_DATA_FILE = path.join(__dirname, "data", "custom-quizzes.js
 const QUIZ_UPLOAD_ALLOWED_EXTENSIONS = new Set([".csv", ".xlsx", ".xls", ".json"]);
 const customQuestionSets = new Map();
 const MINIGAME_STATS_FILE = path.join(__dirname, "data", "minigame-stats.json");
+const STUDENT_SPRITE_MANIFEST_FILE = path.join(__dirname, "public", "assets", "student-sprites", "manifest.json");
+const STUDENT_BLOOK_NAME_OVERRIDES = {
+  1: "Mr. A",
+  2: "Elisa",
+  3: "Jackson",
+  4: "Sierra",
+  5: "Mattie",
+  6: "Ariabella",
+  7: "Emilia",
+  8: "Angela",
+  10: "Holland",
+  11: "Noah",
+  12: "Nash",
+  13: "Oscar",
+  14: "Charlee",
+  15: "Ailyn",
+  16: "Juan",
+  17: "Conor",
+  18: "Cal",
+  19: "Liam",
+  20: "Brandon",
+  21: "Miguel",
+  22: "Henry",
+  23: "Eli",
+  24: "Leo",
+  28: "Samantha"
+};
+const REMOVED_STUDENT_BLOOK_NUMBERS = new Set([9, 25, 26, 27, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]);
+
+function loadStudentBlooks() {
+  try {
+    const raw = fs.readFileSync(STUDENT_SPRITE_MANIFEST_FILE, "utf8");
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed.map((entry, index) => {
+      const studentNumber = index + 1;
+      if (REMOVED_STUDENT_BLOOK_NUMBERS.has(studentNumber)) {
+        return null;
+      }
+
+      const file = String(entry?.file || "").trim();
+      if (!file) {
+        return null;
+      }
+
+      const ordinal = String(studentNumber).padStart(2, "0");
+      return {
+        id: `student-face-${ordinal}`,
+        name: STUDENT_BLOOK_NAME_OVERRIDES[studentNumber] || `Student ${studentNumber}`,
+        image: `/assets/student-sprites/${file}`,
+        icon: "🙂",
+        rarity: "Legendary",
+        group: "Students"
+      };
+    }).filter(Boolean);
+  } catch (error) {
+    console.warn("[student-blooks] Could not load student sprite manifest:", error.message);
+    return [];
+  }
+}
+
+const STUDENT_BLOOKS = loadStudentBlooks();
 
 const BLOOK_PACKS = [
   {
@@ -249,6 +314,13 @@ const BLOOK_PACKS = [
       { id: "soc-chelsea", name: "Chelsea FC", image: "/assets/sports/soc-chelsea.png", icon: "⚽", rarity: "Common", sport: "Soccer" },
       { id: "soc-man-utd", name: "Manchester United", image: "/assets/sports/soc-man-utd.png", icon: "⚽", rarity: "Common", sport: "Soccer" }
     ]
+  },
+  {
+    id: "students",
+    name: "Students Pack",
+    description: "All student face blooks from your uploaded class photos. Everyone can use them.",
+    price: 0,
+    blooks: STUDENT_BLOOKS
   },
   {
     id: "anime",
@@ -530,6 +602,9 @@ function rarityWeightForBlook(blook) {
 function packOpenCost(packId) {
   if (!packId) {
     return PACK_OPEN_COST;
+  }
+  if (packId === "students") {
+    return 0;
   }
   return PACK_OPEN_COST;
 }

@@ -3848,6 +3848,12 @@ body.play-fishing-mode #playCard.fishing-final-active .fishing-hud-right {
   background: transparent;
 }
 
+.blook-image[src*="/assets/student-sprites/"] {
+  object-fit: contain;
+  padding: 0;
+  background: transparent;
+}
+
 .blook-emoji {
   font-size: 2rem;
   z-index: 2;

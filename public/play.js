@@ -3160,6 +3160,15 @@ function setPackResultNotice(message, tone = "") {
   packResult.textContent = message;
 }
 
+function hidePackResultNotice() {
+  if (!packResult) {
+    return;
+  }
+  packResult.classList.add("hidden");
+  packResult.classList.remove("good", "bad");
+  packResult.textContent = "";
+}
+
 function showPackOpenAnimation(blook) {
   if (!packOpenAnimation || !blook) {
     return;
@@ -3274,7 +3283,7 @@ function syncSelectedBlook() {
           <div class="selected-blook-meta">
             <strong>${escapeHtml(owned.name)}</strong>
             <span class="help">${escapeHtml(owned.packName)} | ${escapeHtml(owned.rarity)}</span>
-            <span class="help">Join uses a random avatar from your selected pack.</span>
+            <span class="help">Join uses the blook you selected here.</span>
           </div>
         </div>
         <span class="selected-blook-ready">Ready!</span>
@@ -3295,7 +3304,7 @@ function renderPackTabs() {
     return;
   }
 
-  const preferredPackOrder = ["superheroes", "athletes", "sports", "anime", "books", "science", "nature"];
+  const preferredPackOrder = ["students", "superheroes", "athletes", "sports", "anime", "books", "science", "nature"];
   const orderIndex = new Map(preferredPackOrder.map((id, index) => [id, index]));
   const sortedPacks = blookPacks.slice().sort((left, right) => {
     const leftIdx = orderIndex.has(left.id) ? orderIndex.get(left.id) : preferredPackOrder.length + 1;
@@ -3824,17 +3833,12 @@ joinBtn.addEventListener("click", () => {
   const joinPackId = selectedPackId === "effects"
     ? (getOwnedBlookById(selectedBlookId)?.packId || "")
     : selectedPackId;
-  const randomJoinBlookId = pickRandomOwnedBlookIdForPack(joinPackId) || effectiveJoinBlookId();
-  if (randomJoinBlookId) {
-    selectedBlookId = randomJoinBlookId;
-    syncSelectedBlook();
-    renderBlookGrid();
-  }
+  const joinBlookId = effectiveJoinBlookId();
 
   socket.emit("player:join", {
     code,
     name,
-    blookId: randomJoinBlookId || effectiveJoinBlookId(),
+    blookId: joinBlookId,
     packId: joinPackId,
     effectId: selectedEffectId,
     accountKey: joinAccountKey()
@@ -3903,12 +3907,13 @@ packTabs.addEventListener("click", (event) => {
   if (!pack) return;
 
   selectedPackId = pack.id;
-  const packOwnedBlookId = pickRandomOwnedBlookIdForPack(pack.id);
+  const packOwnedBlookId = pickFirstOwnedBlookIdForPack(pack.id);
   if (packOwnedBlookId) {
     selectedBlookId = packOwnedBlookId;
   } else if (!selectedBlookId || !getOwnedBlookById(selectedBlookId)) {
     selectedBlookId = pickFirstOwnedBlookIdForPack(pack.id) || selectedBlookId;
   }
+  hidePackResultNotice();
   renderEconomyPanel();
 });
 
@@ -3924,9 +3929,8 @@ blookGrid.addEventListener("click", (event) => {
 
   if (blookId) {
     if (!getOwnedBlookById(blookId)) return;
-    const randomId = pickRandomOwnedBlookIdForPack(selectedPackId);
-    selectedBlookId = randomId || blookId;
-    setPackResultNotice("Pack locked. Avatar will be random when you join.", "good");
+    selectedBlookId = blookId;
+    hidePackResultNotice();
     syncSelectedBlook();
     updateEconomyButtons();
     renderBlookGrid();

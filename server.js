@@ -1206,7 +1206,7 @@ const MINI_GAME_CATALOG = [
   },
   {
     id: "soccer_shootout",
-    name: "Fossball Arena",
+    name: "Soccer Shootout",
     description: "Penalty kicks: choose lane and power against the goalkeeper."
   },
   {
@@ -1223,11 +1223,41 @@ const MINI_GAME_CATALOG = [
     id: "tower_stacker",
     name: "Tower Stacker",
     description: "Pick a cute theme, drop friendly critters, and build the tallest tower."
+  },
+  {
+    id: "tap_rush",
+    name: "Tap Rush",
+    description: "Tap quickly and race the class for the highest tap count."
+  },
+  {
+    id: "reaction_duel",
+    name: "Reaction Duel",
+    description: "Wait for the signal, then react faster than everyone else."
+  },
+  {
+    id: "sequence_memory",
+    name: "Sequence Memory",
+    description: "Memorize the pattern and repeat it before the class does."
+  },
+  {
+    id: "obstacle_dodge",
+    name: "Obstacle Dodge",
+    description: "Pick safe lanes across a short obstacle run."
+  },
+  {
+    id: "precision_stop",
+    name: "Precision Stop",
+    description: "Stop the meter as close to the target as possible."
+  },
+  {
+    id: "word_scramble",
+    name: "Word Scramble",
+    description: "Unscramble the word before your attempts run out."
   }
 ];
 
 const MINI_GAME_LOOKUP = new Map(MINI_GAME_CATALOG.map((game) => [game.id, game]));
-const MINI_GAME_ROTATION_MODES = new Set(["fixed", "random", "popular", "off"]);
+const MINI_GAME_ROTATION_MODES = new Set(["fixed", "random", "popular", "off", "soccer_only"]);
 const GAME_END_TYPES = new Set(["time", "weight"]);
 const RANDOM_NAME_ADJECTIVES = ["Swift", "Bright", "Cosmic", "Brave", "Curious", "Rapid", "Lucky", "Epic", "Nimble", "Bold"];
 const RANDOM_NAME_NOUNS = ["Falcon", "Panda", "Tiger", "Otter", "Comet", "Shark", "Wizard", "Racer", "Fox", "Eagle"];
@@ -1354,7 +1384,10 @@ function normalizeMiniGameRotationMode(mode) {
   }
 
   const normalized = mode.trim().toLowerCase();
-  return MINI_GAME_ROTATION_MODES.has(normalized) ? normalized : "fixed";
+  if (MINI_GAME_ROTATION_MODES.has(normalized)) {
+    return normalized;
+  }
+  return isMiniGameType(normalized) ? normalized : "fixed";
 }
 
 function normalizeGameEndType(value) {
@@ -3314,7 +3347,7 @@ function broadcastHostStatus(game) {
     answers,
     correctAnswers,
     currentQuestionIndex: game.currentQuestionIndex + 1,
-    totalQuestions: game.questions.length
+    totalQuestions: configuredRoundCount(game)
   });
 }
 
@@ -3530,9 +3563,14 @@ function resetMiniGameRuntimeState(game) {
 }
 
 function emitCountdownTick(game, secondsLeft) {
+  const miniGameOnly = isMiniGameOnlySession(game);
+  const targetMiniGameType = miniGameOnly ? pickMiniGameType(game) : "";
   io.to(game.code).emit("game:countdown", {
     secondsLeft: Math.max(0, Number(secondsLeft) || 0),
-    endsAt: Number(game.countdownEndsAt || Date.now())
+    endsAt: Number(game.countdownEndsAt || Date.now()),
+    targetPhase: miniGameOnly ? "minigame" : "question",
+    targetMiniGameType,
+    targetLabel: targetMiniGameType ? miniGameMeta(targetMiniGameType)?.name || targetMiniGameType : "Question"
   });
 }
 
@@ -3558,7 +3596,7 @@ function startGameCountdown(game, seconds = 3) {
 
     if (remainingSeconds <= 0) {
       game.countdownEndsAt = 0;
-      startQuestion(game);
+      startConfiguredRound(game);
       return;
     }
 
@@ -3647,7 +3685,7 @@ function skipMiniGamePhase(game, options = {}) {
   game.updatedAt = Date.now();
 
   if (options.startNextQuestion === true) {
-    startQuestion(game);
+    startConfiguredRound(game);
     return true;
   }
 
@@ -3684,7 +3722,7 @@ function pauseGame(game) {
     resumeAction =
       game.currentQuestionIndex >= game.questions.length - 1 && normalizeGameEndType(game.settings?.endType) !== "weight"
         ? "finish_game"
-        : "start_question";
+        : "start_round";
   } else {
     return false;
   }
@@ -3774,7 +3812,7 @@ function resumeGame(game) {
         finishGame(game);
         return;
       }
-      startQuestion(game);
+      startConfiguredRound(game);
     }, remainingMs);
     io.to(game.code).emit("game:resumed", {
       phase: "round_summary"
@@ -3791,6 +3829,8 @@ function forceNextQuestionNow(game) {
     return false;
   }
 
+  const miniGameOnly = isMiniGameOnlySession(game);
+
   if (game.phase === "paused") {
     const pausedFromPhase = String(game.pauseState?.fromPhase || "");
     game.pauseState = null;
@@ -3804,13 +3844,13 @@ function forceNextQuestionNow(game) {
         closeQuestion(game);
       }
       clearTimers(game);
-      startQuestion(game);
+      startConfiguredRound(game);
       return true;
     }
     if (pausedFromPhase === "round_summary") {
       game.phase = "round_summary";
       clearTimers(game);
-      startQuestion(game);
+      startConfiguredRound(game);
       return true;
     }
     return false;
@@ -3819,18 +3859,18 @@ function forceNextQuestionNow(game) {
   if (game.phase === "countdown") {
     clearTimers(game);
     game.countdownEndsAt = 0;
-    startQuestion(game);
+    startConfiguredRound(game);
     return true;
   }
 
-  if (game.phase === "question") {
+  if (game.phase === "question" && !miniGameOnly) {
     closeQuestion(game);
     clearTimers(game);
     startQuestion(game);
     return true;
   }
 
-  if (game.phase === "question_result") {
+  if (game.phase === "question_result" && !miniGameOnly) {
     clearTimers(game);
     startQuestion(game);
     return true;
@@ -3842,7 +3882,7 @@ function forceNextQuestionNow(game) {
 
   if (game.phase === "round_summary") {
     clearTimers(game);
-    startQuestion(game);
+    startConfiguredRound(game);
     return true;
   }
 
@@ -3870,16 +3910,17 @@ function destroyGame(code, reason = "Game ended") {
 function startRoundSummary(game) {
   game.phase = "round_summary";
   game.roundEndsAt = 0;
+  const totalRounds = configuredRoundCount(game);
 
   io.to(game.code).emit("round:summary", {
     questionIndex: game.currentQuestionIndex + 1,
-    totalQuestions: game.questions.length,
+    totalQuestions: totalRounds,
     leaderboard: sortedPlayers(game)
   });
 
   broadcastHostStatus(game);
 
-  if (game.currentQuestionIndex >= game.questions.length - 1) {
+  if (game.currentQuestionIndex >= totalRounds - 1) {
     game.roundEndsAt = Date.now() + 9000;
     game.roundTimer = setTimeout(() => {
       game.roundTimer = null;
@@ -3891,7 +3932,7 @@ function startRoundSummary(game) {
   game.roundEndsAt = Date.now() + 7000;
   game.roundTimer = setTimeout(() => {
     game.roundTimer = null;
-    startQuestion(game);
+    startConfiguredRound(game);
   }, 7000);
 }
 
@@ -3905,6 +3946,14 @@ function pickMiniGameType(game) {
   const rotationMode = normalizeMiniGameRotationMode(game.settings.miniGameRotationMode);
   if (rotationMode === "off") {
     return null;
+  }
+
+  if (rotationMode === "soccer_only") {
+    return "soccer_shootout";
+  }
+
+  if (isMiniGameType(rotationMode)) {
+    return rotationMode;
   }
 
   const options = MODE_MINI_GAMES[normalizeMode(game.settings.mode)] || [];
@@ -3935,6 +3984,53 @@ function isMiniGameType(type) {
   }
 
   return MINI_GAME_LOOKUP.has(type.trim());
+}
+
+function isMiniGameOnlyRotationMode(mode) {
+  return isMiniGameType(normalizeMiniGameRotationMode(mode));
+}
+
+function isMiniGameOnlySession(gameOrSettings) {
+  const settings =
+    gameOrSettings && typeof gameOrSettings === "object" && gameOrSettings.settings
+      ? gameOrSettings.settings
+      : gameOrSettings;
+  return isMiniGameOnlyRotationMode(settings?.miniGameRotationMode);
+}
+
+function configuredRoundCount(game) {
+  return Math.max(1, Number(game?.questions?.length || game?.settings?.questionCount || 10));
+}
+
+function startMiniGameOnlyRound(game) {
+  if (!game || !games.has(game.code) || game.phase === "finished") {
+    return false;
+  }
+
+  clearTimers(game);
+
+  if (game.currentQuestionIndex >= configuredRoundCount(game) - 1) {
+    finishGame(game);
+    return false;
+  }
+
+  game.countdownEndsAt = 0;
+  game.roundEndsAt = 0;
+  game.pauseState = null;
+  game.currentQuestionIndex += 1;
+  game.lastQuestionResultPayload = null;
+  game.submissions.clear();
+  game.questionEligiblePlayerIds = new Set(game.players.keys());
+  game.updatedAt = Date.now();
+
+  return startMiniGamePhase(game, Array.from(game.players.keys()), {
+    type: pickMiniGameType(game),
+    durationMs: clamp(Number(game.settings?.miniGameDurationSec) || 10, 5, 30) * 1000
+  });
+}
+
+function startConfiguredRound(game) {
+  return isMiniGameOnlySession(game) ? startMiniGameOnlyRound(game) : startQuestion(game);
 }
 
 function miniGameDifficultyProfile(game) {
@@ -3968,6 +4064,24 @@ function miniGameHostGoal(game, type) {
   }
   if (type === "tower_stacker") {
     return 5 + tier * 2;
+  }
+  if (type === "tap_rush") {
+    return 18 + tier * 8;
+  }
+  if (type === "reaction_duel") {
+    return 250 - tier * 20;
+  }
+  if (type === "sequence_memory") {
+    return 4 + tier;
+  }
+  if (type === "obstacle_dodge") {
+    return 5 + tier;
+  }
+  if (type === "precision_stop") {
+    return 100;
+  }
+  if (type === "word_scramble") {
+    return 1;
   }
   return 0;
 }
@@ -4054,6 +4168,75 @@ function hostMiniGameProgressRow(state) {
       stabilityScore,
       collapsed: state.collapsed === true,
       completed: false
+    };
+  }
+
+  if (state.type === "tap_rush") {
+    return {
+      metric: Math.max(0, Number(state.taps || 0)),
+      progress: Math.max(0, Number(state.taps || 0)),
+      completed: false
+    };
+  }
+
+  if (state.type === "reaction_duel") {
+    const falseStart = state.falseStart === true;
+    const reacted = state.reactedAt !== null;
+    const reactionMs = reacted && !falseStart ? Math.max(0, Number(state.reactionMs || 0)) : 9999;
+    return {
+      metric: reacted ? (falseStart ? -1 : Math.max(1, 5000 - reactionMs)) : 0,
+      progress: reacted ? 1 : 0,
+      reacted,
+      falseStart,
+      reactionMs: reacted && !falseStart ? reactionMs : null,
+      completed: reacted
+    };
+  }
+
+  if (state.type === "sequence_memory") {
+    return {
+      metric: Math.max(0, Number(state.progress || 0)) * 1000 - (state.completedAt ? 0 : 1),
+      progress: Math.max(0, Number(state.progress || 0)),
+      total: Math.max(1, Array.isArray(state.sequence) ? state.sequence.length : Number(state.total || 0)),
+      completed: state.completedAt !== null
+    };
+  }
+
+  if (state.type === "obstacle_dodge") {
+    const safeTurns = Math.max(0, Number(state.step || 0) - Number(state.hits || 0));
+    return {
+      metric: safeTurns * 220 - Math.max(0, Number(state.hits || 0)) * 40,
+      progress: Math.max(0, Number(state.step || 0)),
+      totalTurns: Math.max(1, Number(state.totalTurns || 0)),
+      safeTurns,
+      hits: Math.max(0, Number(state.hits || 0)),
+      step: Math.max(0, Number(state.step || 0)),
+      completed: Number(state.step || 0) >= Number(state.totalTurns || 0)
+    };
+  }
+
+  if (state.type === "precision_stop") {
+    const diff = state.submitted ? Math.abs(Math.max(0, Number(state.value || 0)) - Math.max(0, Number(state.target || 0))) : 100;
+    return {
+      metric: state.submitted ? Math.max(0, 100 - diff) : 0,
+      progress: state.submitted ? 1 : 0,
+      target: Math.max(0, Number(state.target || 0)),
+      value: state.submitted ? Math.max(0, Number(state.value || 0)) : null,
+      diff,
+      submitted: state.submitted === true,
+      completed: state.submitted === true
+    };
+  }
+
+  if (state.type === "word_scramble") {
+    return {
+      metric: state.solved === true ? 1000 - Math.max(0, Number(state.attempts || 0)) * 80 : -Math.max(0, Number(state.attempts || 0)) * 10,
+      progress: state.solved === true ? 1 : 0,
+      attempts: Math.max(0, Number(state.attempts || 0)),
+      maxAttempts: Math.max(1, Number(state.maxAttempts || 4)),
+      solved: state.solved === true,
+      lastGuess: state.lastGuess || "",
+      completed: state.completed === true
     };
   }
 
@@ -5333,6 +5516,25 @@ function tickSpaceInvadersMatch(game) {
 
 function createMiniGameState(type, difficulty = null) {
   const safeTier = clamp(Number(difficulty?.tier || 1), 1, 4);
+  if (type === "tap_rush") {
+    return {
+      type,
+      taps: 0,
+      difficultyTier: safeTier
+    };
+  }
+
+  if (type === "reaction_duel") {
+    return {
+      type,
+      goAt: Date.now() + randomInt(1300, 2600 + safeTier * 200),
+      reactedAt: null,
+      falseStart: false,
+      reactionMs: null,
+      difficultyTier: safeTier
+    };
+  }
+
   if (type === "foosball_frenzy") {
     return {
       type,
@@ -5408,6 +5610,57 @@ function createMiniGameState(type, difficulty = null) {
     };
   }
 
+  if (type === "sequence_memory") {
+    const total = 4 + safeTier;
+    return {
+      type,
+      sequence: Array.from({ length: total }, () => randomInt(0, 3)),
+      progress: 0,
+      completedAt: null,
+      difficultyTier: safeTier
+    };
+  }
+
+  if (type === "obstacle_dodge") {
+    const totalTurns = 5 + safeTier;
+    return {
+      type,
+      totalTurns,
+      step: 0,
+      lane: 1,
+      hits: 0,
+      obstacles: Array.from({ length: totalTurns }, () => randomInt(0, 2)),
+      lastObstacle: -1,
+      lastHit: false,
+      difficultyTier: safeTier
+    };
+  }
+
+  if (type === "precision_stop") {
+    return {
+      type,
+      target: randomInt(18, 82),
+      submitted: false,
+      value: 0,
+      difficultyTier: safeTier
+    };
+  }
+
+  if (type === "word_scramble") {
+    const answer = WORD_SCRAMBLE_WORDS[randomInt(0, WORD_SCRAMBLE_WORDS.length - 1)] || "SOCCER";
+    return {
+      type,
+      answer,
+      scrambled: scrambleWord(answer),
+      attempts: 0,
+      maxAttempts: 4,
+      lastGuess: "",
+      solved: false,
+      completed: false,
+      difficultyTier: safeTier
+    };
+  }
+
   if (type === "tower_stacker") {
     const state = {
       type,
@@ -5447,6 +5700,23 @@ function createMiniGameState(type, difficulty = null) {
 function miniGamePublicData(state, game, playerId = "") {
   const difficulty = game?.minigameDifficulty || miniGameDifficultyProfile(game);
   const difficultyTier = clamp(Number(state?.difficultyTier || difficulty?.tier || 1), 1, 4);
+  if (state.type === "tap_rush") {
+    return {
+      taps: Math.max(0, Number(state.taps || 0)),
+      difficultyTier
+    };
+  }
+
+  if (state.type === "reaction_duel") {
+    return {
+      goAt: Number(state.goAt || Date.now() + 2000),
+      reacted: state.reactedAt !== null,
+      falseStart: state.falseStart === true,
+      reactionMs: state.reactionMs,
+      difficultyTier
+    };
+  }
+
   if (state.type === "foosball_frenzy") {
     return {
       ...foosballStatePayload(state),
@@ -5499,6 +5769,43 @@ function miniGamePublicData(state, game, playerId = "") {
     };
   }
 
+  if (state.type === "sequence_memory") {
+    return {
+      sequence: Array.isArray(state.sequence) ? state.sequence.slice() : [],
+      progress: Math.max(0, Number(state.progress || 0)),
+      total: Math.max(1, Array.isArray(state.sequence) ? state.sequence.length : Number(state.total || 0)),
+      difficultyTier
+    };
+  }
+
+  if (state.type === "obstacle_dodge") {
+    return {
+      totalTurns: Math.max(1, Number(state.totalTurns || 0)),
+      step: Math.max(0, Number(state.step || 0)),
+      hits: Math.max(0, Number(state.hits || 0)),
+      difficultyTier
+    };
+  }
+
+  if (state.type === "precision_stop") {
+    return {
+      target: Math.max(0, Number(state.target || 0)),
+      submitted: state.submitted === true,
+      value: state.submitted === true ? Math.max(0, Number(state.value || 0)) : undefined,
+      difficultyTier
+    };
+  }
+
+  if (state.type === "word_scramble") {
+    return {
+      scrambled: String(state.scrambled || ""),
+      attempts: Math.max(0, Number(state.attempts || 0)),
+      maxAttempts: Math.max(1, Number(state.maxAttempts || 4)),
+      solved: state.solved === true,
+      difficultyTier
+    };
+  }
+
   if (state.type === "tower_stacker") {
     return {
       ...towerStackerPayload(state),
@@ -5510,6 +5817,14 @@ function miniGamePublicData(state, game, playerId = "") {
 }
 
 function isMiniGameStateResolved(state) {
+  if (state.type === "tap_rush") {
+    return false;
+  }
+
+  if (state.type === "reaction_duel") {
+    return state.reactedAt !== null;
+  }
+
   if (state.type === "foosball_frenzy") {
     return false;
   }
@@ -5528,6 +5843,22 @@ function isMiniGameStateResolved(state) {
 
   if (state.type === "tower_stacker") {
     return false;
+  }
+
+  if (state.type === "sequence_memory") {
+    return state.completedAt !== null;
+  }
+
+  if (state.type === "obstacle_dodge") {
+    return Number(state.step || 0) >= Number(state.totalTurns || 0);
+  }
+
+  if (state.type === "precision_stop") {
+    return state.submitted === true;
+  }
+
+  if (state.type === "word_scramble") {
+    return state.completed === true;
   }
 
   return false;
@@ -5635,6 +5966,71 @@ function miniGameResult(game, player, state) {
     return {
       bonus,
       text: `${player.name} stacked ${piecesPlaced} pieces, reached height ${Math.round(height)}, and earned +${bonus} ${unit}.`
+    };
+  }
+
+  if (state.type === "tap_rush") {
+    const taps = Math.max(0, Number(state.taps || 0));
+    const bonus = Math.max(90, 110 + taps * 16);
+    return {
+      bonus,
+      text: `${player.name} landed ${taps} taps for +${bonus} ${unit}.`
+    };
+  }
+
+  if (state.type === "reaction_duel") {
+    const falseStart = state.falseStart === true;
+    const reacted = state.reactedAt !== null;
+    const reactionMs = reacted && !falseStart ? Math.max(0, Number(state.reactionMs || 0)) : 0;
+    const bonus = falseStart ? 40 : reacted ? Math.max(110, 360 - reactionMs) : 55;
+    return {
+      bonus,
+      text: falseStart
+        ? `${player.name} false-started and still picked up +${bonus} ${unit}.`
+        : reacted
+          ? `${player.name} reacted in ${reactionMs} ms for +${bonus} ${unit}.`
+          : `${player.name} missed the reaction window and received +${bonus} ${unit}.`
+    };
+  }
+
+  if (state.type === "sequence_memory") {
+    const progress = Math.max(0, Number(state.progress || 0));
+    const total = Math.max(1, Array.isArray(state.sequence) ? state.sequence.length : Number(state.total || 0));
+    const bonus = Math.max(85, 110 + progress * 95);
+    return {
+      bonus,
+      text: `${player.name} completed ${progress}/${total} sequence steps for +${bonus} ${unit}.`
+    };
+  }
+
+  if (state.type === "obstacle_dodge") {
+    const safeTurns = Math.max(0, Number(state.step || 0) - Number(state.hits || 0));
+    const hits = Math.max(0, Number(state.hits || 0));
+    const bonus = Math.max(80, 110 + safeTurns * 70 - hits * 18);
+    return {
+      bonus,
+      text: `${player.name} cleared ${safeTurns} safe lanes with ${hits} hits for +${bonus} ${unit}.`
+    };
+  }
+
+  if (state.type === "precision_stop") {
+    const diff = Math.abs(Math.max(0, Number(state.value || 0)) - Math.max(0, Number(state.target || 0)));
+    const bonus = Math.max(85, 220 - diff * 3);
+    return {
+      bonus,
+      text: `${player.name} stopped ${diff} away from the target for +${bonus} ${unit}.`
+    };
+  }
+
+  if (state.type === "word_scramble") {
+    const attempts = Math.max(0, Number(state.attempts || 0));
+    const bonus = state.solved === true ? Math.max(120, 330 - attempts * 45) : Math.max(70, 110 - attempts * 8);
+    return {
+      bonus,
+      text:
+        state.solved === true
+          ? `${player.name} solved the word in ${attempts} tries for +${bonus} ${unit}.`
+          : `${player.name} did not solve the word and received +${bonus} ${unit}.`
     };
   }
 
@@ -7071,7 +7467,7 @@ io.on("connection", (socket) => {
       game.roundTimer = null;
     }
 
-    startQuestion(game);
+    startConfiguredRound(game);
 
     if (typeof ack === "function") {
       ack({ ok: true });

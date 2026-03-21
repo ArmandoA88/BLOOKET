@@ -1247,13 +1247,16 @@ label {
   position: relative;
   border-radius: 10px;
   border: 1px solid rgba(189, 151, 221, 0.55);
-  padding: 18px 14px;
-  min-height: 88px;
-  text-align: center;
+  padding: 10px;
+  min-height: 150px;
+  text-align: left;
   font-weight: 800;
   font-size: 1.08rem;
   color: #f4e8ff;
   background: rgba(102, 54, 137, 0.75);
+  display: grid;
+  gap: 10px;
+  align-content: start;
 }
 
 .mode-tile:hover {
@@ -1288,6 +1291,112 @@ label {
   font-weight: 700;
   background: #ff8f2f;
   color: #fff7ed;
+}
+
+.mode-tile-thumb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 88px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background:
+    radial-gradient(circle at 22% 20%, rgba(255, 255, 255, 0.18), transparent 34%),
+    linear-gradient(180deg, rgba(3, 10, 24, 0.88), rgba(17, 28, 48, 0.94));
+}
+
+.mode-tile-thumb.theme-foosball {
+  background:
+    radial-gradient(circle at 22% 20%, rgba(255, 255, 255, 0.16), transparent 34%),
+    linear-gradient(180deg, #1a5f39, #0d3720 60%, #0b2618);
+}
+
+.mode-tile-thumb.theme-soccer {
+  background:
+    radial-gradient(circle at 22% 20%, rgba(255, 255, 255, 0.16), transparent 34%),
+    linear-gradient(180deg, #0f425d, #12334b 58%, #0f2138);
+}
+
+.mode-tile-thumb.theme-stacker {
+  background:
+    radial-gradient(circle at 22% 20%, rgba(255, 255, 255, 0.16), transparent 34%),
+    linear-gradient(180deg, #7ad7f8, #c8f8ff 62%, #f3fff8);
+}
+
+.mode-tile-thumb.theme-space {
+  background:
+    radial-gradient(circle at 50% 35%, rgba(79, 208, 255, 0.18), transparent 30%),
+    radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.14), transparent 24%),
+    linear-gradient(180deg, #09111f, #0d1730 55%, #111f3c);
+}
+
+.mode-tile-thumb.theme-snake {
+  background:
+    radial-gradient(circle at 22% 20%, rgba(255, 255, 255, 0.14), transparent 34%),
+    linear-gradient(180deg, #1b462f, #16311f 58%, #0d2215);
+}
+
+.mode-tile-hud {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 2;
+  color: rgba(243, 247, 255, 0.92);
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mode-tile-hud span:first-child {
+  width: 36px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow:
+    42px 0 0 rgba(255, 255, 255, 0.16),
+    70px 0 0 rgba(255, 255, 255, 0.16);
+}
+
+.mode-tile-thumb-image {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.28));
+  z-index: 1;
+}
+
+.mode-tile-thumb.theme-soccer .mode-tile-thumb-image {
+  width: 94px;
+  height: 60px;
+  opacity: 0.9;
+}
+
+.mode-tile-thumb.theme-space .mode-tile-thumb-image {
+  width: 44px;
+  height: 44px;
+  opacity: 0.9;
+}
+
+.mode-tile-thumb.theme-stacker .mode-tile-thumb-image {
+  width: 52px;
+  height: 52px;
+}
+
+.mode-tile-thumb-fallback {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.mode-tile-label {
+  display: block;
+  line-height: 1.15;
+  text-align: center;
 }
 
 .mode-preview-card {
@@ -1590,6 +1699,10 @@ label {
   display: grid;
   grid-template-columns: 1.2fr 0.9fr;
   gap: 16px;
+}
+
+.host-game-layout-focus {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .player-list {
@@ -3547,9 +3660,23 @@ body.play-fishing-mode #playCard.fishing-final-active .fishing-hud-right {
   }
 
   .mode-tile {
-    min-height: 54px;
+    min-height: 118px;
     padding: 10px 8px;
     font-size: 0.8rem;
+  }
+
+  .mode-tile-thumb {
+    height: 66px;
+  }
+
+  .mode-tile-thumb-image {
+    width: 42px;
+    height: 42px;
+  }
+
+  .mode-tile-thumb.theme-soccer .mode-tile-thumb-image {
+    width: 72px;
+    height: 44px;
   }
 
   .mode-preview-card h3 {

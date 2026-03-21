@@ -4265,10 +4265,11 @@ socket.on("settings:update", (payload) => {
   }
 });
 
-socket.on("game:countdown", ({ secondsLeft, endsAt }) => {
+socket.on("game:countdown", ({ secondsLeft, endsAt, targetPhase, targetLabel }) => {
   stopMiniTickers();
   const safeSeconds = Math.max(0, Number(secondsLeft) || 0);
-  const countdownText = safeSeconds > 0 ? `Game starts in ${safeSeconds}...` : "Go! Question is starting.";
+  const launchLabel = targetPhase === "minigame" ? targetLabel || "Mini-game" : "Question";
+  const countdownText = safeSeconds > 0 ? `Game starts in ${safeSeconds}...` : `Go! ${launchLabel} is starting.`;
   setPhase("countdown", countdownText);
   pausedFromPhase = "";
   showSection(resultSection);

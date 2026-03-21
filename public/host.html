@@ -25,24 +25,20 @@
       </section>
 
       <section id="setupCard" class="card strong fade-in">
-        <h2 class="title">Select Live Game Mode</h2>
+        <h2 class="title">Select Featured Mini-Game</h2>
         <div class="mode-picker-layout">
           <section class="mode-picker-stage">
-            <div class="mode-picker-banner">Select Live Game Mode</div>
+            <div class="mode-picker-banner">Select Featured Mini-Game</div>
             <select id="mode" class="hidden">
               <option value="classic" selected>Foosball</option>
               <option value="gold">Tower Stacker</option>
               <option value="brawl">Space Invaders</option>
             </select>
-            <div id="modePickerGrid" class="mode-picker-grid">
-              <button type="button" class="mode-tile selected" data-mode="classic">Foosball</button>
-              <button type="button" class="mode-tile" data-mode="gold">Tower Stacker</button>
-              <button type="button" class="mode-tile" data-mode="brawl">Space Invaders</button>
-            </div>
+            <div id="modePickerGrid" class="mode-picker-grid"></div>
           </section>
 
           <aside class="mode-preview-card">
-            <h3 id="modePreviewTitle">Foosball</h3>
+            <h3 id="modePreviewTitle">Foosball Frenzy</h3>
             <p id="modePreviewTagline" class="mode-preview-tagline">Fast classroom table soccer with clear student action.</p>
             <div class="mode-preview-metrics">
               <div><span>Difficulty</span><strong id="modePreviewDifficulty">Simple</strong></div>
@@ -163,7 +159,7 @@
       </section>
 
       <section id="gameCard" class="hidden fade-in">
-        <div class="layout">
+        <div id="hostGameLayout" class="layout">
           <article class="card strong">
             <div class="topbar" style="margin-bottom: 8px">
               <div>
@@ -272,169 +268,171 @@
               <span id="lateJoinStatusText" class="help">Late join currently allowed.</span>
             </div>
 
-            <div class="form-grid">
-              <div>
-                <label for="liveMode">Mode</label>
-                <select id="liveMode">
-                  <option value="classic">Classic Quiz</option>
-                  <option value="gold">Gold Quest</option>
-                  <option value="crypto">Crypto Hack</option>
-                  <option value="fishing">Fishing Frenzy</option>
-                  <option value="brawl">Monster Brawl</option>
-                </select>
-              </div>
-              <div>
-                <label for="liveQuestionSetSearch">Quiz Search</label>
-                <input id="liveQuestionSetSearch" maxlength="64" placeholder="Search by title or tag" />
-              </div>
-              <div>
-                <label for="liveQuestionSetCategory">Quiz Category</label>
-                <select id="liveQuestionSetCategory">
-                  <option value="">All Categories</option>
-                </select>
-              </div>
-              <div>
-                <label for="liveQuestionSet">Quiz Set</label>
-                <select id="liveQuestionSet">
-                  <option value="multiplication_1_digit">Multiplication 1-Digit</option>
-                </select>
-              </div>
-              <div>
-                <label for="liveTimer">Timer (sec)</label>
-                <input id="liveTimer" type="number" min="8" max="45" value="15" />
-              </div>
-              <div>
-                <label for="liveExplanationReveal">Explanation Reveal (sec, 0 = instant)</label>
-                <input id="liveExplanationReveal" type="number" min="0" max="10" value="2" />
-              </div>
-              <div>
-                <label for="liveCount">Question Count</label>
-                <input id="liveCount" type="number" min="5" max="30" value="10" />
-              </div>
-              <div>
-                <label for="liveShuffleQuestionOptions">
-                  <input id="liveShuffleQuestionOptions" type="checkbox" />
-                  Shuffle Answer Options
-                </label>
-              </div>
-              <div>
-                <label for="livePreventQuestionRepeats">
-                  <input id="livePreventQuestionRepeats" type="checkbox" />
-                  No Repeated Questions
-                </label>
-              </div>
-              <div>
-                <label for="liveMiniRotation">Mini-Game Rotation</label>
-                <select id="liveMiniRotation">
-                  <option value="fixed">Fixed Order</option>
-                  <option value="random">Random Order</option>
-                  <option value="popular">Most Played First</option>
-                  <option value="soccer_only">Soccer Only</option>
-                  <option value="off">Disable Mini-Games</option>
-                </select>
-              </div>
-              <div>
-                <label for="liveMiniDuration">Mini-Game Duration (sec)</label>
-                <input id="liveMiniDuration" type="number" min="5" max="30" value="10" />
-              </div>
-            </div>
-            <div class="button-row" style="margin-top: 8px">
-              <button id="saveSettingsBtn" class="ghost">Save Lobby Settings</button>
-            </div>
-
-            <div class="card" style="margin-top: 12px">
-              <h3 class="title">Quiz Import/Export</h3>
+            <div id="hostLobbyOnlySection">
               <div class="form-grid">
                 <div>
-                  <label for="quizUploadTitle">Quiz Title (optional)</label>
-                  <input id="quizUploadTitle" maxlength="64" placeholder="e.g. Multiplication Challenge" />
-                </div>
-                <div>
-                  <label for="quizUploadFile">CSV, Excel, or JSON File</label>
-                  <input id="quizUploadFile" type="file" accept=".csv,.xlsx,.xls,.json" />
-                </div>
-              </div>
-              <div class="button-row" style="margin-top: 8px">
-                <button id="uploadQuizBtn" class="secondary">Import Quiz File</button>
-                <button id="exportQuizBtn" class="ghost">Export Custom Quizzes (.json)</button>
-              </div>
-              <div id="quizUploadNotice" class="notice hidden" style="margin-top: 8px"></div>
-              <p class="help" style="margin-top: 8px">
-                Import supports CSV/Excel headers (question/prompt, optionA-optionD, answer, optional image) or JSON quiz bundles.
-              </p>
-            </div>
-
-            <div class="card" style="margin-top: 12px">
-              <h3 class="title">Quiz Builder</h3>
-              <div class="form-grid">
-                <div>
-                  <label for="builderSetSelect">Custom Set</label>
-                  <select id="builderSetSelect">
-                    <option value="">New Custom Quiz</option>
+                  <label for="liveMode">Mode</label>
+                  <select id="liveMode">
+                    <option value="classic">Classic Quiz</option>
+                    <option value="gold">Gold Quest</option>
+                    <option value="crypto">Crypto Hack</option>
+                    <option value="fishing">Fishing Frenzy</option>
+                    <option value="brawl">Monster Brawl</option>
                   </select>
                 </div>
                 <div>
-                  <label for="builderTitleInput">Quiz Title</label>
-                  <input id="builderTitleInput" maxlength="64" placeholder="e.g. Science Sprint" />
+                  <label for="liveQuestionSetSearch">Quiz Search</label>
+                  <input id="liveQuestionSetSearch" maxlength="64" placeholder="Search by title or tag" />
                 </div>
                 <div>
-                  <label for="builderCategoryInput">Category</label>
-                  <input id="builderCategoryInput" maxlength="40" placeholder="e.g. Science" />
+                  <label for="liveQuestionSetCategory">Quiz Category</label>
+                  <select id="liveQuestionSetCategory">
+                    <option value="">All Categories</option>
+                  </select>
                 </div>
                 <div>
-                  <label for="builderTagsInput">Tags (comma separated)</label>
-                  <input id="builderTagsInput" maxlength="160" placeholder="e.g. planets, space, grade-5" />
+                  <label for="liveQuestionSet">Quiz Set</label>
+                  <select id="liveQuestionSet">
+                    <option value="multiplication_1_digit">Multiplication 1-Digit</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="liveTimer">Timer (sec)</label>
+                  <input id="liveTimer" type="number" min="8" max="45" value="15" />
+                </div>
+                <div>
+                  <label for="liveExplanationReveal">Explanation Reveal (sec, 0 = instant)</label>
+                  <input id="liveExplanationReveal" type="number" min="0" max="10" value="2" />
+                </div>
+                <div>
+                  <label for="liveCount">Question Count</label>
+                  <input id="liveCount" type="number" min="5" max="30" value="10" />
+                </div>
+                <div>
+                  <label for="liveShuffleQuestionOptions">
+                    <input id="liveShuffleQuestionOptions" type="checkbox" />
+                    Shuffle Answer Options
+                  </label>
+                </div>
+                <div>
+                  <label for="livePreventQuestionRepeats">
+                    <input id="livePreventQuestionRepeats" type="checkbox" />
+                    No Repeated Questions
+                  </label>
+                </div>
+                <div>
+                  <label for="liveMiniRotation">Mini-Game Rotation</label>
+                  <select id="liveMiniRotation">
+                    <option value="fixed">Fixed Order</option>
+                    <option value="random">Random Order</option>
+                    <option value="popular">Most Played First</option>
+                    <option value="soccer_only">Soccer Only</option>
+                    <option value="off">Disable Mini-Games</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="liveMiniDuration">Mini-Game Duration (sec)</label>
+                  <input id="liveMiniDuration" type="number" min="5" max="30" value="10" />
                 </div>
               </div>
               <div class="button-row" style="margin-top: 8px">
-                <button id="builderLoadBtn" class="ghost">Load Selected Set</button>
-                <button id="builderNewBtn" class="ghost">Start New Set</button>
+                <button id="saveSettingsBtn" class="ghost">Save Lobby Settings</button>
               </div>
-              <div id="builderQuestions" class="quiz-builder-list" style="margin-top: 10px"></div>
-              <div class="button-row" style="margin-top: 8px">
-                <button id="builderAddQuestionBtn" class="secondary">Add Question</button>
-                <button id="builderSaveBtn" class="ghost">Save Custom Quiz</button>
+
+              <div class="card" style="margin-top: 12px">
+                <h3 class="title">Quiz Import/Export</h3>
+                <div class="form-grid">
+                  <div>
+                    <label for="quizUploadTitle">Quiz Title (optional)</label>
+                    <input id="quizUploadTitle" maxlength="64" placeholder="e.g. Multiplication Challenge" />
+                  </div>
+                  <div>
+                    <label for="quizUploadFile">CSV, Excel, or JSON File</label>
+                    <input id="quizUploadFile" type="file" accept=".csv,.xlsx,.xls,.json" />
+                  </div>
+                </div>
+                <div class="button-row" style="margin-top: 8px">
+                  <button id="uploadQuizBtn" class="secondary">Import Quiz File</button>
+                  <button id="exportQuizBtn" class="ghost">Export Custom Quizzes (.json)</button>
+                </div>
+                <div id="quizUploadNotice" class="notice hidden" style="margin-top: 8px"></div>
+                <p class="help" style="margin-top: 8px">
+                  Import supports CSV/Excel headers (question/prompt, optionA-optionD, answer, optional image) or JSON quiz bundles.
+                </p>
               </div>
-              <div id="builderNotice" class="notice hidden" style="margin-top: 8px"></div>
-              <p class="help" style="margin-top: 8px">
-                Add at least 5 questions. Each question needs prompt, 4 options, and a correct answer. Optional image URL supported.
-              </p>
-            </div>
 
-            <div id="miniGameTestPanel" class="card" style="margin-top: 12px">
-              <h3 class="title">Mini-Game Test</h3>
-              <div>
-                <label for="testMiniGameType">Mini-game</label>
-                <select id="testMiniGameType">
-                  <option value="soccer_shootout">Soccer Shootout</option>
-                  <option value="tap_rush">Tap Rush</option>
-                  <option value="reaction_duel">Reaction Duel</option>
-                  <option value="sequence_memory">Sequence Memory</option>
-                  <option value="obstacle_dodge">Obstacle Dodge</option>
-                  <option value="precision_stop">Precision Stop</option>
-                  <option value="word_scramble">Word Scramble</option>
-                </select>
+              <div class="card" style="margin-top: 12px">
+                <h3 class="title">Quiz Builder</h3>
+                <div class="form-grid">
+                  <div>
+                    <label for="builderSetSelect">Custom Set</label>
+                    <select id="builderSetSelect">
+                      <option value="">New Custom Quiz</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="builderTitleInput">Quiz Title</label>
+                    <input id="builderTitleInput" maxlength="64" placeholder="e.g. Science Sprint" />
+                  </div>
+                  <div>
+                    <label for="builderCategoryInput">Category</label>
+                    <input id="builderCategoryInput" maxlength="40" placeholder="e.g. Science" />
+                  </div>
+                  <div>
+                    <label for="builderTagsInput">Tags (comma separated)</label>
+                    <input id="builderTagsInput" maxlength="160" placeholder="e.g. planets, space, grade-5" />
+                  </div>
+                </div>
+                <div class="button-row" style="margin-top: 8px">
+                  <button id="builderLoadBtn" class="ghost">Load Selected Set</button>
+                  <button id="builderNewBtn" class="ghost">Start New Set</button>
+                </div>
+                <div id="builderQuestions" class="quiz-builder-list" style="margin-top: 10px"></div>
+                <div class="button-row" style="margin-top: 8px">
+                  <button id="builderAddQuestionBtn" class="secondary">Add Question</button>
+                  <button id="builderSaveBtn" class="ghost">Save Custom Quiz</button>
+                </div>
+                <div id="builderNotice" class="notice hidden" style="margin-top: 8px"></div>
+                <p class="help" style="margin-top: 8px">
+                  Add at least 5 questions. Each question needs prompt, 4 options, and a correct answer. Optional image URL supported.
+                </p>
               </div>
-              <div class="button-row" style="margin-top: 8px">
-                <button id="testMiniGameBtn" class="secondary">Play Mini-Game Only</button>
+
+              <div id="miniGameTestPanel" class="card" style="margin-top: 12px">
+                <h3 class="title">Mini-Game Test</h3>
+                <div>
+                  <label for="testMiniGameType">Mini-game</label>
+                  <select id="testMiniGameType">
+                    <option value="soccer_shootout">Soccer Shootout</option>
+                    <option value="tap_rush">Tap Rush</option>
+                    <option value="reaction_duel">Reaction Duel</option>
+                    <option value="sequence_memory">Sequence Memory</option>
+                    <option value="obstacle_dodge">Obstacle Dodge</option>
+                    <option value="precision_stop">Precision Stop</option>
+                    <option value="word_scramble">Word Scramble</option>
+                  </select>
+                </div>
+                <div class="button-row" style="margin-top: 8px">
+                  <button id="testMiniGameBtn" class="secondary">Play Mini-Game Only</button>
+                </div>
+                <div id="miniGameTestNotice" class="notice hidden" style="margin-top: 8px"></div>
+                <p class="help" style="margin-top: 8px">Runs for all joined students without needing a question answer.</p>
               </div>
-              <div id="miniGameTestNotice" class="notice hidden" style="margin-top: 8px"></div>
-              <p class="help" style="margin-top: 8px">Runs for all joined students without needing a question answer.</p>
-            </div>
 
-            <h3 class="title" style="margin-top: 16px">Student Join Links</h3>
-            <div id="joinLinks" class="feed">
-              <div class="help">LAN links will appear here when available.</div>
-            </div>
+              <h3 class="title" style="margin-top: 16px">Student Join Links</h3>
+              <div id="joinLinks" class="feed">
+                <div class="help">LAN links will appear here when available.</div>
+              </div>
 
-            <h3 class="title" style="margin-top: 16px">Mini-Games</h3>
-            <div id="miniGamesList" class="feed">
-              <div class="help">Loading mini-games...</div>
-            </div>
-            <div id="miniGamePopularity" class="notice" style="margin-top: 8px">Loading mini-game trends...</div>
+              <h3 class="title" style="margin-top: 16px">Mini-Games</h3>
+              <div id="miniGamesList" class="feed">
+                <div class="help">Loading mini-games...</div>
+              </div>
+              <div id="miniGamePopularity" class="notice" style="margin-top: 8px">Loading mini-game trends...</div>
 
-            <h3 class="title" style="margin-top: 16px">Players</h3>
-            <ul id="playersList" class="player-list"></ul>
+              <h3 class="title" style="margin-top: 16px">Players</h3>
+              <ul id="playersList" class="player-list"></ul>
+            </div>
           </aside>
         </div>
       </section>

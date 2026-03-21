@@ -109,9 +109,9 @@ const MINI_GAME_LABELS = {
   precision_stop: "Precision Stop",
   word_scramble: "Word Scramble"
 };
-const MODE_PREVIEW_COPY = {
-  classic: {
-    title: "Foosball",
+const MINI_GAME_PREVIEW_COPY = {
+  foosball_frenzy: {
+    title: "Foosball Frenzy",
     tagline: "Fast classroom table soccer with clear student action.",
     difficulty: "Simple",
     skills: "Timing",
@@ -119,7 +119,16 @@ const MODE_PREVIEW_COPY = {
     questions: "Fast rounds",
     players: "2 - 300"
   },
-  gold: {
+  soccer_shootout: {
+    title: "Soccer Shootout",
+    tagline: "Quick penalty rounds where the class races to score the most goals.",
+    difficulty: "Simple",
+    skills: "Timing",
+    idealTime: "5 min",
+    questions: "Goal races",
+    players: "2 - 300"
+  },
+  tower_stacker: {
     title: "Tower Stacker",
     tagline: "Cute classroom stacking with one rewarded drop at a time.",
     difficulty: "Simple",
@@ -128,7 +137,7 @@ const MODE_PREVIEW_COPY = {
     questions: "Reward drops",
     players: "2 - 300"
   },
-  brawl: {
+  space_invaders: {
     title: "Space Invaders",
     tagline: "Arcade shooting with live classroom pressure.",
     difficulty: "Medium",
@@ -136,12 +145,146 @@ const MODE_PREVIEW_COPY = {
     idealTime: "6 min",
     questions: "Wave-based",
     players: "2 - 300"
+  },
+  snake: {
+    title: "Snake Strategy",
+    tagline: "Clean controls, careful route planning, and class competition for the highest score.",
+    difficulty: "Medium",
+    skills: "Planning",
+    idealTime: "5 min",
+    questions: "Score races",
+    players: "2 - 300"
+  },
+  tap_rush: {
+    title: "Tap Rush",
+    tagline: "Fast classroom tapping where everyone races the leaderboard together.",
+    difficulty: "Simple",
+    skills: "Speed",
+    idealTime: "3 min",
+    questions: "Mini-game only",
+    players: "2 - 300"
+  },
+  reaction_duel: {
+    title: "Reaction Duel",
+    tagline: "Wait for the signal, then react faster than the rest of the class.",
+    difficulty: "Simple",
+    skills: "Reflexes",
+    idealTime: "3 min",
+    questions: "Mini-game only",
+    players: "2 - 300"
+  },
+  sequence_memory: {
+    title: "Sequence Memory",
+    tagline: "Students memorize a pattern and race to finish it cleanly.",
+    difficulty: "Medium",
+    skills: "Memory",
+    idealTime: "4 min",
+    questions: "Mini-game only",
+    players: "2 - 300"
+  },
+  obstacle_dodge: {
+    title: "Obstacle Dodge",
+    tagline: "Pick safe lanes fast and survive more turns than the class.",
+    difficulty: "Simple",
+    skills: "Timing",
+    idealTime: "4 min",
+    questions: "Mini-game only",
+    players: "2 - 300"
+  },
+  precision_stop: {
+    title: "Precision Stop",
+    tagline: "A short accuracy challenge where the closest stop wins.",
+    difficulty: "Simple",
+    skills: "Precision",
+    idealTime: "3 min",
+    questions: "Mini-game only",
+    players: "2 - 300"
+  },
+  word_scramble: {
+    title: "Word Scramble",
+    tagline: "Solve the scrambled word before your classmates do.",
+    difficulty: "Medium",
+    skills: "Wordplay",
+    idealTime: "4 min",
+    questions: "Mini-game only",
+    players: "2 - 300"
   }
 };
-const HOST_VISIBLE_MINI_GAME_IDS = new Set(["foosball_frenzy", "tower_stacker", "space_invaders", "snake"]);
+const MINI_GAME_TILE_MEDIA = {
+  foosball_frenzy: {
+    image: "/assets/minigames/soccer_shootout/soccer.svg",
+    accentClass: "theme-foosball",
+    hud: "GOALS"
+  },
+  soccer_shootout: {
+    image: "/assets/minigames/soccer_shootout/fussball-field.svg",
+    accentClass: "theme-soccer",
+    hud: "SHOTS"
+  },
+  tower_stacker: {
+    image: "/assets/minigames/tower_stacker/tower.svg",
+    accentClass: "theme-stacker",
+    hud: "HEIGHT"
+  },
+  space_invaders: {
+    image: "/assets/minigames/shared/question.svg",
+    accentClass: "theme-space",
+    hud: "WAVE"
+  },
+  snake: {
+    image: "/assets/minigames/snake/snake.svg",
+    accentClass: "theme-snake",
+    hud: "SCORE"
+  },
+  tap_rush: {
+    image: "/assets/minigames/tap_rush/tap.svg",
+    accentClass: "theme-space",
+    hud: "TAPS"
+  },
+  reaction_duel: {
+    image: "/assets/minigames/reaction_duel/tap.svg",
+    accentClass: "theme-cloud",
+    hud: "GO"
+  },
+  sequence_memory: {
+    image: "/assets/minigames/sequence_memory/sequence.svg",
+    accentClass: "theme-stacker",
+    hud: "MEM"
+  },
+  obstacle_dodge: {
+    image: "/assets/minigames/obstacle_dodge/sequence.svg",
+    accentClass: "theme-soccer",
+    hud: "SAFE"
+  },
+  precision_stop: {
+    image: "/assets/minigames/precision_stop/precision.svg",
+    accentClass: "theme-cloud",
+    hud: "STOP"
+  },
+  word_scramble: {
+    image: "/assets/minigames/word_scramble/question.svg",
+    accentClass: "theme-foosball",
+    hud: "WORD"
+  }
+};
+const HOST_VISIBLE_MINI_GAME_IDS = new Set([
+  "foosball_frenzy",
+  "soccer_shootout",
+  "tower_stacker",
+  "space_invaders",
+  "snake",
+  "tap_rush",
+  "reaction_duel",
+  "sequence_memory",
+  "obstacle_dodge",
+  "precision_stop",
+  "word_scramble"
+]);
 
 const setupCard = document.getElementById("setupCard");
 const gameCard = document.getElementById("gameCard");
+const hostGameLayout = document.getElementById("hostGameLayout");
+const hostControlsCard = document.getElementById("hostControlsCard");
 const hostNameInput = document.getElementById("hostName");
 const modeInput = document.getElementById("mode");
 const modePickerGrid = document.getElementById("modePickerGrid");
@@ -232,6 +375,7 @@ const liveShuffleQuestionOptions = document.getElementById("liveShuffleQuestionO
 const livePreventQuestionRepeats = document.getElementById("livePreventQuestionRepeats");
 const liveMiniRotation = document.getElementById("liveMiniRotation");
 const liveMiniDuration = document.getElementById("liveMiniDuration");
+const hostLobbyOnlySection = document.getElementById("hostLobbyOnlySection");
 
 const playersList = document.getElementById("playersList");
 const leaderboardBody = document.getElementById("leaderboardBody");
@@ -284,10 +428,18 @@ const requestedQuestionSetId = String(hostPageParams.get("set") || "").trim();
 const requestedHostName = String(hostPageParams.get("hostName") || "").trim();
 const FALLBACK_MINI_GAMES = [
   { id: "foosball_frenzy", name: "Foosball Frenzy", description: "Foosball bars stay in formation. Slide laterally, score fast, and race the class leaderboard." },
+  { id: "soccer_shootout", name: "Soccer Shootout", description: "Quick penalty kicks where students compete to score the most goals." },
   { id: "snake", name: "Snake Strategy", description: "Simple controls, careful turns, and growing path strategy." },
   { id: "tower_stacker", name: "Tower Stacker", description: "Stack themed critters into the tallest tower you can keep standing." },
-  { id: "space_invaders", name: "Space Invaders", description: "Arcade survival shooter with classroom-friendly pacing." }
+  { id: "space_invaders", name: "Space Invaders", description: "Arcade survival shooter with classroom-friendly pacing." },
+  { id: "tap_rush", name: "Tap Rush", description: "Tap fast for bonus points." },
+  { id: "reaction_duel", name: "Reaction Duel", description: "Wait for GO and react fast." },
+  { id: "sequence_memory", name: "Sequence Memory", description: "Repeat the color order to score." },
+  { id: "obstacle_dodge", name: "Obstacle Dodge", description: "Pick safe lanes across turns." },
+  { id: "precision_stop", name: "Precision Stop", description: "Stop the marker near the target zone." },
+  { id: "word_scramble", name: "Word Scramble", description: "Unscramble words before attempts run out." }
 ];
+let setupMiniGameCatalog = FALLBACK_MINI_GAMES.slice();
 
 function normalizePhase(value) {
   return String(value || "lobby")
@@ -363,6 +515,15 @@ function updatePhaseActionButtons() {
   if (skipMiniGameBtn) {
     skipMiniGameBtn.disabled = !canSkipMiniGame;
   }
+  if (hostLobbyOnlySection) {
+    hostLobbyOnlySection.classList.toggle("hidden", !inLobby);
+  }
+  if (hostControlsCard) {
+    hostControlsCard.classList.toggle("hidden", !inLobby);
+  }
+  if (hostGameLayout) {
+    hostGameLayout.classList.toggle("host-game-layout-focus", !inLobby);
+  }
 }
 
 function setPhaseBanner(nextPhase, detailOverride = "") {
@@ -409,7 +570,7 @@ function hideSetupNotice() {
 }
 
 function modePreviewById(mode) {
-  return MODE_PREVIEW_COPY[mode] || MODE_PREVIEW_COPY.classic;
+  return MINI_GAME_PREVIEW_COPY[mode] || MINI_GAME_PREVIEW_COPY.foosball_frenzy;
 }
 
 function filterVisibleMiniGames(games = []) {
@@ -421,6 +582,83 @@ function filterVisibleMiniGames(games = []) {
 
 function filterVisibleMiniGameTrend(row) {
   return row && HOST_VISIBLE_MINI_GAME_IDS.has(String(row.id || "")) ? row : null;
+}
+
+function ensureMiniGameRotationOptions(games = []) {
+  const visibleGames = filterVisibleMiniGames(games);
+  for (const selectEl of [miniRotationInput, liveMiniRotation]) {
+    if (!selectEl) {
+      continue;
+    }
+    for (const game of visibleGames) {
+      const id = String(game.id || "");
+      if (!id || selectEl.querySelector(`option[value="${id}"]`)) {
+        continue;
+      }
+      const option = document.createElement("option");
+      option.value = id;
+      option.textContent = game.name || miniGameTypeLabel(id);
+      selectEl.appendChild(option);
+    }
+  }
+}
+
+function updateModePickerCatalog(games = []) {
+  const visibleGames = filterVisibleMiniGames(games);
+  setupMiniGameCatalog = visibleGames.length > 0 ? visibleGames : FALLBACK_MINI_GAMES.slice();
+  ensureMiniGameRotationOptions(setupMiniGameCatalog);
+  if (!modePickerGrid) {
+    return;
+  }
+  modePickerGrid.innerHTML = setupMiniGameCatalog
+    .map((game, index) => {
+      const id = String(game.id || "");
+      const selected = index === 0 ? " selected" : "";
+      const media = MINI_GAME_TILE_MEDIA[id] || {};
+      const thumbImage = media.image
+        ? `<img src="${escapeHtml(media.image)}" alt="" class="mode-tile-thumb-image" loading="lazy" />`
+        : `<span class="mode-tile-thumb-fallback">${escapeHtml((game.name || miniGameTypeLabel(id)).slice(0, 1))}</span>`;
+      return `
+        <button type="button" class="mode-tile${selected}" data-mode="${escapeHtml(id)}" aria-pressed="${index === 0 ? "true" : "false"}">
+          <span class="mode-tile-thumb ${escapeHtml(media.accentClass || "")}">
+            <span class="mode-tile-hud">
+              <span></span>
+              <span>${escapeHtml(media.hud || "PLAY")}</span>
+            </span>
+            ${thumbImage}
+          </span>
+          <span class="mode-tile-label">${escapeHtml(game.name || miniGameTypeLabel(id))}</span>
+        </button>`;
+    })
+    .join("");
+}
+
+function miniGamePickerSummary(rotationMode) {
+  const value = String(rotationMode || "").trim().toLowerCase();
+  if (value === "off") {
+    return "Mini-Games: Off";
+  }
+  if (value === "random") {
+    return "Mini-Games: Random Rotation";
+  }
+  if (value === "popular") {
+    return "Mini-Games: Most Played First";
+  }
+  if (value === "fixed") {
+    return "Mini-Games: Fixed Rotation";
+  }
+  if (value === "soccer_only") {
+    return "Mini-Game: Soccer Shootout";
+  }
+  return HOST_VISIBLE_MINI_GAME_IDS.has(value) ? `Mini-Game Only: ${miniGameTypeLabel(value)}` : `Mini-Game: ${miniGameTypeLabel(value)}`;
+}
+
+function sessionLabelText(rotationMode, questionSetId, questionSetText = "") {
+  const value = String(rotationMode || "").trim().toLowerCase();
+  if (HOST_VISIBLE_MINI_GAME_IDS.has(value)) {
+    return `Session: ${miniGameTypeLabel(value)} only`;
+  }
+  return `Quiz: ${questionSetText || questionSetLabelById(questionSetId) || "Quiz"}`;
 }
 
 function renderModePreview(mode) {
@@ -643,13 +881,19 @@ function applySetupConfigFromSettings(settings = {}) {
 }
 
 function selectSetupMode(mode) {
-  if (!modeInput) {
+  const supportedModes = setupMiniGameCatalog.map((game) => String(game.id || ""));
+  const nextMode = supportedModes.includes(mode) ? mode : supportedModes[0] || "foosball_frenzy";
+  if (miniRotationInput) {
+    miniRotationInput.value = nextMode;
+  }
+  if (liveMiniRotation) {
+    liveMiniRotation.value = nextMode;
+  }
+  if (!modePickerGrid) {
+    renderModePreview(nextMode);
+    renderModeConfigQuizTitle();
     return;
   }
-
-  const supportedModes = Array.from(modeInput.options).map((option) => option.value);
-  const nextMode = supportedModes.includes(mode) ? mode : supportedModes[0] || "classic";
-  modeInput.value = nextMode;
 
   const tiles = Array.from(modePickerGrid?.querySelectorAll(".mode-tile[data-mode]") || []);
   for (const tile of tiles) {
@@ -664,20 +908,9 @@ function selectSetupMode(mode) {
 }
 
 function initializeModePicker() {
-  if (!modeInput) {
-    return;
-  }
-
-  const requestedMode = String(hostPageParams.get("mode") || "").trim().toLowerCase();
-  if (requestedMode) {
-    selectSetupMode(requestedMode);
-  } else {
-    selectSetupMode(modeInput.value || "classic");
-  }
-
-  modeInput.addEventListener("change", () => {
-    selectSetupMode(modeInput.value || "classic");
-  });
+  updateModePickerCatalog(setupMiniGameCatalog);
+  const requestedMode = requestedMiniGameType || String(hostPageParams.get("mode") || "").trim().toLowerCase();
+  selectSetupMode(requestedMode || miniRotationInput?.value || "foosball_frenzy");
 
   if (!modePickerGrid) {
     return;
@@ -1946,6 +2179,7 @@ function renderMiniGameCatalog(games, stats = []) {
   }
 
   const visibleGames = filterVisibleMiniGames(games);
+  updateModePickerCatalog(visibleGames);
   if (visibleGames.length === 0) {
     miniGamesList.innerHTML = `<div class="help">No mini-games loaded.</div>`;
     return;
@@ -1982,7 +2216,8 @@ function renderMiniGameCatalog(games, stats = []) {
 
     const preferred =
       (requestedMiniGameType && visibleGames.some((game) => game.id === requestedMiniGameType) ? requestedMiniGameType : "") ||
-      previous;
+      previous ||
+      miniRotationInput?.value;
     const exists = visibleGames.some((game) => game.id === preferred);
     testMiniGameType.value = exists ? preferred : visibleGames[0].id;
   }
@@ -2199,8 +2434,8 @@ createBtn.addEventListener("click", () => {
     roomCodeEl.textContent = roomCode;
     setupCard.classList.add("hidden");
     gameCard.classList.remove("hidden");
-    modeLabel.textContent = `Mode: ${MODE_LABELS[payload.mode] || payload.mode || "Classic Quiz"}`;
-    quizLabel.textContent = `Quiz: ${questionSetLabelById(payload.questionSet)}`;
+    modeLabel.textContent = miniGamePickerSummary(payload.miniGameRotationMode || payload.settings?.miniGameRotationMode);
+    quizLabel.textContent = sessionLabelText(payload.miniGameRotationMode, payload.questionSet);
     setPhase("lobby", "Room created. Share the code so students can join.");
     currentAllowLateJoin = setupConfig.allowLateJoin === true;
     updateLateJoinControls();
@@ -2558,7 +2793,7 @@ socket.on("lobby:update", (payload) => {
 
   setPhase("lobby", `${payload.players.length} students in lobby. Ready when you are.`);
   setPhaseIllustration("", "");
-  const modeText = payload.modeName || MODE_LABELS[payload.mode] || payload.mode || "Classic Quiz";
+  const modeText = miniGamePickerSummary(payload.settings?.miniGameRotationMode);
   if (payload.settings?.questionSet && payload.questionSetLabel) {
     QUESTION_SET_LABELS.set(payload.settings.questionSet, payload.questionSetLabel);
     if (!availableQuestionSets.some((set) => set.id === payload.settings.questionSet)) {
@@ -2573,11 +2808,11 @@ socket.on("lobby:update", (payload) => {
     }
   }
   syncQuestionSetInputs(payload.settings?.questionSet || "");
-  selectSetupMode(payload.settings?.mode || modeInput?.value || "classic");
+  selectSetupMode(payload.settings?.miniGameRotationMode || requestedMiniGameType || miniRotationInput?.value || "foosball_frenzy");
   applySetupConfigFromSettings(payload.settings || {});
   const questionSetText = payload.questionSetLabel || questionSetLabelById(payload.settings.questionSet) || "Quiz";
-  modeLabel.textContent = `Mode: ${modeText}`;
-  quizLabel.textContent = `Quiz: ${questionSetText}`;
+  modeLabel.textContent = modeText;
+  quizLabel.textContent = sessionLabelText(payload.settings?.miniGameRotationMode, payload.settings?.questionSet, questionSetText);
   feedTitle.textContent = payload.feedTitle || "Mode Feed";
   liveMode.value = payload.settings.mode;
   liveQuestionSet.value = payload.settings.questionSet;
@@ -2664,9 +2899,10 @@ socket.on("settings:update", (payload) => {
   updateLateJoinControls();
 });
 
-socket.on("game:countdown", ({ secondsLeft }) => {
+socket.on("game:countdown", ({ secondsLeft, targetPhase, targetLabel }) => {
   const safeSeconds = Math.max(0, Number(secondsLeft) || 0);
-  const message = safeSeconds > 0 ? `Game starts in ${safeSeconds}...` : "Go! Question is starting.";
+  const launchLabel = targetPhase === "minigame" ? targetLabel || "Mini-game" : "Question";
+  const message = safeSeconds > 0 ? `Game starts in ${safeSeconds}...` : `Go! ${launchLabel} is starting.`;
   setPhase("countdown", message);
   pausedFromPhase = "";
   setPhaseIllustration("", "");

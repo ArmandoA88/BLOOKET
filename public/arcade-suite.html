@@ -171,6 +171,12 @@
       gap: 8px;
     }
 
+    .extras-list {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: 1fr 1fr;
+    }
+
     .game-tab {
       background: rgba(255, 255, 255, 0.06);
       color: var(--text);
@@ -179,10 +185,27 @@
       font-size: 0.83rem;
     }
 
+    .extra-btn {
+      padding: 11px 12px;
+      font-size: 0.72rem;
+      text-align: center;
+    }
+
     .game-tab.active {
       border-color: rgba(255, 212, 71, 0.45);
       background: linear-gradient(135deg, rgba(255, 212, 71, 0.16), rgba(92, 199, 255, 0.12));
       box-shadow: 0 12px 24px rgba(8, 17, 26, 0.26);
+    }
+
+    .game-tab:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+      filter: grayscale(0.2);
+    }
+
+    .game-tab:disabled:hover {
+      transform: none;
+      filter: grayscale(0.2);
     }
 
     .stage {
@@ -286,6 +309,11 @@
       <div class="control-box">
         <strong>Game Select</strong>
         <div class="game-list" id="gameList"></div>
+      </div>
+
+      <div class="control-box" id="suiteExtras" hidden>
+        <strong id="suiteExtrasTitle">Game Options</strong>
+        <div class="extras-list" id="suiteExtrasBody"></div>
       </div>
 
       <a class="back-link" href="/index.html">Back To Arcade</a>

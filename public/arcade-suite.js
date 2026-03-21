@@ -13,6 +13,9 @@ const stageTitle = document.getElementById("stageTitle");
 const stageHelp = document.getElementById("stageHelp");
 const statusBanner = document.getElementById("statusBanner");
 const footerNote = document.getElementById("footerNote");
+const suiteExtras = document.getElementById("suiteExtras");
+const suiteExtrasTitle = document.getElementById("suiteExtrasTitle");
+const suiteExtrasBody = document.getElementById("suiteExtrasBody");
 
 const W = canvas.width;
 const H = canvas.height;
@@ -37,6 +40,12 @@ const keyToDir = {
 let currentId = "";
 let currentGame = null;
 let currentState = null;
+
+function loadSprite(src) {
+  const image = new Image();
+  image.src = src;
+  return image;
+}
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -135,11 +144,38 @@ function mouseToCanvas(event) {
   };
 }
 
+function drawSprite(image, x, y, w, h, options = {}) {
+  if (!image || !image.complete || !image.naturalWidth) {
+    return;
+  }
+
+  const {
+    sx = 0,
+    sy = 0,
+    sw = image.width,
+    sh = image.height,
+    flip = false,
+    alpha = 1
+  } = options;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  if (flip) {
+    ctx.translate(x + w, y);
+    ctx.scale(-1, 1);
+    ctx.drawImage(image, sx, sy, sw, sh, 0, 0, w, h);
+  } else {
+    ctx.drawImage(image, sx, sy, sw, sh, x, y, w, h);
+  }
+  ctx.restore();
+}
+
 function resetCurrentGame() {
   if (!currentGame) {
     return;
   }
   currentState = currentGame.createState();
+  renderExtras();
 }
 
 function spawnPongBall(direction) {
@@ -1588,39 +1624,178 @@ const racerGame = {
 };
 
 const fishingGame = (() => {
-  const fishColors = ["#38bdf8", "#fb7185", "#f59e0b", "#4ade80", "#a78bfa"];
+  const spriteRoot = "/assets/arcade/fishing";
+  const sprites = {
+    boatKayak: loadSprite(`${spriteRoot}/boat_kayak.png`),
+    boatOldShip: loadSprite(`${spriteRoot}/boat_oldship.png`),
+    boatRowboat: loadSprite(`${spriteRoot}/boat_rowboat.png`),
+    boatTrawler: loadSprite(`${spriteRoot}/boat_trawler.png`),
+    boatSailboat: loadSprite(`${spriteRoot}/boat_sailboat.svg`),
+    boatYacht: loadSprite(`${spriteRoot}/boat_yacht.svg`),
+    boatSpeedboat: loadSprite(`${spriteRoot}/boat_speedboat.svg`),
+    fishBlue: loadSprite(`${spriteRoot}/fish_blue.png`),
+    fishGreen: loadSprite(`${spriteRoot}/fish_green.png`),
+    fishOrange: loadSprite(`${spriteRoot}/fish_orange.png`),
+    fishPink: loadSprite(`${spriteRoot}/fish_pink.png`),
+    fishRed: loadSprite(`${spriteRoot}/fish_red.png`),
+    fishBrown: loadSprite(`${spriteRoot}/fish_brown.png`),
+    fishGreyLong: loadSprite(`${spriteRoot}/fish_grey_long_a.png`),
+    bubbleA: loadSprite(`${spriteRoot}/bubble_a.png`),
+    bubbleB: loadSprite(`${spriteRoot}/bubble_b.png`),
+    bubbleC: loadSprite(`${spriteRoot}/bubble_c.png`),
+    rockA: loadSprite(`${spriteRoot}/rock_a.png`),
+    rockB: loadSprite(`${spriteRoot}/rock_b.png`),
+    seaweedGreen: loadSprite(`${spriteRoot}/seaweed_green_c.png`),
+    seaweedOrange: loadSprite(`${spriteRoot}/seaweed_orange_b.png`),
+    seaweedPink: loadSprite(`${spriteRoot}/seaweed_pink_c.png`),
+    bgSeaweedA: loadSprite(`${spriteRoot}/background_seaweed_b.png`),
+    bgSeaweedB: loadSprite(`${spriteRoot}/background_seaweed_f.png`),
+    sandTop: loadSprite(`${spriteRoot}/terrain_sand_top_c.png`),
+    sandFill: loadSprite(`${spriteRoot}/terrain_sand_a.png`)
+  };
+
+  const boatOptions = [
+    { id: "rowboat", label: "1. Rowboat", image: sprites.boatRowboat, sx: 0, sy: 0, sw: 80, sh: 64, drawW: 138, drawH: 108, anchorX: 68, anchorY: 70, unlockScore: 0 },
+    { id: "kayak", label: "2. Kayak", image: sprites.boatKayak, sx: 0, sy: 0, sw: 128, sh: 48, drawW: 188, drawH: 74, anchorX: 92, anchorY: 52, unlockScore: 60 },
+    { id: "oldship", label: "3. Old Ship", image: sprites.boatOldShip, sx: 0, sy: 0, sw: 128, sh: 128, drawW: 188, drawH: 152, anchorX: 102, anchorY: 90, unlockScore: 160 },
+    { id: "trawler", label: "4. Trawler", image: sprites.boatTrawler, sx: 0, sy: 0, sw: 288, sh: 144, drawW: 244, drawH: 122, anchorX: 122, anchorY: 78, unlockScore: 300 },
+    { id: "yacht", label: "5. Yacht", image: sprites.boatYacht, sx: 0, sy: 0, sw: 300, sh: 152.29976, drawW: 248, drawH: 126, anchorX: 136, anchorY: 80, unlockScore: 520 },
+    { id: "speedboat", label: "6. Lambo Boat", image: sprites.boatSpeedboat, sx: 0, sy: 0, sw: 320, sh: 140, drawW: 252, drawH: 118, anchorX: 168, anchorY: 80, unlockScore: 820 }
+  ];
+
+  const fishTypes = [
+    { id: "blue", name: "Blue Runner", image: sprites.fishBlue, baseW: 108, baseH: 74, value: 40, minDepth: 250, maxDepth: 420, minSpeed: 90, maxSpeed: 150 },
+    { id: "green", name: "Green Snapper", image: sprites.fishGreen, baseW: 110, baseH: 74, value: 55, minDepth: 360, maxDepth: 560, minSpeed: 80, maxSpeed: 130 },
+    { id: "orange", name: "Orange Sunfish", image: sprites.fishOrange, baseW: 104, baseH: 72, value: 65, minDepth: 260, maxDepth: 520, minSpeed: 85, maxSpeed: 125 },
+    { id: "pink", name: "Pink Dart", image: sprites.fishPink, baseW: 84, baseH: 58, value: 35, minDepth: 430, maxDepth: 650, minSpeed: 110, maxSpeed: 170 },
+    { id: "red", name: "Red Giant", image: sprites.fishRed, baseW: 126, baseH: 84, value: 90, minDepth: 300, maxDepth: 610, minSpeed: 75, maxSpeed: 115 },
+    { id: "puffer", name: "Puffer", image: sprites.fishBrown, baseW: 94, baseH: 90, value: 80, minDepth: 250, maxDepth: 610, minSpeed: 70, maxSpeed: 110 },
+    { id: "eel", name: "Eel", image: sprites.fishGreyLong, baseW: 134, baseH: 60, value: 110, minDepth: 520, maxDepth: 690, minSpeed: 120, maxSpeed: 190 }
+  ];
+
+  const bubbleSprites = [sprites.bubbleA, sprites.bubbleB, sprites.bubbleC];
+  const backgroundProps = [
+    { image: sprites.bgSeaweedA, x: 34, w: 150, h: 220, sway: 0.8, alpha: 0.22 },
+    { image: sprites.bgSeaweedB, x: 252, w: 116, h: 178, sway: 1.2, alpha: 0.2 },
+    { image: sprites.bgSeaweedA, x: 926, w: 150, h: 220, sway: 0.9, alpha: 0.18 },
+    { image: sprites.bgSeaweedB, x: 1128, w: 116, h: 176, sway: 1.4, alpha: 0.21 }
+  ];
+  const foregroundProps = [
+    { image: sprites.rockA, x: 70, y: H - 128, w: 116, h: 92 },
+    { image: sprites.rockB, x: 988, y: H - 134, w: 134, h: 102 },
+    { image: sprites.seaweedGreen, x: 172, y: H - 184, w: 98, h: 138, sway: 1.4 },
+    { image: sprites.seaweedOrange, x: 846, y: H - 182, w: 96, h: 132, sway: 1.1 },
+    { image: sprites.seaweedPink, x: 1092, y: H - 192, w: 88, h: 142, sway: 1.5 }
+  ];
+
+  let selectedBoatIndex = 0;
+
+  function unlockedBoatIndex(score) {
+    let highest = 0;
+    for (let i = 0; i < boatOptions.length; i += 1) {
+      if (score >= boatOptions[i].unlockScore) {
+        highest = i;
+      }
+    }
+    return highest;
+  }
+
+  function makeBubble() {
+    return {
+      sprite: pick(bubbleSprites),
+      x: rand(50, W - 50),
+      y: rand(180, H - 30),
+      size: rand(16, 40),
+      speed: rand(28, 60),
+      sway: rand(0.6, 1.6),
+      phase: rand(0, Math.PI * 2)
+    };
+  }
 
   function makeFish(index) {
-    const size = rand(28, 48);
-    const depth = 240 + index * 80 + rand(-20, 20);
-    const speed = rand(70, 150) * (Math.random() < 0.5 ? -1 : 1);
+    const template = pick(fishTypes);
+    const scale = rand(0.82, 1.12);
+    const direction = Math.random() < 0.5 ? -1 : 1;
     return {
+      template,
       x: rand(120, W - 120),
-      y: depth,
-      size,
-      vx: speed,
-      value: Math.round(size),
-      color: fishColors[index % fishColors.length]
+      y: rand(template.minDepth, template.maxDepth) + index * 4,
+      w: Math.round(template.baseW * scale),
+      h: Math.round(template.baseH * scale),
+      vx: rand(template.minSpeed, template.maxSpeed) * direction,
+      value: Math.round(template.value * scale),
+      bobPhase: rand(0, Math.PI * 2)
     };
+  }
+
+  function getBoat(state) {
+    return boatOptions[state.boatIndex] || boatOptions[0];
+  }
+
+  function getHookAnchor(state) {
+    const boat = getBoat(state);
+    const x = state.boatX - boat.drawW / 2 + boat.anchorX;
+    const y = 18 + boat.anchorY;
+    return { x, y };
+  }
+
+  function selectBoat(state, index) {
+    if (index < 0 || index >= boatOptions.length || index > state.unlockedBoatIndex) {
+      return;
+    }
+    selectedBoatIndex = index;
+    state.boatIndex = index;
+    const anchor = getHookAnchor(state);
+    if (state.hook.state === "idle") {
+      state.hook.x = anchor.x;
+      state.hook.y = anchor.y + 16;
+    }
+    state.status = `${boatOptions[index].label.replace(/^[0-9]+\.\s*/, "")} ready`;
   }
 
   return {
     name: "Fish & Francis",
-    description: "A Fishing Frenzy style catch game with a moving boat, a drop hook, and colorful fish values.",
-    controls: "Move the boat with Arrow keys or A/D. Press Space or click once to drop the hook.",
+    description: "A Fishing Frenzy style catch game with internet-sourced sprite fish, multiple boat picks, and a fuller underwater scene.",
+    controls: "Move with Arrow keys or A/D. Press Space or click to drop the hook. Use keys 1-6 to switch boats.",
     stageTitle: "Fish & Francis",
-    stageHelp: "Drop the hook, catch one fish, then reel it back in. Bigger fish score more.",
+    stageHelp: "Drop the hook, catch one fish, then reel it back in. Bigger fish score more and each boat is selectable.",
     createState() {
-      return {
+      const base = {
         boatX: W / 2,
+        boatIndex: Math.min(selectedBoatIndex, unlockedBoatIndex(0)),
+        unlockedBoatIndex: unlockedBoatIndex(0),
         hook: { state: "idle", x: W / 2, y: 150, fishIndex: -1 },
-        fish: Array.from({ length: 8 }, (_, index) => makeFish(index)),
+        fish: Array.from({ length: 9 }, (_, index) => makeFish(index)),
+        bubbles: Array.from({ length: 14 }, () => makeBubble()),
         score: 0,
         catches: 0,
-        status: "Drop the hook"
+        status: `${boatOptions[Math.min(selectedBoatIndex, unlockedBoatIndex(0))].label.replace(/^[0-9]+\.\s*/, "")} ready`,
+        lastCatch: "None"
+      };
+      const anchor = getHookAnchor(base);
+      base.hook.x = anchor.x;
+      base.hook.y = anchor.y + 16;
+      return base;
+    },
+    getExtras(state) {
+      return {
+        title: "Boat Select",
+        items: boatOptions.map((boat, index) => ({
+          id: String(index),
+          label: index <= state.unlockedBoatIndex ? boat.label : `${boat.label} (${boat.unlockScore})`,
+          active: index === state.boatIndex,
+          disabled: index > state.unlockedBoatIndex
+        }))
       };
     },
+    handleExtra(state, id) {
+      selectBoat(state, Number(id));
+    },
     keydown(state, key) {
+      if (/^[1-6]$/.test(key)) {
+        selectBoat(state, Number(key) - 1);
+        return;
+      }
       if (key === " " && state.hook.state === "idle") {
         state.hook.state = "drop";
       }
@@ -1630,14 +1805,24 @@ const fishingGame = (() => {
         state.hook.state = "drop";
       }
     },
-    update(state, dt) {
+    update(state, dt, time) {
       if (input.keys.has("arrowleft") || input.keys.has("a")) {
         state.boatX -= 280 * dt;
       }
       if (input.keys.has("arrowright") || input.keys.has("d")) {
         state.boatX += 280 * dt;
       }
-      state.boatX = clamp(state.boatX, 120, W - 120);
+      state.boatX = clamp(state.boatX, 150, W - 150);
+
+      for (const bubble of state.bubbles) {
+        bubble.y -= bubble.speed * dt;
+        bubble.x += Math.sin(time * bubble.sway + bubble.phase) * 12 * dt;
+        if (bubble.y < 130) {
+          bubble.x = rand(60, W - 60);
+          bubble.y = H + rand(10, 120);
+          bubble.size = rand(16, 40);
+        }
+      }
 
       for (let i = 0; i < state.fish.length; i += 1) {
         const fish = state.fish[i];
@@ -1645,48 +1830,59 @@ const fishingGame = (() => {
           continue;
         }
         fish.x += fish.vx * dt;
-        if (fish.x < -fish.size) {
-          fish.x = W + fish.size;
+        fish.y += Math.sin(time * 1.8 + fish.bobPhase) * 8 * dt;
+        if (fish.x < -fish.w) {
+          fish.x = W + fish.w;
         }
-        if (fish.x > W + fish.size) {
-          fish.x = -fish.size;
+        if (fish.x > W + fish.w) {
+          fish.x = -fish.w;
         }
       }
 
+      const anchor = getHookAnchor(state);
       if (state.hook.state === "idle") {
-        state.hook.x = state.boatX;
-        state.hook.y = 150;
+        state.hook.x = anchor.x;
+        state.hook.y = anchor.y + 16;
         state.hook.fishIndex = -1;
       } else if (state.hook.state === "drop") {
-        state.hook.x = state.boatX;
+        state.hook.x = anchor.x;
         state.hook.y += 420 * dt;
         for (let i = 0; i < state.fish.length; i += 1) {
           const fish = state.fish[i];
-          if (distance(state.hook.x, state.hook.y, fish.x, fish.y) < fish.size * 0.55) {
+          if (Math.abs(state.hook.x - fish.x) < fish.w * 0.26 && Math.abs(state.hook.y - fish.y) < fish.h * 0.22) {
             state.hook.fishIndex = i;
             state.hook.state = "reel";
-            state.status = "Fish on the line";
+            state.status = `Hooked ${fish.template.name}`;
             break;
           }
         }
-        if (state.hook.y > H - 70) {
+        if (state.hook.y > H - 92) {
           state.hook.state = "reel";
         }
       } else if (state.hook.state === "reel") {
-        state.hook.x = state.boatX;
+        state.hook.x = anchor.x;
         state.hook.y -= 520 * dt;
         if (state.hook.fishIndex >= 0) {
           const fish = state.fish[state.hook.fishIndex];
           fish.x = state.hook.x;
-          fish.y = state.hook.y + 26;
+          fish.y = state.hook.y + 28;
+          fish.vx = Math.abs(fish.vx);
         }
-        if (state.hook.y <= 150) {
+        if (state.hook.y <= anchor.y + 16) {
           if (state.hook.fishIndex >= 0) {
             const caught = state.fish[state.hook.fishIndex];
             state.score += caught.value;
             state.catches += 1;
-            state.status = `Caught ${caught.value} pts`;
+            state.lastCatch = caught.template.name;
+            state.status = `Caught ${caught.template.name} for ${caught.value}`;
             state.fish[state.hook.fishIndex] = makeFish(state.hook.fishIndex);
+            const newUnlocked = unlockedBoatIndex(state.score);
+            if (newUnlocked > state.unlockedBoatIndex) {
+              state.unlockedBoatIndex = newUnlocked;
+              state.boatIndex = newUnlocked;
+              selectedBoatIndex = newUnlocked;
+              state.status = `${boatOptions[newUnlocked].label.replace(/^[0-9]+\.\s*/, "")} unlocked`;
+            }
           } else {
             state.status = "Empty hook";
           }
@@ -1696,54 +1892,66 @@ const fishingGame = (() => {
       }
     },
     draw(state, time) {
-      drawBackground("#08233b", "#0d4b70", time, "rgba(56,189,248,0.82)");
+      drawBackground("#7bd9ff", "#0b5f8d", time, "rgba(56,189,248,0.88)");
+      const anchor = getHookAnchor(state);
 
-      ctx.fillStyle = "#dbeafe";
-      ctx.fillRect(0, 100, W, 10);
-      ctx.fillStyle = "#1e293b";
-      drawRoundedRect(state.boatX - 86, 92, 172, 38, 18, "#334155");
-      ctx.fillStyle = "#f8fafc";
-      ctx.beginPath();
-      ctx.moveTo(state.boatX - 10, 92);
-      ctx.lineTo(state.boatX - 10, 36);
-      ctx.lineTo(state.boatX + 42, 76);
-      ctx.closePath();
-      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.78)";
+      ctx.fillRect(0, 106, W, 8);
+      ctx.fillStyle = "rgba(255,255,255,0.13)";
+      for (let i = 0; i < 6; i += 1) {
+        ctx.fillRect(0, 140 + i * 84 + Math.sin(time * 1.2 + i) * 4, W, 2);
+      }
 
-      ctx.strokeStyle = "#e0f2fe";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(state.boatX, 92);
-      ctx.lineTo(state.hook.x, state.hook.y);
-      ctx.stroke();
-      ctx.fillStyle = "#f8fafc";
-      ctx.beginPath();
-      ctx.arc(state.hook.x, state.hook.y, 8, 0, Math.PI * 2);
-      ctx.fill();
+      for (const prop of backgroundProps) {
+        drawSprite(prop.image, prop.x + Math.sin(time * prop.sway) * 6, H - 176 - prop.h, prop.w, prop.h, { alpha: prop.alpha });
+      }
+
+      for (const bubble of state.bubbles) {
+        drawSprite(bubble.sprite, bubble.x, bubble.y, bubble.size, bubble.size);
+      }
 
       for (const fish of state.fish) {
-        ctx.fillStyle = fish.color;
-        ctx.beginPath();
-        ctx.ellipse(fish.x, fish.y, fish.size * 0.6, fish.size * 0.34, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(fish.x - fish.size * 0.55, fish.y);
-        ctx.lineTo(fish.x - fish.size * 0.9, fish.y - fish.size * 0.22);
-        ctx.lineTo(fish.x - fish.size * 0.9, fish.y + fish.size * 0.22);
-        ctx.closePath();
-        ctx.fill();
-        ctx.fillStyle = "#fff";
-        ctx.beginPath();
-        ctx.arc(fish.x + fish.size * 0.2, fish.y - 3, 3, 0, Math.PI * 2);
-        ctx.fill();
+        drawSprite(fish.template.image, fish.x - fish.w / 2, fish.y - fish.h / 2, fish.w, fish.h, { flip: fish.vx > 0 });
       }
+
+      for (let x = 0; x < W + 64; x += 118) {
+        drawSprite(sprites.sandFill, x, H - 124, 118, 132);
+        drawSprite(sprites.sandTop, x, H - 170, 118, 74);
+      }
+      for (const prop of foregroundProps) {
+        const swayX = prop.sway ? Math.sin(time * prop.sway) * 7 : 0;
+        drawSprite(prop.image, prop.x + swayX, prop.y, prop.w, prop.h);
+      }
+
+      ctx.strokeStyle = "#eff6ff";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(anchor.x, anchor.y);
+      ctx.lineTo(state.hook.x, state.hook.y);
+      ctx.stroke();
+      ctx.fillStyle = "#eff6ff";
+      ctx.beginPath();
+      ctx.arc(state.hook.x, state.hook.y, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      const boat = getBoat(state);
+      drawSprite(
+        boat.image,
+        state.boatX - boat.drawW / 2,
+        18,
+        boat.drawW,
+        boat.drawH,
+        { sx: boat.sx, sy: boat.sy, sw: boat.sw, sh: boat.sh }
+      );
+
+      drawLabel("Press 1-6 To Swap Boats", 34, 54, 20, "rgba(255,255,255,0.88)");
     },
     hud(state) {
       return {
         value: `${state.score}`,
-        copy: `Fish caught ${state.catches} | Hook ${state.hook.state}`,
+        copy: `Fish caught ${state.catches} | Level ${state.unlockedBoatIndex + 1}/${boatOptions.length} | Boat ${getBoat(state).label.replace(/^[0-9]+\.\s*/, "")}`,
         banner: state.status,
-        footer: "I interpreted the request for 'Fish and Francis' as a Blooket-style fishing catch game."
+        footer: `Old boats start the run and newer boats unlock at ${boatOptions.map((boat) => boat.unlockScore).slice(1).join(", ")} score.`
       };
     }
   };
@@ -1774,6 +1982,37 @@ function updateHud() {
   footerNote.textContent = hud.footer;
 }
 
+function renderExtras() {
+  if (!currentGame || !currentState || !currentGame.getExtras) {
+    suiteExtras.hidden = true;
+    suiteExtrasBody.innerHTML = "";
+    return;
+  }
+
+  const extras = currentGame.getExtras(currentState);
+  if (!extras || !extras.items || !extras.items.length) {
+    suiteExtras.hidden = true;
+    suiteExtrasBody.innerHTML = "";
+    return;
+  }
+
+  suiteExtras.hidden = false;
+  suiteExtrasTitle.textContent = extras.title || "Game Options";
+  suiteExtrasBody.innerHTML = "";
+  for (const item of extras.items) {
+    const button = document.createElement("button");
+    button.className = `game-tab extra-btn${item.active ? " active" : ""}`;
+    button.textContent = item.label;
+    button.disabled = Boolean(item.disabled);
+    button.addEventListener("click", () => {
+      currentGame.handleExtra(currentState, item.id);
+      renderExtras();
+      updateHud();
+    });
+    suiteExtrasBody.appendChild(button);
+  }
+}
+
 function renderTabs() {
   gameList.innerHTML = "";
   for (const id of gameOrder) {
@@ -1801,6 +2040,7 @@ function switchGame(id) {
   window.history.replaceState({}, "", url);
 
   renderTabs();
+  renderExtras();
   updateHud();
 }
 
@@ -1822,6 +2062,8 @@ window.addEventListener("keydown", (event) => {
   input.keys.add(key);
   if (currentGame && currentGame.keydown) {
     currentGame.keydown(currentState, key, event);
+    renderExtras();
+    updateHud();
   }
 });
 
@@ -1877,6 +2119,7 @@ function frame(now) {
   if (currentGame && currentState) {
     currentGame.update(currentState, dt, now / 1000);
     currentGame.draw(currentState, now / 1000);
+    renderExtras();
     updateHud();
   }
 

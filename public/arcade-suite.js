@@ -870,149 +870,465 @@ const crossingGame = (() => {
   };
 })();
 
-function spawnFlappyPipe() {
-  return {
-    x: W + 120,
-    gapY: rand(190, H - 220),
-    gapH: 210,
-    passed: false
-  };
-}
+const flappyGame = (() => {
+  const spriteRoot = "/assets/arcade/sky-flap";
+  const birdSkins = [
+    { id: "bluebird", label: "1. Bluebird", image: loadSprite(`${spriteRoot}/bird_bluebird.svg`) },
+    { id: "eagle", label: "2. Bald Eagle", image: loadSprite(`${spriteRoot}/bird_bald_eagle.svg`) },
+    { id: "cardinal", label: "3. Cardinal", image: loadSprite(`${spriteRoot}/bird_cardinal.svg`) },
+    { id: "parrot", label: "4. Parrot", image: loadSprite(`${spriteRoot}/bird_parrot.svg`) },
+    { id: "toucan", label: "5. Toucan", image: loadSprite(`${spriteRoot}/bird_toucan.svg`) },
+    { id: "owl", label: "6. Owl", image: loadSprite(`${spriteRoot}/bird_owl.svg`) },
+    { id: "penguin", label: "7. Penguin", image: loadSprite(`${spriteRoot}/bird_penguin.svg`) },
+    { id: "flamingo", label: "8. Flamingo", image: loadSprite(`${spriteRoot}/bird_flamingo.svg`) },
+    { id: "hummingbird", label: "9. Hummingbird", image: loadSprite(`${spriteRoot}/bird_hummingbird.svg`) },
+    { id: "duck", label: "0. Duck", image: loadSprite(`${spriteRoot}/bird_duck.svg`) }
+  ];
 
-const flappyGame = {
-  name: "Sky Flap",
-  description: "A Flappy style flying run with bright pipes, easy restart flow, and fast score pops.",
-  controls: "Press Space or click/tap the stage to flap.",
-  stageTitle: "Sky Flap",
-  stageHelp: "Keep the bird steady through each pipe gap. One clean flap too many is still a crash.",
-  createState() {
-    return {
-      birdY: H / 2,
-      birdVY: 0,
-      pipes: [],
-      spawnTimer: 0.6,
-      score: 0,
-      started: false,
-      gameOver: false,
-      status: "Tap to flap"
+  let selectedBirdIndex = 0;
+
+  function spawnSkyPipe(score) {
+    const gapH = clamp(218 - score * 2.4, 168, 218);
+    const gapY = rand(190, H - 220);
+    const pipe = {
+      x: W + 140,
+      gapY,
+      gapH,
+      passed: false,
+      pickup: null,
+      hazard: null
     };
-  },
-  flap(state) {
-    if (state.gameOver) {
-      resetCurrentGame();
+
+    if (Math.random() < 0.44) {
+      pipe.pickup = {
+        type: pick(["shield", "slow", "star"]),
+        offsetX: 132,
+        offsetY: rand(-gapH * 0.22, gapH * 0.22),
+        collected: false
+      };
+    }
+
+    if (score > 3 && Math.random() < 0.3) {
+      pipe.hazard = {
+        type: Math.random() < 0.5 ? "storm" : "orb",
+        offsetX: 124,
+        offsetY: rand(-gapH * 0.16, gapH * 0.16),
+        active: true
+      };
+    }
+
+    return pipe;
+  }
+
+  function getBirdName(state) {
+    return birdSkins[state.birdIndex].label.replace(/^[0-9]+\.\s*/, "");
+  }
+
+  function selectBird(state, index) {
+    if (index < 0 || index >= birdSkins.length) {
       return;
     }
-    state.started = true;
-    state.birdVY = -380;
-    state.status = "Flap";
-  },
-  keydown(state, key) {
-    if (key === " ") {
-      this.flap(state);
-    }
-  },
-  pointerdown(state) {
-    this.flap(state);
-  },
-  update(state, dt) {
-    if (!state.started || state.gameOver) {
-      return;
-    }
+    selectedBirdIndex = index;
+    state.birdIndex = index;
+    state.status = `${getBirdName(state)} ready`;
+  }
 
-    state.birdVY += 920 * dt;
-    state.birdY += state.birdVY * dt;
-    state.spawnTimer -= dt;
-
-    if (state.spawnTimer <= 0) {
-      state.spawnTimer = 1.38;
-      state.pipes.push(spawnFlappyPipe());
+  function useShield(state, message) {
+    if (state.shield <= 0) {
+      return false;
     }
+    state.shield = 0;
+    state.invuln = 1;
+    state.birdVY = -180;
+    state.birdY = clamp(state.birdY, 96, H - 160);
+    state.status = message;
+    return true;
+  }
 
-    for (const pipe of state.pipes) {
-      pipe.x -= 300 * dt;
-      if (!pipe.passed && pipe.x + 92 < 220) {
-        pipe.passed = true;
-        state.score += 1;
-        state.status = "Pipe cleared";
-      }
+  function applyPickup(state, type) {
+    if (type === "shield") {
+      state.shield = 1;
+      state.status = "Shield bubble ready";
+    } else if (type === "slow") {
+      state.slowTimer = 6;
+      state.status = "Slow breeze active";
+    } else {
+      state.score += 3;
+      state.status = "Star bonus";
     }
-    state.pipes = state.pipes.filter((pipe) => pipe.x > -160);
+  }
 
-    const bird = { x: 220, y: state.birdY, r: 24 };
-    if (bird.y > H - 66 || bird.y < 54) {
-      state.gameOver = true;
-      state.status = "Bird clipped the edge";
-    }
-
-    for (const pipe of state.pipes) {
-      const topRect = { x: pipe.x, y: 0, w: 92, h: pipe.gapY - pipe.gapH / 2 };
-      const bottomRect = { x: pipe.x, y: pipe.gapY + pipe.gapH / 2, w: 92, h: H - pipe.gapY };
-      if (circleRectOverlap(bird, topRect) || circleRectOverlap(bird, bottomRect)) {
-        state.gameOver = true;
-        state.status = "Pipe hit";
-      }
-    }
-  },
-  draw(state, time) {
-    drawBackground("#8bdcff", "#2e6ae3", time, "rgba(255,255,255,0.7)");
-
-    ctx.fillStyle = "rgba(255,255,255,0.26)";
-    for (let i = 0; i < 4; i += 1) {
+  function drawPickup(type, x, y, time) {
+    if (type === "shield") {
+      ctx.fillStyle = "rgba(191, 219, 254, 0.88)";
       ctx.beginPath();
-      ctx.arc(170 + i * 270, 130 + Math.sin(time + i) * 10, 42, Math.PI, 0);
-      ctx.arc(205 + i * 270, 130 + Math.sin(time + i) * 10, 32, Math.PI, 0);
+      ctx.arc(x, y, 18, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x, y - 10);
+      ctx.lineTo(x + 8, y - 3);
+      ctx.lineTo(x + 4, y + 12);
+      ctx.lineTo(x - 4, y + 12);
+      ctx.lineTo(x - 8, y - 3);
+      ctx.closePath();
+      ctx.stroke();
+    } else if (type === "slow") {
+      ctx.fillStyle = "#fde68a";
+      ctx.beginPath();
+      ctx.arc(x, y, 18, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#92400e";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y - 8);
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + 7, y + 4);
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = "#fcd34d";
+      ctx.beginPath();
+      for (let i = 0; i < 5; i += 1) {
+        const outerAngle = -Math.PI / 2 + i * (Math.PI * 2 / 5);
+        const innerAngle = outerAngle + Math.PI / 5;
+        const ox = x + Math.cos(outerAngle) * 18;
+        const oy = y + Math.sin(outerAngle) * 18;
+        const ix = x + Math.cos(innerAngle) * 8;
+        const iy = y + Math.sin(innerAngle) * 8;
+        if (i === 0) {
+          ctx.moveTo(ox, oy);
+        } else {
+          ctx.lineTo(ox, oy);
+        }
+        ctx.lineTo(ix, iy);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.globalAlpha = 0.25 + Math.abs(Math.sin(time * 6)) * 0.2;
+      ctx.beginPath();
+      ctx.arc(x, y, 26, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function drawHazard(type, x, y, time) {
+    if (type === "storm") {
+      ctx.fillStyle = "#475569";
+      ctx.beginPath();
+      ctx.arc(x - 12, y, 16, Math.PI, 0);
+      ctx.arc(x + 2, y - 6, 20, Math.PI, 0);
+      ctx.arc(x + 22, y, 16, Math.PI, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#facc15";
+      ctx.beginPath();
+      ctx.moveTo(x + 2, y + 6);
+      ctx.lineTo(x - 6, y + 26);
+      ctx.lineTo(x + 6, y + 26);
+      ctx.lineTo(x - 2, y + 46);
+      ctx.lineTo(x + 20, y + 18);
+      ctx.lineTo(x + 8, y + 18);
+      ctx.closePath();
+      ctx.fill();
+    } else {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(time * 2.2);
+      ctx.fillStyle = "#f43f5e";
+      ctx.beginPath();
+      for (let i = 0; i < 8; i += 1) {
+        const angle = i * (Math.PI / 4);
+        const radius = i % 2 === 0 ? 24 : 12;
+        const px = Math.cos(angle) * radius;
+        const py = Math.sin(angle) * radius;
+        if (i === 0) {
+          ctx.moveTo(px, py);
+        } else {
+          ctx.lineTo(px, py);
+        }
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(0, 0, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  function drawSkyBird(state, time) {
+    const tilt = clamp(state.birdVY / 760, -0.52, 0.6);
+    const image = birdSkins[state.birdIndex].image;
+    ctx.save();
+    ctx.translate(220, state.birdY);
+    ctx.rotate(tilt);
+    if (state.invuln > 0) {
+      ctx.globalAlpha = 0.55 + Math.abs(Math.sin(time * 18)) * 0.35;
+    }
+    if (image.complete && image.naturalWidth) {
+      ctx.drawImage(image, -54, -40, 108, 80);
+    } else {
+      ctx.fillStyle = "#ffd447";
+      ctx.beginPath();
+      ctx.arc(0, 0, 24, 0, Math.PI * 2);
       ctx.fill();
     }
-
-    for (const pipe of state.pipes) {
-      drawRoundedRect(pipe.x, -10, 92, pipe.gapY - pipe.gapH / 2 + 10, 18, "#2fb662");
-      drawRoundedRect(pipe.x, pipe.gapY + pipe.gapH / 2, 92, H - pipe.gapY, 18, "#2fb662");
-      ctx.fillStyle = "#1d7a42";
-      ctx.fillRect(pipe.x - 8, pipe.gapY - pipe.gapH / 2 - 18, 108, 18);
-      ctx.fillRect(pipe.x - 8, pipe.gapY + pipe.gapH / 2, 108, 18);
-    }
-
-    ctx.fillStyle = "#d7a344";
-    ctx.fillRect(0, H - 50, W, 50);
-    ctx.fillStyle = "#4caf50";
-    ctx.fillRect(0, H - 66, W, 18);
-
-    const wingLift = Math.sin(time * 18) * 8;
-    ctx.fillStyle = "#ffd447";
-    ctx.beginPath();
-    ctx.arc(220, state.birdY, 24, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#f97316";
-    ctx.beginPath();
-    ctx.moveTo(242, state.birdY);
-    ctx.lineTo(268, state.birdY - 7);
-    ctx.lineTo(268, state.birdY + 7);
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = "#fff";
-    ctx.beginPath();
-    ctx.arc(213, state.birdY - 8, 6, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#111827";
-    ctx.beginPath();
-    ctx.arc(214, state.birdY - 8, 2.5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#f59e0b";
-    ctx.beginPath();
-    ctx.ellipse(208, state.birdY + wingLift * 0.3, 18, 12, -0.35, 0, Math.PI * 2);
-    ctx.fill();
-  },
-  hud(state) {
-    return {
-      value: `${state.score}`,
-      copy: state.gameOver
-        ? "Tap again to restart fast."
-        : state.started ? "Short taps keep the bird centered through the gaps." : "Press Space or click once to begin.",
-      banner: state.gameOver ? "Crash" : state.status,
-      footer: "This one is intentionally quick to replay so kids can cycle through attempts in seconds."
-    };
+    ctx.restore();
   }
-};
+
+  return {
+    name: "Sky Flap",
+    description: "A richer flappy run with recognizable bird skins, pickup powers, hazard obstacles, and a brighter student-friendly HUD.",
+    controls: "Press Space or click to flap. Use keys 1-9 and 0, or the sidebar, to switch birds.",
+    stageTitle: "Sky Flap",
+    stageHelp: "Pick from 10 real bird sprites, then grab shields and star bonuses while weaving through pipes and sky hazards.",
+    createState() {
+      return {
+        birdIndex: selectedBirdIndex,
+        birdY: H / 2,
+        birdVY: 0,
+        pipes: [],
+        spawnTimer: 0.6,
+        score: 0,
+        started: false,
+        gameOver: false,
+        status: `${birdSkins[selectedBirdIndex].label.replace(/^[0-9]+\.\s*/, "")} ready`,
+        shield: 0,
+        slowTimer: 0,
+        invuln: 0,
+        clouds: Array.from({ length: 5 }, (_, index) => ({ x: 150 + index * 250, y: 110 + (index % 3) * 70, scale: 0.85 + (index % 2) * 0.28 })),
+        balloons: Array.from({ length: 3 }, (_, index) => ({ x: 430 + index * 310, y: 180 + index * 90, hue: ["#fb7185", "#22c55e", "#fbbf24"][index] }))
+      };
+    },
+    getExtras(state) {
+      return {
+        title: "Bird Select",
+        items: birdSkins.map((bird, index) => ({
+          id: String(index),
+          label: bird.label,
+          active: index === state.birdIndex
+        }))
+      };
+    },
+    handleExtra(state, id) {
+      selectBird(state, Number(id));
+    },
+    flap(state) {
+      if (state.gameOver) {
+        resetCurrentGame();
+        return;
+      }
+      state.started = true;
+      state.birdVY = -400;
+      state.status = "Flap";
+    },
+    keydown(state, key) {
+      if (/^[1-9]$/.test(key)) {
+        selectBird(state, Number(key) - 1);
+        return;
+      }
+      if (key === "0") {
+        selectBird(state, 9);
+        return;
+      }
+      if (key === " ") {
+        this.flap(state);
+      }
+    },
+    pointerdown(state) {
+      this.flap(state);
+    },
+    update(state, dt) {
+      for (const cloud of state.clouds) {
+        cloud.x -= 24 * dt * cloud.scale;
+        if (cloud.x < -130) {
+          cloud.x = W + 120;
+        }
+      }
+      for (const balloon of state.balloons) {
+        balloon.x -= 42 * dt;
+        if (balloon.x < -80) {
+          balloon.x = W + 80;
+        }
+      }
+
+      if (!state.started || state.gameOver) {
+        state.birdY = H / 2 + Math.sin(performance.now() / 320) * 10;
+        return;
+      }
+
+      state.slowTimer = Math.max(0, state.slowTimer - dt);
+      state.invuln = Math.max(0, state.invuln - dt);
+
+      const scrollSpeed = (state.slowTimer > 0 ? 230 : 300) + Math.min(90, state.score * 4);
+      state.birdVY += 920 * dt;
+      state.birdY += state.birdVY * dt;
+      state.spawnTimer -= dt;
+
+      if (state.spawnTimer <= 0) {
+        state.spawnTimer = clamp(1.4 - state.score * 0.018, 0.92, 1.4);
+        state.pipes.push(spawnSkyPipe(state.score));
+      }
+
+      const bird = { x: 220, y: state.birdY, r: 24 };
+      for (const pipe of state.pipes) {
+        pipe.x -= scrollSpeed * dt;
+
+        if (pipe.pickup && !pipe.pickup.collected) {
+          const pickupX = pipe.x + pipe.pickup.offsetX;
+          const pickupY = pipe.gapY + pipe.pickup.offsetY;
+          if (distance(bird.x, bird.y, pickupX, pickupY) < 36) {
+            pipe.pickup.collected = true;
+            applyPickup(state, pipe.pickup.type);
+          }
+        }
+
+        if (pipe.hazard && pipe.hazard.active) {
+          const hazardX = pipe.x + pipe.hazard.offsetX;
+          const hazardY = pipe.gapY + pipe.hazard.offsetY;
+          if (distance(bird.x, bird.y, hazardX, hazardY) < (pipe.hazard.type === "storm" ? 28 : 30)) {
+            if (!useShield(state, "Shield blocked the hazard")) {
+              state.gameOver = true;
+              state.status = "Hazard hit";
+            }
+            pipe.hazard.active = false;
+          }
+        }
+
+        if (!pipe.passed && pipe.x + 92 < 220) {
+          pipe.passed = true;
+          state.score += 1;
+          state.status = "Pipe cleared";
+        }
+      }
+      state.pipes = state.pipes.filter((pipe) => pipe.x > -180);
+
+      if (bird.y > H - 72 || bird.y < 54) {
+        if (!useShield(state, "Shield saved the wall hit")) {
+          state.gameOver = true;
+          state.status = "Bird clipped the edge";
+        }
+      }
+
+      if (state.invuln <= 0) {
+        for (const pipe of state.pipes) {
+          const topRect = { x: pipe.x, y: 0, w: 92, h: pipe.gapY - pipe.gapH / 2 };
+          const bottomRect = { x: pipe.x, y: pipe.gapY + pipe.gapH / 2, w: 92, h: H - pipe.gapY };
+          if (circleRectOverlap(bird, topRect) || circleRectOverlap(bird, bottomRect)) {
+            if (!useShield(state, "Shield saved a pipe hit")) {
+              state.gameOver = true;
+              state.status = "Pipe hit";
+            }
+            break;
+          }
+        }
+      }
+    },
+    draw(state, time) {
+      drawBackground("#8bdcff", "#2563eb", time, "rgba(255,255,255,0.72)");
+
+      ctx.fillStyle = "rgba(255,255,255,0.12)";
+      ctx.beginPath();
+      ctx.arc(170, 140, 150, 0, Math.PI * 2);
+      ctx.arc(1030, 160, 120, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "rgba(255,255,255,0.26)";
+      for (const cloud of state.clouds) {
+        ctx.beginPath();
+        ctx.arc(cloud.x, cloud.y, 36 * cloud.scale, Math.PI, 0);
+        ctx.arc(cloud.x + 34 * cloud.scale, cloud.y + 4, 24 * cloud.scale, Math.PI, 0);
+        ctx.arc(cloud.x - 28 * cloud.scale, cloud.y + 6, 24 * cloud.scale, Math.PI, 0);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = "rgba(37, 99, 235, 0.22)";
+      ctx.beginPath();
+      ctx.moveTo(0, H - 160);
+      ctx.lineTo(140, H - 240);
+      ctx.lineTo(300, H - 170);
+      ctx.lineTo(460, H - 260);
+      ctx.lineTo(660, H - 180);
+      ctx.lineTo(860, H - 250);
+      ctx.lineTo(1080, H - 170);
+      ctx.lineTo(1280, H - 230);
+      ctx.lineTo(1280, H);
+      ctx.lineTo(0, H);
+      ctx.closePath();
+      ctx.fill();
+
+      for (const balloon of state.balloons) {
+        ctx.fillStyle = balloon.hue;
+        ctx.beginPath();
+        ctx.ellipse(balloon.x, balloon.y, 24, 30, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,0.65)";
+        ctx.beginPath();
+        ctx.moveTo(balloon.x, balloon.y + 30);
+        ctx.lineTo(balloon.x - 8, balloon.y + 92);
+        ctx.stroke();
+      }
+
+      for (const pipe of state.pipes) {
+        drawRoundedRect(pipe.x, -10, 92, pipe.gapY - pipe.gapH / 2 + 10, 18, "#2fb662");
+        drawRoundedRect(pipe.x, pipe.gapY + pipe.gapH / 2, 92, H - pipe.gapY, 18, "#2fb662");
+        ctx.fillStyle = "#15803d";
+        ctx.fillRect(pipe.x - 8, pipe.gapY - pipe.gapH / 2 - 18, 108, 18);
+        ctx.fillRect(pipe.x - 8, pipe.gapY + pipe.gapH / 2, 108, 18);
+        ctx.fillStyle = "rgba(255,255,255,0.18)";
+        ctx.fillRect(pipe.x + 18, 0, 10, pipe.gapY - pipe.gapH / 2);
+        ctx.fillRect(pipe.x + 18, pipe.gapY + pipe.gapH / 2, 10, H - pipe.gapY);
+
+        if (pipe.pickup && !pipe.pickup.collected) {
+          drawPickup(pipe.pickup.type, pipe.x + pipe.pickup.offsetX, pipe.gapY + pipe.pickup.offsetY, time);
+        }
+        if (pipe.hazard && pipe.hazard.active) {
+          drawHazard(pipe.hazard.type, pipe.x + pipe.hazard.offsetX, pipe.gapY + pipe.hazard.offsetY, time);
+        }
+      }
+
+      ctx.fillStyle = "#d7a344";
+      ctx.fillRect(0, H - 50, W, 50);
+      ctx.fillStyle = "#4caf50";
+      ctx.fillRect(0, H - 66, W, 18);
+      for (let x = 0; x < W; x += 44) {
+        ctx.fillStyle = x % 88 === 0 ? "#65d458" : "#55bb4d";
+        ctx.fillRect(x, H - 74, 18, 10);
+      }
+
+      drawSkyBird(state, time);
+
+      drawRoundedRect(24, 22, 262, 88, 22, "rgba(15,23,42,0.26)", "rgba(255,255,255,0.12)");
+      drawLabel(`Score ${state.score}`, 42, 58, 24, "#fff");
+      drawLabel(getBirdName(state), 42, 88, 18, "rgba(255,255,255,0.82)");
+
+      drawRoundedRect(1000, 22, 256, 88, 22, "rgba(15,23,42,0.26)", "rgba(255,255,255,0.12)");
+      drawLabel(state.shield > 0 ? "Shield Ready" : "No Shield", 1128, 58, 20, state.shield > 0 ? "#bfdbfe" : "#fff", "center");
+      drawLabel(state.slowTimer > 0 ? `Slow ${state.slowTimer.toFixed(1)}s` : "Normal Speed", 1128, 88, 18, "rgba(255,255,255,0.82)", "center");
+
+      if (!state.started && !state.gameOver) {
+        drawRoundedRect(420, 44, 440, 62, 24, "rgba(15,23,42,0.2)", "rgba(255,255,255,0.18)");
+        drawLabel("Pick From 10 Birds Then Flap", 640, 83, 22, "#fff", "center");
+      }
+    },
+    hud(state) {
+      return {
+        value: `${state.score}`,
+        copy: state.gameOver
+          ? "Tap again to restart. Bird skins, pickups, and hazards all stay in the rotation."
+          : state.started
+            ? `Bird ${getBirdName(state)} | Shield ${state.shield ? "up" : "down"} | Slow ${state.slowTimer > 0 ? `${state.slowTimer.toFixed(1)}s` : "off"}`
+            : "Choose a bird from the sidebar or use 1-9 and 0, then start the run.",
+        banner: state.gameOver ? "Crash" : state.status,
+        footer: "Sky Flap now has bird skins, shield bubbles, slow-time pickups, star bonuses, and extra sky hazards to keep runs fresh."
+      };
+    }
+  };
+})();
 
 const whackGame = (() => {
   const holes = [

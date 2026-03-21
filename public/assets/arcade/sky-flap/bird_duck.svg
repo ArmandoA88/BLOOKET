@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:cc="http://creativecommons.org/ns#"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+    xmlns:svg="http://www.w3.org/2000/svg"
+    xmlns:ns1="http://sozi.baierouge.fr"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    id="svg3637"
+    sodipodi:docname="New document 4"
+    viewBox="0 0 744.09 1052.4"
+    version="1.1"
+    inkscape:version="0.47 r22583"
+  >
+  <sodipodi:namedview
+      id="base"
+      bordercolor="#666666"
+      inkscape:pageshadow="2"
+      inkscape:window-y="-4"
+      pagecolor="#ffffff"
+      inkscape:window-height="742"
+      inkscape:window-maximized="1"
+      inkscape:zoom="0.47657534"
+      inkscape:window-x="-4"
+      showgrid="false"
+      borderopacity="1.0"
+      inkscape:current-layer="layer1"
+      inkscape:cx="370"
+      inkscape:cy="526.18109"
+      inkscape:window-width="1024"
+      inkscape:pageopacity="0.0"
+      inkscape:document-units="px"
+  />
+  <g
+      id="layer1"
+      inkscape:label="Layer 1"
+      inkscape:groupmode="layer"
+    >
+    <path
+        id="path4249"
+        sodipodi:nodetypes="ccccccccccccccccccccccccc"
+        style="fill-opacity:.41279;stroke:#000000;stroke-width:6.1;fill:#ffe400"
+        d="m346.22 278.09c15.706-51.502 47.203-51.434 73.441-71.342 50.734 6.4246 75.509 11.902 98.62 29.376 8.2439 14.987 18.013 26.923 20.983 52.458l83.932-27.278c16.445 12.201 24.671 23.529 35.671 62.949-5.4152 21.863-15.409 30.754-31.475 41.966-8.1408-18.247-33.154-22.997-69.244-18.885-10.838 3.8504-23.02 6.3567-23.081 20.983-0.75869 9.455-4.0934 20.946-37.769 25.18-36.294-7.1743-38.568-17.032-48.261-35.671-18.669 27.378-52.629 47.698-2.0983 107.01l132.19 94.424c101.06 84.743 59.142 154.17 6.2949 222.42-56.858 45.936-179.57 58.936-264.39 54.556-88.657-13.375-170.2 9.5606-199.34-33.573-76.049-73.12-2.46-199.03-83.911-243.41l20.983-14.688c48.339-19.849 44.974 43.029 67.146 65.047l2.0983 18.885c32.898-24.811 56.199-53.193 100.72-71.342 46.289-18.219 126.53-16.777 230.81 6.2949-38.08-35.63-90.92-50.71-109.11-111.2-35.96-46.5-4.25-81.57 12.59-117.51-21.55-10.91-16.42-35.15-16.79-56.65z"
+    />
+    <path
+        id="path4251"
+        style="stroke:#000000;stroke-width:5.3;fill:none"
+        sodipodi:revolution="3"
+        sodipodi:type="spiral"
+        d="m438.55 242.42c1.4729 1.3677-1.1169 2.6602-2.2732 2.448-3.1333-0.57492-3.7803-4.5371-2.6229-6.9943 2.0704-4.3955 7.843-5.1152 11.716-2.7977 5.6831 3.401 6.4877 11.193 2.9726 16.437-4.6851 6.989-14.559 7.876-21.158 3.1474-8.3045-5.9504-9.2726-17.932-3.3223-25.879 7.2066-9.6254 21.309-10.674 30.6-3.4972 10.95 8.4575 12.078 24.689 3.672 35.321-9.7052 12.276-28.07 13.484-40.043 3.8469-13.604-10.951-14.892-31.453-4.0217-44.764 12.195-14.933 34.836-16.301 49.485-4.1966 16.263 13.438 17.71 38.221 4.3714 54.206"
+        transform="translate(29.376 20.983)"
+        sodipodi:argument="-18.101177"
+        sodipodi:cy="242.41679"
+        sodipodi:cx="438.54556"
+        sodipodi:t0="0"
+        sodipodi:radius="40.088043"
+        sodipodi:expansion="1"
+    />
+    <path
+        id="path4253"
+        sodipodi:nodetypes="cc"
+        style="stroke:#000000;stroke-width:5.3;fill:none"
+        d="m62.949 836.24c192.95 143.88 236.17 96.3 434.35 12.59"
+    />
+    <path
+        id="path4255"
+        sodipodi:nodetypes="cc"
+        style="stroke:#000000;stroke-width:5.3;fill:none"
+        d="m438.55 945.35c112.52-26.668 182.75-95.621 245.5-172.06"
+    />
+    <path
+        id="path4261"
+        sodipodi:nodetypes="cc"
+        style="stroke:#000000;stroke-width:5.3;fill:none"
+        d="m102.82 909.68c86.334 101.17 230.99 20.09 358.81-8.3932"
+    />
+    <path
+        id="path4263"
+        sodipodi:nodetypes="cc"
+        style="stroke:#000000;stroke-width:5.3;fill:none"
+        d="m211.93 857.22c45.496 55.042 105.73 14.284 161.57 2.0983"
+    />
+    <path
+        id="path4265"
+        sodipodi:nodetypes="cc"
+        style="stroke:#000000;stroke-width:5.3;fill:none"
+        d="m449.04 611.72c-320.11-71.79-442.64 160.72 33.57 159.47"
+    />
+    <path
+        id="path4267"
+        style="stroke:#000000;stroke-width:5.3;fill:none"
+        d="m190.95 628.5 130.09 14.688"
+    />
+    <path
+        id="path4269"
+        style="stroke:#000000;stroke-width:5.3;fill:none"
+        d="m167.86 676.77h146.88"
+    />
+    <path
+        id="path4271"
+        style="stroke:#000000;stroke-width:5.3;fill:none"
+        d="m243.4 741.81 83.94-37.77"
+    />
+    <path
+        id="path4277"
+        style="stroke:#000000;stroke-width:5.3;fill:none"
+        d="m556.05 320.05c23.876-26.359 82.739 3.0032 94.424 14.688"
+    />
+  </g
+  >
+  <metadata
+    >
+    <rdf:RDF
+      >
+      <cc:Work
+        >
+        <dc:format
+          >image/svg+xml</dc:format
+        >
+        <dc:type
+            rdf:resource="http://purl.org/dc/dcmitype/StillImage"
+        />
+        <cc:license
+            rdf:resource="http://creativecommons.org/licenses/publicdomain/"
+        />
+        <dc:publisher
+          >
+          <cc:Agent
+              rdf:about="http://openclipart.org/"
+            >
+            <dc:title
+              >Openclipart</dc:title
+            >
+          </cc:Agent
+          >
+        </dc:publisher
+        >
+        <dc:title
+          >Duck</dc:title
+        >
+        <dc:date
+          >2010-07-10T02:41:07</dc:date
+        >
+        <dc:description
+          >duck,bird,chicken,cartoon,ak students.</dc:description
+        >
+        <dc:source
+          >https://openclipart.org/detail/72115/duck-by-dokjojojo</dc:source
+        >
+        <dc:creator
+          >
+          <cc:Agent
+            >
+            <dc:title
+              >dokjojojo</dc:title
+            >
+          </cc:Agent
+          >
+        </dc:creator
+        >
+        <dc:subject
+          >
+          <rdf:Bag
+            >
+            <rdf:li
+              >ak students.</rdf:li
+            >
+            <rdf:li
+              >bird</rdf:li
+            >
+            <rdf:li
+              >cartoon</rdf:li
+            >
+            <rdf:li
+              >chicken</rdf:li
+            >
+            <rdf:li
+              >duck</rdf:li
+            >
+          </rdf:Bag
+          >
+        </dc:subject
+        >
+      </cc:Work
+      >
+      <cc:License
+          rdf:about="http://creativecommons.org/licenses/publicdomain/"
+        >
+        <cc:permits
+            rdf:resource="http://creativecommons.org/ns#Reproduction"
+        />
+        <cc:permits
+            rdf:resource="http://creativecommons.org/ns#Distribution"
+        />
+        <cc:permits
+            rdf:resource="http://creativecommons.org/ns#DerivativeWorks"
+        />
+      </cc:License
+      >
+    </rdf:RDF
+    >
+  </metadata
+  >
+</svg
+>

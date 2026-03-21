@@ -256,11 +256,11 @@ const MINI_GAME_TUTORIALS = {
     ]
   },
   foosball_frenzy: {
-    intro: "The foosball lines stay in formation. Slide them laterally, then kick with space.",
+    intro: "The foosball lines stay in formation. Slide laterally, score fast, and chase the top class score.",
     steps: [
       "Use Left and Right arrows or the lane buttons to slide your bars side to side.",
       "Your players stay fixed on each rod like a real foosball table.",
-      "Press Space or Kick to fire the ball before the bot bars close the lane."
+      "Press Space or Kick to shoot before the moving keeper closes your lane."
     ]
   },
   soccer_shootout: {
@@ -403,7 +403,7 @@ const FALLBACK_BLOOKS = [
 ];
 
 const FALLBACK_MINI_GAMES = [
-  { id: "foosball_frenzy", name: "Foosball Frenzy", description: "Foosball bars stay in formation. Slide laterally and kick." },
+  { id: "foosball_frenzy", name: "Foosball Frenzy", description: "Foosball bars stay in formation. Slide laterally, score fast, and race the class leaderboard." },
   { id: "soccer_shootout", name: "Soccer Shootout", description: "Penalty kicks with lane + power choice." },
   { id: "snake", name: "Snake Strategy", description: "Simple controls, careful turns, and growing path strategy." },
   { id: "tower_stacker", name: "Tower Stacker", description: "Drop cute themed pieces and build a happy tower." },
@@ -1672,10 +1672,8 @@ function miniFoosballShotX(index, width = 720) {
 function miniFoosballEventText(payload) {
   const eventType = String(payload?.lastEvent?.type || "");
   if (eventType === "player_goal") return "GOAL! Your shot found the corner.";
-  if (eventType === "player_saved") return "The bot bars blocked it. Slide and try again.";
-  if (eventType === "bot_goal") return "Bot scores. Keep your bars in that lane to block.";
-  if (eventType === "bot_saved") return "Great block! You stopped the bot shot.";
-  if (eventType === "goalie_shift") return "The bot bars slid into a new lane.";
+  if (eventType === "player_saved") return "The keeper blocked it. Shift and fire again.";
+  if (eventType === "goalie_shift") return "The keeper slid into a new lane.";
   return "Slide the bars with Left/Right, then press Space to kick.";
 }
 
@@ -2029,8 +2027,7 @@ function playMiniFoosballShot(lastShot, goalieLane) {
 }
 
 function applyMiniFoosballState(payload, options = {}) {
-  const goals = Math.max(0, Number(payload?.goals ?? payload?.score?.you ?? 0));
-  const botGoals = Math.max(0, Number(payload?.botGoals ?? payload?.score?.bot ?? 0));
+  const goals = Math.max(0, Number(payload?.goals ?? payload?.score?.goals ?? 0));
   const shots = Math.max(0, Number(payload?.shots || 0));
   const saves = Math.max(0, Number(payload?.saves || 0));
   const accuracy = shots > 0 ? Math.round((goals / shots) * 100) : 0;
@@ -2047,10 +2044,10 @@ function applyMiniFoosballState(payload, options = {}) {
   const statsEl = document.getElementById("miniFoosStats");
   const lastEl = document.getElementById("miniFoosLast");
   if (scoreEl) {
-    scoreEl.textContent = `You ${goals} - ${botGoals} Bot`;
+    scoreEl.textContent = `Goals ${goals}`;
   }
   if (statsEl) {
-    statsEl.textContent = `${shots} shots | ${accuracy}% accuracy | ${saves} saves`;
+    statsEl.textContent = `${shots} shots | ${accuracy}% accuracy | ${saves} keeper blocks`;
   }
   if (lastEl) {
     lastEl.textContent = miniFoosballEventText(payload);
@@ -2896,9 +2893,9 @@ function renderMiniGame(type, data, actionLabel) {
     chests.innerHTML = `
       <div class="chest mini-foosball-chest">
         <h4>Foosball Frenzy</h4>
-        <p class="help">The players stay on fixed rods. Slide the bars with <strong>Left/Right</strong> and kick with <strong>Space</strong>.</p>
-        <div id="miniFoosScore" class="notice">You 0 - 0 Bot</div>
-        <div id="miniFoosStats" class="help">0 shots | 0% accuracy | 0 saves</div>
+        <p class="help">The players stay on fixed rods. Slide the bars with <strong>Left/Right</strong>, beat the keeper, and race the class leaderboard.</p>
+        <div id="miniFoosScore" class="notice">Goals 0</div>
+        <div id="miniFoosStats" class="help">0 shots | 0% accuracy | 0 keeper blocks</div>
         <div id="miniFoosballStage" class="mini-foosball-stage"></div>
         <div class="mini-foosball-controls">
           <div class="answers mini-foosball-lanes">
@@ -2908,7 +2905,7 @@ function renderMiniGame(type, data, actionLabel) {
           </div>
           <button id="miniFoosKickBtn" class="answer" data-mini-action="foos_kick">${escapeHtml(actionLabel || "Kick")} (Space)</button>
         </div>
-        <div id="miniFoosLast" class="help">Get ready. Keep your bars lined up and kick.</div>
+        <div id="miniFoosLast" class="help">Get ready. Beat the moving keeper and climb the leaderboard.</div>
       </div>`;
     initMiniFoosballPixi();
     applyMiniFoosballState(data, { forceSummaryText: true });

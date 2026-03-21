@@ -1894,7 +1894,11 @@
         const res = await fetch('/api/server-info');
         if (res.ok) { const data = await res.json(); setUrls(data.lanUrls || []); return; }
       } catch (_) { }
-      setUrls(['http://10.137.187.51:3000', 'http://10.198.68.73:3000']);
+      if (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        setUrls([window.location.origin]);
+        return;
+      }
+      setUrls([]);
     })();
     function setUrls(urls) {
       const container = document.getElementById('lanUrls');

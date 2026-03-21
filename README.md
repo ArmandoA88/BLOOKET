@@ -76,6 +76,12 @@ npm install
 npm start
 ```
 
+By default the server now attempts local/LAN `HTTPS` first, similar to the hosting approach used in `ArmandoA88/STUDENT-CHECKER`. If a browser shows a certificate warning on first load, accept it once and continue. To force plain HTTP instead, start with:
+
+```bash
+set HTTPS=false && npm start
+```
+
 Quick automated verification:
 
 ```bash

@@ -4,6 +4,8 @@ const fs = require("fs");
 const crypto = require("crypto");
 const express = require("express");
 const http = require("http");
+const https = require("https");
+const forge = require("node-forge");
 const { Server } = require("socket.io");
 const multer = require("multer");
 const XLSX = require("xlsx");
@@ -20,6 +22,8 @@ const SESSION_SECRET = process.env.SESSION_SECRET || "change-this-local-session-
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
 const GOOGLE_AUTH_ENABLED = GOOGLE_CLIENT_ID.length > 0 && GOOGLE_CLIENT_SECRET.length > 0;
+const HTTPS_MODE = String(process.env.HTTPS || "auto").trim().toLowerCase();
+const LISTEN_HOST = process.env.HOST || "0.0.0.0";
 
 const QUESTION_BANK = [
   {
@@ -1466,6 +1470,62 @@ function resolveGoogleCallbackUrl(req) {
   return `${protocol}://${host}/auth/google/callback`;
 }
 
+function httpsRequested() {
+  return !["0", "false", "off", "http"].includes(HTTPS_MODE);
+}
+
+function generateRuntimeTlsOptions() {
+  const pki = forge.pki;
+  const keys = pki.rsa.generateKeyPair(2048);
+  const cert = pki.createCertificate();
+  const lanIps = getLanIpv4Addresses();
+
+  cert.publicKey = keys.publicKey;
+  cert.serialNumber = String(Date.now());
+  cert.validity.notBefore = new Date();
+  cert.validity.notAfter = new Date();
+  cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 5);
+
+  const attrs = [
+    { name: "commonName", value: "localhost" },
+    { name: "organizationName", value: "QuizArena" }
+  ];
+  cert.setSubject(attrs);
+  cert.setIssuer(attrs);
+  cert.setExtensions([
+    { name: "basicConstraints", cA: false },
+    { name: "keyUsage", digitalSignature: true, keyEncipherment: true },
+    { name: "extKeyUsage", serverAuth: true },
+    {
+      name: "subjectAltName",
+      altNames: [
+        { type: 2, value: "localhost" },
+        { type: 7, ip: "127.0.0.1" },
+        ...lanIps.map((ip) => ({ type: 7, ip }))
+      ]
+    }
+  ]);
+  cert.sign(keys.privateKey, forge.md.sha256.create());
+
+  return {
+    key: pki.privateKeyToPem(keys.privateKey),
+    cert: pki.certificateToPem(cert)
+  };
+}
+
+function loadTlsOptions() {
+  if (!httpsRequested()) {
+    return null;
+  }
+
+  try {
+    return generateRuntimeTlsOptions();
+  } catch (error) {
+    console.warn(`HTTPS certificate generation failed: ${error?.message || error}`);
+    return null;
+  }
+}
+
 function pathRequiresLogin(pathname) {
   if (!GOOGLE_AUTH_ENABLED) {
     return false;
@@ -1475,8 +1535,6 @@ function pathRequiresLogin(pathname) {
 }
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
 app.set("trust proxy", true);
 app.use(express.json());
 const quizUpload = multer({
@@ -1492,9 +1550,14 @@ const sessionMiddleware = session({
   cookie: {
     httpOnly: true,
     sameSite: "lax",
-    secure: false
+    secure: "auto"
   }
 });
+
+const tlsOptions = loadTlsOptions();
+const serverProtocol = tlsOptions ? "https" : "http";
+const server = tlsOptions ? https.createServer(tlsOptions, app) : http.createServer(app);
+const io = new Server(server);
 
 const games = new Map();
 const socketToGame = new Map();
@@ -2026,10 +2089,11 @@ app.get("/api/server-info", (_req, res) => {
   const activeRoom = activeRoomSummary();
 
   res.json({
+    protocol: serverProtocol,
     port,
-    localhost: `http://localhost:${port}`,
+    localhost: `${serverProtocol}://localhost:${port}`,
     lanIps,
-    lanUrls: lanIps.map((ip) => `http://${ip}:${port}`),
+    lanUrls: lanIps.map((ip) => `${serverProtocol}://${ip}:${port}`),
     activeRoom
   });
 });
@@ -3913,15 +3977,13 @@ function hostMiniGameProgressRow(state) {
     const goals = Math.max(0, Number(state.goals || 0));
     const shots = Math.max(0, Number(state.shots || 0));
     const saves = Math.max(0, Number(state.saves || 0));
-    const botGoals = Math.max(0, Number(state.botGoals || 0));
     const accuracy = shots > 0 ? Math.round((goals / shots) * 100) : 0;
     return {
-      metric: goals * 210 + accuracy * 2 + saves * 28 - botGoals * 45,
+      metric: goals * 240 + accuracy * 2 + saves * 18,
       progress: goals,
       goals,
       shots,
       saves,
-      botGoals,
       accuracy,
       completed: false
     };
@@ -4291,7 +4353,6 @@ function clampFoosballLane(lane) {
 
 function foosballStatePayload(state) {
   const goals = Math.max(0, Number(state?.goals || 0));
-  const botGoals = Math.max(0, Number(state?.botGoals || 0));
   const shots = Math.max(0, Number(state?.shots || 0));
   const saves = Math.max(0, Number(state?.saves || 0));
   return {
@@ -4299,12 +4360,10 @@ function foosballStatePayload(state) {
     lane: clampFoosballLane(state?.lane),
     goalieLane: clampFoosballLane(state?.goalieLane),
     goals,
-    botGoals,
     shots,
     saves,
     score: {
-      you: goals,
-      bot: botGoals
+      goals
     },
     lastShot: state?.lastShot || null,
     lastEvent: state?.lastEvent || null,
@@ -4330,7 +4389,6 @@ function tickFoosballMatch(game) {
   }
 
   const now = Date.now();
-  let progressChanged = false;
 
   for (const [playerId, state] of game.chestPhase.entries()) {
     if (!state || state.type !== "foosball_frenzy") {
@@ -4360,33 +4418,9 @@ function tickFoosballMatch(game) {
       }
     }
 
-    state.botMeter = Math.max(0, Number(state.botMeter || 0)) + tickMs * (0.04 + tier * 0.009);
-    if (state.botMeter >= 100) {
-      state.botMeter -= 100;
-      const shotLane = randomInt(0, 2);
-      const blockLane = clampFoosballLane(state.lane);
-      const blocked = shotLane === blockLane && Math.random() < 0.57;
-      if (!blocked) {
-        state.botGoals = Math.max(0, Number(state.botGoals || 0)) + 1;
-        progressChanged = true;
-      }
-      state.lastEventSeq = Math.max(0, Number(state.lastEventSeq || 0)) + 1;
-      state.lastEvent = {
-        seq: state.lastEventSeq,
-        ts: now,
-        type: blocked ? "bot_saved" : "bot_goal",
-        lane: shotLane
-      };
-      stateChanged = true;
-    }
-
     if (stateChanged || state.tick % 8 === 0) {
       io.to(playerId).emit("minigame:state", foosballStatePayload(state));
     }
-  }
-
-  if (progressChanged) {
-    broadcastMiniGameProgress(game);
   }
 }
 
@@ -5305,7 +5339,6 @@ function createMiniGameState(type, difficulty = null) {
       lane: 1,
       goalieLane: randomInt(0, 2),
       goals: 0,
-      botGoals: 0,
       shots: 0,
       saves: 0,
       lastKickAt: 0,
@@ -5313,7 +5346,6 @@ function createMiniGameState(type, difficulty = null) {
       lastEventSeq: 0,
       lastShot: null,
       lastEvent: null,
-      botMeter: randomFloat(8, 52),
       tick: 0,
       lastTickAt: Date.now(),
       lastGoalieShiftAt: Date.now(),
@@ -5521,24 +5553,19 @@ function miniGameResult(game, player, state) {
 
   if (state.type === "foosball_frenzy") {
     const goals = Math.max(0, Number(state.goals || 0));
-    const botGoals = Math.max(0, Number(state.botGoals || 0));
     const shots = Math.max(0, Number(state.shots || 0));
     const saves = Math.max(0, Number(state.saves || 0));
     const accuracy = shots > 0 ? goals / shots : 0;
-    const duelBonus = goals > botGoals ? 220 : goals === botGoals ? 90 : 0;
     const bonus = Math.max(
       110,
       130 +
       goals * 170 +
       saves * 22 +
-      Math.round(accuracy * 160) +
-      Math.max(0, 3 - botGoals) * 30 +
-      duelBonus
+      Math.round(accuracy * 180)
     );
-    const duelText = goals > botGoals ? "won" : goals < botGoals ? "lost" : "tied";
     return {
       bonus,
-      text: `${player.name} scored ${goals} on ${shots} shots and ${duelText} ${goals}-${botGoals} vs Bot for +${bonus} ${unit}.`
+      text: `${player.name} scored ${goals} goals on ${shots} shots with ${Math.round(accuracy * 100)}% accuracy for +${bonus} ${unit}.`
     };
   }
 
@@ -7204,11 +7231,18 @@ setInterval(() => {
   }
 }, 15 * 60 * 1000);
 
-server.listen(PORT, () => {
+server.listen(PORT, LISTEN_HOST, () => {
   const port = Number(PORT);
-  const lanUrls = getLanIpv4Addresses().map((ip) => `http://${ip}:${port}`);
+  const localhostUrl = `${serverProtocol}://localhost:${port}`;
+  const lanUrls = getLanIpv4Addresses().map((ip) => `${serverProtocol}://${ip}:${port}`);
 
-  console.log(`Blooket-style game server listening on http://localhost:${port}`);
+  console.log(`Blooket-style game server listening on ${localhostUrl}`);
+  if (serverProtocol === "https") {
+    console.log("Self-signed HTTPS is enabled for local/LAN access. Browsers may ask you to accept the security warning once.");
+    console.log("TLS cert source: runtime-generated (includes localhost + current LAN IPs in subjectAltName).");
+  } else {
+    console.log("HTTPS is disabled or unavailable, so the app is serving over HTTP.");
+  }
   if (lanUrls.length > 0) {
     console.log("Chromebook/LAN join URLs:");
     for (const url of lanUrls) {

@@ -283,7 +283,7 @@ const requestedMiniGameType = String(hostPageParams.get("mini") || "")
 const requestedQuestionSetId = String(hostPageParams.get("set") || "").trim();
 const requestedHostName = String(hostPageParams.get("hostName") || "").trim();
 const FALLBACK_MINI_GAMES = [
-  { id: "foosball_frenzy", name: "Foosball Frenzy", description: "Foosball bars stay in formation. Slide laterally and kick." },
+  { id: "foosball_frenzy", name: "Foosball Frenzy", description: "Foosball bars stay in formation. Slide laterally, score fast, and race the class leaderboard." },
   { id: "snake", name: "Snake Strategy", description: "Simple controls, careful turns, and growing path strategy." },
   { id: "tower_stacker", name: "Tower Stacker", description: "Stack themed critters into the tallest tower you can keep standing." },
   { id: "space_invaders", name: "Space Invaders", description: "Arcade survival shooter with classroom-friendly pacing." }
@@ -1256,6 +1256,64 @@ function hideMiniGameDashboard() {
   activeMiniGameType = "";
 }
 
+function miniGameRankingValue(type, player) {
+  if (type === "tap_rush") return `${Number(player.progress || 0)} taps`;
+  if (type === "reaction_duel") {
+    if (player.falseStart === true) return "False Start";
+    if (player.reacted === true) return `${Number(player.reactionMs || 0)} ms`;
+    return "Waiting";
+  }
+  if (type === "soccer_shootout") return `${Number(player.goals || 0)} goals`;
+  if (type === "foosball_frenzy") return `${Number(player.goals || 0)} goals`;
+  if (type === "tower_stacker") return `${Math.round(Number(player.metric || 0))} pts`;
+  if (type === "snake") return `${Number(player.foodsEaten || 0)} snacks`;
+  if (type === "sequence_memory") return `${Number(player.progress || 0)}/${Math.max(1, Number(player.total || 0))}`;
+  if (type === "obstacle_dodge") return `${Number(player.safeTurns || 0)} safe`;
+  if (type === "precision_stop") {
+    if (player.submitted !== true) return "Pending";
+    return `${Number(player.diff || 0)} away`;
+  }
+  if (type === "word_scramble") return player.solved === true ? "Solved" : `Attempts ${Number(player.attempts || 0)}`;
+  return `${Math.round(Number(player.metric || player.score || 0))}`;
+}
+
+function buildMiniGameRankingsTable(type, players) {
+  if (!Array.isArray(players) || players.length === 0) {
+    return "";
+  }
+
+  return `
+    <div class="host-mini-rankings">
+      <div class="host-mini-rankings-title">Live Rankings</div>
+      <table class="host-mini-rankings-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Student</th>
+            <th>Current Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${players
+            .map(
+              (player) => `
+              <tr${Number(player.rank || 0) === 1 ? ' class="leader-row"' : ""}>
+                <td>${Number(player.rank || 0)}</td>
+                <td>
+                  <span class="blook-name-stack">
+                    <span class="blook-top-icon">${escapeHtml(player.blook?.icon || "?")}</span>
+                    <span class="player-label">${escapeHtml(player.name)}</span>
+                  </span>
+                </td>
+                <td>${escapeHtml(miniGameRankingValue(type, player))}</td>
+              </tr>`
+            )
+            .join("")}
+        </tbody>
+      </table>
+    </div>`;
+}
+
 function renderMiniGameDashboard(payload) {
   if (!miniGameDashboardPanel || !miniGameDashboardBody) {
     return;
@@ -1314,7 +1372,8 @@ function renderMiniGameDashboard(payload) {
             </div>`;
           })
           .join("")}
-      </div>`;
+      </div>
+      ${buildMiniGameRankingsTable(type, players)}`;
     return;
   }
 
@@ -1338,7 +1397,8 @@ function renderMiniGameDashboard(payload) {
             </article>`;
           })
           .join("")}
-      </div>`;
+      </div>
+      ${buildMiniGameRankingsTable(type, players)}`;
     return;
   }
 
@@ -1367,7 +1427,8 @@ function renderMiniGameDashboard(payload) {
             </article>`;
           })
           .join("")}
-      </div>`;
+      </div>
+      ${buildMiniGameRankingsTable(type, players)}`;
     return;
   }
 
@@ -1377,7 +1438,6 @@ function renderMiniGameDashboard(payload) {
         ${players
           .map((player) => {
             const goals = Number(player.goals || 0);
-            const botGoals = Number(player.botGoals || 0);
             const shots = Number(player.shots || 0);
             const saves = Number(player.saves || 0);
             const accuracy = shots > 0 ? Math.round((goals / shots) * 100) : 0;
@@ -1387,12 +1447,13 @@ function renderMiniGameDashboard(payload) {
                 <span class="blook-top-icon">${escapeHtml(player.blook?.icon || "?")}</span>
                 <strong>${escapeHtml(player.name)}</strong>
               </div>
-              <div class="host-soccer-score">You ${goals} - ${botGoals} Bot</div>
-              <div class="help">${shots} shots | ${accuracy}% accuracy | ${saves} saves</div>
+              <div class="host-soccer-score">${goals} goals</div>
+              <div class="help">${shots} shots | ${accuracy}% accuracy | ${saves} keeper blocks</div>
             </article>`;
           })
           .join("")}
-      </div>`;
+      </div>
+      ${buildMiniGameRankingsTable(type, players)}`;
     return;
   }
 
@@ -1416,7 +1477,8 @@ function renderMiniGameDashboard(payload) {
             </article>`;
           })
           .join("")}
-      </div>`;
+      </div>
+      ${buildMiniGameRankingsTable(type, players)}`;
     return;
   }
 
@@ -1440,7 +1502,8 @@ function renderMiniGameDashboard(payload) {
             </article>`;
           })
           .join("")}
-      </div>`;
+      </div>
+      ${buildMiniGameRankingsTable(type, players)}`;
     return;
   }
 
@@ -1465,7 +1528,8 @@ function renderMiniGameDashboard(payload) {
             </article>`;
           })
           .join("")}
-      </div>`;
+      </div>
+      ${buildMiniGameRankingsTable(type, players)}`;
     return;
   }
 
@@ -1492,7 +1556,8 @@ function renderMiniGameDashboard(payload) {
             </article>`;
           })
           .join("")}
-      </div>`;
+      </div>
+      ${buildMiniGameRankingsTable(type, players)}`;
     return;
   }
 
@@ -1517,7 +1582,8 @@ function renderMiniGameDashboard(payload) {
             </article>`;
           })
           .join("")}
-      </div>`;
+      </div>
+      ${buildMiniGameRankingsTable(type, players)}`;
     return;
   }
 
@@ -1541,11 +1607,12 @@ function renderMiniGameDashboard(payload) {
             </article>`;
           })
           .join("")}
-      </div>`;
+      </div>
+      ${buildMiniGameRankingsTable(type, players)}`;
     return;
   }
 
-  miniGameDashboardBody.innerHTML = `<div class="help">No custom dashboard for ${escapeHtml(type)} yet.</div>`;
+  miniGameDashboardBody.innerHTML = `<div class="help">No custom dashboard for ${escapeHtml(type)} yet.</div>${buildMiniGameRankingsTable(type, players)}`;
 }
 
 function renderLeaderboard(players) {

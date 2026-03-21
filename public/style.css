@@ -2299,6 +2299,35 @@ body.play-fishing-mode #playCard.fishing-final-active .fishing-hud-right {
   background: rgba(10, 46, 24, 0.68);
 }
 
+.host-mini-rankings {
+  margin-top: 12px;
+  border: 1px solid rgba(151, 193, 255, 0.25);
+  border-radius: 12px;
+  background: rgba(3, 13, 28, 0.58);
+  overflow: hidden;
+}
+
+.host-mini-rankings-title {
+  padding: 10px 12px;
+  font-weight: 700;
+  color: #ffe7a8;
+  border-bottom: 1px solid rgba(151, 193, 255, 0.18);
+}
+
+.host-mini-rankings-table {
+  width: 100%;
+  margin: 0;
+}
+
+.host-mini-rankings-table th,
+.host-mini-rankings-table td {
+  padding: 10px 12px;
+}
+
+.host-mini-rankings-table .leader-row td {
+  background: rgba(255, 212, 71, 0.08);
+}
+
 .host-shot-row {
   display: flex;
   gap: 6px;

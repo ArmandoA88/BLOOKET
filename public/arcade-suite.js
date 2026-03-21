@@ -1309,17 +1309,78 @@ const crossingGame = (() => {
 
 const flappyGame = (() => {
   const spriteRoot = "/assets/arcade/sky-flap";
+  const customSpriteRoot = `${spriteRoot}/custom-sheet`;
   const birdSkins = [
-    { id: "bluebird", label: "1. Bluebird", image: loadSprite(`${spriteRoot}/bird_bluebird.svg`) },
-    { id: "eagle", label: "2. Bald Eagle", image: loadSprite(`${spriteRoot}/bird_bald_eagle.svg`) },
-    { id: "cardinal", label: "3. Cardinal", image: loadSprite(`${spriteRoot}/bird_cardinal.svg`) },
-    { id: "parrot", label: "4. Parrot", image: loadSprite(`${spriteRoot}/bird_parrot.svg`) },
-    { id: "toucan", label: "5. Toucan", image: loadSprite(`${spriteRoot}/bird_toucan.svg`) },
-    { id: "owl", label: "6. Owl", image: loadSprite(`${spriteRoot}/bird_owl.svg`) },
-    { id: "penguin", label: "7. Penguin", image: loadSprite(`${spriteRoot}/bird_penguin.svg`) },
-    { id: "flamingo", label: "8. Flamingo", image: loadSprite(`${spriteRoot}/bird_flamingo.svg`) },
-    { id: "hummingbird", label: "9. Hummingbird", image: loadSprite(`${spriteRoot}/bird_hummingbird.svg`) },
-    { id: "duck", label: "0. Duck", image: loadSprite(`${spriteRoot}/bird_duck.svg`) }
+    {
+      id: "parrot",
+      label: "1. Parrot",
+      frames: [loadSprite(`${customSpriteRoot}/parrot_stand.png`), loadSprite(`${customSpriteRoot}/parrot_fly.png`)],
+      drawW: 110,
+      drawH: 88
+    },
+    {
+      id: "eagle",
+      label: "2. Eagle",
+      frames: [loadSprite(`${customSpriteRoot}/eagle_glide.png`), loadSprite(`${customSpriteRoot}/eagle_flap.png`)],
+      drawW: 116,
+      drawH: 86
+    },
+    {
+      id: "cardinal",
+      label: "3. Cardinal",
+      frames: [loadSprite(`${customSpriteRoot}/cardinal_perch.png`), loadSprite(`${customSpriteRoot}/cardinal_flap.png`)],
+      drawW: 98,
+      drawH: 82
+    },
+    {
+      id: "penguin",
+      label: "4. Penguin",
+      frames: [loadSprite(`${customSpriteRoot}/penguin_walk.png`), loadSprite(`${customSpriteRoot}/penguin_flap.png`), loadSprite(`${customSpriteRoot}/penguin_wiggle.png`)],
+      drawW: 96,
+      drawH: 90
+    },
+    {
+      id: "toucan",
+      label: "5. Toucan",
+      frames: [loadSprite(`${customSpriteRoot}/toucan_perch.png`), loadSprite(`${customSpriteRoot}/toucan_flap.png`)],
+      drawW: 108,
+      drawH: 88
+    },
+    {
+      id: "puffin",
+      label: "6. Puffin",
+      frames: [loadSprite(`${customSpriteRoot}/puffin_stand.png`), loadSprite(`${customSpriteRoot}/puffin_flap.png`)],
+      drawW: 100,
+      drawH: 88
+    },
+    {
+      id: "bluejay",
+      label: "7. Blue Jay",
+      frames: [loadSprite(`${customSpriteRoot}/bluejay_stand.png`), loadSprite(`${customSpriteRoot}/bluejay_flap.png`)],
+      drawW: 106,
+      drawH: 86
+    },
+    {
+      id: "hummingbird",
+      label: "8. Hummingbird",
+      frames: [loadSprite(`${customSpriteRoot}/hummingbird_hover.png`), loadSprite(`${customSpriteRoot}/hummingbird_flap.png`), loadSprite(`${customSpriteRoot}/hummingbird_glide.png`)],
+      drawW: 96,
+      drawH: 82
+    },
+    {
+      id: "robin",
+      label: "9. Robin",
+      frames: [loadSprite(`${customSpriteRoot}/robin_stand.png`), loadSprite(`${customSpriteRoot}/robin_flap.png`)],
+      drawW: 102,
+      drawH: 82
+    },
+    {
+      id: "owl",
+      label: "0. Owl",
+      frames: [loadSprite(`${customSpriteRoot}/owl_stand.png`), loadSprite(`${customSpriteRoot}/owl_flap.png`)],
+      drawW: 106,
+      drawH: 90
+    }
   ];
 
   let selectedBirdIndex = 0;
@@ -1499,7 +1560,17 @@ const flappyGame = (() => {
 
   function drawSkyBird(state, time) {
     const tilt = clamp(state.birdVY / 760, -0.52, 0.6);
-    const image = birdSkins[state.birdIndex].image;
+    const skin = birdSkins[state.birdIndex];
+    const cycle = Math.floor(time * 12);
+    let frameIndex = 0;
+    if (skin.frames.length > 1) {
+      if (state.started && !state.gameOver) {
+        frameIndex = state.birdVY < -40 ? cycle % skin.frames.length : (cycle + 1) % skin.frames.length;
+      } else {
+        frameIndex = 0;
+      }
+    }
+    const image = skin.frames[frameIndex];
     ctx.save();
     ctx.translate(220, state.birdY);
     ctx.rotate(tilt);
@@ -1507,7 +1578,10 @@ const flappyGame = (() => {
       ctx.globalAlpha = 0.55 + Math.abs(Math.sin(time * 18)) * 0.35;
     }
     if (image.complete && image.naturalWidth) {
-      ctx.drawImage(image, -54, -40, 108, 80);
+      const scale = Math.min(skin.drawW / image.naturalWidth, skin.drawH / image.naturalHeight);
+      const width = image.naturalWidth * scale;
+      const height = image.naturalHeight * scale;
+      ctx.drawImage(image, -width / 2, -height / 2, width, height);
     } else {
       ctx.fillStyle = "#ffd447";
       ctx.beginPath();
@@ -1519,10 +1593,10 @@ const flappyGame = (() => {
 
   return {
     name: "Sky Flap",
-    description: "A richer flappy run with recognizable bird skins, pickup powers, hazard obstacles, and a brighter student-friendly HUD.",
+    description: "A richer flappy run with custom pixel-bird sprites, pickup powers, hazard obstacles, and a brighter student-friendly HUD.",
     controls: "Press Space or click to flap. Use keys 1-9 and 0, or the sidebar, to switch birds.",
     stageTitle: "Sky Flap",
-    stageHelp: "Pick from 10 real bird sprites, then grab shields and star bonuses while weaving through pipes and sky hazards.",
+    stageHelp: "Pick from 10 custom bird sprites from your sheet, then grab shields and star bonuses while weaving through pipes and sky hazards.",
     createState() {
       return {
         birdIndex: selectedBirdIndex,

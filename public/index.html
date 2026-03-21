@@ -171,6 +171,51 @@
       --card-glow: rgba(255, 211, 91, 0.24);
     }
 
+    .card-pong {
+      --card-accent: #60a5fa;
+      --card-glow: rgba(96, 165, 250, 0.24);
+    }
+
+    .card-maze {
+      --card-accent: #fcd34d;
+      --card-glow: rgba(252, 211, 77, 0.24);
+    }
+
+    .card-crossing {
+      --card-accent: #4ade80;
+      --card-glow: rgba(74, 222, 128, 0.24);
+    }
+
+    .card-flappy {
+      --card-accent: #38bdf8;
+      --card-glow: rgba(56, 189, 248, 0.24);
+    }
+
+    .card-whack {
+      --card-accent: #f59e0b;
+      --card-glow: rgba(245, 158, 11, 0.24);
+    }
+
+    .card-hoops {
+      --card-accent: #fb923c;
+      --card-glow: rgba(251, 146, 60, 0.24);
+    }
+
+    .card-dodge {
+      --card-accent: #f472b6;
+      --card-glow: rgba(244, 114, 182, 0.24);
+    }
+
+    .card-racer {
+      --card-accent: #93c5fd;
+      --card-glow: rgba(147, 197, 253, 0.24);
+    }
+
+    .card-fishing {
+      --card-accent: #22d3ee;
+      --card-glow: rgba(34, 211, 238, 0.24);
+    }
+
     /* Preview area */
     .card-preview {
       position: relative;
@@ -439,6 +484,418 @@
     .stack-piece.mid .stack-eye.right { right: 46px; }
     .stack-piece.top .stack-eye.left { left: 24px; }
     .stack-piece.top .stack-eye.right { right: 24px; }
+
+    .pong-preview {
+      position: relative;
+      background: linear-gradient(180deg, #07111d 0%, #10213a 100%);
+    }
+
+    .pong-preview::before {
+      content: '';
+      position: absolute;
+      inset: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: linear-gradient(90deg, transparent calc(50% - 2px), rgba(255, 255, 255, 0.2) calc(50% - 2px), rgba(255, 255, 255, 0.2) calc(50% + 2px), transparent calc(50% + 2px));
+    }
+
+    .pong-paddle,
+    .pong-ball {
+      position: absolute;
+      z-index: 2;
+    }
+
+    .pong-paddle {
+      width: 16px;
+      height: 88px;
+      border-radius: 10px;
+      top: 64px;
+      background: linear-gradient(180deg, #eef7ff, #60a5fa);
+    }
+
+    .pong-paddle.left { left: 56px; }
+    .pong-paddle.right { right: 56px; background: linear-gradient(180deg, #ecfeff, #34d399); }
+
+    .pong-ball {
+      width: 26px;
+      height: 26px;
+      left: calc(50% - 13px);
+      top: calc(50% - 13px);
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 0 24px rgba(255, 255, 255, 0.5);
+    }
+
+    .maze-preview {
+      position: relative;
+      background: #040912;
+      overflow: hidden;
+    }
+
+    .maze-preview::before {
+      content: '';
+      position: absolute;
+      inset: 16px;
+      border-radius: 20px;
+      background:
+        linear-gradient(90deg, rgba(59, 130, 246, 0.9) 0 10px, transparent 10px 100%) 38px 28px / 170px 10px no-repeat,
+        linear-gradient(90deg, rgba(59, 130, 246, 0.9) 0 10px, transparent 10px 100%) 68px 92px / 208px 10px no-repeat,
+        linear-gradient(0deg, rgba(59, 130, 246, 0.9) 0 10px, transparent 10px 100%) 72px 28px / 10px 118px no-repeat,
+        linear-gradient(0deg, rgba(59, 130, 246, 0.9) 0 10px, transparent 10px 100%) 248px 52px / 10px 122px no-repeat,
+        rgba(7, 12, 26, 0.96);
+      border: 1px solid rgba(96, 165, 250, 0.2);
+    }
+
+    .maze-player,
+    .maze-ghost,
+    .maze-dot {
+      position: absolute;
+      z-index: 2;
+    }
+
+    .maze-player {
+      width: 32px;
+      height: 32px;
+      left: 70px;
+      top: 112px;
+      border-radius: 50%;
+      background: #ffd447;
+    }
+
+    .maze-ghost {
+      width: 34px;
+      height: 34px;
+      right: 78px;
+      top: 86px;
+      border-radius: 18px 18px 10px 10px;
+      background: linear-gradient(180deg, #ff7c98, #ff4f70);
+    }
+
+    .maze-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 118px -34px 0 #fff, 182px 12px 0 #fff, 214px -26px 0 #ffd447;
+      left: 112px;
+      top: 118px;
+    }
+
+    .crossing-preview {
+      position: relative;
+      background: linear-gradient(180deg, #15385a 0%, #112f4c 42%, #2d2d34 42%, #2d2d34 74%, #1d6b34 74%, #1d6b34 100%);
+      overflow: hidden;
+    }
+
+    .crossing-preview::before,
+    .crossing-preview::after {
+      content: '';
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      height: 6px;
+      background: repeating-linear-gradient(90deg, rgba(255,255,255,0.18) 0 34px, transparent 34px 72px);
+    }
+
+    .crossing-preview::before { top: 108px; }
+    .crossing-preview::after { top: 150px; }
+
+    .crossing-log,
+    .crossing-car,
+    .crossing-frog {
+      position: absolute;
+      z-index: 2;
+    }
+
+    .crossing-log {
+      width: 112px;
+      height: 24px;
+      left: 50px;
+      top: 44px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #9a6b35, #7a532a);
+    }
+
+    .crossing-car {
+      width: 82px;
+      height: 34px;
+      right: 70px;
+      top: 126px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #fb7185, #e11d48);
+    }
+
+    .crossing-frog {
+      width: 34px;
+      height: 34px;
+      left: calc(50% - 17px);
+      bottom: 18px;
+      border-radius: 50%;
+      background: #4ade80;
+    }
+
+    .flappy-preview {
+      position: relative;
+      background: linear-gradient(180deg, #8bdcff 0%, #2e6ae3 100%);
+      overflow: hidden;
+    }
+
+    .flappy-preview::before {
+      content: '';
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 34px;
+      background: linear-gradient(180deg, #62c956, #3d8f35);
+    }
+
+    .flappy-pipe,
+    .flappy-bird {
+      position: absolute;
+      z-index: 2;
+    }
+
+    .flappy-pipe {
+      width: 52px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #3cd172, #1f9c4e);
+    }
+
+    .flappy-pipe.top { right: 112px; top: 0; height: 76px; }
+    .flappy-pipe.bottom { right: 112px; bottom: 34px; height: 78px; }
+
+    .flappy-bird {
+      width: 36px;
+      height: 36px;
+      left: 92px;
+      top: 92px;
+      border-radius: 50%;
+      background: #ffd447;
+      box-shadow: 16px 4px 0 -10px #f59e0b;
+    }
+
+    .whack-preview {
+      position: relative;
+      background: linear-gradient(180deg, #94d84d 0%, #2e7d32 100%);
+      overflow: hidden;
+    }
+
+    .whack-hole,
+    .whack-mole {
+      position: absolute;
+      z-index: 2;
+    }
+
+    .whack-hole {
+      width: 78px;
+      height: 28px;
+      border-radius: 50%;
+      background: #2d1408;
+    }
+
+    .whack-hole.one { left: 52px; bottom: 42px; }
+    .whack-hole.two { left: calc(50% - 39px); bottom: 42px; }
+    .whack-hole.three { right: 52px; bottom: 42px; }
+
+    .whack-mole {
+      width: 58px;
+      height: 66px;
+      left: calc(50% - 29px);
+      bottom: 52px;
+      border-radius: 30px 30px 18px 18px;
+      background: linear-gradient(180deg, #8c5a2f, #654321);
+    }
+
+    .hoops-preview {
+      position: relative;
+      background: linear-gradient(180deg, #10213a 0%, #31527f 100%);
+      overflow: hidden;
+    }
+
+    .hoops-preview::before {
+      content: '';
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 54px;
+      background: #f59e0b;
+    }
+
+    .hoop-backboard,
+    .hoop-rim,
+    .hoop-ball {
+      position: absolute;
+      z-index: 2;
+    }
+
+    .hoop-backboard {
+      width: 14px;
+      height: 88px;
+      right: 84px;
+      top: 42px;
+      background: #e5eef8;
+    }
+
+    .hoop-rim {
+      width: 72px;
+      height: 8px;
+      right: 96px;
+      top: 116px;
+      border-radius: 10px;
+      background: #ef4444;
+    }
+
+    .hoop-ball {
+      width: 34px;
+      height: 34px;
+      left: 110px;
+      top: 124px;
+      border-radius: 50%;
+      background: #f97316;
+    }
+
+    .dodge-preview {
+      position: relative;
+      background: linear-gradient(180deg, #09111b 0%, #182338 100%);
+      overflow: hidden;
+    }
+
+    .dodge-preview::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px) 0 0 / 42px 42px,
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px) 0 0 / 42px 42px;
+    }
+
+    .dodge-player,
+    .dodge-enemy,
+    .dodge-star {
+      position: absolute;
+      z-index: 2;
+      border-radius: 50%;
+    }
+
+    .dodge-player {
+      width: 34px;
+      height: 34px;
+      left: calc(50% - 17px);
+      top: 88px;
+      background: #38bdf8;
+    }
+
+    .dodge-enemy {
+      width: 28px;
+      height: 28px;
+      background: #fb7185;
+    }
+
+    .dodge-enemy.one { left: 70px; top: 56px; }
+    .dodge-enemy.two { right: 74px; top: 132px; }
+
+    .dodge-star {
+      width: 18px;
+      height: 18px;
+      right: 138px;
+      top: 60px;
+      background: #fcd34d;
+    }
+
+    .racer-preview {
+      position: relative;
+      background: linear-gradient(180deg, #0f172a 0%, #1f2937 100%);
+      overflow: hidden;
+    }
+
+    .racer-road {
+      position: absolute;
+      inset: 0 86px;
+      background: #30363f;
+    }
+
+    .racer-road::before,
+    .racer-road::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 8px;
+      background: repeating-linear-gradient(180deg, rgba(255,255,255,0.22) 0 34px, transparent 34px 72px);
+    }
+
+    .racer-road::before { left: calc(50% - 58px); }
+    .racer-road::after { right: calc(50% - 58px); }
+
+    .racer-car,
+    .racer-obstacle {
+      position: absolute;
+      z-index: 2;
+      width: 48px;
+      border-radius: 14px;
+    }
+
+    .racer-car {
+      height: 72px;
+      left: calc(50% - 24px);
+      bottom: 22px;
+      background: #f43f5e;
+    }
+
+    .racer-obstacle {
+      height: 58px;
+      right: 132px;
+      top: 38px;
+      background: #60a5fa;
+    }
+
+    .fishing-preview {
+      position: relative;
+      background: linear-gradient(180deg, #88e1ff 0%, #0d4b70 42%, #08304b 100%);
+      overflow: hidden;
+    }
+
+    .fishing-preview::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 44px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.75);
+    }
+
+    .fishing-boat,
+    .fishing-hook,
+    .fishing-fish {
+      position: absolute;
+      z-index: 2;
+    }
+
+    .fishing-boat {
+      width: 104px;
+      height: 24px;
+      left: calc(50% - 52px);
+      top: 36px;
+      border-radius: 18px;
+      background: #334155;
+    }
+
+    .fishing-hook {
+      width: 2px;
+      height: 88px;
+      left: calc(50% - 1px);
+      top: 52px;
+      background: #fff;
+      box-shadow: 0 88px 0 2px #fff;
+    }
+
+    .fishing-fish {
+      width: 44px;
+      height: 24px;
+      right: 78px;
+      bottom: 40px;
+      border-radius: 18px;
+      background: #22d3ee;
+    }
 
     /* Animated preview elements */
     .preview-emoji {
@@ -1142,6 +1599,206 @@
             <span class="pill">🎯 Local Duel</span>
           </div>
           <a class="card-btn" href="/air-hockey.html">▶ PLAY NOW</a>
+        </div>
+      </div>
+
+      <!-- Modern Pong -->
+      <div class="game-card card-pong">
+        <div class="card-preview pong-preview">
+          <span class="card-badge badge-multiplayer">vs CPU</span>
+          <span class="pong-paddle left"></span>
+          <span class="pong-paddle right"></span>
+          <span class="pong-ball"></span>
+        </div>
+        <div class="card-body">
+          <div class="card-icon">🏓</div>
+          <div class="card-title">Modern Pong</div>
+          <div class="card-desc">A cleaner, faster Pong duel with smart CPU reads, neon visuals, and rallies that heat up as each return lands.</div>
+          <div class="card-pills">
+            <span class="pill">🧠 CPU Match</span>
+            <span class="pill">⚡ Faster Rallies</span>
+            <span class="pill">🖱️ Mouse Ready</span>
+            <span class="pill">🎯 Angle Control</span>
+          </div>
+          <a class="card-btn" href="/arcade-suite.html?game=pong">▶ PLAY NOW</a>
+        </div>
+      </div>
+
+      <!-- Maze Chase -->
+      <div class="game-card card-maze">
+        <div class="card-preview maze-preview">
+          <span class="card-badge badge-single">Chase</span>
+          <span class="maze-player"></span>
+          <span class="maze-ghost"></span>
+          <span class="maze-dot"></span>
+        </div>
+        <div class="card-body">
+          <div class="card-icon">🟡</div>
+          <div class="card-title">Maze Chase</div>
+          <div class="card-desc">Pac-Man style pellet runs, power turns, and ghosts that start harmless until the route gets tight.</div>
+          <div class="card-pills">
+            <span class="pill">🧠 Route Planning</span>
+            <span class="pill">👻 Ghost Pressure</span>
+            <span class="pill">⚡ Power Pellets</span>
+            <span class="pill">❤️ 3 Lives</span>
+          </div>
+          <a class="card-btn" href="/arcade-suite.html?game=maze">▶ PLAY NOW</a>
+        </div>
+      </div>
+
+      <!-- River Crossing -->
+      <div class="game-card card-crossing">
+        <div class="card-preview crossing-preview">
+          <span class="card-badge badge-single">Arcade</span>
+          <span class="crossing-log"></span>
+          <span class="crossing-car"></span>
+          <span class="crossing-frog"></span>
+        </div>
+        <div class="card-body">
+          <div class="card-icon">🐸</div>
+          <div class="card-title">River Crossing</div>
+          <div class="card-desc">Frogger style lane hopping with logs, traffic, grass checkpoints, and fast reset loops for short sessions.</div>
+          <div class="card-pills">
+            <span class="pill">🚗 Traffic Lanes</span>
+            <span class="pill">🪵 Moving Logs</span>
+            <span class="pill">🎯 Goal Runs</span>
+            <span class="pill">⌨️ One-Hop Input</span>
+          </div>
+          <a class="card-btn" href="/arcade-suite.html?game=crossing">▶ PLAY NOW</a>
+        </div>
+      </div>
+
+      <!-- Sky Flap -->
+      <div class="game-card card-flappy">
+        <div class="card-preview flappy-preview">
+          <span class="card-badge badge-single">Tap Game</span>
+          <span class="flappy-pipe top"></span>
+          <span class="flappy-pipe bottom"></span>
+          <span class="flappy-bird"></span>
+        </div>
+        <div class="card-body">
+          <div class="card-icon">🐤</div>
+          <div class="card-title">Sky Flap</div>
+          <div class="card-desc">A Flappy style run built for instant retries, clean pipe gaps, and quick score pops that make kids want one more attempt.</div>
+          <div class="card-pills">
+            <span class="pill">🖱️ Click Or Tap</span>
+            <span class="pill">⚡ Fast Restarts</span>
+            <span class="pill">🟩 Pipe Gates</span>
+            <span class="pill">🏁 Endless Score</span>
+          </div>
+          <a class="card-btn" href="/arcade-suite.html?game=flappy">▶ PLAY NOW</a>
+        </div>
+      </div>
+
+      <!-- Whack-a-Mole -->
+      <div class="game-card card-whack">
+        <div class="card-preview whack-preview">
+          <span class="card-badge badge-single">Timer</span>
+          <span class="whack-hole one"></span>
+          <span class="whack-hole two"></span>
+          <span class="whack-hole three"></span>
+          <span class="whack-mole"></span>
+        </div>
+        <div class="card-body">
+          <div class="card-icon">🔨</div>
+          <div class="card-title">Whack-a-Mole</div>
+          <div class="card-desc">Arcade whack play with regular moles, golden bonus moles, and bombs that keep the board active for younger players.</div>
+          <div class="card-pills">
+            <span class="pill">⭐ Golden Bonus</span>
+            <span class="pill">💣 Bomb Risk</span>
+            <span class="pill">⏱️ 30s Round</span>
+            <span class="pill">🖱️ Click Targets</span>
+          </div>
+          <a class="card-btn" href="/arcade-suite.html?game=whack">▶ PLAY NOW</a>
+        </div>
+      </div>
+
+      <!-- Hoop Shot -->
+      <div class="game-card card-hoops">
+        <div class="card-preview hoops-preview">
+          <span class="card-badge badge-single">Skill Shot</span>
+          <span class="hoop-backboard"></span>
+          <span class="hoop-rim"></span>
+          <span class="hoop-ball"></span>
+        </div>
+        <div class="card-body">
+          <div class="card-icon">🏀</div>
+          <div class="card-title">Hoop Shot</div>
+          <div class="card-desc">Charge, aim, and release clean arcs into a moving hoop. Easy controls, but still enough timing to keep it engaging.</div>
+          <div class="card-pills">
+            <span class="pill">🎯 Aim + Charge</span>
+            <span class="pill">➡️ Moving Rim</span>
+            <span class="pill">📈 Skill Curve</span>
+            <span class="pill">🖱️ Pointer Friendly</span>
+          </div>
+          <a class="card-btn" href="/arcade-suite.html?game=basketball">▶ PLAY NOW</a>
+        </div>
+      </div>
+
+      <!-- Dodger Arena -->
+      <div class="game-card card-dodge">
+        <div class="card-preview dodge-preview">
+          <span class="card-badge badge-single">Survival</span>
+          <span class="dodge-player"></span>
+          <span class="dodge-enemy one"></span>
+          <span class="dodge-enemy two"></span>
+          <span class="dodge-star"></span>
+        </div>
+        <div class="card-body">
+          <div class="card-icon">💠</div>
+          <div class="card-title">Dodger Arena</div>
+          <div class="card-desc">Move freely in a hazard arena, last as long as possible, and collect stars only when the risk is worth it.</div>
+          <div class="card-pills">
+            <span class="pill">⌨️ Free Movement</span>
+            <span class="pill">🌟 Score Pickups</span>
+            <span class="pill">⚠️ Spawn Waves</span>
+            <span class="pill">🕒 Survival Points</span>
+          </div>
+          <a class="card-btn" href="/arcade-suite.html?game=dodge">▶ PLAY NOW</a>
+        </div>
+      </div>
+
+      <!-- Mini Racer -->
+      <div class="game-card card-racer">
+        <div class="card-preview racer-preview">
+          <span class="card-badge badge-single">3 Lanes</span>
+          <span class="racer-road"></span>
+          <span class="racer-obstacle"></span>
+          <span class="racer-car"></span>
+        </div>
+        <div class="card-body">
+          <div class="card-icon">🏎️</div>
+          <div class="card-title">Mini Racer</div>
+          <div class="card-desc">Arcade lane racing with rising speed, clean left-right controls, and nitro pickups that tempt risky lane swaps.</div>
+          <div class="card-pills">
+            <span class="pill">↔️ Lane Switch</span>
+            <span class="pill">⚡ Nitro Pickups</span>
+            <span class="pill">🚧 Traffic Dodge</span>
+            <span class="pill">📏 Distance Score</span>
+          </div>
+          <a class="card-btn" href="/arcade-suite.html?game=racer">▶ PLAY NOW</a>
+        </div>
+      </div>
+
+      <!-- Fish & Francis -->
+      <div class="game-card card-fishing">
+        <div class="card-preview fishing-preview">
+          <span class="card-badge badge-single">Catch Game</span>
+          <span class="fishing-boat"></span>
+          <span class="fishing-hook"></span>
+          <span class="fishing-fish"></span>
+        </div>
+        <div class="card-body">
+          <div class="card-icon">🎣</div>
+          <div class="card-title">Fish &amp; Francis</div>
+          <div class="card-desc">A Fishing Frenzy style catch game with a moving boat, a drop hook, and point values based on the fish you reel in.</div>
+          <div class="card-pills">
+            <span class="pill">🐟 Catch Values</span>
+            <span class="pill">🛶 Move The Boat</span>
+            <span class="pill">🪝 Drop + Reel</span>
+            <span class="pill">🌊 Blooket Style</span>
+          </div>
+          <a class="card-btn" href="/arcade-suite.html?game=fishing">▶ PLAY NOW</a>
         </div>
       </div>
 

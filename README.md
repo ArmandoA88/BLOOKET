@@ -8,8 +8,8 @@ A localhost-first realtime classroom quiz game with host controls and student jo
 - Student join screen for nickname + game code
 - Main page shortcut to launch mini-game testing quickly
 - Hidden blook unlock economy with themed packs: Sports, Anime, Superheroes, Science, Nature, Book Legends
-- Book Legends now uses local kid-friendly internet-downloaded image assets instead of emoji-only pack art
-- `npm run download:pack-images` refreshes the Book Legends internet-downloaded image set
+- Book Legends now uses internet-sourced character art instead of book-cover images
+- `npm run download:pack-images` downloads or refreshes the Book Legends character art set
 - First pack open is free, then packs cost coins (default: 20)
 - Coins are awarded after each game from score + correct answers + final rank
 - Duplicate blooks can be sold back at 30% of pack cost
@@ -88,7 +88,7 @@ Quick automated verification:
 npm run smoke
 ```
 
-Download the current Book Legends image set from internet sources:
+Download or refresh the current Book Legends character art set:
 
 ```bash
 npm run download:pack-images

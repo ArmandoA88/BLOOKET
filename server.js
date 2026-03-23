@@ -13,6 +13,7 @@ const session = require("express-session");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const { BOOK_LEGENDS_BLOOKS } = require("./data/pack-blooks");
+const { SCIENCE_BLOOKS, SPACE_BLOOKS } = require("./data/science-space-blooks");
 
 const PORT = process.env.PORT || 3000;
 const GAME_CODE_LENGTH = 6;
@@ -258,6 +259,41 @@ function loadStudentBlooks() {
 
 const STUDENT_BLOOKS = loadStudentBlooks();
 
+const NFL_TEAM_BLOOKS = [
+  { id: "nfl-cardinals", name: "Arizona Cardinals", image: "/assets/sports/nfl-cardinals.png", icon: "🐦", rarity: "Common", sport: "NFL" },
+  { id: "nfl-falcons", name: "Atlanta Falcons", image: "/assets/sports/nfl-falcons.png", icon: "🦅", rarity: "Common", sport: "NFL" },
+  { id: "nfl-ravens", name: "Baltimore Ravens", image: "/assets/sports/nfl-ravens.png", icon: "🐦", rarity: "Common", sport: "NFL" },
+  { id: "nfl-bills", name: "Buffalo Bills", image: "/assets/sports/nfl-bills.png", icon: "🦬", rarity: "Common", sport: "NFL" },
+  { id: "nfl-panthers", name: "Carolina Panthers", image: "/assets/sports/nfl-panthers.png", icon: "🐆", rarity: "Common", sport: "NFL" },
+  { id: "nfl-bears", name: "Chicago Bears", image: "/assets/sports/nfl-bears.png", icon: "🐻", rarity: "Common", sport: "NFL" },
+  { id: "nfl-bengals", name: "Cincinnati Bengals", image: "/assets/sports/nfl-bengals.png", icon: "🐅", rarity: "Common", sport: "NFL" },
+  { id: "nfl-browns", name: "Cleveland Browns", image: "/assets/sports/nfl-browns.png", icon: "🐾", rarity: "Common", sport: "NFL" },
+  { id: "nfl-cowboys", name: "Dallas Cowboys", image: "/assets/sports/nfl-cowboys.png", icon: "⭐", rarity: "Common", sport: "NFL" },
+  { id: "nfl-broncos", name: "Denver Broncos", image: "/assets/sports/nfl-broncos.png", icon: "🐎", rarity: "Common", sport: "NFL" },
+  { id: "nfl-lions", name: "Detroit Lions", image: "/assets/sports/nfl-lions.png", icon: "🦁", rarity: "Common", sport: "NFL" },
+  { id: "nfl-packers", name: "Green Bay Packers", image: "/assets/sports/nfl-packers.png", icon: "🧀", rarity: "Common", sport: "NFL" },
+  { id: "nfl-texans", name: "Houston Texans", image: "/assets/sports/nfl-texans.png", icon: "🐂", rarity: "Common", sport: "NFL" },
+  { id: "nfl-colts", name: "Indianapolis Colts", image: "/assets/sports/nfl-colts.png", icon: "🐎", rarity: "Common", sport: "NFL" },
+  { id: "nfl-jaguars", name: "Jacksonville Jaguars", image: "/assets/sports/nfl-jaguars.png", icon: "🐆", rarity: "Common", sport: "NFL" },
+  { id: "nfl-chiefs", name: "Kansas City Chiefs", image: "/assets/sports/nfl-chiefs.png", icon: "🏈", rarity: "Common", sport: "NFL" },
+  { id: "nfl-raiders", name: "Las Vegas Raiders", image: "/assets/sports/nfl-raiders.png", icon: "🏴‍☠️", rarity: "Common", sport: "NFL" },
+  { id: "nfl-chargers", name: "Los Angeles Chargers", image: "/assets/sports/nfl-chargers.png", icon: "⚡", rarity: "Common", sport: "NFL" },
+  { id: "nfl-rams", name: "Los Angeles Rams", image: "/assets/sports/nfl-rams.png", icon: "🐏", rarity: "Common", sport: "NFL" },
+  { id: "nfl-dolphins", name: "Miami Dolphins", image: "/assets/sports/nfl-dolphins.png", icon: "🐬", rarity: "Common", sport: "NFL" },
+  { id: "nfl-vikings", name: "Minnesota Vikings", image: "/assets/sports/nfl-vikings.png", icon: "🛡️", rarity: "Common", sport: "NFL" },
+  { id: "nfl-patriots", name: "New England Patriots", image: "/assets/sports/nfl-patriots.png", icon: "🎖️", rarity: "Common", sport: "NFL" },
+  { id: "nfl-saints", name: "New Orleans Saints", image: "/assets/sports/nfl-saints.png", icon: "⚜️", rarity: "Common", sport: "NFL" },
+  { id: "nfl-giants", name: "New York Giants", image: "/assets/sports/nfl-giants.png", icon: "🗽", rarity: "Common", sport: "NFL" },
+  { id: "nfl-jets", name: "New York Jets", image: "/assets/sports/nfl-jets.png", icon: "✈️", rarity: "Common", sport: "NFL" },
+  { id: "nfl-eagles", name: "Philadelphia Eagles", image: "/assets/sports/nfl-eagles.png", icon: "🦅", rarity: "Common", sport: "NFL" },
+  { id: "nfl-steelers", name: "Pittsburgh Steelers", image: "/assets/sports/nfl-steelers.png", icon: "🛠️", rarity: "Common", sport: "NFL" },
+  { id: "nfl-49ers", name: "San Francisco 49ers", image: "/assets/sports/nfl-49ers.png", icon: "⛏️", rarity: "Common", sport: "NFL" },
+  { id: "nfl-seahawks", name: "Seattle Seahawks", image: "/assets/sports/nfl-seahawks.png", icon: "🦅", rarity: "Common", sport: "NFL" },
+  { id: "nfl-buccaneers", name: "Tampa Bay Buccaneers", image: "/assets/sports/nfl-buccaneers.png", icon: "🏴‍☠️", rarity: "Common", sport: "NFL" },
+  { id: "nfl-titans", name: "Tennessee Titans", image: "/assets/sports/nfl-titans.png", icon: "🔱", rarity: "Common", sport: "NFL" },
+  { id: "nfl-commanders", name: "Washington Commanders", image: "/assets/sports/nfl-commanders.png", icon: "🎖️", rarity: "Common", sport: "NFL" }
+];
+
 const BLOOK_PACKS = [
   {
     id: "athletes",
@@ -290,7 +326,7 @@ const BLOOK_PACKS = [
   {
     id: "sports",
     name: "Sports Pack",
-    description: "20 elite NFL and World Soccer teams with real logos. Pick a champion!",
+    description: "Featured NFL and World Soccer teams with real logos. Pick a champion!",
     price: 0,
     blooks: [
       { id: "nfl-chiefs", name: "Kansas City Chiefs", image: "/assets/sports/nfl-chiefs.png", icon: "🏈", rarity: "Common", sport: "NFL" },
@@ -316,6 +352,13 @@ const BLOOK_PACKS = [
     ]
   },
   {
+    id: "nfl-teams",
+    name: "NFL Teams Pack",
+    description: "All 32 NFL teams with real logos. Pick your favorite franchise!",
+    price: 0,
+    blooks: NFL_TEAM_BLOOKS
+  },
+  {
     id: "students",
     name: "Students Pack",
     description: "All student face blooks from your uploaded class photos. Everyone can use them.",
@@ -335,7 +378,7 @@ const BLOOK_PACKS = [
       { id: "anime-edward", name: "Edward Elric", image: "/assets/anime/edward.jpg", icon: "⚗️", rarity: "Common", series: "Fullmetal Alchemist" },
       { id: "anime-sasuke", name: "Sasuke Uchiha", image: "/assets/anime/sasuke.jpg", icon: "🌑", rarity: "Common", series: "Naruto" },
       { id: "anime-killua", name: "Killua Zoldyck", image: "/assets/anime/killua.jpg", icon: "⚡", rarity: "Common", series: "Hunter x Hunter" },
-      { id: "anime-gon", name: "Gon Freecss", image: "/assets/anime/gon.jpg", icon: "🎣", rarity: "Common", series: "Hunter x Hunter" },
+      { id: "anime-gon", name: "Son Gohan", image: "/assets/anime/gohan.jpg", icon: "🟠", rarity: "Common", series: "Dragon Ball Z" },
       { id: "anime-lelouch", name: "Lelouch vi Britannia", image: "/assets/anime/lelouch.jpg", icon: "♟️", rarity: "Common", series: "Code Geass" },
       { id: "anime-light", name: "Light Yagami", image: "/assets/anime/light.jpg", icon: "📓", rarity: "Common", series: "Death Note" },
       { id: "anime-spike", name: "Spike Spiegel", image: "/assets/anime/spike.jpg", icon: "🚀", rarity: "Common", series: "Cowboy Bebop" },
@@ -345,9 +388,9 @@ const BLOOK_PACKS = [
       { id: "anime-levi", name: "Levi Ackerman", image: "/assets/anime/levi.jpg", icon: "🗡️", rarity: "Common", series: "Attack on Titan" },
       { id: "anime-deku", name: "Izuku Midoriya", image: "/assets/anime/deku.jpg", icon: "💪", rarity: "Common", series: "My Hero Academia" },
       { id: "anime-tanjiro", name: "Tanjiro Kamado", image: "/assets/anime/tanjiro.jpg", icon: "🌊", rarity: "Common", series: "Demon Slayer" },
-      { id: "anime-meliodas", name: "Meliodas", image: "/assets/anime/meliodas.jpg", icon: "🐗", rarity: "Common", series: "Seven Deadly Sins" },
+      { id: "anime-meliodas", name: "Vegeta", image: "/assets/anime/vegeta.jpg", icon: "💥", rarity: "Common", series: "Dragon Ball Z" },
       { id: "anime-rimuru", name: "Rimuru Tempest", image: "/assets/anime/rimuru.jpg", icon: "🌀", rarity: "Common", series: "That Time I Got Reincarnated as a Slime" },
-      { id: "anime-yusuke", name: "Yusuke Urameshi", image: "/assets/anime/yusuke.jpg", icon: "👻", rarity: "Common", series: "Yu Yu Hakusho" }
+      { id: "anime-yusuke", name: "Trunks", image: "/assets/anime/trunks.jpg", icon: "🗡️", rarity: "Common", series: "Dragon Ball Z" }
     ]
   },
 
@@ -393,17 +436,14 @@ const BLOOK_PACKS = [
   {
     id: "science",
     name: "Science Pack",
-    description: "Lab, space, and invention vibes.",
-    blooks: [
-      { id: "science-lab-rat", name: "Lab Rat", icon: "🧪", rarity: "Common" },
-      { id: "science-rocket-cadet", name: "Rocket Cadet", icon: "🚀", rarity: "Common" },
-      { id: "science-robot-tech", name: "Robot Tech", icon: "🛠️", rarity: "Rare" },
-      { id: "science-dna-hacker", name: "DNA Hacker", icon: "🧬", rarity: "Rare" },
-      { id: "science-circuit-master", name: "Circuit Master", icon: "💡", rarity: "Epic" },
-      { id: "science-nebula-scout", name: "Nebula Scout", icon: "🪐", rarity: "Epic" },
-      { id: "science-quantum-chief", name: "Quantum Chief", icon: "⚛️", rarity: "Legendary" },
-      { id: "science-time-architect", name: "Time Architect", icon: "⌛", rarity: "Legendary" }
-    ]
+    description: "Illustrated lab, invention, and discovery blooks.",
+    blooks: SCIENCE_BLOOKS
+  },
+  {
+    id: "space",
+    name: "Space Pack",
+    description: "20 cosmic blooks with ships, stations, explorers, and deep-space legends.",
+    blooks: SPACE_BLOOKS
   },
   {
     id: "nature",

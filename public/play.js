@@ -3304,7 +3304,7 @@ function renderPackTabs() {
     return;
   }
 
-  const preferredPackOrder = ["students", "superheroes", "athletes", "sports", "anime", "books", "science", "nature"];
+  const preferredPackOrder = ["students", "superheroes", "athletes", "nfl-teams", "sports", "anime", "books", "science", "space", "nature"];
   const orderIndex = new Map(preferredPackOrder.map((id, index) => [id, index]));
   const sortedPacks = blookPacks.slice().sort((left, right) => {
     const leftIdx = orderIndex.has(left.id) ? orderIndex.get(left.id) : preferredPackOrder.length + 1;

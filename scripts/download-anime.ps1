@@ -11,7 +11,7 @@ $characters = @(
   @{ id=11;    file="edward.jpg";    name="Edward"   },
   @{ id=13;    file="sasuke.jpg";    name="Sasuke"   },
   @{ id=3;     file="killua.jpg";    name="Killua"   },
-  @{ id=2;     file="gon.jpg";       name="Gon"      },
+  @{ id=2104;  file="gohan.jpg";     name="Gohan"    },
   @{ id=417;   file="lelouch.jpg";   name="Lelouch"  },
   @{ id=80;    file="light.jpg";     name="Light"    },
   @{ id=1;     file="spike.jpg";     name="Spike"    },
@@ -21,9 +21,9 @@ $characters = @(
   @{ id=34219; file="levi.jpg";      name="Levi"     },
   @{ id=124785;file="deku.jpg";      name="Deku"     },
   @{ id=163268;file="tanjiro.jpg";   name="Tanjiro"  },
-  @{ id=100427;file="meliodas.jpg";  name="Meliodas" },
+  @{ id=913;   file="vegeta.jpg";    name="Vegeta"   },
   @{ id=152043;file="rimuru.jpg";    name="Rimuru"   },
-  @{ id=109;   file="yusuke.jpg";    name="Yusuke"   }
+  @{ id=2707;  file="trunks.jpg";    name="Trunks"   }
 )
 
 $headers = @{ "User-Agent" = "BlooketArcade/1.0" }

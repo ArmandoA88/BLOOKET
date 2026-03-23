@@ -3,108 +3,180 @@ const path = require("path");
 const { BOOK_LEGENDS_BLOOKS } = require("../data/pack-blooks");
 
 const BOOKS_DIR = path.join(process.cwd(), "public", "assets", "books");
+const MIN_BYTES = 4 * 1024;
+const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Codex Book Legends Downloader";
+const SHOULD_REFRESH = process.argv.includes("--refresh");
 
-const BOOK_QUERIES = {
-  "book-harry": "Harry Potter and the Sorcerer's Stone",
-  "book-hermione": "Harry Potter and the Sorcerer's Stone",
-  "book-ron": "Harry Potter and the Sorcerer's Stone",
-  "book-matilda": "Matilda Roald Dahl",
-  "book-greg": "Diary of a Wimpy Kid",
-  "book-percy": "The Lightning Thief",
-  "book-alice": "Alice's Adventures in Wonderland",
-  "book-dorothy": "The Wonderful Wizard of Oz",
-  "book-charlie": "Charlie and the Chocolate Factory",
-  "book-wonka": "Charlie and the Chocolate Factory",
-  "book-peter": "Peter Pan",
-  "book-pippi": "Pippi Longstocking",
-  "book-paddington": "A Bear Called Paddington",
-  "book-pooh": "Winnie-the-Pooh",
-  "book-charlotte": "Charlotte's Web",
-  "book-wilbur": "Charlotte's Web",
-  "book-stuart": "Stuart Little",
-  "book-cat-hat": "The Cat in the Hat",
-  "book-horton": "Horton Hears a Who!",
-  "book-dogman": "Dog Man",
-  "book-underpants": "The Adventures of Captain Underpants",
-  "book-auggie": "Wonder R. J. Palacio",
-  "book-ivan": "The One and Only Ivan",
-  "book-mercy": "Mercy Watson to the Rescue",
-  "book-junie": "Junie B. Jones and the Stupid Smelly Bus",
-  "book-geronimo": "Geronimo Stilton The Lost Treasure of the Emerald Eye",
-  "book-frizzle": "The Magic School Bus Inside the Earth",
-  "book-arthur": "Arthur's Nose",
-  "book-clifford": "Clifford the Big Red Dog",
-  "book-george": "Curious George"
+const BOOK_LEGENDS_IMAGE_SOURCES = {
+  "harry-potter.jpg": [
+    "https://static.wikia.nocookie.net/harrypotter/images/c/ce/Harry_Potter_DHF1.jpg/revision/latest?cb=20140603201724&format=original"
+  ],
+  "hermione-granger.jpg": [
+    "https://static.wikia.nocookie.net/harrypotter/images/3/34/Hermione_Granger.jpg/revision/latest?cb=20251206062840&format=original"
+  ],
+  "ron-weasley.jpg": [
+    "https://static.wikia.nocookie.net/harrypotter/images/4/44/Ronald_Weasley_DHF1.jpg/revision/latest?cb=20101104210200&format=original"
+  ],
+  "matilda.png": [
+    "https://static.wikia.nocookie.net/matilda/images/c/cc/977B8275-B8EC-4998-B871-49700EB4154D.png/revision/latest?cb=20190725111626&format=original"
+  ],
+  "greg-heffley.png": [
+    "https://static.wikia.nocookie.net/doawk/images/2/24/Character-_Greg_Heffley.png/revision/latest?cb=20230302144857&format=original"
+  ],
+  "percy-jackson.jpg": [
+    "https://static.wikia.nocookie.net/olympians/images/1/10/Percy_Jackson.jpg/revision/latest?cb=20180319172727&format=original"
+  ],
+  "alice.jpg": [
+    "https://static.wikia.nocookie.net/aliceinwonderland/images/e/e4/Alice_%28book%29.jpg/revision/latest?cb=20251116005548&format=original"
+  ],
+  "dorothy.jpg": [
+    "https://static.wikia.nocookie.net/ozwikia/images/1/1a/Dorothy_Gale_with_silver_shoes.jpg/revision/latest?cb=20070415184250&format=original"
+  ],
+  "charlie-bucket.jpg": [
+    "https://static.wikia.nocookie.net/charlieandthechocolatefactoryfilm/images/c/c7/13868598026798l-1-.jpg/revision/latest?cb=20150912184131&format=original"
+  ],
+  "willy-wonka.png": [
+    "https://static.wikia.nocookie.net/charlieandthechocolatefactoryfilm/images/8/82/Wonka_2005.png/revision/latest?cb=20240330045911&format=original"
+  ],
+  "peter-pan.jpg": [
+    "https://static.wikia.nocookie.net/peterpan/images/8/81/Peter_pan_by_brian_froud.jpg/revision/latest?cb=20150614221615&format=original"
+  ],
+  "pippi.jpg": [
+    "https://upload.wikimedia.org/wikipedia/en/7/78/L%C3%A5ngstrump_G%C3%A5r_Ombord.jpeg"
+  ],
+  "paddington.jpg": [
+    "https://static.wikia.nocookie.net/paddingtonbear/images/c/cf/Paddington_through_the_years.jpg/revision/latest?cb=20180320022729&format=original",
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Paddington_Bear%2C_all_alone_%2850285504591%29.jpg/330px-Paddington_Bear%2C_all_alone_%2850285504591%29.jpg"
+  ],
+  "pooh.jpg": [
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Pooh_Shepard1928.jpg/330px-Pooh_Shepard1928.jpg"
+  ],
+  "charlotte.jpg": [
+    "https://static.wikia.nocookie.net/charlottesweb/images/f/f5/Charlotte_A._Cavatica.jpg/revision/latest?cb=20190628214916&format=original"
+  ],
+  "wilbur.jpg": [
+    "https://static.wikia.nocookie.net/charlottesweb/images/6/69/Live_Action_Wilbur.jpg/revision/latest?cb=20190315234641&format=original"
+  ],
+  "stuart-little.png": [
+    "https://static.wikia.nocookie.net/stuartlittle/images/2/27/Stuart_Little_Michael_J._Fox.png/revision/latest?cb=20211127104326&format=original"
+  ],
+  "cat-hat.png": [
+    "https://static.wikia.nocookie.net/seuss/images/b/b5/CatintheHat.png/revision/latest?cb=20260215171125&format=original"
+  ],
+  "horton.png": [
+    "https://static.wikia.nocookie.net/seuss/images/7/74/A5FE6F93-F4B6-4CD4-A646-928B8F0FD057.png/revision/latest?cb=20200414142007&format=original"
+  ],
+  "dogman.png": [
+    "https://static.wikia.nocookie.net/dog-man/images/7/7f/Dog_man.png/revision/latest?cb=20250808082810&format=original"
+  ],
+  "captain-underpants.png": [
+    "https://static.wikia.nocookie.net/captainunderpants/images/c/c1/Capt-character-captainunderpants.png/revision/latest?cb=20200503124947&format=original"
+  ],
+  "auggie.jpg": [
+    "https://static.wikia.nocookie.net/rjpalacioswonder/images/c/c1/4E09D7C0-304D-43C1-8D85-293BB9C4432E.jpeg/revision/latest?cb=20171121084008&format=original"
+  ],
+  "ivan.jpg": [
+    "https://static.wikia.nocookie.net/disney/images/9/9c/Ivan.JPG/revision/latest?cb=20100705214859&format=original"
+  ],
+  "mercy-watson.jpg": [
+    "https://www.mercywatson.com/wp-content/uploads/2015/08/book3-19.jpg"
+  ],
+  "junie-b-jones.png": [
+    "https://static.wikia.nocookie.net/juniebjonesbooks/images/b/bd/Junie_b_kinder.png/revision/latest?cb=20220711043535&format=original"
+  ],
+  "geronimo-stilton.jpg": [
+    "https://static.wikia.nocookie.net/geronimostilton/images/8/88/Geronimo_Stilton_%281%29.jpg/revision/latest?cb=20150725045219&format=original"
+  ],
+  "ms-frizzle.png": [
+    "https://static.wikia.nocookie.net/magicschoolbus/images/7/76/Professor_Frizzle.png/revision/latest?cb=20251010060638&format=original"
+  ],
+  "arthur.png": [
+    "https://static.wikia.nocookie.net/arthur/images/d/dd/Arthur_full.png/revision/latest?cb=20231110024600&format=original"
+  ],
+  "clifford.png": [
+    "https://static.wikia.nocookie.net/clifford/images/0/03/Nose_In_a_Book.png/revision/latest?cb=20200105175816&format=original"
+  ],
+  "curious-george.jpg": [
+    "https://static.wikia.nocookie.net/curious-george/images/6/6f/CuriousGeorgeFirst.JPG/revision/latest?cb=20190417183017&format=original"
+  ]
 };
 
-async function fetchJson(url) {
-  for (let attempt = 1; attempt <= 6; attempt += 1) {
-    const response = await fetch(url, {
-      headers: {
-        "user-agent": "BlooketLocalAssetDownloader/1.0"
-      }
-    });
-    if (response.ok) {
-      return response.json();
-    }
-    if (response.status !== 429 || attempt === 6) {
-      throw new Error(`Request failed ${response.status}: ${url}`);
-    }
-    await new Promise((resolve) => setTimeout(resolve, attempt * 2500));
+function hasUsableAsset(destinationPath) {
+  if (!fs.existsSync(destinationPath)) {
+    return false;
   }
+
+  const stat = fs.statSync(destinationPath);
+  return stat.isFile() && stat.size >= MIN_BYTES;
 }
 
-async function downloadFile(url, destinationPath) {
-  for (let attempt = 1; attempt <= 8; attempt += 1) {
-    const response = await fetch(url, {
-      headers: {
-        "user-agent": "BlooketLocalAssetDownloader/1.0"
-      }
-    });
-    if (response.ok) {
-      const arrayBuffer = await response.arrayBuffer();
-      fs.writeFileSync(destinationPath, Buffer.from(arrayBuffer));
-      return;
+async function downloadImage(url, destinationPath) {
+  const response = await fetch(url, {
+    redirect: "follow",
+    headers: {
+      "user-agent": USER_AGENT,
+      accept: "image/*,*/*;q=0.8"
     }
-    if (response.status !== 429 || attempt === 8) {
-      throw new Error(`Download failed ${response.status}: ${url}`);
-    }
-    await new Promise((resolve) => setTimeout(resolve, attempt * 3000));
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
   }
+
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.startsWith("image/")) {
+    throw new Error(`Unexpected content type: ${contentType || "unknown"}`);
+  }
+
+  const buffer = Buffer.from(await response.arrayBuffer());
+  if (buffer.length < MIN_BYTES) {
+    throw new Error(`Downloaded file too small (${buffer.length} bytes)`);
+  }
+
+  fs.writeFileSync(destinationPath, buffer);
+  return { size: buffer.length, contentType, finalUrl: response.url };
 }
 
-async function resolveOpenLibraryCoverUrl(query) {
-  const url = `https://openlibrary.org/search.json?title=${encodeURIComponent(query)}&limit=12`;
-  const payload = await fetchJson(url);
-  const docs = Array.isArray(payload?.docs) ? payload.docs : [];
-  const match = docs.find((entry) => Number.isFinite(Number(entry?.cover_i)));
-  if (!match) {
-    throw new Error(`No Open Library cover found for "${query}"`);
-  }
-  return `https://covers.openlibrary.org/b/id/${match.cover_i}-L.jpg`;
-}
-
-async function downloadBookImages() {
+async function ensureBookCharacterAssets() {
   fs.mkdirSync(BOOKS_DIR, { recursive: true });
+
   for (const blook of BOOK_LEGENDS_BLOOKS) {
-    const query = BOOK_QUERIES[blook.id];
-    if (!query) {
-      throw new Error(`Missing book query mapping for ${blook.id}`);
-    }
-    const destinationPath = path.join(BOOKS_DIR, path.basename(blook.image));
-    if (fs.existsSync(destinationPath) && fs.statSync(destinationPath).size > 0) {
-      console.log(`Skipped existing book image for ${blook.name}`);
+    const filename = path.basename(blook.image);
+    const destinationPath = path.join(BOOKS_DIR, filename);
+
+    if (!SHOULD_REFRESH && hasUsableAsset(destinationPath)) {
+      console.log(`Keeping ${filename}`);
       continue;
     }
-    const imageUrl = await resolveOpenLibraryCoverUrl(query);
-    await downloadFile(imageUrl, destinationPath);
-    console.log(`Downloaded book image for ${blook.name}`);
+
+    const sources = BOOK_LEGENDS_IMAGE_SOURCES[filename];
+    if (!sources || sources.length === 0) {
+      throw new Error(`Missing Book Legends image sources for ${filename}`);
+    }
+
+    const failures = [];
+    let downloaded = false;
+
+    for (const source of sources) {
+      try {
+        const result = await downloadImage(source, destinationPath);
+        console.log(`Saved ${filename} (${result.contentType}, ${result.size} bytes) from ${result.finalUrl}`);
+        downloaded = true;
+        break;
+      } catch (error) {
+        failures.push(`${source} -> ${error?.message || error}`);
+      }
+    }
+
+    if (!downloaded) {
+      throw new Error(`Unable to download ${filename}:\n${failures.join("\n")}`);
+    }
   }
 }
 
 async function main() {
-  await downloadBookImages();
-  console.log("Downloaded internet images for Book Legends.");
+  await ensureBookCharacterAssets();
+  console.log(SHOULD_REFRESH ? "Refreshed Book Legends internet character art." : "Verified or downloaded Book Legends internet character art.");
 }
 
 main().catch((error) => {

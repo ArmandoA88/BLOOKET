@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" fill="none">
+    <defs>
+      <linearGradient id="bg-science-robot-tech" x1="30" y1="18" x2="286" y2="320" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#1c253a"/>
+        <stop offset="1" stop-color="#174561"/>
+      </linearGradient>
+      <radialGradient id="glow-science-robot-tech" cx="0" cy="0" r="1" gradientTransform="translate(160 124) rotate(90) scale(118)" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#76e7ff" stop-opacity="0.56"/>
+        <stop offset="1" stop-color="#76e7ff" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="shadow-science-robot-tech" x="-30%" y="-30%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="14" stdDeviation="12" flood-color="#04101d" flood-opacity="0.34"/>
+      </filter>
+    </defs>
+    <rect width="320" height="320" rx="44" fill="url(#bg-science-robot-tech)"/>
+    <circle cx="160" cy="124" r="110" fill="url(#glow-science-robot-tech)"/>
+    <circle cx="125.28" cy="60.56" r="1.98" fill="#ffffff" opacity="0.73"/><circle cx="119.56" cy="175.52" r="3.16" fill="#ffffff" opacity="0.52"/><circle cx="68.70" cy="173.42" r="1.50" fill="#ffffff" opacity="0.61"/><circle cx="69.21" cy="43.33" r="1.75" fill="#ffffff" opacity="0.71"/><circle cx="29.18" cy="185.38" r="2.45" fill="#ffffff" opacity="0.76"/><line x1="21.33" y1="185.38" x2="37.03" y2="185.38" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><line x1="29.18" y1="177.53" x2="29.18" y2="193.23" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><circle cx="212.93" cy="102.72" r="2.92" fill="#ffffff" opacity="0.41"/><circle cx="125.36" cy="115.86" r="3.56" fill="#ffffff" opacity="0.52"/><circle cx="131.91" cy="136.67" r="3.79" fill="#ffffff" opacity="0.50"/><circle cx="205.36" cy="156.73" r="2.50" fill="#ffffff" opacity="0.37"/><circle cx="30.05" cy="97.32" r="2.59" fill="#ffffff" opacity="0.52"/><circle cx="289.73" cy="93.03" r="2.18" fill="#ffffff" opacity="0.42"/><line x1="282.74" y1="93.03" x2="296.72" y2="93.03" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><line x1="289.73" y1="86.04" x2="289.73" y2="100.02" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/>
+    
+    <g filter="url(#shadow-science-robot-tech)">
+      <ellipse cx="160" cy="244" rx="78" ry="16" fill="#09101e" opacity="0.2"/><g transform="translate(160 160) scale(1.1)">
+    <rect x="-44" y="-40" width="88" height="74" rx="18" fill="#d8e4f0"/>
+    <rect x="-30" y="-16" width="60" height="22" rx="11" fill="#0f1828"/>
+    <circle cx="-14" cy="-5" r="8" fill="#4fd6ff"/>
+    <circle cx="14" cy="-5" r="8" fill="#4fd6ff"/>
+    <rect x="-20" y="16" width="40" height="10" rx="5" fill="#8798b5" opacity="0.9"/>
+    <line x1="0" y1="-40" x2="0" y2="-64" stroke="#8798b5" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="0" cy="-70" r="10" fill="#ffe27a"/>
+    <line x1="-44" y1="0" x2="-66" y2="18" stroke="#8798b5" stroke-width="8" stroke-linecap="round"/>
+    <line x1="44" y1="0" x2="66" y2="18" stroke="#8798b5" stroke-width="8" stroke-linecap="round"/>
+  </g>
+    </g>
+    <rect x="10" y="10" width="300" height="300" rx="34" stroke="rgba(255,255,255,0.18)"/>
+  </svg>

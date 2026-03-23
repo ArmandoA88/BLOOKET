@@ -1246,7 +1246,7 @@ async function saveBuilderSet() {
         title,
         category: normalizeQuestionSetCategory(builderCategoryInput?.value || ""),
         tags: normalizeQuestionSetTags(builderTagsInput?.value || ""),
-        uploadedBy: String(hostNameInput?.value || "Teacher").trim(),
+        uploadedBy: String(hostNameInput?.value || "Mario").trim(),
         questions: payloadQuestions
       })
     });
@@ -2044,7 +2044,7 @@ function hostPlayUrl() {
     return "";
   }
 
-  const hostName = String(hostNameInput?.value || "Host").trim().slice(0, 24) || "Host";
+  const hostName = String(hostNameInput?.value || "Mario").trim().slice(0, 24) || "Mario";
   const joinUrl = preferredJoinUrl();
   if (!joinUrl) {
     return "";
@@ -2260,7 +2260,7 @@ async function uploadQuizSetFile() {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("title", String(quizUploadTitleInput?.value || "").trim());
-  formData.append("uploadedBy", String(hostNameInput?.value || "Teacher").trim());
+  formData.append("uploadedBy", String(hostNameInput?.value || "Mario").trim());
 
   try {
     const response = await fetch("/api/quizzes/upload", {

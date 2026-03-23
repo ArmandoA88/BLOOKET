@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" fill="none">
+    <defs>
+      <linearGradient id="bg-space-mars-explorer" x1="30" y1="18" x2="286" y2="320" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#211735"/>
+        <stop offset="1" stop-color="#5d2c39"/>
+      </linearGradient>
+      <radialGradient id="glow-space-mars-explorer" cx="0" cy="0" r="1" gradientTransform="translate(160 124) rotate(90) scale(118)" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#ff9e7d" stop-opacity="0.56"/>
+        <stop offset="1" stop-color="#ff9e7d" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="shadow-space-mars-explorer" x="-30%" y="-30%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="14" stdDeviation="12" flood-color="#04101d" flood-opacity="0.34"/>
+      </filter>
+    </defs>
+    <rect width="320" height="320" rx="44" fill="url(#bg-space-mars-explorer)"/>
+    <circle cx="160" cy="124" r="110" fill="url(#glow-space-mars-explorer)"/>
+    <circle cx="219.57" cy="85.44" r="2.20" fill="#ffffff" opacity="0.73"/><circle cx="280.18" cy="161.29" r="1.61" fill="#ffffff" opacity="0.78"/><line x1="275.02" y1="161.29" x2="285.34" y2="161.29" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><line x1="280.18" y1="156.13" x2="280.18" y2="166.45" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><circle cx="291.27" cy="40.86" r="2.36" fill="#ffffff" opacity="0.69"/><circle cx="131.43" cy="46.82" r="2.43" fill="#ffffff" opacity="0.59"/><circle cx="218.13" cy="51.51" r="2.34" fill="#ffffff" opacity="0.61"/><circle cx="289.75" cy="169.74" r="2.95" fill="#ffffff" opacity="0.77"/><line x1="280.32" y1="169.74" x2="299.18" y2="169.74" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><line x1="289.75" y1="160.31" x2="289.75" y2="179.17" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><circle cx="267.46" cy="147.78" r="1.71" fill="#ffffff" opacity="0.55"/><line x1="261.98" y1="147.78" x2="272.94" y2="147.78" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><line x1="267.46" y1="142.30" x2="267.46" y2="153.26" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><circle cx="52.78" cy="114.47" r="1.99" fill="#ffffff" opacity="0.55"/><circle cx="128.70" cy="126.09" r="2.54" fill="#ffffff" opacity="0.73"/><circle cx="179.11" cy="44.56" r="1.65" fill="#ffffff" opacity="0.52"/><circle cx="204.10" cy="51.43" r="1.28" fill="#ffffff" opacity="0.50"/><circle cx="175.72" cy="134.53" r="1.31" fill="#ffffff" opacity="0.43"/><line x1="171.52" y1="134.53" x2="179.92" y2="134.53" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><line x1="175.72" y1="130.33" x2="175.72" y2="138.73" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><circle cx="129.70" cy="169.35" r="1.37" fill="#ffffff" opacity="0.57"/><line x1="125.33" y1="169.35" x2="134.07" y2="169.35" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><line x1="129.70" y1="164.98" x2="129.70" y2="173.72" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/>
+    
+    <g filter="url(#shadow-space-mars-explorer)">
+      <circle cx="228" cy="100" r="60" fill="#ff9e7d" opacity="0.14"/><circle cx="228" cy="100" r="42" fill="#f47c52"/><ellipse cx="218.76" cy="104.2" rx="28.560000000000002" ry="19.32" fill="#b9503b" opacity="0.35"/><circle cx="220" cy="98" r="6" fill="#b9503b" opacity="0.25"/><circle cx="240" cy="110" r="5" fill="#b9503b" opacity="0.25"/><g transform="translate(146 170) scale(0.98)">
+    <circle cx="0" cy="-32" r="30" fill="#ebf1ff"/>
+    <ellipse cx="0" cy="-32" rx="20" ry="16" fill="#f47c52" opacity="0.85"/>
+    <rect x="-26" y="0" width="52" height="58" rx="18" fill="#ebf1ff"/>
+    <rect x="-14" y="12" width="28" height="22" rx="8" fill="#aab6ce"/>
+    <line x1="-18" y1="10" x2="-34" y2="34" stroke="#ebf1ff" stroke-width="10" stroke-linecap="round"/>
+    <line x1="18" y1="10" x2="34" y2="34" stroke="#ebf1ff" stroke-width="10" stroke-linecap="round"/>
+    <line x1="-10" y1="58" x2="-20" y2="84" stroke="#ebf1ff" stroke-width="10" stroke-linecap="round"/>
+    <line x1="10" y1="58" x2="20" y2="84" stroke="#ebf1ff" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="0" cy="22" r="7" fill="#7ad8ff"/>
+  </g>
+    </g>
+    <rect x="10" y="10" width="300" height="300" rx="34" stroke="rgba(255,255,255,0.18)"/>
+  </svg>

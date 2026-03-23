@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" fill="none">
+    <defs>
+      <linearGradient id="bg-space-aurora-orbiter" x1="30" y1="18" x2="286" y2="320" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#10203e"/>
+        <stop offset="1" stop-color="#124f56"/>
+      </linearGradient>
+      <radialGradient id="glow-space-aurora-orbiter" cx="0" cy="0" r="1" gradientTransform="translate(160 124) rotate(90) scale(118)" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#77ffd7" stop-opacity="0.56"/>
+        <stop offset="1" stop-color="#77ffd7" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="shadow-space-aurora-orbiter" x="-30%" y="-30%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="14" stdDeviation="12" flood-color="#04101d" flood-opacity="0.34"/>
+      </filter>
+    </defs>
+    <rect width="320" height="320" rx="44" fill="url(#bg-space-aurora-orbiter)"/>
+    <circle cx="160" cy="124" r="110" fill="url(#glow-space-aurora-orbiter)"/>
+    <circle cx="199.86" cy="116.21" r="2.44" fill="#ffffff" opacity="0.71"/><circle cx="195.34" cy="79.89" r="2.52" fill="#ffffff" opacity="0.65"/><circle cx="110.14" cy="171.56" r="1.77" fill="#ffffff" opacity="0.69"/><line x1="104.46" y1="171.56" x2="115.82" y2="171.56" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><line x1="110.14" y1="165.88" x2="110.14" y2="177.24" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><circle cx="145.73" cy="119.79" r="2.99" fill="#ffffff" opacity="0.43"/><circle cx="244.82" cy="162.24" r="2.30" fill="#ffffff" opacity="0.74"/><circle cx="217.35" cy="35.54" r="1.27" fill="#ffffff" opacity="0.44"/><line x1="213.28" y1="35.54" x2="221.42" y2="35.54" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><line x1="217.35" y1="31.47" x2="217.35" y2="39.61" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><circle cx="211.81" cy="70.34" r="1.29" fill="#ffffff" opacity="0.43"/><line x1="207.69" y1="70.34" x2="215.93" y2="70.34" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><line x1="211.81" y1="66.22" x2="211.81" y2="74.46" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><circle cx="155.93" cy="144.89" r="1.44" fill="#ffffff" opacity="0.79"/><circle cx="35.32" cy="154.52" r="2.99" fill="#ffffff" opacity="0.73"/><line x1="25.75" y1="154.52" x2="44.89" y2="154.52" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><line x1="35.32" y1="144.95" x2="35.32" y2="164.09" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><circle cx="130.18" cy="189.18" r="1.34" fill="#ffffff" opacity="0.63"/><circle cx="228.25" cy="61.42" r="1.71" fill="#ffffff" opacity="0.35"/><circle cx="45.87" cy="160.27" r="2.32" fill="#ffffff" opacity="0.78"/><circle cx="220.33" cy="31.14" r="2.37" fill="#ffffff" opacity="0.69"/><circle cx="77.29" cy="69.57" r="3.32" fill="#ffffff" opacity="0.39"/><circle cx="41.82" cy="120.82" r="3.12" fill="#ffffff" opacity="0.67"/><circle cx="235.91" cy="136.46" r="2.17" fill="#ffffff" opacity="0.57"/>
+    
+    <g filter="url(#shadow-space-aurora-orbiter)">
+      <path d="M64 178 C100 142 132 140 164 170 C196 200 226 198 256 158" fill="none" stroke="#3de0b8" stroke-width="18" stroke-linecap="round" opacity="0.36"/><path d="M64 202 C100 166 132 164 164 194 C196 224 226 222 256 182" fill="none" stroke="#7ad4ff" stroke-width="10" stroke-linecap="round" opacity="0.32"/><g transform="translate(160 126) scale(1)">
+    <ellipse cx="0" cy="0" rx="62" ry="40" fill="none" stroke="#3de0b8" stroke-width="12" opacity="0.95"/>
+    <circle cx="0" cy="0" r="28" fill="#e8f2ff"/>
+    <rect x="-12" y="-74" width="24" height="28" rx="8" fill="#b0bfd1"/>
+    <rect x="-12" y="46" width="24" height="28" rx="8" fill="#b0bfd1"/>
+    <rect x="-92" y="-12" width="28" height="24" rx="8" fill="#b0bfd1"/>
+    <rect x="64" y="-12" width="28" height="24" rx="8" fill="#b0bfd1"/>
+    <circle cx="0" cy="0" r="10" fill="#7ad4ff"/>
+  </g>
+    </g>
+    <rect x="10" y="10" width="300" height="300" rx="34" stroke="rgba(255,255,255,0.18)"/>
+  </svg>

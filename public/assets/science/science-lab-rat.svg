@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" fill="none">
+    <defs>
+      <linearGradient id="bg-science-lab-rat" x1="30" y1="18" x2="286" y2="320" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#14253b"/>
+        <stop offset="1" stop-color="#1d4650"/>
+      </linearGradient>
+      <radialGradient id="glow-science-lab-rat" cx="0" cy="0" r="1" gradientTransform="translate(160 124) rotate(90) scale(118)" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#84ffd2" stop-opacity="0.56"/>
+        <stop offset="1" stop-color="#84ffd2" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="shadow-science-lab-rat" x="-30%" y="-30%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="14" stdDeviation="12" flood-color="#04101d" flood-opacity="0.34"/>
+      </filter>
+    </defs>
+    <rect width="320" height="320" rx="44" fill="url(#bg-science-lab-rat)"/>
+    <circle cx="160" cy="124" r="110" fill="url(#glow-science-lab-rat)"/>
+    <circle cx="208.81" cy="124.77" r="1.68" fill="#ffffff" opacity="0.55"/><circle cx="204.23" cy="100.89" r="2.59" fill="#ffffff" opacity="0.54"/><circle cx="152.74" cy="80.81" r="3.67" fill="#ffffff" opacity="0.50"/><circle cx="143.60" cy="106.32" r="2.82" fill="#ffffff" opacity="0.78"/><circle cx="85.81" cy="117.53" r="1.32" fill="#ffffff" opacity="0.60"/><circle cx="241.33" cy="71.98" r="2.24" fill="#ffffff" opacity="0.74"/><circle cx="135.71" cy="203.10" r="3.28" fill="#ffffff" opacity="0.73"/><line x1="125.20" y1="203.10" x2="146.22" y2="203.10" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><line x1="135.71" y1="192.59" x2="135.71" y2="213.61" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><circle cx="135.86" cy="163.03" r="2.50" fill="#ffffff" opacity="0.73"/><circle cx="208.40" cy="89.68" r="1.89" fill="#ffffff" opacity="0.50"/><circle cx="28.00" cy="137.34" r="1.73" fill="#ffffff" opacity="0.38"/><line x1="22.45" y1="137.34" x2="33.55" y2="137.34" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/><line x1="28.00" y1="131.79" x2="28.00" y2="142.89" stroke="#ffffff" stroke-width="1.3" opacity="0.18"/>
+    
+    <g filter="url(#shadow-science-lab-rat)">
+      <ellipse cx="160" cy="244" rx="84" ry="16" fill="#09101e" opacity="0.22"/><rect x="140" y="72" width="40" height="24" rx="10" fill="#b9c8db"/><path d="M126 92 H194 V118 C194 130 198 144 208 160 L226 192 C238 212 224 236 200 236 H120 C96 236 82 212 94 192 L112 160 C122 144 126 130 126 118 Z" fill="#d8f6ff" opacity="0.92" stroke="#b9c8db" stroke-width="5"/><path d="M118 150 H202 L216 186 C222 200 214 214 198 214 H122 C106 214 98 200 104 186 Z" fill="#68dcb5" opacity="0.95"/><circle cx="136" cy="114" r="18" fill="#f5d8d6"/><circle cx="184" cy="114" r="18" fill="#f5d8d6"/><circle cx="160" cy="124" r="26" fill="#f7e7e3"/><circle cx="152" cy="124" r="4" fill="#0b1a2d"/><circle cx="168" cy="124" r="4" fill="#0b1a2d"/><circle cx="160" cy="134" r="5" fill="#ff94ad"/><line x1="138" y1="132" x2="152" y2="132" stroke="#0b1a2d" stroke-width="2.5"/><line x1="168" y1="132" x2="182" y2="132" stroke="#0b1a2d" stroke-width="2.5"/><circle cx="124" cy="164" r="5" fill="#fff0a8" opacity="0.9"/><circle cx="202" cy="154" r="6" fill="#fff0a8" opacity="0.85"/><circle cx="193" cy="176" r="4" fill="#fff0a8" opacity="0.75"/>
+    </g>
+    <rect x="10" y="10" width="300" height="300" rx="34" stroke="rgba(255,255,255,0.18)"/>
+  </svg>

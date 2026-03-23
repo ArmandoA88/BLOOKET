@@ -174,6 +174,40 @@ function drawSprite(image, x, y, w, h, options = {}) {
   ctx.restore();
 }
 
+function drawCircularSprite(image, cx, cy, radius, options = {}) {
+  if (!image || !image.complete || !image.naturalWidth) {
+    return false;
+  }
+
+  const { alpha = 1, strokeStyle = null, lineWidth = 0 } = options;
+  const sourceWidth = image.naturalWidth || image.width;
+  const sourceHeight = image.naturalHeight || image.height;
+  const sourceSize = Math.min(sourceWidth, sourceHeight);
+  const sx = (sourceWidth - sourceSize) / 2;
+  const sy = (sourceHeight - sourceSize) / 2;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.clip();
+  ctx.globalAlpha = alpha;
+  ctx.drawImage(image, sx, sy, sourceSize, sourceSize, cx - radius, cy - radius, radius * 2, radius * 2);
+  ctx.restore();
+
+  if (strokeStyle && lineWidth > 0) {
+    ctx.save();
+    ctx.strokeStyle = strokeStyle;
+    ctx.lineWidth = lineWidth;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  return true;
+}
+
 function drawTintedSprite(image, x, y, w, h, tint, options = {}) {
   if (!image || !image.complete || !image.naturalWidth) {
     return;
@@ -243,6 +277,8 @@ function resetCurrentGame() {
   }
   currentState = currentGame.createState();
   renderExtras();
+  syncStageCopy();
+  syncCanvasCursor();
 }
 
 function spawnPongBall(direction) {
@@ -2233,37 +2269,249 @@ const whackGame = (() => {
     { x: 330, y: 440 }, { x: 640, y: 440 }, { x: 950, y: 440 },
     { x: 330, y: 630 }, { x: 640, y: 630 }, { x: 950, y: 630 }
   ];
+  const whackCursor = "url('/assets/arcade/whack/whack-mallet.svg') 14 6, pointer";
+  const whackCursorDown = "url('/assets/arcade/whack/whack-mallet-down.svg') 12 4, pointer";
+  const bookTargets = [
+    { id: "alice", name: "Alice", image: loadSprite("/assets/books/book-alice.jpg") },
+    { id: "arthur", name: "Arthur", image: loadSprite("/assets/books/book-arthur.jpg") },
+    { id: "auggie", name: "Auggie", image: loadSprite("/assets/books/book-auggie.jpg") },
+    { id: "cat-hat", name: "Cat in the Hat", image: loadSprite("/assets/books/book-cat-hat.jpg") },
+    { id: "charlie", name: "Charlie", image: loadSprite("/assets/books/book-charlie.jpg") },
+    { id: "charlotte", name: "Charlotte", image: loadSprite("/assets/books/book-charlotte.jpg") },
+    { id: "clifford", name: "Clifford", image: loadSprite("/assets/books/book-clifford.jpg") },
+    { id: "dogman", name: "Dog Man", image: loadSprite("/assets/books/book-dogman.jpg") },
+    { id: "dorothy", name: "Dorothy Gale", image: loadSprite("/assets/books/book-dorothy.jpg") },
+    { id: "frizzle", name: "Ms. Frizzle", image: loadSprite("/assets/books/book-frizzle.jpg") },
+    { id: "george", name: "Curious George", image: loadSprite("/assets/books/book-george.jpg") },
+    { id: "geronimo", name: "Geronimo Stilton", image: loadSprite("/assets/books/book-geronimo.jpg") },
+    { id: "greg", name: "Greg Heffley", image: loadSprite("/assets/books/book-greg.jpg") },
+    { id: "harry", name: "Harry Potter", image: loadSprite("/assets/books/book-harry.jpg") },
+    { id: "hermione", name: "Hermione", image: loadSprite("/assets/books/book-hermione.jpg") },
+    { id: "horton", name: "Horton", image: loadSprite("/assets/books/book-horton.jpg") },
+    { id: "ivan", name: "Ivan", image: loadSprite("/assets/books/book-ivan.jpg") },
+    { id: "junie", name: "Junie B. Jones", image: loadSprite("/assets/books/book-junie.jpg") },
+    { id: "matilda", name: "Matilda", image: loadSprite("/assets/books/book-matilda.jpg") },
+    { id: "mercy", name: "Mercy Watson", image: loadSprite("/assets/books/book-mercy.jpg") },
+    { id: "paddington", name: "Paddington", image: loadSprite("/assets/books/book-paddington.jpg") },
+    { id: "percy", name: "Percy Jackson", image: loadSprite("/assets/books/book-percy.jpg") },
+    { id: "peter", name: "Peter Pan", image: loadSprite("/assets/books/book-peter.jpg") },
+    { id: "pippi", name: "Pippi", image: loadSprite("/assets/books/book-pippi.jpg") },
+    { id: "pooh", name: "Winnie the Pooh", image: loadSprite("/assets/books/book-pooh.jpg") },
+    { id: "ron", name: "Ron Weasley", image: loadSprite("/assets/books/book-ron.jpg") },
+    { id: "stuart", name: "Stuart Little", image: loadSprite("/assets/books/book-stuart.jpg") },
+    { id: "underpants", name: "Captain Underpants", image: loadSprite("/assets/books/book-underpants.jpg") },
+    { id: "wilbur", name: "Wilbur", image: loadSprite("/assets/books/book-wilbur.jpg") },
+    { id: "wonka", name: "Willy Wonka", image: loadSprite("/assets/books/book-wonka.jpg") }
+  ];
+  const studentTargets = [
+    ...Array.from({ length: 26 }, (_, index) => ({
+      id: `students1-face-${String(index + 1).padStart(2, "0")}`,
+      name: `Student ${index + 1}`,
+      image: loadSprite(`/assets/student-sprites/students1_face_${String(index + 1).padStart(2, "0")}.png`)
+    })),
+    ...Array.from({ length: 14 }, (_, index) => ({
+      id: `students2-face-${String(index + 1).padStart(2, "0")}`,
+      name: `Student ${index + 27}`,
+      image: loadSprite(`/assets/student-sprites/students2_face_${String(index + 1).padStart(2, "0")}.png`)
+    }))
+  ];
+  const targetThemes = [
+    {
+      id: "books",
+      label: "1. Book Legends",
+      name: "Book Legends",
+      targets: bookTargets,
+      stageHelp: "Book Legends faces pop up from the holes. Golden targets score big, and red warning targets should be skipped.",
+      bgTop: "#31200f",
+      bgBottom: "#75441f",
+      accent: "rgba(251,191,36,0.74)",
+      ground: "#6b3f19",
+      frame: "#f4d38d",
+      card: "#fdf2d8",
+      labelFill: "rgba(255,255,255,0.82)",
+      labelText: "#4a2c12"
+    },
+    {
+      id: "students",
+      label: "2. Student Faces",
+      name: "Student Faces",
+      targets: studentTargets,
+      stageHelp: "Student faces pop up in the holes for a silly class remix. Golden targets are worth more, and red warning targets cost points.",
+      bgTop: "#10243f",
+      bgBottom: "#16627b",
+      accent: "rgba(92,199,255,0.74)",
+      ground: "#15576a",
+      frame: "#9fe4ff",
+      card: "#dff6ff",
+      labelFill: "rgba(255,255,255,0.84)",
+      labelText: "#11324c"
+    }
+  ];
+
+  let selectedThemeIndex = 0;
 
   function nextKind() {
     const roll = Math.random();
-    if (roll < 0.14) {
+    if (roll < 0.12) {
       return "gold";
     }
-    if (roll < 0.24) {
+    if (roll < 0.19) {
       return "bomb";
     }
     return "mole";
   }
 
+  function getTheme(state) {
+    return targetThemes[state.themeIndex] || targetThemes[0];
+  }
+
+  function shuffledIndexes(count) {
+    const indexes = Array.from({ length: count }, (_, index) => index);
+    for (let i = indexes.length - 1; i > 0; i -= 1) {
+      const j = randInt(0, i);
+      [indexes[i], indexes[j]] = [indexes[j], indexes[i]];
+    }
+    return indexes;
+  }
+
+  function nextTargetIndex(state) {
+    const theme = getTheme(state);
+    if (!theme.targets.length) {
+      return -1;
+    }
+    if (!state.targetQueue.length) {
+      state.targetQueue = shuffledIndexes(theme.targets.length);
+    }
+    return state.targetQueue.pop() ?? 0;
+  }
+
+  function resetHoles(state) {
+    state.holes = holes.map(() => ({
+      mode: "hidden",
+      timer: rand(0.7, 1.75),
+      kind: "mole",
+      targetIndex: -1
+    }));
+  }
+
+  function selectTheme(state, index) {
+    if (index < 0 || index >= targetThemes.length) {
+      return;
+    }
+    state.themeIndex = index;
+    selectedThemeIndex = index;
+    state.targetQueue = shuffledIndexes(getTheme(state).targets.length);
+    resetHoles(state);
+    state.combo = 0;
+    state.status = `${getTheme(state).name} ready`;
+    stageHelp.textContent = getTheme(state).stageHelp;
+  }
+
+  function drawFallbackWhackTarget(cx, cy, radius, fillStyle, eyeStyle = "#0f172a") {
+    ctx.fillStyle = fillStyle;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = eyeStyle;
+    ctx.beginPath();
+    ctx.arc(cx - radius * 0.28, cy - radius * 0.12, radius * 0.11, 0, Math.PI * 2);
+    ctx.arc(cx + radius * 0.28, cy - radius * 0.12, radius * 0.11, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawWhackPortrait(target, kind, x, y, theme, time, index) {
+    const floatY = y + Math.sin(time * 5.5 + index) * 2.2;
+    const cardX = x - 60;
+    const cardY = floatY - 58;
+    const frameColor = kind === "gold" ? "#facc15" : kind === "bomb" ? "#fb7185" : theme.frame;
+    const labelFill = kind === "gold" ? "rgba(250,204,21,0.22)" : kind === "bomb" ? "rgba(251,113,133,0.18)" : theme.labelFill;
+
+    ctx.save();
+    ctx.shadowBlur = 18;
+    ctx.shadowColor = kind === "gold" ? "rgba(250,204,21,0.45)" : kind === "bomb" ? "rgba(251,113,133,0.45)" : "rgba(15,23,42,0.25)";
+    drawRoundedRect(cardX, cardY, 120, 132, 26, theme.card, frameColor);
+    ctx.restore();
+
+    const portraitDrawn = drawCircularSprite(target?.image, x, floatY - 10, 35, {
+      strokeStyle: frameColor,
+      lineWidth: 4
+    });
+    if (!portraitDrawn) {
+      drawFallbackWhackTarget(x, floatY - 10, 35, kind === "gold" ? "#facc15" : kind === "bomb" ? "#fb7185" : "#8c5a2f");
+    }
+
+    drawRoundedRect(x - 44, floatY + 34, 88, 22, 12, labelFill);
+    ctx.fillStyle = theme.labelText;
+    ctx.font = "800 12px Orbitron, monospace";
+    ctx.textAlign = "center";
+    ctx.fillText(kind === "gold" ? "BONUS" : kind === "bomb" ? "SKIP" : "WHACK", x, floatY + 50);
+
+    if (kind === "gold") {
+      ctx.strokeStyle = "#fde68a";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(x, floatY - 10, 44, 0, Math.PI * 2);
+      ctx.stroke();
+    } else if (kind === "bomb") {
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(x - 28, floatY - 38);
+      ctx.lineTo(x + 28, floatY + 18);
+      ctx.moveTo(x + 28, floatY - 38);
+      ctx.lineTo(x - 28, floatY + 18);
+      ctx.stroke();
+    }
+  }
+
   return {
     name: "Whack-a-Mole",
-    description: "Pop-up moles, bonus targets, and a simple timer that works well for quick classroom turns.",
-    controls: "Click or tap a target before it ducks back down.",
+    description: "Cartoon-style pop-up portraits with Book Legends faces or student faces, bigger targets, and a steadier classroom-friendly pace.",
+    controls: "Click or tap a target before it ducks back down. Press 1 or 2 to switch target themes.",
     stageTitle: "Whack-a-Mole Arcade",
-    stageHelp: "Normal moles score 1, golden moles score 3, and bombs subtract points.",
+    stageHelp: targetThemes[selectedThemeIndex].stageHelp,
+    getStageHelp(state) {
+      return getTheme(state).stageHelp;
+    },
+    getCursor() {
+      return input.pointer.down ? whackCursorDown : whackCursor;
+    },
     createState() {
-      return {
-        holes: holes.map(() => ({
-          mode: "hidden",
-          timer: rand(0.4, 1.3),
-          kind: "mole"
-        })),
+      const state = {
+        holes: [],
+        themeIndex: selectedThemeIndex,
+        targetQueue: shuffledIndexes(targetThemes[selectedThemeIndex].targets.length),
         score: 0,
         combo: 0,
-        timeLeft: 30,
-        status: "Ready to bonk",
+        timeLeft: 35,
+        status: `${targetThemes[selectedThemeIndex].name} ready`,
         gameOver: false
       };
+      resetHoles(state);
+      return state;
+    },
+    getExtras(state) {
+      return {
+        title: "Whack Theme",
+        items: targetThemes.map((theme, index) => ({
+          id: String(index),
+          label: theme.label,
+          active: index === state.themeIndex
+        }))
+      };
+    },
+    handleExtra(state, id) {
+      selectTheme(state, Number(id));
+    },
+    keydown(state, key) {
+      if (/^[12]$/.test(key)) {
+        selectTheme(state, Number(key) - 1);
+        return;
+      }
+      if (key === " " && state.gameOver) {
+        resetCurrentGame();
+      }
     },
     pointerdown(state, point) {
       if (state.gameOver) {
@@ -2271,11 +2519,14 @@ const whackGame = (() => {
         return;
       }
 
-      holes.forEach((hole, index) => {
-        if (distance(point.x, point.y, hole.x, hole.y - 24) > 70) {
-          return;
+      let hitHole = false;
+      for (let index = 0; index < holes.length; index += 1) {
+        const hole = holes[index];
+        if (distance(point.x, point.y, hole.x, hole.y - 12) > 86) {
+          continue;
         }
 
+        hitHole = true;
         const slot = state.holes[index];
         if (slot.mode !== "up") {
           state.combo = 0;
@@ -2283,22 +2534,31 @@ const whackGame = (() => {
           return;
         }
 
+        const theme = getTheme(state);
+        const target = theme.targets[slot.targetIndex];
         slot.mode = "hidden";
-        slot.timer = rand(0.45, 1.2);
+        slot.timer = rand(0.65, 1.45);
+        slot.targetIndex = -1;
         if (slot.kind === "gold") {
           state.score += 3;
           state.combo += 1;
-          state.status = "Golden mole";
+          state.status = target ? `${target.name} bonus` : "Bonus whack";
         } else if (slot.kind === "bomb") {
           state.score = Math.max(0, state.score - 2);
           state.combo = 0;
-          state.status = "Bomb hit";
+          state.status = target ? `Skipped ${target.name}` : "Wrong target";
         } else {
           state.score += 1;
           state.combo += 1;
-          state.status = "Nice bonk";
+          state.status = target ? `Whacked ${target.name}` : "Nice whack";
         }
-      });
+        return;
+      }
+
+      if (!hitHole) {
+        state.combo = 0;
+        state.status = "Miss";
+      }
     },
     update(state, dt) {
       if (state.gameOver) {
@@ -2317,524 +2577,976 @@ const whackGame = (() => {
         if (slot.timer > 0) {
           continue;
         }
+
         if (slot.mode === "hidden") {
+          const activeTargets = state.holes.filter((entry) => entry.mode === "up").length;
+          const maxActiveTargets = state.timeLeft > 12 ? 2 : 3;
+          if (activeTargets >= maxActiveTargets || Math.random() < 0.18) {
+            slot.timer = rand(0.25, 0.8);
+            continue;
+          }
+
           slot.mode = "up";
           slot.kind = nextKind();
-          slot.timer = rand(0.6, 1.15);
+          slot.targetIndex = nextTargetIndex(state);
+          slot.timer = Math.max(0.7, rand(0.95, 1.55) - state.timeLeft * 0.002);
         } else {
           slot.mode = "hidden";
-          slot.timer = rand(0.35, 1.1);
+          slot.targetIndex = -1;
+          slot.timer = Math.max(0.45, rand(0.7, 1.5) - state.score * 0.003);
         }
       }
     },
     draw(state, time) {
-      drawBackground("#12341b", "#1d5f2f", time, "rgba(251,191,36,0.72)");
+      const theme = getTheme(state);
+      drawBackground(theme.bgTop, theme.bgBottom, time, theme.accent);
 
-      ctx.fillStyle = "#8b5a2b";
-      ctx.fillRect(0, H - 90, W, 90);
+      ctx.fillStyle = theme.ground;
+      ctx.fillRect(0, H - 98, W, 98);
+
+      ctx.fillStyle = "rgba(255,255,255,0.12)";
+      for (let i = 0; i < 6; i += 1) {
+        ctx.fillRect(0, 134 + i * 104 + Math.sin(time * 0.8 + i) * 4, W, 2);
+      }
 
       for (let i = 0; i < holes.length; i += 1) {
         const hole = holes[i];
         const slot = state.holes[i];
-        ctx.fillStyle = "#2d1408";
-        ctx.beginPath();
-        ctx.ellipse(hole.x, hole.y + 14, 84, 34, 0, 0, Math.PI * 2);
-        ctx.fill();
 
         if (slot.mode === "up") {
-          const rise = 62 + Math.sin(time * 12 + i) * 3;
-          const bodyY = hole.y - rise;
-          ctx.fillStyle = slot.kind === "gold" ? "#facc15" : slot.kind === "bomb" ? "#475569" : "#8c5a2f";
-          ctx.beginPath();
-          ctx.arc(hole.x, bodyY, 44, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillRect(hole.x - 34, bodyY + 8, 68, 56);
-
-          ctx.fillStyle = "#0f172a";
-          ctx.beginPath();
-          ctx.arc(hole.x - 14, bodyY - 6, 5, 0, Math.PI * 2);
-          ctx.arc(hole.x + 14, bodyY - 6, 5, 0, Math.PI * 2);
-          ctx.fill();
+          const rise = 88 + Math.sin(time * 7 + i) * 3.5;
+          drawWhackPortrait(theme.targets[slot.targetIndex], slot.kind, hole.x, hole.y - rise, theme, time, i);
         }
+
+        ctx.fillStyle = "rgba(51,22,8,0.42)";
+        ctx.beginPath();
+        ctx.ellipse(hole.x, hole.y - 4, 92, 26, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#2d1408";
+        ctx.beginPath();
+        ctx.ellipse(hole.x, hole.y + 14, 90, 36, 0, 0, Math.PI * 2);
+        ctx.fill();
       }
     },
     hud(state) {
       return {
         value: `${state.score}`,
-        copy: `Time ${formatTime(state.timeLeft)} | Combo ${state.combo}`,
+        copy: `Time ${formatTime(state.timeLeft)} | Combo ${state.combo} | Theme ${getTheme(state).name}`,
         banner: state.gameOver ? "Time up" : state.status,
-        footer: "Golden targets spike the score and bombs keep the game a little chaotic without becoming complex."
+        footer: "Targets are bigger and a little slower now, and you can swap between Book Legends faces and Student Faces from the Whack Theme panel."
       };
     }
   };
 })();
 
-const basketballGame = {
-  name: "Hoop Shot",
-  description: "Charge up a shot, time the moving rim, and send clean arcs through the basket.",
-  controls: "Aim with Arrow keys or the pointer. Hold Space or press-and-hold to build power.",
-  stageTitle: "Hoop Shot",
-  stageHelp: "Release at the right angle and power. The rim moves, so clean rhythm matters.",
-  createState() {
-    return {
-      angle: -1.05,
-      charge: 0,
-      charging: false,
-      hoopX: 980,
-      hoopDir: 1,
-      ball: { x: 190, y: H - 160, vx: 0, vy: 0, active: false, scored: false, lastY: H - 160 },
-      score: 0,
-      shots: 0,
-      status: "Hold to charge"
-    };
-  },
-  launch(state) {
-    if (!state.charging || state.ball.active) {
-      return;
-    }
-    const power = clamp(state.charge, 0.35, 1);
+const basketballGame = (() => {
+  const spriteRoot = "/assets/arcade/hoop";
+  const shootX = 210;
+  const shootY = H - 168;
+  const hoopDrawY = 96;
+  const rimY = 211;
+  const ballRadius = 20;
+  const gravity = 900;
+  const sprites = {
+    ball: loadSprite(`${spriteRoot}/basketball-ball.svg`),
+    hoop: loadSprite(`${spriteRoot}/basketball-hoop.svg`),
+    wide: loadSprite(`${spriteRoot}/powerup-wide.svg`),
+    magnet: loadSprite(`${spriteRoot}/powerup-magnet.svg`),
+    slow: loadSprite(`${spriteRoot}/powerup-slow.svg`)
+  };
+  const powerups = [
+    { id: "wide", name: "Wide Rim", sprite: sprites.wide, color: "#facc15" },
+    { id: "magnet", name: "Magnet Ball", sprite: sprites.magnet, color: "#60a5fa" },
+    { id: "slow", name: "Slow Time", sprite: sprites.slow, color: "#34d399" }
+  ];
+
+  function getPowerup(id) {
+    return powerups.find((powerup) => powerup.id === id) || null;
+  }
+
+  function resetBall(state) {
     state.ball = {
-      x: 190,
-      y: H - 160,
-      vx: Math.cos(state.angle) * power * 780,
-      vy: Math.sin(state.angle) * power * 780,
-      active: true,
+      x: shootX,
+      y: shootY,
+      vx: 0,
+      vy: 0,
+      active: false,
       scored: false,
-      lastY: H - 160
+      lastY: shootY,
+      spin: 0,
+      trail: []
     };
-    state.shots += 1;
+    state.activePowerup = null;
+  }
+
+  function queueRandomPowerup(state, intro = "Powerup ready") {
+    const currentQueued = state.nextPowerup;
+    const choices = powerups
+      .map((powerup) => powerup.id)
+      .filter((id) => id !== currentQueued);
+    state.nextPowerup = pick(choices.length ? choices : powerups.map((powerup) => powerup.id));
+    state.status = `${intro}: ${getPowerup(state.nextPowerup).name}`;
+  }
+
+  function getLaunchVelocity(angle, power) {
+    return {
+      vx: Math.cos(angle) * power * 1260,
+      vy: Math.sin(angle) * power * 1260
+    };
+  }
+
+  function clampAimFromPoint(point) {
+    return clamp(Math.atan2(point.y - shootY, point.x - shootX), -1.55, -0.52);
+  }
+
+  function getRimHalfWidth(state) {
+    return state.ball.active && state.activePowerup === "wide" ? 70 : 56;
+  }
+
+  function getHoopSpeed(state) {
+    return state.ball.active && state.activePowerup === "slow" ? 92 : 148;
+  }
+
+  function getPreviewPower(state) {
+    if (state.ball.active) {
+      return 0;
+    }
+    return clamp(Math.max(0.48, state.charging ? state.charge : Math.max(state.charge, 0.62)), 0.48, 1);
+  }
+
+  function finishShot(state) {
+    const madeShot = state.ball.scored;
+    resetBall(state);
     state.charging = false;
     state.charge = 0;
-    state.status = "Shot away";
-  },
-  keydown(state, key) {
-    if (key === " ") {
+    if (!madeShot) {
+      state.streak = 0;
+      queueRandomPowerup(state, "Try this");
+      return;
+    }
+    if (!state.nextPowerup && Math.random() < 0.45) {
+      queueRandomPowerup(state, "Bonus");
+      return;
+    }
+    state.status = "Set for next shot";
+  }
+
+  function drawPowerupBadge(powerup, x, y, title, active = false) {
+    drawRoundedRect(x, y, 214, 62, 18, "rgba(15,23,42,0.4)", powerup?.color || "rgba(255,255,255,0.12)");
+    if (powerup?.sprite && powerup.sprite.complete && powerup.sprite.naturalWidth) {
+      drawSprite(powerup.sprite, x + 12, y + 10, 42, 42);
+    } else {
+      drawRoundedRect(x + 12, y + 10, 42, 42, 12, powerup?.color || "#38bdf8");
+    }
+    ctx.fillStyle = "#eff6ff";
+    ctx.font = "800 12px Orbitron, monospace";
+    ctx.textAlign = "left";
+    ctx.fillText(title, x + 64, y + 24);
+    ctx.fillStyle = active ? (powerup?.color || "#bfdbfe") : "rgba(239,246,255,0.78)";
+    ctx.font = "800 16px Orbitron, monospace";
+    ctx.fillText(powerup?.name || "None", x + 64, y + 46);
+  }
+
+  function drawShotPreview(state) {
+    const power = getPreviewPower(state);
+    const simulated = {
+      x: shootX,
+      y: shootY,
+      ...getLaunchVelocity(state.angle, power)
+    };
+    ctx.save();
+    for (let i = 0; i < 18; i += 1) {
+      simulated.vy += gravity * 0.07;
+      simulated.x += simulated.vx * 0.07;
+      simulated.y += simulated.vy * 0.07;
+      if (state.nextPowerup === "magnet" && simulated.vy > 0 && simulated.y < rimY + 110 && Math.abs(simulated.x - state.hoopX) < 120) {
+        simulated.vx += (state.hoopX - simulated.x) * 0.18;
+      }
+      const alpha = 0.14 + i * 0.035;
+      ctx.fillStyle = `rgba(191,219,254,${Math.min(alpha, 0.82)})`;
+      ctx.beginPath();
+      ctx.arc(simulated.x, simulated.y, 4 + i * 0.12, 0, Math.PI * 2);
+      ctx.fill();
+      if (simulated.y > H - 80) {
+        break;
+      }
+    }
+    ctx.restore();
+  }
+
+  return {
+    name: "Hoop Shot",
+    description: "A friendlier arcade shooter with sprite art, a dotted shot guide, and helpful powerups that make every miss teachable instead of punishing.",
+    controls: "Aim with Arrow keys or the pointer. Hold Space or press-and-hold to build power, hold ArrowDown or S to wind it back down, then release to shoot.",
+    stageTitle: "Hoop Shot",
+    stageHelp: "Misses now earn a helpful powerup. Wide Rim, Magnet Ball, and Slow Time help, and ArrowDown or S lets you wind the shot down before release.",
+    createState() {
+      const state = {
+        angle: -0.94,
+        charge: 0,
+        charging: false,
+        hoopX: 940,
+        hoopDir: 1,
+        score: 0,
+        shots: 0,
+        made: 0,
+        streak: 0,
+        nextPowerup: "wide",
+        activePowerup: null,
+        bucketFlash: 0,
+        status: "Aim and hold to shoot"
+      };
+      resetBall(state);
+      return state;
+    },
+    launch(state) {
+      if (!state.charging || state.ball.active) {
+        return;
+      }
+      const power = clamp(state.charge, 0.48, 1);
+      const velocity = getLaunchVelocity(state.angle, power);
+      state.activePowerup = state.nextPowerup;
+      state.nextPowerup = null;
+      state.ball = {
+        x: shootX,
+        y: shootY,
+        vx: velocity.vx,
+        vy: velocity.vy,
+        active: true,
+        scored: false,
+        lastY: shootY,
+        spin: 0,
+        trail: []
+      };
+      state.shots += 1;
+      state.charging = false;
+      state.charge = 0;
+      const activePower = getPowerup(state.activePowerup);
+      state.status = activePower ? `${activePower.name} shot` : "Shot away";
+    },
+    keydown(state, key) {
+      if (key === " ") {
+        if (state.ball.active) {
+          return;
+        }
+        state.charging = true;
+      }
+    },
+    keyup(state, key) {
+      if (key === " ") {
+        this.launch(state);
+      }
+    },
+    pointermove(state, point) {
+      if (state.ball.active || !input.pointer.down) {
+        return;
+      }
+      state.angle = clampAimFromPoint(point);
+    },
+    pointerdown(state, point) {
       if (state.ball.active) {
         return;
       }
+      state.angle = clampAimFromPoint(point);
       state.charging = true;
-    }
-  },
-  keyup(state, key) {
-    if (key === " ") {
+    },
+    pointerup(state) {
       this.launch(state);
-    }
-  },
-  pointerdown(state, point) {
-    if (state.ball.active) {
-      return;
-    }
-    state.angle = clamp(Math.atan2(point.y - (H - 160), point.x - 190), -2.2, -0.35);
-    state.charging = true;
-  },
-  pointerup(state) {
-    this.launch(state);
-  },
-  update(state, dt) {
-    if (input.keys.has("arrowleft") || input.keys.has("a")) {
-      state.angle -= 1.6 * dt;
-    }
-    if (input.keys.has("arrowright") || input.keys.has("d")) {
-      state.angle += 1.6 * dt;
-    }
-    state.angle = clamp(state.angle, -2.2, -0.35);
-
-    if (state.charging && !state.ball.active) {
-      state.charge = Math.min(1, state.charge + dt * 0.75);
-    }
-
-    state.hoopX += state.hoopDir * 220 * dt;
-    if (state.hoopX > 1100 || state.hoopX < 860) {
-      state.hoopDir *= -1;
-    }
-
-    if (!state.ball.active) {
-      return;
-    }
-
-    state.ball.lastY = state.ball.y;
-    state.ball.vy += 980 * dt;
-    state.ball.x += state.ball.vx * dt;
-    state.ball.y += state.ball.vy * dt;
-
-    const rimY = 205;
-    const leftRim = { x: state.hoopX - 42, y: rimY };
-    const rightRim = { x: state.hoopX + 42, y: rimY };
-
-    if (distance(state.ball.x, state.ball.y, leftRim.x, leftRim.y) < 18) {
-      state.ball.vx = -Math.abs(state.ball.vx) * 0.8;
-      state.ball.vy = -Math.abs(state.ball.vy) * 0.65;
-    }
-    if (distance(state.ball.x, state.ball.y, rightRim.x, rightRim.y) < 18) {
-      state.ball.vx = Math.abs(state.ball.vx) * 0.8;
-      state.ball.vy = -Math.abs(state.ball.vy) * 0.65;
-    }
-
-    if (!state.ball.scored && state.ball.lastY < rimY && state.ball.y >= rimY && Math.abs(state.ball.x - state.hoopX) < 28 && state.ball.vy > 0) {
-      state.score += 1;
-      state.ball.scored = true;
-      state.status = "Bucket";
-    }
-
-    if (state.ball.y > H + 60 || state.ball.x > W + 60 || state.ball.x < -60) {
-      state.ball = { x: 190, y: H - 160, vx: 0, vy: 0, active: false, scored: false, lastY: H - 160 };
-      state.status = "Set for next shot";
-    }
-  },
-  draw(state, time) {
-    drawBackground("#091827", "#1d3557", time, "rgba(251,146,60,0.85)");
-
-    ctx.fillStyle = "#f59e0b";
-    ctx.fillRect(0, H - 160, W, 160);
-    ctx.strokeStyle = "rgba(255,255,255,0.18)";
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.arc(190, H - 160, 150, -0.45, 0.45);
-    ctx.stroke();
-
-    ctx.fillStyle = "#dbeafe";
-    ctx.fillRect(state.hoopX + 58, 110, 18, 130);
-    ctx.fillStyle = "#ef4444";
-    ctx.fillRect(state.hoopX - 50, 198, 100, 8);
-    ctx.strokeStyle = "#f3f4f6";
-    for (let i = 0; i < 6; i += 1) {
-      ctx.beginPath();
-      ctx.moveTo(state.hoopX - 46 + i * 18, 206);
-      ctx.lineTo(state.hoopX - 28 + i * 12, 242);
-      ctx.stroke();
-    }
-
-    ctx.strokeStyle = "#93c5fd";
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    ctx.moveTo(190, H - 160);
-    ctx.lineTo(190 + Math.cos(state.angle) * (120 + state.charge * 60), H - 160 + Math.sin(state.angle) * (120 + state.charge * 60));
-    ctx.stroke();
-
-    const ball = state.ball.active ? state.ball : { x: 190, y: H - 160 };
-    ctx.fillStyle = "#f97316";
-    ctx.beginPath();
-    ctx.arc(ball.x, ball.y, 22, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "#7c2d12";
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.arc(ball.x, ball.y, 22, 0, Math.PI * 2);
-    ctx.moveTo(ball.x - 22, ball.y);
-    ctx.lineTo(ball.x + 22, ball.y);
-    ctx.moveTo(ball.x, ball.y - 22);
-    ctx.lineTo(ball.x, ball.y + 22);
-    ctx.stroke();
-  },
-  hud(state) {
-    return {
-      value: `${state.score}`,
-      copy: `Shots ${state.shots} | Power ${Math.round(state.charge * 100)}%`,
-      banner: state.status,
-      footer: "This uses one-button charging so younger players can understand it immediately and still feel timing depth."
-    };
-  }
-};
-
-const dodgeGame = {
-  name: "Dodger Arena",
-  description: "Free-move survival with incoming hazards, collectible stars, and a score that climbs the longer you last.",
-  controls: "Move with Arrow keys or WASD and stay away from incoming drones.",
-  stageTitle: "Dodger Arena",
-  stageHelp: "Collect stars when it is safe, but survival time matters more than greed.",
-  createState() {
-    return {
-      player: { x: W / 2, y: H / 2, r: 22 },
-      enemies: [],
-      stars: [],
-      enemyTimer: 0.6,
-      starTimer: 1.2,
-      elapsed: 0,
-      bonus: 0,
-      starsCaught: 0,
-      score: 0,
-      status: "Stay alive",
-      gameOver: false
-    };
-  },
-  keydown(state, key) {
-    if (key === " " && state.gameOver) {
-      resetCurrentGame();
-    }
-  },
-  update(state, dt, time) {
-    if (state.gameOver) {
-      return;
-    }
-
-    state.elapsed += dt;
-    const speed = 340;
-    if (input.keys.has("arrowup") || input.keys.has("w")) {
-      state.player.y -= speed * dt;
-    }
-    if (input.keys.has("arrowdown") || input.keys.has("s")) {
-      state.player.y += speed * dt;
-    }
-    if (input.keys.has("arrowleft") || input.keys.has("a")) {
-      state.player.x -= speed * dt;
-    }
-    if (input.keys.has("arrowright") || input.keys.has("d")) {
-      state.player.x += speed * dt;
-    }
-    state.player.x = clamp(state.player.x, 40, W - 40);
-    state.player.y = clamp(state.player.y, 40, H - 40);
-
-    state.enemyTimer -= dt;
-    if (state.enemyTimer <= 0) {
-      state.enemyTimer = Math.max(0.35, 0.9 - state.elapsed * 0.02);
-      const side = randInt(0, 3);
-      const spawn = [
-        { x: rand(0, W), y: -30 },
-        { x: W + 30, y: rand(0, H) },
-        { x: rand(0, W), y: H + 30 },
-        { x: -30, y: rand(0, H) }
-      ][side];
-      const angle = Math.atan2(state.player.y - spawn.y, state.player.x - spawn.x) + rand(-0.45, 0.45);
-      const enemySpeed = rand(170, 240) + state.elapsed * 6;
-      state.enemies.push({
-        x: spawn.x,
-        y: spawn.y,
-        vx: Math.cos(angle) * enemySpeed,
-        vy: Math.sin(angle) * enemySpeed,
-        r: rand(16, 28)
-      });
-    }
-
-    state.starTimer -= dt;
-    if (state.starTimer <= 0) {
-      state.starTimer = rand(1.8, 3.2);
-      state.stars.push({ x: rand(80, W - 80), y: rand(80, H - 80), r: 12, life: 7 });
-    }
-
-    for (const enemy of state.enemies) {
-      enemy.x += enemy.vx * dt;
-      enemy.y += enemy.vy * dt;
-    }
-    state.enemies = state.enemies.filter((enemy) => enemy.x > -80 && enemy.x < W + 80 && enemy.y > -80 && enemy.y < H + 80);
-
-    for (const star of state.stars) {
-      star.life -= dt;
-      if (distance(state.player.x, state.player.y, star.x, star.y) < state.player.r + star.r + 4) {
-        state.bonus += 30;
-        state.starsCaught += 1;
-        star.life = 0;
-        state.status = "Star collected";
+    },
+    update(state, dt) {
+      if (input.keys.has("arrowleft") || input.keys.has("a")) {
+        state.angle -= 1.25 * dt;
       }
-    }
-    state.stars = state.stars.filter((star) => star.life > 0);
-
-    for (const enemy of state.enemies) {
-      if (distance(state.player.x, state.player.y, enemy.x, enemy.y) < state.player.r + enemy.r) {
-        state.gameOver = true;
-        state.status = "Arena closed in";
+      if (input.keys.has("arrowright") || input.keys.has("d")) {
+        state.angle += 1.25 * dt;
       }
-    }
+      state.angle = clamp(state.angle, -1.55, -0.52);
 
-    state.score = Math.floor(state.elapsed * 12) + state.bonus;
-  },
-  draw(state, time) {
-    drawBackground("#09111b", "#182338", time, "rgba(244,114,182,0.72)");
-
-    ctx.strokeStyle = "rgba(255,255,255,0.08)";
-    ctx.lineWidth = 2;
-    for (let x = 80; x < W; x += 80) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, H);
-      ctx.stroke();
-    }
-    for (let y = 80; y < H; y += 80) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(W, y);
-      ctx.stroke();
-    }
-
-    for (const star of state.stars) {
-      ctx.fillStyle = "#fcd34d";
-      ctx.beginPath();
-      for (let i = 0; i < 5; i += 1) {
-        const outerAngle = -Math.PI / 2 + i * (Math.PI * 2 / 5);
-        const innerAngle = outerAngle + Math.PI / 5;
-        const ox = star.x + Math.cos(outerAngle) * 14;
-        const oy = star.y + Math.sin(outerAngle) * 14;
-        const ix = star.x + Math.cos(innerAngle) * 6;
-        const iy = star.y + Math.sin(innerAngle) * 6;
-        if (i === 0) {
-          ctx.moveTo(ox, oy);
+      if (state.charging && !state.ball.active) {
+        const windingDown = input.keys.has("arrowdown") || input.keys.has("s");
+        if (windingDown) {
+          state.charge = Math.max(0.18, state.charge - dt * 1.2);
+          if (state.charge > 0.2) {
+            state.status = "Winding down";
+          }
         } else {
-          ctx.lineTo(ox, oy);
+          state.charge = Math.min(1, state.charge + dt * 0.78);
         }
-        ctx.lineTo(ix, iy);
       }
-      ctx.closePath();
-      ctx.fill();
-    }
 
-    for (const enemy of state.enemies) {
-      ctx.fillStyle = "#fb7185";
+      state.bucketFlash = Math.max(0, state.bucketFlash - dt);
+
+      state.hoopX += state.hoopDir * getHoopSpeed(state) * dt;
+      if (state.hoopX > 1040 || state.hoopX < 820) {
+        state.hoopDir *= -1;
+      }
+
+      if (!state.ball.active) {
+        return;
+      }
+
+      state.ball.lastY = state.ball.y;
+      state.ball.vy += gravity * dt;
+      state.ball.x += state.ball.vx * dt;
+      state.ball.y += state.ball.vy * dt;
+      state.ball.spin += state.ball.vx * dt * 0.012;
+      state.ball.trail.push({ x: state.ball.x, y: state.ball.y });
+      if (state.ball.trail.length > 8) {
+        state.ball.trail.shift();
+      }
+
+      if (state.activePowerup === "magnet" && !state.ball.scored && state.ball.vy > 0 && state.ball.y < rimY + 110 && Math.abs(state.ball.x - state.hoopX) < 130) {
+        const pullStrength = clamp((130 - Math.abs(state.ball.x - state.hoopX)) / 130, 0, 1);
+        state.ball.vx += (state.hoopX - state.ball.x) * 4.4 * pullStrength * dt;
+      }
+
+      const rimHalfWidth = getRimHalfWidth(state);
+      const leftRim = { x: state.hoopX - rimHalfWidth, y: rimY };
+      const rightRim = { x: state.hoopX + rimHalfWidth, y: rimY };
+      const board = { x: state.hoopX + 76, y: 112, w: 22, h: 136 };
+
+      if (circleRectOverlap({ x: state.ball.x, y: state.ball.y, r: ballRadius }, board) && state.ball.vx > 0) {
+        state.ball.x = board.x - ballRadius;
+        state.ball.vx = -Math.abs(state.ball.vx) * 0.74;
+        state.status = "Backboard";
+      }
+      if (distance(state.ball.x, state.ball.y, leftRim.x, leftRim.y) < 20) {
+        state.ball.vx = -Math.abs(state.ball.vx) * 0.82;
+        state.ball.vy = -Math.abs(state.ball.vy) * 0.68;
+        state.status = "Rim bounce";
+      }
+      if (distance(state.ball.x, state.ball.y, rightRim.x, rightRim.y) < 20) {
+        state.ball.vx = Math.abs(state.ball.vx) * 0.82;
+        state.ball.vy = -Math.abs(state.ball.vy) * 0.68;
+        state.status = "Rim bounce";
+      }
+
+      const scoreWindow = rimHalfWidth - 6;
+      if (
+        !state.ball.scored &&
+        state.ball.lastY < rimY + 4 &&
+        state.ball.y >= rimY + 4 &&
+        Math.abs(state.ball.x - state.hoopX) < scoreWindow &&
+        state.ball.vy > 0
+      ) {
+        const scoreValue = state.activePowerup ? 2 : 1;
+        state.score += scoreValue;
+        state.made += 1;
+        state.streak += 1;
+        state.ball.scored = true;
+        state.bucketFlash = 0.35;
+        state.status = scoreValue > 1 ? "Power bucket" : "Bucket";
+      }
+
+      if (state.ball.y > H + 70 || state.ball.x > W + 80 || state.ball.x < -80) {
+        finishShot(state);
+      }
+    },
+    draw(state, time) {
+      drawBackground("#0a1a2c", "#20446e", time, "rgba(251,146,60,0.72)");
+
+      ctx.fillStyle = "#f59e0b";
+      ctx.fillRect(0, H - 154, W, 154);
+      ctx.strokeStyle = "rgba(255,255,255,0.18)";
+      ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.arc(enemy.x, enemy.y, enemy.r, 0, Math.PI * 2);
+      ctx.arc(shootX, H - 154, 168, -0.44, 0.44);
+      ctx.stroke();
+      drawRoundedRect(116, H - 218, 192, 82, 34, "rgba(255,255,255,0.08)");
+
+      ctx.strokeStyle = "rgba(255,255,255,0.1)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(shootX, H - 154, 84, -0.52, 0.52);
+      ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,0.08)";
+      ctx.fillRect(0, H - 132, W, 6);
+
+      if (!state.ball.active) {
+        drawShotPreview(state);
+      }
+
+      const hoopGlowAlpha = state.bucketFlash > 0 ? 0.36 + state.bucketFlash * 0.7 : 0.16;
+      ctx.save();
+      ctx.globalAlpha = hoopGlowAlpha;
+      ctx.fillStyle = state.activePowerup === "wide" && state.ball.active ? "#facc15" : "#93c5fd";
+      ctx.beginPath();
+      ctx.arc(state.hoopX, rimY + 8, getRimHalfWidth(state) + 34, 0, Math.PI * 2);
       ctx.fill();
+      ctx.restore();
+
+      if (sprites.hoop.complete && sprites.hoop.naturalWidth) {
+        drawSprite(sprites.hoop, state.hoopX - 110, hoopDrawY, 220, 180);
+      } else {
+        ctx.fillStyle = "#dbeafe";
+        ctx.fillRect(state.hoopX + 76, 112, 22, 136);
+        ctx.fillStyle = "#ef4444";
+        ctx.fillRect(state.hoopX - 58, rimY - 5, 116, 10);
+      }
+
+      const aimLength = 128 + getPreviewPower(state) * 54;
+      ctx.strokeStyle = "rgba(147,197,253,0.92)";
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(shootX, shootY);
+      ctx.lineTo(shootX + Math.cos(state.angle) * aimLength, shootY + Math.sin(state.angle) * aimLength);
+      ctx.stroke();
+
+      drawRoundedRect(122, H - 120, 176, 18, 10, "rgba(15,23,42,0.42)", "rgba(255,255,255,0.14)");
+      drawRoundedRect(126, H - 116, 168 * getPreviewPower(state), 10, 8, state.charging ? "#60a5fa" : "#f59e0b");
+      drawLabel("Power Meter", 210, H - 130, 14, "rgba(239,246,255,0.86)", "center");
+
+      const nextPower = getPowerup(state.nextPowerup);
+      const activePower = getPowerup(state.activePowerup);
+      drawPowerupBadge(nextPower, 26, 28, "Next Shot");
+      drawPowerupBadge(activePower, 26, 102, "Active Shot", true);
+
+      if (state.ball.trail.length) {
+        for (let i = 0; i < state.ball.trail.length; i += 1) {
+          const trail = state.ball.trail[i];
+          const alpha = (i + 1) / state.ball.trail.length * 0.2;
+          ctx.fillStyle = `rgba(251,146,60,${alpha})`;
+          ctx.beginPath();
+          ctx.arc(trail.x, trail.y, 8 + i * 0.6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      const ball = state.ball.active ? state.ball : { x: shootX, y: shootY, spin: 0 };
+      if (sprites.ball.complete && sprites.ball.naturalWidth) {
+        drawRotatedSprite(sprites.ball, ball.x, ball.y, 46, 46, { angle: ball.spin || 0 });
+      } else {
+        ctx.fillStyle = "#f97316";
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ballRadius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      drawLabel("Guided Arc + Shot Powerups", 862, 58, 18, "rgba(239,246,255,0.9)", "center");
+    },
+    hud(state) {
+      return {
+        value: `${state.score}`,
+        copy: `Made ${state.made}/${state.shots} | Power ${Math.round(getPreviewPower(state) * 100)}% | Down/S winds it down | Next ${getPowerup(state.nextPowerup)?.name || "None"}`,
+        banner: state.status,
+        footer: "Misses now hand out helper powerups, the rim is more forgiving, and the dotted guide shows a scoreable arc before you shoot."
+      };
     }
+  };
+})();
 
-    ctx.fillStyle = "#38bdf8";
-    ctx.beginPath();
-    ctx.arc(state.player.x, state.player.y, state.player.r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#e0f2fe";
-    ctx.beginPath();
-    ctx.arc(state.player.x - 7, state.player.y - 6, 4, 0, Math.PI * 2);
-    ctx.arc(state.player.x + 7, state.player.y - 6, 4, 0, Math.PI * 2);
-    ctx.fill();
-  },
-  hud(state) {
-    return {
-      value: `${state.score}`,
-      copy: `Survival ${state.elapsed.toFixed(1)}s | Stars ${state.starsCaught}`,
-      banner: state.gameOver ? "Arena down" : state.status,
-      footer: "The score keeps climbing with survival time, so even cautious play still feels rewarding."
-    };
+const dodgeGame = (() => {
+  const studentFaceRoot = "/assets/student-sprites";
+  const studentFaceFiles = [
+    ...Array.from({ length: 26 }, (_, index) => `students1_face_${String(index + 1).padStart(2, "0")}.png`),
+    ...Array.from({ length: 14 }, (_, index) => `students2_face_${String(index + 1).padStart(2, "0")}.png`)
+  ];
+  const studentFaces = studentFaceFiles.map((file, index) => ({
+    id: file.replace(".png", ""),
+    label: `Student ${index + 1}`,
+    image: loadSprite(`${studentFaceRoot}/${file}`)
+  }));
+
+  function shuffledFaceIndexes(excludeIndex = -1) {
+    const indexes = studentFaces
+      .map((_, index) => index)
+      .filter((index) => index !== excludeIndex);
+    for (let i = indexes.length - 1; i > 0; i -= 1) {
+      const j = randInt(0, i);
+      [indexes[i], indexes[j]] = [indexes[j], indexes[i]];
+    }
+    return indexes;
   }
-};
 
-const racerGame = {
-  name: "Mini Racer",
-  description: "A three-lane arcade racer with clean lane swaps, nitro pickups, and steadily rising speed.",
-  controls: "Use Left/Right or A/D to switch lanes.",
-  stageTitle: "Mini Racer",
-  stageHelp: "Stay off traffic and grab the blue boosts when the lane is clear enough.",
-  createState() {
-    return {
-      lane: 1,
-      obstacles: [],
-      boosts: [],
-      spawnTimer: 0.9,
-      boostTimer: 2.4,
-      distance: 0,
-      boost: 0,
-      status: "Shift lanes",
-      gameOver: false
-    };
-  },
-  keydown(state, key) {
-    if (state.gameOver && key === " ") {
-      resetCurrentGame();
+  function nextEnemyFaceIndex(state) {
+    if (!studentFaces.length) {
+      return -1;
+    }
+    if (!state.enemyFaceQueue.length) {
+      state.enemyFaceQueue = shuffledFaceIndexes(state.playerFaceIndex);
+    }
+    return state.enemyFaceQueue.pop() ?? state.playerFaceIndex;
+  }
+
+  function drawFaceCircle(faceIndex, x, y, radius, ringColor, fallbackColor) {
+    ctx.save();
+    ctx.globalAlpha = 0.22;
+    ctx.fillStyle = ringColor;
+    ctx.beginPath();
+    ctx.arc(x, y, radius + 7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    const face = studentFaces[faceIndex];
+    const sprite = face?.image;
+    const drawRadius = radius * 1.18;
+    if (sprite && sprite.complete && sprite.naturalWidth) {
+      ctx.save();
+      ctx.shadowBlur = 16;
+      ctx.shadowColor = ringColor;
+      drawSprite(sprite, x - drawRadius, y - drawRadius, drawRadius * 2, drawRadius * 2);
+      ctx.restore();
       return;
     }
-    if (key === "arrowleft" || key === "a") {
-      state.lane = clamp(state.lane - 1, 0, 2);
+
+    ctx.fillStyle = fallbackColor;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  return {
+    name: "Dodger Arena",
+    description: "Free-move survival with random student-face runners, lookalike incoming hazards, collectible stars, and a score that climbs the longer you last.",
+    controls: "Move with Arrow keys or WASD and stay away from the incoming student lookalikes.",
+    stageTitle: "Dodger Arena",
+    stageHelp: "Each run picks one student face for the runner. The other circles are other student faces coming after you.",
+    createState() {
+      const playerFaceIndex = studentFaces.length ? randInt(0, studentFaces.length - 1) : -1;
+      return {
+        player: { x: W / 2, y: H / 2, r: 22 },
+        playerFaceIndex,
+        enemyFaceQueue: shuffledFaceIndexes(playerFaceIndex),
+        enemies: [],
+        stars: [],
+        enemyTimer: 0.6,
+        starTimer: 1.2,
+        elapsed: 0,
+        bonus: 0,
+        starsCaught: 0,
+        score: 0,
+        status: playerFaceIndex >= 0 ? `${studentFaces[playerFaceIndex].label} ready` : "Stay alive",
+        gameOver: false
+      };
+    },
+    keydown(state, key) {
+      if (key === " " && state.gameOver) {
+        resetCurrentGame();
+      }
+    },
+    update(state, dt) {
+      if (state.gameOver) {
+        return;
+      }
+
+      state.elapsed += dt;
+      const speed = 340;
+      if (input.keys.has("arrowup") || input.keys.has("w")) {
+        state.player.y -= speed * dt;
+      }
+      if (input.keys.has("arrowdown") || input.keys.has("s")) {
+        state.player.y += speed * dt;
+      }
+      if (input.keys.has("arrowleft") || input.keys.has("a")) {
+        state.player.x -= speed * dt;
+      }
+      if (input.keys.has("arrowright") || input.keys.has("d")) {
+        state.player.x += speed * dt;
+      }
+      state.player.x = clamp(state.player.x, 40, W - 40);
+      state.player.y = clamp(state.player.y, 40, H - 40);
+
+      state.enemyTimer -= dt;
+      if (state.enemyTimer <= 0) {
+        state.enemyTimer = Math.max(0.35, 0.9 - state.elapsed * 0.02);
+        const side = randInt(0, 3);
+        const spawn = [
+          { x: rand(0, W), y: -30 },
+          { x: W + 30, y: rand(0, H) },
+          { x: rand(0, W), y: H + 30 },
+          { x: -30, y: rand(0, H) }
+        ][side];
+        const angle = Math.atan2(state.player.y - spawn.y, state.player.x - spawn.x) + rand(-0.45, 0.45);
+        const enemySpeed = rand(170, 240) + state.elapsed * 6;
+        state.enemies.push({
+          x: spawn.x,
+          y: spawn.y,
+          vx: Math.cos(angle) * enemySpeed,
+          vy: Math.sin(angle) * enemySpeed,
+          r: rand(16, 28),
+          faceIndex: nextEnemyFaceIndex(state)
+        });
+      }
+
+      state.starTimer -= dt;
+      if (state.starTimer <= 0) {
+        state.starTimer = rand(1.8, 3.2);
+        state.stars.push({ x: rand(80, W - 80), y: rand(80, H - 80), r: 12, life: 7 });
+      }
+
+      for (const enemy of state.enemies) {
+        enemy.x += enemy.vx * dt;
+        enemy.y += enemy.vy * dt;
+      }
+      state.enemies = state.enemies.filter((enemy) => enemy.x > -80 && enemy.x < W + 80 && enemy.y > -80 && enemy.y < H + 80);
+
+      for (const star of state.stars) {
+        star.life -= dt;
+        if (distance(state.player.x, state.player.y, star.x, star.y) < state.player.r + star.r + 4) {
+          state.bonus += 30;
+          state.starsCaught += 1;
+          star.life = 0;
+          state.status = "Star collected";
+        }
+      }
+      state.stars = state.stars.filter((star) => star.life > 0);
+
+      for (const enemy of state.enemies) {
+        if (distance(state.player.x, state.player.y, enemy.x, enemy.y) < state.player.r + enemy.r) {
+          state.gameOver = true;
+          state.status = "Arena closed in";
+        }
+      }
+
+      state.score = Math.floor(state.elapsed * 12) + state.bonus;
+    },
+    draw(state, time) {
+      drawBackground("#09111b", "#182338", time, "rgba(244,114,182,0.72)");
+
+      ctx.strokeStyle = "rgba(255,255,255,0.08)";
+      ctx.lineWidth = 2;
+      for (let x = 80; x < W; x += 80) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, H);
+        ctx.stroke();
+      }
+      for (let y = 80; y < H; y += 80) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(W, y);
+        ctx.stroke();
+      }
+
+      for (const star of state.stars) {
+        ctx.fillStyle = "#fcd34d";
+        ctx.beginPath();
+        for (let i = 0; i < 5; i += 1) {
+          const outerAngle = -Math.PI / 2 + i * (Math.PI * 2 / 5);
+          const innerAngle = outerAngle + Math.PI / 5;
+          const ox = star.x + Math.cos(outerAngle) * 14;
+          const oy = star.y + Math.sin(outerAngle) * 14;
+          const ix = star.x + Math.cos(innerAngle) * 6;
+          const iy = star.y + Math.sin(innerAngle) * 6;
+          if (i === 0) {
+            ctx.moveTo(ox, oy);
+          } else {
+            ctx.lineTo(ox, oy);
+          }
+          ctx.lineTo(ix, iy);
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      for (const enemy of state.enemies) {
+        drawFaceCircle(enemy.faceIndex, enemy.x, enemy.y, enemy.r, "rgba(251,113,133,0.95)", "#fb7185");
+      }
+
+      const pulse = 0.5 + Math.sin(time * 5) * 0.08;
+      drawFaceCircle(state.playerFaceIndex, state.player.x, state.player.y, state.player.r + pulse, "rgba(56,189,248,0.95)", "#38bdf8");
+    },
+    hud(state) {
+      return {
+        value: `${state.score}`,
+        copy: `Survival ${state.elapsed.toFixed(1)}s | Stars ${state.starsCaught}`,
+        banner: state.gameOver ? "Arena down" : state.status,
+        footer: "Each run picks a random student face for the runner, and the other circles come from the rest of the class face set."
+      };
     }
-    if (key === "arrowright" || key === "d") {
-      state.lane = clamp(state.lane + 1, 0, 2);
+  };
+})();
+
+const racerGame = (() => {
+  const spriteRoot = "/assets/arcade/racer";
+  const laneCenters = [448, 608, 768];
+  const playerY = 606;
+  const sprites = {
+    audiR8: loadSprite(`${spriteRoot}/audi-r8.png`),
+    audiR8Black: loadSprite(`${spriteRoot}/audi-r8-black.png`),
+    gallardo: loadSprite(`${spriteRoot}/lamborghini-gallardo.png`),
+    viper: loadSprite(`${spriteRoot}/dodge-viper.png`),
+    audiRed: loadSprite(`${spriteRoot}/traffic-audi-red.png`),
+    police: loadSprite(`${spriteRoot}/traffic-police.png`),
+    taxi: loadSprite(`${spriteRoot}/traffic-taxi.png`),
+    hatchback: loadSprite(`${spriteRoot}/traffic-hatchback.png`),
+    minivan: loadSprite(`${spriteRoot}/traffic-minivan.png`),
+    pickup: loadSprite(`${spriteRoot}/traffic-pickup.png`)
+  };
+
+  const supercarOptions = [
+    { id: "audi-r8", key: "1", label: "1. Audi R8", name: "Audi R8", sprite: sprites.audiR8, drawW: 92, drawH: 168, fallback: "#f8fafc", highlight: "#bfdbfe" },
+    { id: "audi-r8-black", key: "2", label: "2. Audi R8 Night", name: "Audi R8 Night", sprite: sprites.audiR8Black, drawW: 92, drawH: 166, fallback: "#2563eb", highlight: "#93c5fd" },
+    { id: "gallardo", key: "3", label: "3. Lamborghini Gallardo", name: "Lamborghini Gallardo", sprite: sprites.gallardo, drawW: 92, drawH: 166, fallback: "#38bdf8", highlight: "#7dd3fc" },
+    { id: "viper", key: "4", label: "4. Dodge Viper", name: "Dodge Viper", sprite: sprites.viper, drawW: 114, drawH: 170, fallback: "#fb923c", highlight: "#fdba74" }
+  ];
+
+  const trafficOptions = [
+    { id: "traffic-audi-red", name: "Audi Coupe", sprite: sprites.audiRed, drawW: 102, drawH: 166, fallback: "#ef4444", highlight: "#fca5a5" },
+    { id: "traffic-police", name: "Police Interceptor", sprite: sprites.police, drawW: 102, drawH: 166, fallback: "#60a5fa", highlight: "#bfdbfe" },
+    { id: "traffic-taxi", name: "Taxi", sprite: sprites.taxi, drawW: 102, drawH: 166, fallback: "#facc15", highlight: "#fde68a" },
+    { id: "traffic-hatchback", name: "Hatchback", sprite: sprites.hatchback, drawW: 98, drawH: 162, fallback: "#22c55e", highlight: "#86efac" },
+    { id: "traffic-minivan", name: "Minivan", sprite: sprites.minivan, drawW: 104, drawH: 168, fallback: "#c084fc", highlight: "#d8b4fe" },
+    { id: "traffic-pickup", name: "Pickup", sprite: sprites.pickup, drawW: 106, drawH: 172, fallback: "#f97316", highlight: "#fdba74" },
+    { id: "traffic-gallardo", name: "Gallardo", sprite: sprites.gallardo, drawW: 92, drawH: 166, fallback: "#38bdf8", highlight: "#7dd3fc" },
+    { id: "traffic-viper", name: "Viper", sprite: sprites.viper, drawW: 114, drawH: 170, fallback: "#fb923c", highlight: "#fdba74" }
+  ];
+
+  let selectedCarIndex = 0;
+
+  function getSelectedCar(state) {
+    return supercarOptions[state.carIndex] || supercarOptions[0];
+  }
+
+  function findCarIndex(id) {
+    return supercarOptions.findIndex((car) => car.id === id);
+  }
+
+  function carX(lane, car) {
+    return laneCenters[lane] - car.drawW / 2;
+  }
+
+  function carRect(x, y, car) {
+    const insetX = Math.max(8, car.drawW * 0.17);
+    const insetY = Math.max(12, car.drawH * 0.14);
+    return {
+      x: x + insetX,
+      y: y + insetY,
+      w: car.drawW - insetX * 2,
+      h: car.drawH - insetY * 2
+    };
+  }
+
+  function drawFallbackCar(x, y, car, accentOverride = null) {
+    const accent = accentOverride || car.fallback;
+    drawRoundedRect(x, y, car.drawW, car.drawH, 20, accent);
+    ctx.fillStyle = "rgba(255,255,255,0.2)";
+    ctx.fillRect(x + car.drawW * 0.16, y + car.drawH * 0.15, car.drawW * 0.68, 18);
+    ctx.fillStyle = "rgba(15,23,42,0.42)";
+    ctx.fillRect(x + car.drawW * 0.18, y + car.drawH * 0.52, car.drawW * 0.64, car.drawH * 0.22);
+  }
+
+  function drawCar(x, y, car, options = {}) {
+    const { boosted = false, alpha = 1 } = options;
+    const spriteReady = Boolean(car.sprite && car.sprite.complete && car.sprite.naturalWidth);
+
+    if (boosted) {
+      ctx.save();
+      ctx.globalAlpha = 0.4;
+      ctx.shadowBlur = 28;
+      ctx.shadowColor = "rgba(56,189,248,0.95)";
+      drawRoundedRect(x + 8, y + 12, car.drawW - 16, car.drawH - 24, 18, "rgba(56,189,248,0.45)");
+      ctx.restore();
+
+      ctx.save();
+      ctx.globalAlpha = 0.85;
+      ctx.fillStyle = "rgba(56,189,248,0.9)";
+      ctx.beginPath();
+      ctx.moveTo(x + car.drawW * 0.34, y + car.drawH + 8);
+      ctx.lineTo(x + car.drawW * 0.46, y + car.drawH - 22);
+      ctx.lineTo(x + car.drawW * 0.52, y + car.drawH + 8);
+      ctx.lineTo(x + car.drawW * 0.58, y + car.drawH - 20);
+      ctx.lineTo(x + car.drawW * 0.7, y + car.drawH + 8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
     }
-  },
-  update(state, dt, time) {
-    if (state.gameOver) {
+
+    if (spriteReady) {
+      ctx.save();
+      ctx.shadowBlur = 18;
+      ctx.shadowColor = "rgba(15,23,42,0.45)";
+      drawSprite(car.sprite, x, y, car.drawW, car.drawH, { alpha });
+      ctx.restore();
       return;
     }
 
-    const roadSpeed = 320 + state.distance * 0.03 + (state.boost > 0 ? 180 : 0);
-    state.distance += roadSpeed * dt * 0.1;
-    state.boost = Math.max(0, state.boost - dt);
-
-    state.spawnTimer -= dt;
-    if (state.spawnTimer <= 0) {
-      state.spawnTimer = Math.max(0.42, 0.95 - state.distance * 0.003);
-      state.obstacles.push({
-        lane: randInt(0, 2),
-        y: -150,
-        h: rand(120, 160),
-        color: pick(["#fb7185", "#f59e0b", "#4ade80"])
-      });
-    }
-
-    state.boostTimer -= dt;
-    if (state.boostTimer <= 0) {
-      state.boostTimer = rand(2.8, 4.6);
-      state.boosts.push({ lane: randInt(0, 2), y: -100 });
-    }
-
-    for (const obstacle of state.obstacles) {
-      obstacle.y += roadSpeed * dt;
-    }
-    for (const boost of state.boosts) {
-      boost.y += roadSpeed * dt;
-    }
-    state.obstacles = state.obstacles.filter((obstacle) => obstacle.y < H + 180);
-    state.boosts = state.boosts.filter((boost) => boost.y < H + 120);
-
-    const playerX = 400 + state.lane * 160;
-    const playerRect = { x: playerX, y: 620, w: 96, h: 142 };
-    for (const obstacle of state.obstacles) {
-      const laneX = 400 + obstacle.lane * 160;
-      if (rectsOverlap(playerRect, { x: laneX, y: obstacle.y, w: 96, h: obstacle.h })) {
-        state.gameOver = true;
-        state.status = "Traffic collision";
-      }
-    }
-
-    for (const boost of state.boosts) {
-      const laneX = 416 + boost.lane * 160;
-      if (state.lane === boost.lane && boost.y > 600 && boost.y < 760) {
-        state.boost = 4;
-        state.status = "Nitro boost";
-        boost.y = H + 200;
-      }
-    }
-  },
-  draw(state, time) {
-    drawBackground("#0a1017", "#1b2430", time, "rgba(96,165,250,0.72)");
-
-    drawRoundedRect(340, 0, 600, H, 36, "#2c313a");
-    ctx.fillStyle = "rgba(255,255,255,0.18)";
-    for (let y = -60; y < H + 80; y += 110) {
-      const offset = (time * 360) % 110;
-      ctx.fillRect(534, y + offset, 12, 66);
-      ctx.fillRect(694, y + offset, 12, 66);
-    }
-
-    for (const obstacle of state.obstacles) {
-      const laneX = 400 + obstacle.lane * 160;
-      drawRoundedRect(laneX, obstacle.y, 96, obstacle.h, 20, obstacle.color);
-      ctx.fillStyle = "rgba(255,255,255,0.22)";
-      ctx.fillRect(laneX + 16, obstacle.y + 20, 64, 18);
-    }
-
-    for (const boost of state.boosts) {
-      const laneX = 448 + boost.lane * 160;
-      ctx.fillStyle = "#38bdf8";
-      ctx.beginPath();
-      ctx.moveTo(laneX, boost.y);
-      ctx.lineTo(laneX + 18, boost.y + 30);
-      ctx.lineTo(laneX + 2, boost.y + 30);
-      ctx.lineTo(laneX + 24, boost.y + 70);
-      ctx.lineTo(laneX - 12, boost.y + 38);
-      ctx.lineTo(laneX + 6, boost.y + 38);
-      ctx.closePath();
-      ctx.fill();
-    }
-
-    const playerX = 400 + state.lane * 160;
-    drawRoundedRect(playerX, 620, 96, 142, 22, state.boost > 0 ? "#38bdf8" : "#f43f5e");
-    ctx.fillStyle = "#f8fafc";
-    ctx.fillRect(playerX + 16, 650, 64, 24);
-    ctx.fillRect(playerX + 16, 702, 64, 24);
-  },
-  hud(state) {
-    return {
-      value: `${Math.floor(state.distance)}`,
-      copy: `Lane ${state.lane + 1} | Nitro ${state.boost > 0 ? `${state.boost.toFixed(1)}s` : "ready"}`,
-      banner: state.gameOver ? "Race over" : state.status,
-      footer: "Nitro adds speed but the real trick is deciding whether the pickup lane is worth the risk."
-    };
+    drawFallbackCar(x, y, car);
   }
-};
+
+  function setSelectedCar(state, index) {
+    if (index < 0 || index >= supercarOptions.length) {
+      return;
+    }
+    state.carIndex = index;
+    selectedCarIndex = index;
+    state.status = `${supercarOptions[index].name} ready`;
+  }
+
+  return {
+    name: "Mini Racer",
+    description: "A three-lane arcade racer with real supercar sprites, quick lane swaps, and nitro pickups that reward brave lines.",
+    controls: "Use Left/Right or A/D to switch lanes. Press 1-4 to swap supercars.",
+    stageTitle: "Mini Racer",
+    stageHelp: "Pick your supercar, stay off traffic, and grab the blue nitro bolts when the lane is clear enough.",
+    createState() {
+      return {
+        lane: 1,
+        carIndex: selectedCarIndex,
+        obstacles: [],
+        boosts: [],
+        spawnTimer: 0.8,
+        boostTimer: 2.4,
+        distance: 0,
+        boost: 0,
+        status: `${supercarOptions[selectedCarIndex].name} ready`,
+        gameOver: false
+      };
+    },
+    getExtras(state) {
+      return {
+        title: "Supercar Picks",
+        items: supercarOptions.map((car, index) => ({
+          id: car.id,
+          label: car.label,
+          active: index === state.carIndex
+        }))
+      };
+    },
+    handleExtra(state, id) {
+      setSelectedCar(state, findCarIndex(id));
+    },
+    keydown(state, key) {
+      if (state.gameOver && key === " ") {
+        resetCurrentGame();
+        return;
+      }
+      const numberIndex = supercarOptions.findIndex((car) => car.key === key);
+      if (numberIndex >= 0) {
+        setSelectedCar(state, numberIndex);
+        return;
+      }
+      if (key === "arrowleft" || key === "a") {
+        state.lane = clamp(state.lane - 1, 0, 2);
+      }
+      if (key === "arrowright" || key === "d") {
+        state.lane = clamp(state.lane + 1, 0, 2);
+      }
+    },
+    update(state, dt) {
+      if (state.gameOver) {
+        return;
+      }
+
+      const roadSpeed = 320 + state.distance * 0.03 + (state.boost > 0 ? 180 : 0);
+      state.distance += roadSpeed * dt * 0.1;
+      state.boost = Math.max(0, state.boost - dt);
+
+      state.spawnTimer -= dt;
+      if (state.spawnTimer <= 0) {
+        const trafficCar = pick(trafficOptions);
+        state.spawnTimer = Math.max(0.4, 0.92 - state.distance * 0.0028);
+        state.obstacles.push({
+          lane: randInt(0, 2),
+          y: -trafficCar.drawH - 30,
+          car: trafficCar
+        });
+      }
+
+      state.boostTimer -= dt;
+      if (state.boostTimer <= 0) {
+        state.boostTimer = rand(2.8, 4.6);
+        state.boosts.push({ lane: randInt(0, 2), y: -100 });
+      }
+
+      for (const obstacle of state.obstacles) {
+        obstacle.y += roadSpeed * dt;
+      }
+      for (const boost of state.boosts) {
+        boost.y += roadSpeed * dt;
+      }
+
+      state.obstacles = state.obstacles.filter((obstacle) => obstacle.y < H + obstacle.car.drawH + 40);
+      state.boosts = state.boosts.filter((boost) => boost.y < H + 120);
+
+      const playerCar = getSelectedCar(state);
+      const playerX = carX(state.lane, playerCar);
+      const playerRect = carRect(playerX, playerY, playerCar);
+      for (const obstacle of state.obstacles) {
+        const obstacleX = carX(obstacle.lane, obstacle.car);
+        if (rectsOverlap(playerRect, carRect(obstacleX, obstacle.y, obstacle.car))) {
+          state.gameOver = true;
+          state.status = "Traffic collision";
+          break;
+        }
+      }
+
+      for (const boost of state.boosts) {
+        const boostRect = { x: laneCenters[boost.lane] - 20, y: boost.y, w: 40, h: 72 };
+        if (rectsOverlap(playerRect, boostRect)) {
+          state.boost = 4;
+          state.status = "Nitro boost";
+          boost.y = H + 200;
+        }
+      }
+    },
+    draw(state, time) {
+      drawBackground("#0a1017", "#1b2430", time, "rgba(96,165,250,0.72)");
+
+      drawRoundedRect(340, 0, 600, H, 36, "#2c313a");
+      ctx.fillStyle = "rgba(255,255,255,0.05)";
+      ctx.fillRect(352, 0, 14, H);
+      ctx.fillRect(914, 0, 14, H);
+      ctx.fillStyle = "rgba(255,255,255,0.18)";
+      for (let y = -60; y < H + 80; y += 110) {
+        const offset = (time * 360) % 110;
+        ctx.fillRect(534, y + offset, 12, 66);
+        ctx.fillRect(694, y + offset, 12, 66);
+      }
+
+      for (const obstacle of state.obstacles) {
+        const laneX = carX(obstacle.lane, obstacle.car);
+        drawCar(laneX, obstacle.y, obstacle.car, { alpha: state.gameOver ? 0.88 : 1 });
+      }
+
+      for (const boost of state.boosts) {
+        const laneX = laneCenters[boost.lane];
+        ctx.save();
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = "rgba(56,189,248,0.9)";
+        ctx.fillStyle = "#38bdf8";
+        ctx.beginPath();
+        ctx.moveTo(laneX, boost.y);
+        ctx.lineTo(laneX + 18, boost.y + 30);
+        ctx.lineTo(laneX + 2, boost.y + 30);
+        ctx.lineTo(laneX + 24, boost.y + 70);
+        ctx.lineTo(laneX - 12, boost.y + 38);
+        ctx.lineTo(laneX + 6, boost.y + 38);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      const playerCar = getSelectedCar(state);
+      const playerX = carX(state.lane, playerCar);
+      ctx.save();
+      ctx.globalAlpha = 0.82;
+      ctx.fillStyle = "rgba(15,23,42,0.55)";
+      ctx.beginPath();
+      ctx.ellipse(playerX + playerCar.drawW / 2, playerY + playerCar.drawH - 6, playerCar.drawW * 0.34, 14, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      if (state.boost > 0) {
+        ctx.save();
+        ctx.globalAlpha = 0.18;
+        ctx.fillStyle = "#38bdf8";
+        drawRoundedRect(playerX - 8, playerY + 18, playerCar.drawW + 16, playerCar.drawH - 24, 24, "#38bdf8");
+        ctx.restore();
+      }
+      drawCar(playerX, playerY + Math.sin(time * 8) * 1.5, playerCar, { boosted: state.boost > 0 });
+    },
+    hud(state) {
+      return {
+        value: `${Math.floor(state.distance)}`,
+        copy: `Lane ${state.lane + 1} | Car ${getSelectedCar(state).name} | Nitro ${state.boost > 0 ? `${state.boost.toFixed(1)}s` : "ready"}`,
+        banner: state.gameOver ? "Race over" : state.status,
+        footer: "Use the Supercar Picks panel or keys 1-4 to choose your Audi, Lamborghini, or Viper before the run."
+      };
+    }
+  };
+})();
 
 const fishingGame = (() => {
   const spriteRoot = "/assets/arcade/fishing";
@@ -3195,6 +3907,16 @@ function updateHud() {
   footerNote.textContent = hud.footer;
 }
 
+function syncStageCopy() {
+  if (!currentGame || !currentState) {
+    return;
+  }
+  stageTitle.textContent = currentGame.stageTitle;
+  stageHelp.textContent = typeof currentGame.getStageHelp === "function"
+    ? currentGame.getStageHelp(currentState)
+    : currentGame.stageHelp;
+}
+
 function renderExtras() {
   if (!currentGame || !currentState || !currentGame.getExtras) {
     suiteExtras.hidden = true;
@@ -3220,6 +3942,7 @@ function renderExtras() {
     button.addEventListener("click", () => {
       currentGame.handleExtra(currentState, item.id);
       renderExtras();
+      syncStageCopy();
       updateHud();
     });
     suiteExtrasBody.appendChild(button);
@@ -3237,6 +3960,18 @@ function renderTabs() {
   }
 }
 
+function syncCanvasCursor() {
+  if (!currentGame) {
+    canvas.style.cursor = "default";
+    return;
+  }
+  if (typeof currentGame.getCursor === "function") {
+    canvas.style.cursor = currentGame.getCursor(currentState) || "default";
+    return;
+  }
+  canvas.style.cursor = currentGame.cursor || "default";
+}
+
 function switchGame(id) {
   currentId = games[id] ? id : "pong";
   currentGame = games[currentId];
@@ -3245,8 +3980,6 @@ function switchGame(id) {
   suiteGameName.textContent = currentGame.name;
   suiteGameDesc.textContent = currentGame.description;
   suiteControls.textContent = currentGame.controls;
-  stageTitle.textContent = currentGame.stageTitle;
-  stageHelp.textContent = currentGame.stageHelp;
 
   const url = new URL(window.location.href);
   url.searchParams.set("game", currentId);
@@ -3254,7 +3987,9 @@ function switchGame(id) {
 
   renderTabs();
   renderExtras();
+  syncStageCopy();
   updateHud();
+  syncCanvasCursor();
 }
 
 restartBtn.addEventListener("click", () => {
@@ -3296,6 +4031,7 @@ canvas.addEventListener("pointermove", (event) => {
   if (currentGame && currentGame.pointermove) {
     currentGame.pointermove(currentState, point, event);
   }
+  syncCanvasCursor();
 });
 
 canvas.addEventListener("pointerdown", (event) => {
@@ -3307,6 +4043,7 @@ canvas.addEventListener("pointerdown", (event) => {
   if (currentGame && currentGame.pointerdown) {
     currentGame.pointerdown(currentState, point, event);
   }
+  syncCanvasCursor();
 });
 
 canvas.addEventListener("pointerup", (event) => {
@@ -3317,11 +4054,13 @@ canvas.addEventListener("pointerup", (event) => {
   if (currentGame && currentGame.pointerup) {
     currentGame.pointerup(currentState, point, event);
   }
+  syncCanvasCursor();
 });
 
 canvas.addEventListener("pointerleave", () => {
   input.pointer.down = false;
   input.pointer.inside = false;
+  syncCanvasCursor();
 });
 
 let lastFrame = performance.now();
@@ -3335,6 +4074,8 @@ function frame(now) {
     renderExtras();
     updateHud();
   }
+
+  syncCanvasCursor();
 
   window.requestAnimationFrame(frame);
 }

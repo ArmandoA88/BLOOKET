@@ -63,6 +63,7 @@
     const BULLET_SPEED = 560;
     const ALIEN_BULLET_SPEED = 220;
     const SHIELD_COUNT = 4;
+    const TOTAL_WAVES = 10;
 
     const ALIEN_PTS = [30, 20, 20, 10, 10];   // per row (top to bottom)
     const ALIEN_COLORS = [
@@ -76,7 +77,7 @@
     // =====================================================================
     //  STATE
     // =====================================================================
-    let state = 'START'; // START | PLAYING | DEAD | WAVE_CLEAR | GAME_OVER | BOSS
+    let state = 'START'; // START | PLAYING | WAVE_CLEAR | VICTORY | GAME_OVER
     let score = 0;
     let hiScore = parseInt(localStorage.getItem('si_hi') || '0');
     let lives = 3;
@@ -156,68 +157,184 @@
             name: 'CLASSIC INVASION',
             pattern: () => fullGrid(11, 5),
             colors: ['#ff6bcd', '#ffd60a', '#ffd60a', '#00ffff', '#00ffff'],
-            armor: false, moveInterval: 0.60, shootInterval: 1.8, speed: 28
+            moveInterval: 0.62,
+            shootInterval: 1.95,
+            speed: 26,
+            armorRows: 0,
+            armorHp: 1,
+            bulletSpeed: 236,
+            shotsPerVolley: 1,
+            aimedChance: 0.1,
+            dropStep: 16,
+            powerDropChance: 0.1,
+            ufoMin: 18,
+            ufoMax: 26
         },
         // Wave 2 — V Formation
         {
             name: 'V SQUADRON',
             pattern: () => vShape(),
             colors: ['#ff6bcd', '#ffd60a', '#ffd60a', '#00ffff', '#00ffff'],
-            armor: false, moveInterval: 0.52, shootInterval: 1.5, speed: 32
+            moveInterval: 0.56,
+            shootInterval: 1.72,
+            speed: 31,
+            armorRows: 0,
+            armorHp: 1,
+            bulletSpeed: 248,
+            shotsPerVolley: 1,
+            aimedChance: 0.16,
+            dropStep: 17,
+            powerDropChance: 0.11,
+            ufoMin: 17,
+            ufoMax: 24
         },
         // Wave 3 — Diamond Strike
         {
             name: 'DIAMOND STRIKE',
             pattern: () => diamond(),
             colors: ['#ff6bcd', '#ff9900', '#ff9900', '#ff6bcd', '#ff9900'],
-            armor: false, moveInterval: 0.46, shootInterval: 1.4, speed: 36
+            moveInterval: 0.5,
+            shootInterval: 1.52,
+            speed: 36,
+            armorRows: 1,
+            armorHp: 2,
+            bulletSpeed: 262,
+            shotsPerVolley: 1,
+            aimedChance: 0.2,
+            dropStep: 18,
+            powerDropChance: 0.12,
+            ufoMin: 16,
+            ufoMax: 23
         },
         // Wave 4 — Armored Guard
         {
             name: 'ARMORED GUARD',
             pattern: () => fullGrid(9, 5),
             colors: ['#aaaaff', '#6688ff', '#6688ff', '#4455ff', '#4455ff'],
-            armor: true, moveInterval: 0.50, shootInterval: 1.3, speed: 34
+            moveInterval: 0.46,
+            shootInterval: 1.34,
+            speed: 40,
+            armorRows: 2,
+            armorHp: 2,
+            bulletSpeed: 278,
+            shotsPerVolley: 2,
+            aimedChance: 0.28,
+            dropStep: 19,
+            powerDropChance: 0.14,
+            ufoMin: 15,
+            ufoMax: 22
         },
         // Wave 5 — BOSS (handled separately, this is placeholder)
         {
             name: 'COMMANDER BOSS',
             pattern: () => [],
-            colors: [], armor: false, moveInterval: 0.3, shootInterval: 0.8, speed: 0
+            colors: [],
+            boss: {
+                maxHp: 58,
+                size: 132,
+                height: 54,
+                vx: 132,
+                shootInterval: 1.0,
+                singleVy: 280,
+                spreadVy: 252,
+                spreadDx: 72,
+                radialShots: 10,
+                radialSpeed: 214,
+                radialDownBias: 112,
+                radialCooldown: 1.55
+            }
         },
         // Wave 6 — Checkerboard Assault
         {
             name: 'CHECKERBOARD ASSAULT',
             pattern: () => checkerboard(),
             colors: ['#ff4444', '#ff8800', '#ff4444', '#ff8800', '#ff4444'],
-            armor: true, moveInterval: 0.38, shootInterval: 1.1, speed: 42
+            moveInterval: 0.39,
+            shootInterval: 1.08,
+            speed: 46,
+            armorRows: 2,
+            armorHp: 2,
+            bulletSpeed: 296,
+            shotsPerVolley: 2,
+            aimedChance: 0.34,
+            dropStep: 20,
+            powerDropChance: 0.16,
+            ufoMin: 14,
+            ufoMax: 20
         },
         // Wave 7 — Fortress Wall
         {
             name: 'FORTRESS WALL',
             pattern: () => fortressWall(),
             colors: ['#cc00ff', '#aa00ee', '#cc00ff', '#aa00ee', '#cc00ff'],
-            armor: true, moveInterval: 0.34, shootInterval: 1.0, speed: 46
+            moveInterval: 0.34,
+            shootInterval: 0.94,
+            speed: 51,
+            armorRows: 3,
+            armorHp: 2,
+            bulletSpeed: 312,
+            shotsPerVolley: 2,
+            aimedChance: 0.46,
+            dropStep: 21,
+            powerDropChance: 0.18,
+            ufoMin: 13,
+            ufoMax: 18
         },
         // Wave 8 — Triple Columns
         {
             name: 'TRIPLE COLUMN RUSH',
             pattern: () => tripleColumns(),
             colors: ['#00ff44', '#00cc44', '#009933', '#00ff44', '#00cc44'],
-            armor: true, moveInterval: 0.30, shootInterval: 0.9, speed: 52
+            moveInterval: 0.29,
+            shootInterval: 0.82,
+            speed: 57,
+            armorRows: 3,
+            armorHp: 2,
+            bulletSpeed: 328,
+            shotsPerVolley: 2,
+            aimedChance: 0.58,
+            dropStep: 22,
+            powerDropChance: 0.2,
+            ufoMin: 12,
+            ufoMax: 17
         },
         // Wave 9 — X Cross
         {
             name: 'X CROSS STRIKE',
             pattern: () => xCross(),
             colors: ['#ff0066', '#ff3388', '#ff0066', '#ff3388', '#ff0066'],
-            armor: true, moveInterval: 0.26, shootInterval: 0.8, speed: 58
+            moveInterval: 0.24,
+            shootInterval: 0.7,
+            speed: 64,
+            armorRows: 3,
+            armorHp: 2,
+            bulletSpeed: 346,
+            shotsPerVolley: 3,
+            aimedChance: 0.74,
+            dropStep: 24,
+            powerDropChance: 0.22,
+            ufoMin: 11,
+            ufoMax: 15
         },
         // Wave 10 — FINAL SWARM BOSS
         {
-            name: 'FINAL SWARM',
+            name: 'FINAL SWARM BOSS',
             pattern: () => [],
-            colors: [], armor: false, moveInterval: 0.20, shootInterval: 0.7, speed: 0
+            colors: [],
+            boss: {
+                maxHp: 148,
+                size: 182,
+                height: 72,
+                vx: 184,
+                shootInterval: 0.62,
+                singleVy: 316,
+                spreadVy: 282,
+                spreadDx: 92,
+                radialShots: 14,
+                radialSpeed: 244,
+                radialDownBias: 128,
+                radialCooldown: 1.08
+            }
         }
     ];
 
@@ -301,14 +418,21 @@
 
     let waveDesign = null; // active design
 
+    function getWaveDesign(waveNumber = wave) {
+        const safeWave = Math.max(1, Math.min(TOTAL_WAVES, waveNumber));
+        return WAVE_DESIGNS[safeWave - 1];
+    }
+
+    function getRandomUfoDelay(design = waveDesign) {
+        const min = Number.isFinite(design?.ufoMin) ? design.ufoMin : 15;
+        const max = Number.isFinite(design?.ufoMax) ? design.ufoMax : 24;
+        return min + Math.random() * Math.max(0.2, max - min);
+    }
+
     function buildAliens() {
         aliens = [];
         formationX = 0;
         formationDir = 1;
-
-        // Pick design (cycle through 10, then repeat last)
-        const designIdx = Math.min(wave - 1, WAVE_DESIGNS.length - 1);
-        waveDesign = WAVE_DESIGNS[designIdx % WAVE_DESIGNS.length];
 
         formationMoveInterval = waveDesign.moveInterval;
         alienShootInterval = waveDesign.shootInterval;
@@ -316,7 +440,8 @@
 
         const cells = waveDesign.pattern();
         const colors = waveDesign.colors.length ? waveDesign.colors : ALIEN_COLORS;
-        const useArmor = waveDesign.armor;
+        const armorRows = waveDesign.armorRows || 0;
+        const armorHp = waveDesign.armorHp || 2;
 
         const stepX = ALIEN_SIZE + ALIEN_GAP_X;
         const stepY = ALIEN_SIZE + ALIEN_GAP_Y;
@@ -331,8 +456,8 @@
                 flashTime: 0,
                 wobble: 0,
                 color: colors[Math.min(row, colors.length - 1)],
-                hp: (useArmor && row <= 1) ? 2 : 1,  // armored rows take 2 hits
-                maxHp: (useArmor && row <= 1) ? 2 : 1
+                hp: row < armorRows ? armorHp : 1,
+                maxHp: row < armorRows ? armorHp : 1
             });
         });
     }
@@ -357,8 +482,9 @@
     }
 
     function startWave() {
-        // Boss waves: 5, 10, 15 ...
-        if (wave % 5 === 0) { startBossWave(); return; }
+        if (wave > TOTAL_WAVES) { finishCampaign(); return; }
+        waveDesign = getWaveDesign(wave);
+        if (waveDesign.boss) { startBossWave(); return; }
         state = 'PLAYING';
         buildAliens();
         buildShields();
@@ -367,7 +493,7 @@
         powerUps = [];
         particles = [];
         ufo = null;
-        ufoTimer = 15 + Math.random() * 20;
+        ufoTimer = getRandomUfoDelay();
         formationDropped = false;
         formationMoveTimer = 0;
         alienShootTimer = 0;
@@ -385,6 +511,20 @@
 
 
     function startBossWave() {
+        const bossProfile = waveDesign?.boss || {
+            maxHp: 58,
+            size: 132,
+            height: 54,
+            vx: 132,
+            shootInterval: 1.0,
+            singleVy: 280,
+            spreadVy: 252,
+            spreadDx: 72,
+            radialShots: 10,
+            radialSpeed: 214,
+            radialDownBias: 112,
+            radialCooldown: 1.55
+        };
         aliens = [];
         playerBullets = [];
         alienBullets = [];
@@ -392,16 +532,23 @@
         particles = [];
         ufo = null;
         formationDropped = false;
-        const isFinal = wave >= 10;
-        const maxHp = isFinal ? 80 + wave * 8 : 20 + wave * 6;
-        const bossSize = isFinal ? 170 : 120;
+        const isFinal = wave >= TOTAL_WAVES;
+        const maxHp = bossProfile.maxHp;
         boss = {
             x: W / 2, y: 100,
-            w: bossSize, h: isFinal ? 65 : 50,
+            w: bossProfile.size,
+            h: bossProfile.height,
             hp: maxHp, maxHp,
-            vx: isFinal ? 160 : 120,
+            vx: bossProfile.vx,
             shootTimer: 0,
-            shootInterval: isFinal ? 0.7 : 1.2,
+            shootInterval: bossProfile.shootInterval,
+            radialCooldown: bossProfile.radialCooldown,
+            singleVy: bossProfile.singleVy,
+            spreadVy: bossProfile.spreadVy,
+            spreadDx: bossProfile.spreadDx,
+            radialShots: bossProfile.radialShots,
+            radialSpeed: bossProfile.radialSpeed,
+            radialDownBias: bossProfile.radialDownBias,
             phase: 0,
             flashTime: 0,
             armAngle: 0,
@@ -410,6 +557,7 @@
         state = 'PLAYING';
         // Announce
         waveAnnounceName = isFinal ? '⚠ FINAL BOSS ⚠' : `BOSS WAVE ${wave}`;
+        waveAnnounceName = waveDesign ? waveDesign.name : `BOSS WAVE ${wave}`;
         waveAnnounceTimer = 2.5;
     }
 
@@ -900,6 +1048,7 @@
             formationMoveTimer += dt;
             if (formationMoveTimer >= formationMoveInterval) {
                 formationMoveTimer = 0;
+                const dropStep = waveDesign?.dropStep || 18;
                 // Animate alien frames
                 aliens.forEach(a => { if (a.alive) a.frame = 1 - a.frame; });
                 // Check if needs to reverse
@@ -913,10 +1062,10 @@
                 if (formationDir === 1 && maxX >= W - 12) {
                     formationDir = -1;
                     // Drop down
-                    aliens.forEach(a => { if (a.alive) a.y += 18; });
+                    aliens.forEach(a => { if (a.alive) a.y += dropStep; });
                 } else if (formationDir === -1 && minX <= 12) {
                     formationDir = 1;
-                    aliens.forEach(a => { if (a.alive) a.y += 18; });
+                    aliens.forEach(a => { if (a.alive) a.y += dropStep; });
                 } else {
                     formationX += formationDir * (formationSpeed / (formationMoveInterval * 30 || 1)) * 2.5;
                 }
@@ -928,10 +1077,27 @@
                 alienShootTimer = 0;
                 const liveAliens = aliens.filter(a => a.alive);
                 if (liveAliens.length > 0) {
-                    const shooter = liveAliens[Math.floor(Math.random() * liveAliens.length)];
-                    const ax = FORMATION_LEFT + shooter.col * (ALIEN_SIZE + ALIEN_GAP_X) + formationX + ALIEN_SIZE / 2;
-                    const ay = shooter.y + ALIEN_SIZE;
-                    alienBullets.push({ x: ax, y: ay, vy: ALIEN_BULLET_SPEED + wave * 18, color: ALIEN_COLORS[shooter.row] });
+                    const volleyCount = Math.min(waveDesign?.shotsPerVolley || 1, liveAliens.length);
+                    const bulletSpeed = waveDesign?.bulletSpeed || (ALIEN_BULLET_SPEED + wave * 18);
+                    const aimedChance = waveDesign?.aimedChance || 0;
+                    const availableShooters = [...liveAliens];
+                    for (let shot = 0; shot < volleyCount; shot++) {
+                        const aimedShot = Math.random() < aimedChance;
+                        const shooter = aimedShot
+                            ? availableShooters.reduce((best, candidate) => {
+                                if (!best) return candidate;
+                                const bestX = FORMATION_LEFT + best.col * (ALIEN_SIZE + ALIEN_GAP_X) + formationX + ALIEN_SIZE / 2;
+                                const candidateX = FORMATION_LEFT + candidate.col * (ALIEN_SIZE + ALIEN_GAP_X) + formationX + ALIEN_SIZE / 2;
+                                return Math.abs(candidateX - player.x) < Math.abs(bestX - player.x) ? candidate : best;
+                            }, null)
+                            : availableShooters[Math.floor(Math.random() * availableShooters.length)];
+                        if (!shooter) break;
+                        availableShooters.splice(availableShooters.indexOf(shooter), 1);
+                        const ax = FORMATION_LEFT + shooter.col * (ALIEN_SIZE + ALIEN_GAP_X) + formationX + ALIEN_SIZE / 2;
+                        const ay = shooter.y + ALIEN_SIZE;
+                        const dx = aimedShot ? Math.max(-140, Math.min(140, (player.x - ax) * 0.55)) : 0;
+                        alienBullets.push({ x: ax, y: ay, vy: bulletSpeed, dx, color: shooter.color || ALIEN_COLORS[shooter.row] });
+                    }
                     beep(180 + Math.random() * 80, 'square', 0.12, 0.1);
                 }
             }
@@ -953,20 +1119,32 @@
             boss.armAngle = Math.sin(stateTimer * 2) * 0.3;
             boss.y = 100 + Math.sin(stateTimer * 0.8) * 18;
             boss.shootTimer += dt;
-            if (boss.shootTimer >= boss.shootInterval) {
+            const currentBossPhase = Math.floor((1 - boss.hp / boss.maxHp) * 3);
+            const currentBossInterval = currentBossPhase >= 2 ? boss.radialCooldown : boss.shootInterval;
+            if (boss.shootTimer >= currentBossInterval) {
                 boss.shootTimer = 0;
-                const bphase = Math.floor((1 - boss.hp / boss.maxHp) * 3);
                 // Different attack patterns by phase
-                if (bphase === 0) {
-                    alienBullets.push({ x: boss.x, y: boss.y + boss.h / 2, vy: 260, color: '#ff4400' });
-                } else if (bphase === 1) {
-                    [-1, 0, 1].forEach(dx => alienBullets.push({ x: boss.x + dx * 30, y: boss.y + boss.h / 2, vy: 240, dx: dx * 60, color: '#ff6600' }));
+                if (currentBossPhase === 0) {
+                    alienBullets.push({ x: boss.x, y: boss.y + boss.h / 2, vy: boss.singleVy, color: '#ff4400' });
+                } else if (currentBossPhase === 1) {
+                    [-1, 0, 1].forEach(dx => alienBullets.push({
+                        x: boss.x + dx * 30,
+                        y: boss.y + boss.h / 2,
+                        vy: boss.spreadVy,
+                        dx: dx * boss.spreadDx,
+                        color: '#ff6600'
+                    }));
                 } else {
-                    for (let a = 0; a < 8; a++) {
-                        const ang = (a / 8) * Math.PI * 2;
-                        alienBullets.push({ x: boss.x, y: boss.y, vy: Math.sin(ang) * 200 + 100, dx: Math.cos(ang) * 200, color: '#ff0000' });
+                    for (let a = 0; a < boss.radialShots; a++) {
+                        const ang = (a / boss.radialShots) * Math.PI * 2;
+                        alienBullets.push({
+                            x: boss.x,
+                            y: boss.y,
+                            vy: Math.sin(ang) * boss.radialSpeed + boss.radialDownBias,
+                            dx: Math.cos(ang) * boss.radialSpeed,
+                            color: '#ff0000'
+                        });
                     }
-                    boss.shootInterval = 2.2;
                 }
                 sfxUFO();
             }
@@ -977,7 +1155,7 @@
             ufoTimer -= dt;
             if (ufoTimer <= 0 && !ufo) {
                 ufo = { x: -40, y: 48, vx: 130 + Math.random() * 50 };
-                ufoTimer = 20 + Math.random() * 25;
+                ufoTimer = getRandomUfoDelay();
             }
             if (ufo) {
                 ufo.x += ufo.vx * dt;
@@ -1046,7 +1224,7 @@
                         spawnParticles(ax + ALIEN_SIZE / 2, ay + ALIEN_SIZE / 2, a.color || ALIEN_COLORS[a.row] || '#fff', 14);
                         sfxAlienDie();
                         // Power-up drop chance (higher in later waves)
-                        const dropChance = Math.min(0.25, 0.12 + wave * 0.01);
+                        const dropChance = waveDesign?.powerDropChance || Math.min(0.25, 0.12 + wave * 0.01);
                         if (Math.random() < dropChance) {
                             const type = PUP_TYPES[Math.floor(Math.random() * PUP_TYPES.length)];
                             powerUps.push({ x: ax + ALIEN_SIZE / 2, y: ay + ALIEN_SIZE / 2, vy: 80, type, wobble: 0 });
@@ -1130,9 +1308,13 @@
 
         // Wave clear → next wave
         if (state === 'WAVE_CLEAR' && stateTimer > 2.5) {
-            wave++;
-            updateHudNumbers();
-            startWave(); // startWave() now handles boss routing internally
+            if (wave >= TOTAL_WAVES) {
+                finishCampaign();
+            } else {
+                wave++;
+                updateHudNumbers();
+                startWave();
+            }
         }
 
 
@@ -1161,6 +1343,23 @@
         } else {
             player.x = W / 2;
             player.shieldTime = 2.5; // brief invuln
+        }
+    }
+
+    function finishCampaign() {
+        state = 'VICTORY';
+        stateTimer = 0;
+        aliens = [];
+        boss = null;
+        ufo = null;
+        playerBullets = [];
+        alienBullets = [];
+        powerUps = [];
+        particles = [];
+        if (score > hiScore) {
+            hiScore = score;
+            localStorage.setItem('si_hi', hiScore);
+            updateHudNumbers();
         }
     }
 
@@ -1193,7 +1392,7 @@
     function updateHudNumbers() {
         scoreEl.textContent = String(score).padStart(6, '0');
         hiScoreEl.textContent = String(hiScore).padStart(6, '0');
-        waveEl.textContent = String(wave).padStart(2, '0');
+        waveEl.textContent = String(Math.min(wave, TOTAL_WAVES)).padStart(2, '0');
     }
 
     // =====================================================================
@@ -1228,6 +1427,10 @@
 
         if (state === 'START') {
             drawStartScreen();
+            return;
+        }
+        if (state === 'VICTORY') {
+            drawVictoryScreen();
             return;
         }
         if (state === 'GAME_OVER') {
@@ -1286,15 +1489,16 @@
 
         // Wave clear overlay
         if (state === 'WAVE_CLEAR') {
+            const finalClear = wave >= TOTAL_WAVES;
             ctx.save();
             ctx.fillStyle = `rgba(0,0,0,${Math.min(0.55, stateTimer * 0.3)})`;
             ctx.fillRect(0, 0, W, H);
             ctx.font = 'bold 56px Orbitron';
             ctx.textAlign = 'center';
             ctx.shadowBlur = 30;
-            ctx.shadowColor = '#00ff88';
-            ctx.fillStyle = '#00ff88';
-            ctx.fillText('WAVE CLEAR!', W / 2, H / 2 - 30);
+            ctx.shadowColor = finalClear ? '#ffd60a' : '#00ff88';
+            ctx.fillStyle = finalClear ? '#ffd60a' : '#00ff88';
+            ctx.fillText(finalClear ? 'MISSION COMPLETE!' : 'WAVE CLEAR!', W / 2, H / 2 - 30);
             // next wave name
             const nextWaveNum = wave + 1;
             const isBossNext = nextWaveNum % 5 === 0;
@@ -1302,13 +1506,13 @@
             const nextName = isBossNext ? `⚠ BOSS WAVE ${nextWaveNum} ⚠` : WAVE_DESIGNS[nextDesignIdx % WAVE_DESIGNS.length].name;
             ctx.font = 'bold 20px Orbitron';
             ctx.shadowBlur = 15;
-            ctx.shadowColor = isBossNext ? '#ff4400' : '#00ff88';
-            ctx.fillStyle = isBossNext ? '#ff8800' : 'rgba(0,255,136,0.85)';
-            ctx.fillText(`NEXT: ${nextName}`, W / 2, H / 2 + 14);
+            ctx.shadowColor = finalClear ? '#ffd60a' : (isBossNext ? '#ff4400' : '#00ff88');
+            ctx.fillStyle = finalClear ? 'rgba(255,214,10,0.92)' : (isBossNext ? '#ff8800' : 'rgba(0,255,136,0.85)');
+            ctx.fillText(finalClear ? `ALL ${TOTAL_WAVES} WAVES CLEARED` : `NEXT: ${nextName}`, W / 2, H / 2 + 14);
             ctx.font = '16px Share Tech Mono';
             ctx.fillStyle = 'rgba(255,255,255,0.4)';
             ctx.shadowBlur = 0;
-            ctx.fillText(`WAVE ${nextWaveNum} INCOMING...`, W / 2, H / 2 + 46);
+            ctx.fillText(finalClear ? 'PREPARING DEBRIEF...' : `WAVE ${nextWaveNum} INCOMING...`, W / 2, H / 2 + 46);
             ctx.restore();
         }
 
@@ -1361,6 +1565,7 @@
         ctx.shadowBlur = 0;
         ctx.fillText('← → to move    SPACE to fire', W / 2, 478);
         ctx.fillText('B to use BOMB power-up', W / 2, 504);
+        ctx.fillText(`Clear all ${TOTAL_WAVES} waves to win the campaign`, W / 2, 530);
 
         ctx.font = 'bold 26px Orbitron';
         ctx.shadowBlur = 20;
@@ -1408,6 +1613,39 @@
         ctx.restore();
     }
 
+    function drawVictoryScreen() {
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(0,0,0,0.72)';
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.font = 'bold 64px Orbitron';
+        ctx.shadowBlur = 44;
+        ctx.shadowColor = '#ffd60a';
+        ctx.fillStyle = '#ffd60a';
+        ctx.fillText('GALAXY SAVED', W / 2, 190);
+
+        ctx.font = '28px Share Tech Mono';
+        ctx.fillStyle = '#00ffff';
+        ctx.shadowColor = '#00ffff';
+        ctx.shadowBlur = 16;
+        ctx.fillText(`ALL ${TOTAL_WAVES} WAVES CLEARED`, W / 2, 268);
+        ctx.fillText(`FINAL SCORE: ${String(score).padStart(6, '0')}`, W / 2, 312);
+
+        if (score >= hiScore) {
+            ctx.fillStyle = '#00ff88';
+            ctx.shadowColor = '#00ff88';
+            ctx.fillText('NEW HIGH SCORE!', W / 2, 354);
+        }
+
+        ctx.font = 'bold 22px Orbitron';
+        ctx.shadowColor = '#00ff88';
+        ctx.shadowBlur = 15;
+        ctx.fillStyle = Math.sin(stateTimer * 4) > 0 ? '#00ff88' : '#009944';
+        ctx.fillText('PRESS  SPACE  TO  PLAY AGAIN', W / 2, H - 40);
+        ctx.restore();
+    }
+
     // =====================================================================
     //  INPUT
     // =====================================================================
@@ -1427,7 +1665,7 @@
             updateHudNumbers();
             updateLivesUI();
             startWave();
-        } else if (state === 'GAME_OVER' && stateTimer > 1.5) {
+        } else if ((state === 'GAME_OVER' || state === 'VICTORY') && stateTimer > 1.5) {
             score = 0; lives = 3; wave = 1;
             updateHudNumbers();
             updateLivesUI();

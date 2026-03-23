@@ -1,4 +1,4 @@
-Fish & Francis sprite sources
+Fish & Boats sprite sources
 
 - Fish pack sprites, bubbles, seaweed, rocks, and sand tiles:
   Kenney "Fish Pack"
@@ -36,7 +36,7 @@ Fish & Francis sprite sources
   Public domain / CC0
 
 - Final red superboat vector:
-  Custom project SVG created for Fish & Francis
+  Custom project SVG created for Fish & Boats
   File: boat_speedboat.svg
   Style direction: red Lamborghini-inspired luxury speedboat
 

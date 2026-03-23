@@ -16,6 +16,7 @@ const footerNote = document.getElementById("footerNote");
 const suiteExtras = document.getElementById("suiteExtras");
 const suiteExtrasTitle = document.getElementById("suiteExtrasTitle");
 const suiteExtrasBody = document.getElementById("suiteExtrasBody");
+const embeddedStage = document.getElementById("embeddedStage");
 
 const W = canvas.width;
 const H = canvas.height;
@@ -278,7 +279,62 @@ function resetCurrentGame() {
   currentState = currentGame.createState();
   renderExtras();
   syncStageCopy();
+  syncStageSurface(isEmbeddedGame(currentGame));
   syncCanvasCursor();
+}
+
+function isEmbeddedGame(game = currentGame) {
+  return Boolean(game && game.embedUrl);
+}
+
+function buildEmbeddedUrl(url, bustCache = false) {
+  if (!url || !bustCache) {
+    return url;
+  }
+  return `${url}${url.includes("?") ? "&" : "?"}suiteReload=${Date.now()}`;
+}
+
+function syncStageSurface(forceReload = false) {
+  if (!embeddedStage) {
+    return;
+  }
+
+  if (isEmbeddedGame()) {
+    const nextBaseUrl = currentGame.embedUrl;
+    const nextSrc = buildEmbeddedUrl(nextBaseUrl, forceReload);
+    canvas.hidden = true;
+    embeddedStage.hidden = false;
+    if (forceReload || embeddedStage.dataset.baseSrc !== nextBaseUrl) {
+      embeddedStage.src = nextSrc;
+      embeddedStage.dataset.baseSrc = nextBaseUrl;
+    }
+    return;
+  }
+
+  canvas.hidden = false;
+  embeddedStage.hidden = true;
+  if (embeddedStage.dataset.baseSrc) {
+    embeddedStage.removeAttribute("src");
+    embeddedStage.dataset.baseSrc = "";
+  }
+}
+
+if (embeddedStage) {
+  embeddedStage.addEventListener("load", () => {
+    if (!isEmbeddedGame() || !currentState) {
+      return;
+    }
+    currentState.status = `${currentGame.name} ready`;
+    updateHud();
+  });
+
+  embeddedStage.addEventListener("error", () => {
+    if (!isEmbeddedGame() || !currentState) {
+      return;
+    }
+    currentState.status = `Could not load ${currentGame.name}`;
+    updateHud();
+  });
 }
 
 function spawnPongBall(direction) {
@@ -852,6 +908,17 @@ const mazeGame = (() => {
   const tile = Math.floor(Math.min((W - 180) / cols, (H - 80) / rows));
   const boardX = Math.floor((W - cols * tile) / 2);
   const boardY = Math.floor((H - rows * tile) / 2);
+  const mazePlayerRadius = tile * 0.44;
+  const studentFaceRoot = "/assets/student-sprites";
+  const studentFaceFiles = [
+    ...Array.from({ length: 26 }, (_, index) => `students1_face_${String(index + 1).padStart(2, "0")}.png`),
+    ...Array.from({ length: 14 }, (_, index) => `students2_face_${String(index + 1).padStart(2, "0")}.png`)
+  ];
+  const studentFaces = studentFaceFiles.map((file, index) => ({
+    id: file.replace(".png", ""),
+    label: `Student ${index + 1}`,
+    image: loadSprite(`${studentFaceRoot}/${file}`)
+  }));
 
   function cellKey(x, y) {
     return `${x},${y}`;
@@ -899,7 +966,8 @@ const mazeGame = (() => {
       x: template.playerSpawn.x,
       y: template.playerSpawn.y,
       dir: "left",
-      nextDir: "left"
+      nextDir: "left",
+      faceIndex: state.playerFaceIndex
     };
     state.ghosts = template.ghostSpawns.map((spawn, index) => ({
       x: spawn.x,
@@ -1014,16 +1082,68 @@ const mazeGame = (() => {
     return frightenedPulse ? "#60a5fa" : base;
   }
 
+  function mazeFacingAngle(dir) {
+    return {
+      right: 0,
+      down: Math.PI / 2,
+      left: Math.PI,
+      up: -Math.PI / 2
+    }[dir] || 0;
+  }
+
+  function drawMazeRunner(state, time) {
+    const playerX = boardX + state.player.x * tile + tile / 2;
+    const playerY = boardY + state.player.y * tile + tile / 2;
+    const facing = mazeFacingAngle(state.player.dir);
+    const mouthOpen = 0.12 + Math.abs(Math.sin(time * 9)) * 0.1;
+    const playerFace = studentFaces[state.player.faceIndex]?.image;
+
+    ctx.save();
+    ctx.globalAlpha = 0.2;
+    ctx.fillStyle = "rgba(15,23,42,0.7)";
+    ctx.beginPath();
+    ctx.ellipse(playerX, playerY + mazePlayerRadius * 0.72, mazePlayerRadius * 0.72, mazePlayerRadius * 0.28, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    const drewFace = drawCircularSprite(playerFace, playerX, playerY, mazePlayerRadius);
+    if (!drewFace) {
+      ctx.fillStyle = "#ffd447";
+      ctx.beginPath();
+      ctx.arc(playerX, playerY, mazePlayerRadius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.save();
+    ctx.fillStyle = "#0d1728";
+    ctx.beginPath();
+    ctx.moveTo(playerX, playerY);
+    ctx.arc(playerX, playerY, mazePlayerRadius + 1, facing - mouthOpen, facing + mouthOpen);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    ctx.strokeStyle = "#f8fafc";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(playerX, playerY, mazePlayerRadius, facing + mouthOpen, facing + Math.PI * 2 - mouthOpen);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   return {
     name: "Maze Chase",
-    description: "A Pac-Man style maze run with pellets, power turns, and roaming ghost pressure.",
+    description: "A student-face maze run with pellets, power turns, and roaming ghost pressure.",
     controls: "Use Arrow keys or WASD to queue your next turn through the maze.",
     stageTitle: "Maze Chase",
-    stageHelp: "Eat every pellet to clear the board. Power pellets let you chase ghosts for a few seconds.",
+    stageHelp: "Eat every pellet to clear the board. A random student face is the runner each round, and power pellets let you chase ghosts for a few seconds.",
     createState() {
+      const playerFaceIndex = studentFaces.length ? randInt(0, studentFaces.length - 1) : -1;
       const state = {
         pellets: new Set(template.pellets),
         power: new Set(template.power),
+        playerFaceIndex,
         player: null,
         ghosts: [],
         playerClock: 0,
@@ -1031,7 +1151,7 @@ const mazeGame = (() => {
         frightened: 0,
         score: 0,
         lives: 3,
-        status: "Clear every pellet",
+        status: playerFaceIndex >= 0 ? `${studentFaces[playerFaceIndex].label} ready` : "Clear every pellet",
         gameOver: false,
         win: false
       };
@@ -1113,21 +1233,7 @@ const mazeGame = (() => {
         }
       }
 
-      const mouthOpen = 0.28 + Math.abs(Math.sin(time * 8)) * 0.16;
-      const facing = {
-        right: 0,
-        down: Math.PI / 2,
-        left: Math.PI,
-        up: -Math.PI / 2
-      }[state.player.dir];
-      const playerX = boardX + state.player.x * tile + tile / 2;
-      const playerY = boardY + state.player.y * tile + tile / 2;
-      ctx.fillStyle = "#ffd447";
-      ctx.beginPath();
-      ctx.moveTo(playerX, playerY);
-      ctx.arc(playerX, playerY, tile * 0.34, facing + mouthOpen, facing + Math.PI * 2 - mouthOpen);
-      ctx.closePath();
-      ctx.fill();
+      drawMazeRunner(state, time);
 
       const frightenedPulse = state.frightened > 0 && Math.sin(time * 10) > 0;
       for (const ghost of state.ghosts) {
@@ -3038,6 +3144,11 @@ const basketballGame = (() => {
 
 const dodgeGame = (() => {
   const studentFaceRoot = "/assets/student-sprites";
+  const dodgerFaceScale = 3;
+  const playerRadius = 22 * dodgerFaceScale;
+  const enemyMinRadius = 16 * dodgerFaceScale;
+  const enemyMaxRadius = 28 * dodgerFaceScale;
+  const arenaPadding = 14;
   const studentFaceFiles = [
     ...Array.from({ length: 26 }, (_, index) => `students1_face_${String(index + 1).padStart(2, "0")}.png`),
     ...Array.from({ length: 14 }, (_, index) => `students2_face_${String(index + 1).padStart(2, "0")}.png`)
@@ -3105,7 +3216,7 @@ const dodgeGame = (() => {
     createState() {
       const playerFaceIndex = studentFaces.length ? randInt(0, studentFaces.length - 1) : -1;
       return {
-        player: { x: W / 2, y: H / 2, r: 22 },
+        player: { x: W / 2, y: H / 2, r: playerRadius },
         playerFaceIndex,
         enemyFaceQueue: shuffledFaceIndexes(playerFaceIndex),
         enemies: [],
@@ -3144,18 +3255,20 @@ const dodgeGame = (() => {
       if (input.keys.has("arrowright") || input.keys.has("d")) {
         state.player.x += speed * dt;
       }
-      state.player.x = clamp(state.player.x, 40, W - 40);
-      state.player.y = clamp(state.player.y, 40, H - 40);
+      state.player.x = clamp(state.player.x, state.player.r + arenaPadding, W - state.player.r - arenaPadding);
+      state.player.y = clamp(state.player.y, state.player.r + arenaPadding, H - state.player.r - arenaPadding);
 
       state.enemyTimer -= dt;
       if (state.enemyTimer <= 0) {
         state.enemyTimer = Math.max(0.35, 0.9 - state.elapsed * 0.02);
+        const enemyRadius = rand(enemyMinRadius, enemyMaxRadius);
+        const spawnOffset = enemyRadius + 36;
         const side = randInt(0, 3);
         const spawn = [
-          { x: rand(0, W), y: -30 },
-          { x: W + 30, y: rand(0, H) },
-          { x: rand(0, W), y: H + 30 },
-          { x: -30, y: rand(0, H) }
+          { x: rand(enemyRadius, W - enemyRadius), y: -spawnOffset },
+          { x: W + spawnOffset, y: rand(enemyRadius, H - enemyRadius) },
+          { x: rand(enemyRadius, W - enemyRadius), y: H + spawnOffset },
+          { x: -spawnOffset, y: rand(enemyRadius, H - enemyRadius) }
         ][side];
         const angle = Math.atan2(state.player.y - spawn.y, state.player.x - spawn.x) + rand(-0.45, 0.45);
         const enemySpeed = rand(170, 240) + state.elapsed * 6;
@@ -3164,7 +3277,7 @@ const dodgeGame = (() => {
           y: spawn.y,
           vx: Math.cos(angle) * enemySpeed,
           vy: Math.sin(angle) * enemySpeed,
-          r: rand(16, 28),
+          r: enemyRadius,
           faceIndex: nextEnemyFaceIndex(state)
         });
       }
@@ -3179,7 +3292,10 @@ const dodgeGame = (() => {
         enemy.x += enemy.vx * dt;
         enemy.y += enemy.vy * dt;
       }
-      state.enemies = state.enemies.filter((enemy) => enemy.x > -80 && enemy.x < W + 80 && enemy.y > -80 && enemy.y < H + 80);
+      state.enemies = state.enemies.filter((enemy) => {
+        const margin = enemy.r + 80;
+        return enemy.x > -margin && enemy.x < W + margin && enemy.y > -margin && enemy.y < H + margin;
+      });
 
       for (const star of state.stars) {
         star.life -= dt;
@@ -3261,7 +3377,9 @@ const dodgeGame = (() => {
 const racerGame = (() => {
   const spriteRoot = "/assets/arcade/racer";
   const laneCenters = [448, 608, 768];
-  const playerY = 606;
+  const defaultPlayerY = 606;
+  const playerVerticalPadding = 18;
+  const playerDepthSpeed = 360;
   const sprites = {
     audiR8: loadSprite(`${spriteRoot}/audi-r8.png`),
     audiR8Black: loadSprite(`${spriteRoot}/audi-r8-black.png`),
@@ -3374,15 +3492,35 @@ const racerGame = (() => {
     state.status = `${supercarOptions[index].name} ready`;
   }
 
+  function getPlayerYBounds(playerCar = supercarOptions[selectedCarIndex] || supercarOptions[0]) {
+    return {
+      min: playerVerticalPadding,
+      max: H - playerCar.drawH - playerVerticalPadding
+    };
+  }
+
+  function getDepthLabel(state, playerCar = getSelectedCar(state)) {
+    const bounds = getPlayerYBounds(playerCar);
+    const progress = clamp((state.playerY - bounds.min) / Math.max(1, bounds.max - bounds.min), 0, 1);
+    if (progress < 0.34) {
+      return "front";
+    }
+    if (progress > 0.68) {
+      return "back";
+    }
+    return "mid";
+  }
+
   return {
     name: "Mini Racer",
-    description: "A three-lane arcade racer with real supercar sprites, quick lane swaps, and nitro pickups that reward brave lines.",
-    controls: "Use Left/Right or A/D to switch lanes. Press 1-4 to swap supercars.",
+    description: "A three-lane arcade racer with real supercar sprites, quick lane swaps, depth movement, and nitro pickups that reward brave lines.",
+    controls: "Use Left/Right or A/D to switch lanes, Up/Down or W/S to move forward and back, and press 1-4 to swap supercars.",
     stageTitle: "Mini Racer",
-    stageHelp: "Pick your supercar, stay off traffic, and grab the blue nitro bolts when the lane is clear enough.",
+    stageHelp: "Pick your supercar, weave lanes, slide forward or back to open a gap, and grab the blue nitro bolts when the lane is clear enough.",
     createState() {
       return {
         lane: 1,
+        playerY: defaultPlayerY,
         carIndex: selectedCarIndex,
         obstacles: [],
         boosts: [],
@@ -3433,6 +3571,17 @@ const racerGame = (() => {
       state.distance += roadSpeed * dt * 0.1;
       state.boost = Math.max(0, state.boost - dt);
 
+      const playerCar = getSelectedCar(state);
+      const bounds = getPlayerYBounds(playerCar);
+      let depthDirection = 0;
+      if (input.keys.has("arrowup") || input.keys.has("w")) {
+        depthDirection -= 1;
+      }
+      if (input.keys.has("arrowdown") || input.keys.has("s")) {
+        depthDirection += 1;
+      }
+      state.playerY = clamp(state.playerY + depthDirection * playerDepthSpeed * dt, bounds.min, bounds.max);
+
       state.spawnTimer -= dt;
       if (state.spawnTimer <= 0) {
         const trafficCar = pick(trafficOptions);
@@ -3460,9 +3609,8 @@ const racerGame = (() => {
       state.obstacles = state.obstacles.filter((obstacle) => obstacle.y < H + obstacle.car.drawH + 40);
       state.boosts = state.boosts.filter((boost) => boost.y < H + 120);
 
-      const playerCar = getSelectedCar(state);
       const playerX = carX(state.lane, playerCar);
-      const playerRect = carRect(playerX, playerY, playerCar);
+      const playerRect = carRect(playerX, state.playerY, playerCar);
       for (const obstacle of state.obstacles) {
         const obstacleX = carX(obstacle.lane, obstacle.car);
         if (rectsOverlap(playerRect, carRect(obstacleX, obstacle.y, obstacle.car))) {
@@ -3524,7 +3672,7 @@ const racerGame = (() => {
       ctx.globalAlpha = 0.82;
       ctx.fillStyle = "rgba(15,23,42,0.55)";
       ctx.beginPath();
-      ctx.ellipse(playerX + playerCar.drawW / 2, playerY + playerCar.drawH - 6, playerCar.drawW * 0.34, 14, 0, 0, Math.PI * 2);
+      ctx.ellipse(playerX + playerCar.drawW / 2, state.playerY + playerCar.drawH - 6, playerCar.drawW * 0.34, 14, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
 
@@ -3532,17 +3680,17 @@ const racerGame = (() => {
         ctx.save();
         ctx.globalAlpha = 0.18;
         ctx.fillStyle = "#38bdf8";
-        drawRoundedRect(playerX - 8, playerY + 18, playerCar.drawW + 16, playerCar.drawH - 24, 24, "#38bdf8");
+        drawRoundedRect(playerX - 8, state.playerY + 18, playerCar.drawW + 16, playerCar.drawH - 24, 24, "#38bdf8");
         ctx.restore();
       }
-      drawCar(playerX, playerY + Math.sin(time * 8) * 1.5, playerCar, { boosted: state.boost > 0 });
+      drawCar(playerX, state.playerY + Math.sin(time * 8) * 1.5, playerCar, { boosted: state.boost > 0 });
     },
     hud(state) {
       return {
         value: `${Math.floor(state.distance)}`,
-        copy: `Lane ${state.lane + 1} | Car ${getSelectedCar(state).name} | Nitro ${state.boost > 0 ? `${state.boost.toFixed(1)}s` : "ready"}`,
+        copy: `Lane ${state.lane + 1} | Depth ${getDepthLabel(state)} | Car ${getSelectedCar(state).name} | Nitro ${state.boost > 0 ? `${state.boost.toFixed(1)}s` : "ready"}`,
         banner: state.gameOver ? "Race over" : state.status,
-        footer: "Use the Supercar Picks panel or keys 1-4 to choose your Audi, Lamborghini, or Viper before the run."
+        footer: "Use the Supercar Picks panel or keys 1-4 to choose your car, then use Up/Down to drift into safer pockets in traffic."
       };
     }
   };
@@ -3679,10 +3827,10 @@ const fishingGame = (() => {
   }
 
   return {
-    name: "Fish & Francis",
+    name: "Fish & Boats",
     description: "A Fishing Frenzy style catch game with internet-sourced sprite fish, multiple boat picks, and a fuller underwater scene.",
     controls: "Move with Arrow keys or A/D. Press Space or click to drop the hook. Use keys 1-6 to switch boats.",
-    stageTitle: "Fish & Francis",
+    stageTitle: "Fish & Boats",
     stageHelp: "Drop the hook, catch one fish, then reel it back in. Bigger fish score more and each boat is selectable.",
     createState() {
       const base = {
@@ -3882,6 +4030,74 @@ const fishingGame = (() => {
   };
 })();
 
+function createEmbeddedGame(config) {
+  return {
+    name: config.name,
+    description: config.description,
+    controls: config.controls,
+    stageTitle: config.stageTitle,
+    stageHelp: config.stageHelp,
+    embedUrl: config.embedUrl,
+    createState() {
+      return {
+        status: `Loading ${config.name}...`
+      };
+    },
+    getExtras() {
+      return {
+        title: "Launch Options",
+        items: [
+          { id: "reload", label: "Reload Stage", active: false },
+          { id: "open", label: "Open Full Page", active: false }
+        ]
+      };
+    },
+    handleExtra(state, id) {
+      if (id === "reload") {
+        syncStageSurface(true);
+        state.status = `${config.name} reloading`;
+        return;
+      }
+      if (id === "open") {
+        window.open(config.embedUrl, "_blank", "noopener");
+        state.status = `${config.name} opened in new tab`;
+      }
+    },
+    update() {},
+    draw() {},
+    hud(state) {
+      return {
+        value: "Ready",
+        copy: config.hudCopy,
+        banner: state.status,
+        footer: config.footer
+      };
+    }
+  };
+}
+
+const foosballSuiteGame = createEmbeddedGame({
+  name: "Foosball Frenzy",
+  description: "Play the full foosball demo inside the arcade suite with grouped rods, kicks, and live score tracking.",
+  controls: "Click inside the stage, then use W/S for defenders, Arrow keys for midfield and attack, and Space to kick.",
+  stageTitle: "Foosball Frenzy",
+  stageHelp: "This loads the full standalone foosball page inside the arcade suite. Click inside the field first so the controls go to the game.",
+  embedUrl: "/foosball.html",
+  hudCopy: "Embedded full-page foosball with grouped rods, live stamina bars, and auto-reset ball recovery.",
+  footer: "Use Reload Stage if the embedded foosball field gets stuck, or Open Full Page if you want it in its original layout."
+});
+
+const spaceInvadersSuiteGame = createEmbeddedGame({
+  name: "Space Invaders",
+  description: "Play the full standalone Space Invaders page inside the arcade suite with waves, bosses, lives, and power-ups.",
+  controls: "Click inside the stage, then use Left/Right or A/D to move and Space to fire.",
+  stageTitle: "Space Invaders",
+  stageHelp: "This loads the full standalone Space Invaders page inside the arcade suite. Click inside the stage first so the shooter gets keyboard focus.",
+  embedUrl: "/space-invaders/index.html",
+  hudCopy: "Embedded arcade shooter with score, waves, lives, and power-up runs inside the suite.",
+  footer: "Use Reload Stage to restart the embedded shooter quickly, or Open Full Page if you want the original standalone view."
+});
+
 const games = {
   pong: pongGame,
   maze: mazeGame,
@@ -3891,7 +4107,9 @@ const games = {
   basketball: basketballGame,
   dodge: dodgeGame,
   racer: racerGame,
-  fishing: fishingGame
+  fishing: fishingGame,
+  foosball: foosballSuiteGame,
+  invaders: spaceInvadersSuiteGame
 };
 
 const gameOrder = Object.keys(games);
@@ -3961,7 +4179,7 @@ function renderTabs() {
 }
 
 function syncCanvasCursor() {
-  if (!currentGame) {
+  if (!currentGame || isEmbeddedGame()) {
     canvas.style.cursor = "default";
     return;
   }
@@ -3985,6 +4203,7 @@ function switchGame(id) {
   url.searchParams.set("game", currentId);
   window.history.replaceState({}, "", url);
 
+  syncStageSurface();
   renderTabs();
   renderExtras();
   syncStageCopy();

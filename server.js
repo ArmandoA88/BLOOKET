@@ -214,7 +214,7 @@ const STUDENT_BLOOK_NAME_OVERRIDES = {
   18: "Cal",
   19: "Liam",
   20: "Brandon",
-  21: "Miguel",
+  21: "Mario",
   22: "Henry",
   23: "Eli",
   24: "Leo",

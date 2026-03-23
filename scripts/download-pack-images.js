@@ -27,10 +27,10 @@ const BOOK_LEGENDS_IMAGE_SOURCES = {
     "https://static.wikia.nocookie.net/olympians/images/1/10/Percy_Jackson.jpg/revision/latest?cb=20180319172727&format=original"
   ],
   "alice.jpg": [
-    "https://static.wikia.nocookie.net/aliceinwonderland/images/e/e4/Alice_%28book%29.jpg/revision/latest?cb=20251116005548&format=original"
+    "https://static.wikia.nocookie.net/aliceinwonderland/images/b/bc/Teatimealice.jpg/revision/latest?cb=20140404080433&format=original"
   ],
-  "dorothy.jpg": [
-    "https://static.wikia.nocookie.net/ozwikia/images/1/1a/Dorothy_Gale_with_silver_shoes.jpg/revision/latest?cb=20070415184250&format=original"
+  "dorothy.png": [
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/The_Wonderful_Wizard_of_Oz%2C_006.png/330px-The_Wonderful_Wizard_of_Oz%2C_006.png"
   ],
   "charlie-bucket.jpg": [
     "https://static.wikia.nocookie.net/charlieandthechocolatefactoryfilm/images/c/c7/13868598026798l-1-.jpg/revision/latest?cb=20150912184131&format=original"
@@ -44,12 +44,13 @@ const BOOK_LEGENDS_IMAGE_SOURCES = {
   "pippi.jpg": [
     "https://upload.wikimedia.org/wikipedia/en/7/78/L%C3%A5ngstrump_G%C3%A5r_Ombord.jpeg"
   ],
-  "paddington.jpg": [
-    "https://static.wikia.nocookie.net/paddingtonbear/images/c/cf/Paddington_through_the_years.jpg/revision/latest?cb=20180320022729&format=original",
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Paddington_Bear%2C_all_alone_%2850285504591%29.jpg/330px-Paddington_Bear%2C_all_alone_%2850285504591%29.jpg"
+  "paddington.png": [
+    "https://static.wikia.nocookie.net/paddingtonbear/images/0/00/Paddington_2.png/revision/latest?cb=20171111120746&format=original",
+    "https://static.wikia.nocookie.net/paddingtonbear/images/7/77/Paddington_3.png/revision/latest?cb=20171111120812&format=original"
   ],
-  "pooh.jpg": [
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Pooh_Shepard1928.jpg/330px-Pooh_Shepard1928.jpg"
+  "pooh.png": [
+    "https://upload.wikimedia.org/wikipedia/commons/6/67/Winnie-the-Pooh_166-1.png",
+    "https://upload.wikimedia.org/wikipedia/commons/0/0b/Winnie-the-Pooh_67.png"
   ],
   "charlotte.jpg": [
     "https://static.wikia.nocookie.net/charlottesweb/images/f/f5/Charlotte_A._Cavatica.jpg/revision/latest?cb=20190628214916&format=original"
@@ -79,7 +80,7 @@ const BOOK_LEGENDS_IMAGE_SOURCES = {
     "https://static.wikia.nocookie.net/disney/images/9/9c/Ivan.JPG/revision/latest?cb=20100705214859&format=original"
   ],
   "mercy-watson.jpg": [
-    "https://www.mercywatson.com/wp-content/uploads/2015/08/book3-19.jpg"
+    "https://www.mercywatson.com/wp-content/uploads/2015/08/book1-04.jpg"
   ],
   "junie-b-jones.png": [
     "https://static.wikia.nocookie.net/juniebjonesbooks/images/b/bd/Junie_b_kinder.png/revision/latest?cb=20220711043535&format=original"
@@ -87,8 +88,8 @@ const BOOK_LEGENDS_IMAGE_SOURCES = {
   "geronimo-stilton.jpg": [
     "https://static.wikia.nocookie.net/geronimostilton/images/8/88/Geronimo_Stilton_%281%29.jpg/revision/latest?cb=20150725045219&format=original"
   ],
-  "ms-frizzle.png": [
-    "https://static.wikia.nocookie.net/magicschoolbus/images/7/76/Professor_Frizzle.png/revision/latest?cb=20251010060638&format=original"
+  "ms-frizzle.jpg": [
+    "https://static.wikia.nocookie.net/magicschoolbus/images/4/41/Valerie_Frizzle_Bruce_Degen.jpg/revision/latest?cb=20260115025758&format=original"
   ],
   "arthur.png": [
     "https://static.wikia.nocookie.net/arthur/images/d/dd/Arthur_full.png/revision/latest?cb=20231110024600&format=original"
@@ -96,8 +97,8 @@ const BOOK_LEGENDS_IMAGE_SOURCES = {
   "clifford.png": [
     "https://static.wikia.nocookie.net/clifford/images/0/03/Nose_In_a_Book.png/revision/latest?cb=20200105175816&format=original"
   ],
-  "curious-george.jpg": [
-    "https://static.wikia.nocookie.net/curious-george/images/6/6f/CuriousGeorgeFirst.JPG/revision/latest?cb=20190417183017&format=original"
+  "curious-george.png": [
+    "https://static.wikia.nocookie.net/curious-george/images/d/d8/Curious_George.png/revision/latest?cb=20180109005518&format=original"
   ]
 };
 

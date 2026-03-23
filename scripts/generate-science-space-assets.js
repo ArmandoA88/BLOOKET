@@ -386,25 +386,279 @@ function flaskMouse(palette) {
   ].join("");
 }
 
+function panel(x, y, width, height, palette, options = {}) {
+  const radius = options.radius ?? 26;
+  const fill = options.fill ?? palette.dark;
+  const opacity = options.opacity ?? 0.22;
+  const innerInset = options.innerInset ?? 8;
+  const innerRadius = Math.max(8, radius - innerInset);
+  return [
+    rect(x, y, width, height, `rx="${radius}" fill="${fill}" opacity="${opacity}"`),
+    rect(
+      x + innerInset,
+      y + innerInset,
+      width - innerInset * 2,
+      height - innerInset * 2,
+      `rx="${innerRadius}" fill="none" stroke="${options.stroke || palette.metal}" stroke-width="2" opacity="${options.strokeOpacity ?? 0.18}"`
+    )
+  ].join("");
+}
+
+function bench(y, palette) {
+  return [
+    ellipse(160, y + 46, 126, 16, `fill="#09101e" opacity="0.28"`),
+    rect(34, y + 4, 252, 18, `rx="9" fill="${palette.dark}" opacity="0.42"`),
+    rect(22, y + 20, 276, 40, `rx="18" fill="${palette.metal}" opacity="0.18"`),
+    rect(34, y + 18, 252, 22, `rx="11" fill="${palette.primary}" opacity="0.2"`)
+  ].join("");
+}
+
+function cloud(x, y, scale, color, opacity = 0.7) {
+  return `<g transform="translate(${x} ${y}) scale(${scale})">
+    ${ellipse(0, 12, 38, 18, `fill="${color}" opacity="${opacity}"`)}
+    ${circle(-24, 10, 18, `fill="${color}" opacity="${opacity}"`)}
+    ${circle(4, 0, 22, `fill="${color}" opacity="${opacity}"`)}
+    ${circle(28, 12, 16, `fill="${color}" opacity="${opacity}"`)}
+  </g>`;
+}
+
+function gear(cx, cy, radius, palette, options = {}) {
+  const teeth = options.teeth ?? 8;
+  const toothLength = options.toothLength ?? 10;
+  const parts = [];
+  for (let index = 0; index < teeth; index += 1) {
+    const angle = (Math.PI * 2 * index) / teeth;
+    const x1 = cx + Math.cos(angle) * (radius - 4);
+    const y1 = cy + Math.sin(angle) * (radius - 4);
+    const x2 = cx + Math.cos(angle) * (radius + toothLength);
+    const y2 = cy + Math.sin(angle) * (radius + toothLength);
+    parts.push(line(x1.toFixed(2), y1.toFixed(2), x2.toFixed(2), y2.toFixed(2), `stroke="${palette.metal}" stroke-width="6" stroke-linecap="round" opacity="${options.opacity ?? 0.55}"`));
+  }
+  parts.push(circle(cx, cy, radius, `fill="none" stroke="${palette.metal}" stroke-width="8" opacity="${options.opacity ?? 0.55}"`));
+  parts.push(circle(cx, cy, Math.max(7, radius * 0.35), `fill="${palette.accent}" opacity="0.9"`));
+  return parts.join("");
+}
+
+function labMouse(x, y, scale, palette) {
+  return `<g transform="translate(${x} ${y}) scale(${scale})">
+    ${ellipse(0, 56, 34, 10, `fill="#07111f" opacity="0.26"`)}
+    ${circle(-18, -8, 14, `fill="#f4d4d2"`)}
+    ${circle(18, -8, 14, `fill="#f4d4d2"`)}
+    ${circle(0, 8, 24, `fill="#f7ebe8"`)}
+    ${ellipse(0, 44, 28, 26, `fill="#f7ebe8"`)}
+    ${rect(-18, 4, 36, 10, `rx="5" fill="${palette.dark}" opacity="0.85"`)}
+    ${circle(-8, 9, 6, `fill="${palette.secondary}" opacity="0.92"`)}
+    ${circle(8, 9, 6, `fill="${palette.secondary}" opacity="0.92"`)}
+    ${circle(-8, 9, 2.5, `fill="#ffffff" opacity="0.9"`)}
+    ${circle(8, 9, 2.5, `fill="#ffffff" opacity="0.9"`)}
+    ${circle(0, 20, 4, `fill="#ff98b2"`)}
+    ${line(-24, 18, -10, 18, `stroke="${palette.dark}" stroke-width="2.2" stroke-linecap="round"`)}
+    ${line(10, 18, 24, 18, `stroke="${palette.dark}" stroke-width="2.2" stroke-linecap="round"`)}
+    ${pathEl("M20 40 C52 44 60 62 64 84", `fill="none" stroke="#f4b8ba" stroke-width="5" stroke-linecap="round"`)}
+  </g>`;
+}
+
+function labFlask(x, y, scale, palette) {
+  return `<g transform="translate(${x} ${y}) scale(${scale})">
+    ${ellipse(0, 122, 72, 12, `fill="#09101e" opacity="0.22"`)}
+    ${rect(-20, -102, 40, 30, `rx="10" fill="${palette.metal}"`)}
+    ${pathEl("M-40 -74 H40 V-40 C40 -24 46 -2 58 20 L74 54 C88 86 64 122 26 122 H-26 C-64 122 -88 86 -74 54 L-58 20 C-46 -2 -40 -24 -40 -40 Z", `fill="${palette.primary}" opacity="0.92" stroke="${palette.metal}" stroke-width="6"`)}
+    ${pathEl("M-62 30 H62 L70 60 C76 82 56 102 24 102 H-24 C-56 102 -76 82 -70 60 Z", `fill="${palette.secondary}" opacity="0.9"`)}
+    ${pathEl("M-16 -88 H16", `fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity="0.45"`)}
+    ${circle(-34, 44, 8, `fill="${palette.accent}" opacity="0.7"`)}
+    ${circle(30, 26, 6, `fill="${palette.accent}" opacity="0.82"`)}
+    ${circle(42, 54, 4, `fill="${palette.accent}" opacity="0.62"`)}
+  </g>`;
+}
+
 function renderScienceAsset(asset) {
   const palette = PALETTES[asset.assetKey];
   switch (asset.assetKey) {
     case "labRat":
-      return scene(asset, palette, flaskMouse(palette), { starCount: 10 });
+      return scene(
+        asset,
+        palette,
+        [
+          bench(210, palette),
+          labFlask(126, 110, 0.9, palette),
+          labMouse(226, 170, 0.88, palette),
+          rect(50, 64, 60, 18, `rx="9" fill="${palette.metal}" opacity="0.2"`),
+          rect(56, 82, 10, 76, `rx="5" fill="${palette.metal}" opacity="0.28"`),
+          rect(72, 94, 10, 64, `rx="5" fill="${palette.metal}" opacity="0.24"`),
+          rect(88, 72, 10, 86, `rx="5" fill="${palette.metal}" opacity="0.3"`),
+          circle(248, 82, 10, `fill="${palette.accent}" opacity="0.72"`),
+          circle(224, 66, 6, `fill="${palette.secondary}" opacity="0.64"`)
+        ].join(""),
+        {
+          starCount: 0,
+          backdrop: [
+            panel(24, 34, 272, 164, palette, { opacity: 0.18 }),
+            line(44, 116, 276, 116, `stroke="${palette.metal}" stroke-width="2" opacity="0.08"`),
+            line(44, 148, 276, 148, `stroke="${palette.metal}" stroke-width="2" opacity="0.08"`),
+            line(44, 180, 276, 180, `stroke="${palette.metal}" stroke-width="2" opacity="0.08"`)
+          ].join("")
+        }
+      );
     case "rocketCadet":
-      return scene(asset, palette, [starBurst(96, 88, 0.46, palette.accent, 0.82), rocket(164, 168, 1.2, palette), circle(220, 104, 12, `fill="${palette.secondary}" opacity="0.85"`)].join(""), { starCount: 14 });
+      return scene(
+        asset,
+        palette,
+        [
+          rect(40, 226, 240, 24, `rx="12" fill="${palette.dark}" opacity="0.42"`),
+          rect(114, 212, 92, 18, `rx="9" fill="${palette.metal}" opacity="0.34"`),
+          rect(96, 86, 18, 126, `rx="9" fill="${palette.metal}" opacity="0.5"`),
+          rect(106, 118, 46, 10, `rx="5" fill="${palette.metal}" opacity="0.46"`),
+          rect(106, 152, 40, 10, `rx="5" fill="${palette.metal}" opacity="0.42"`),
+          cloud(126, 238, 1.0, "#f4f7ff", 0.58),
+          cloud(178, 246, 0.84, "#f4f7ff", 0.44),
+          cloud(210, 234, 0.74, "#f4f7ff", 0.4),
+          rocket(164, 150, 1.42, palette),
+          pathEl("M164 248 C156 232 150 224 148 208", `fill="none" stroke="${palette.accent}" stroke-width="12" stroke-linecap="round" opacity="0.52"`),
+          starBurst(240, 76, 0.3, palette.accent, 0.7)
+        ].join(""),
+        {
+          starCount: 8,
+          backdrop: [
+            circle(160, 90, 96, `fill="${palette.glow}" opacity="0.14"`),
+            line(0, 214, 320, 214, `stroke="#ffffff" stroke-width="2" opacity="0.06"`)
+          ].join("")
+        }
+      );
     case "robotTech":
-      return scene(asset, palette, [ellipse(160, 244, 78, 16, `fill="#09101e" opacity="0.2"`), robot(160, 160, 1.1, palette)].join(""), { starCount: 11 });
+      return scene(
+        asset,
+        palette,
+        [
+          bench(214, palette),
+          robot(160, 154, 1.18, palette),
+          rect(56, 74, 60, 42, `rx="12" fill="${palette.dark}" opacity="0.28"`),
+          line(70, 94, 102, 94, `stroke="${palette.secondary}" stroke-width="6" stroke-linecap="round" opacity="0.7"`),
+          line(70, 108, 92, 108, `stroke="${palette.accent}" stroke-width="6" stroke-linecap="round" opacity="0.7"`),
+          line(214, 208, 236, 186, `stroke="${palette.metal}" stroke-width="8" stroke-linecap="round"`),
+          line(236, 186, 250, 194, `stroke="${palette.accent}" stroke-width="8" stroke-linecap="round"`),
+          circle(238, 184, 8, `fill="${palette.secondary}" opacity="0.9"`)
+        ].join(""),
+        {
+          starCount: 0,
+          backdrop: [
+            panel(28, 40, 264, 148, palette, { opacity: 0.18 }),
+            gear(252, 88, 18, palette, { opacity: 0.34 }),
+            gear(220, 126, 10, palette, { opacity: 0.26 })
+          ].join("")
+        }
+      );
     case "dnaHacker":
-      return scene(asset, palette, [gridLines("#ffffff", 0.08), dnaHelix(160, 156, 1.0, palette)].join(""), { starCount: 8 });
+      return scene(
+        asset,
+        palette,
+        [
+          rect(60, 70, 200, 128, `rx="24" fill="${palette.dark}" opacity="0.52"`),
+          rect(74, 84, 172, 100, `rx="18" fill="${palette.primary}" opacity="0.08"`),
+          dnaHelix(160, 146, 1.02, palette),
+          rect(86, 204, 148, 14, `rx="7" fill="${palette.metal}" opacity="0.18"`),
+          rect(108, 216, 104, 12, `rx="6" fill="${palette.dark}" opacity="0.38"`),
+          rect(88, 102, 32, 6, `rx="3" fill="${palette.accent}" opacity="0.72"`),
+          rect(88, 116, 52, 6, `rx="3" fill="${palette.secondary}" opacity="0.64"`),
+          rect(200, 100, 24, 6, `rx="3" fill="${palette.secondary}" opacity="0.66"`),
+          rect(190, 114, 34, 6, `rx="3" fill="${palette.accent}" opacity="0.72"`)
+        ].join(""),
+        {
+          starCount: 0,
+          backdrop: [
+            panel(34, 48, 252, 168, palette, { opacity: 0.16 }),
+            gridLines("#ffffff", 0.05)
+          ].join("")
+        }
+      );
     case "circuitMaster":
-      return scene(asset, palette, [gridLines("#7effd6", 0.08), chip(160, 158, 1.05, palette)].join(""), { starCount: 7 });
+      return scene(
+        asset,
+        palette,
+        [
+          chip(160, 160, 1.16, palette),
+          pathEl("M68 92 H112 V122 H144", `fill="none" stroke="${palette.secondary}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.68"`),
+          pathEl("M214 98 H248 V138 H208", `fill="none" stroke="${palette.accent}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.74"`),
+          pathEl("M80 202 H130 V174 H148", `fill="none" stroke="${palette.accent}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.62"`),
+          pathEl("M240 212 H194 V188 H176", `fill="none" stroke="${palette.secondary}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.68"`),
+          circle(112, 122, 8, `fill="${palette.accent}" opacity="0.9"`),
+          circle(208, 138, 8, `fill="${palette.secondary}" opacity="0.9"`),
+          circle(130, 174, 8, `fill="${palette.secondary}" opacity="0.9"`),
+          circle(194, 188, 8, `fill="${palette.accent}" opacity="0.9"`)
+        ].join(""),
+        {
+          starCount: 0,
+          backdrop: [
+            panel(26, 36, 268, 182, palette, { opacity: 0.2 }),
+            gridLines("#7effd6", 0.05)
+          ].join("")
+        }
+      );
     case "nebulaScout":
-      return scene(asset, palette, [nebula(198, 112, 1.1, palette), telescope(138, 186, 1.2, palette), circle(236, 86, 6, `fill="${palette.accent}" opacity="0.9"`)].join(""), { starCount: 16 });
+      return scene(
+        asset,
+        palette,
+        [
+          ellipse(160, 244, 108, 18, `fill="#09101e" opacity="0.24"`),
+          pathEl("M26 228 C92 206 152 202 206 214 C246 222 274 220 294 210 V256 H26 Z", `fill="${palette.dark}" opacity="0.42"`),
+          telescope(144, 182, 1.28, palette),
+          nebula(208, 92, 1.18, palette),
+          planet(90, 84, 18, { body: palette.primary, shade: palette.metal }, { aura: palette.glow }),
+          circle(248, 74, 7, `fill="${palette.accent}" opacity="0.92"`)
+        ].join(""),
+        {
+          starCount: 18,
+          backdrop: [
+            circle(226, 92, 88, `fill="${palette.glow}" opacity="0.18"`),
+            pathEl("M30 222 C98 198 158 194 212 206 C248 214 274 212 292 202", `fill="none" stroke="#ffffff" stroke-width="2" opacity="0.08"`)
+          ].join("")
+        }
+      );
     case "quantumChief":
-      return scene(asset, palette, [atom(160, 162, 1.18, palette), crown(160, 86, 0.72, palette)].join(""), { starCount: 14 });
+      return scene(
+        asset,
+        palette,
+        [
+          rect(132, 196, 56, 40, `rx="14" fill="${palette.primary}" opacity="0.32"`),
+          rect(120, 230, 80, 10, `rx="5" fill="${palette.metal}" opacity="0.34"`),
+          atom(160, 144, 1.3, palette),
+          circle(160, 144, 58, `fill="${palette.glow}" opacity="0.14"`),
+          circle(104, 116, 8, `fill="${palette.accent}" opacity="0.7"`),
+          circle(224, 166, 7, `fill="${palette.secondary}" opacity="0.72"`),
+          rect(82, 206, 26, 8, `rx="4" fill="${palette.secondary}" opacity="0.66"`),
+          rect(212, 206, 26, 8, `rx="4" fill="${palette.accent}" opacity="0.66"`)
+        ].join(""),
+        {
+          starCount: 0,
+          backdrop: [
+            panel(34, 42, 252, 156, palette, { opacity: 0.17 }),
+            line(60, 196, 260, 196, `stroke="${palette.metal}" stroke-width="2" opacity="0.08"`),
+            line(78, 210, 110, 210, `stroke="${palette.secondary}" stroke-width="3" stroke-linecap="round" opacity="0.28"`),
+            line(210, 210, 242, 210, `stroke="${palette.accent}" stroke-width="3" stroke-linecap="round" opacity="0.28"`)
+          ].join("")
+        }
+      );
     case "timeArchitect":
-      return scene(asset, palette, [gridLines("#ffffff", 0.08), hourglass(160, 156, 1.05, palette), circle(230, 94, 18, `fill="none" stroke="${palette.secondary}" stroke-width="6" opacity="0.55"`), line(230, 94, 244, 82, `stroke="${palette.secondary}" stroke-width="4" stroke-linecap="round" opacity="0.6"`)].join(""), { starCount: 10 });
+      return scene(
+        asset,
+        palette,
+        [
+          bench(214, palette),
+          hourglass(160, 154, 1.08, palette),
+          gear(94, 96, 16, palette, { opacity: 0.36 }),
+          circle(232, 94, 26, `fill="none" stroke="${palette.secondary}" stroke-width="6" opacity="0.44"`),
+          line(232, 94, 232, 78, `stroke="${palette.secondary}" stroke-width="4" stroke-linecap="round" opacity="0.58"`),
+          line(232, 94, 246, 104, `stroke="${palette.secondary}" stroke-width="4" stroke-linecap="round" opacity="0.58"`),
+          rect(64, 204, 42, 8, `rx="4" fill="${palette.accent}" opacity="0.58"`),
+          rect(214, 204, 34, 8, `rx="4" fill="${palette.secondary}" opacity="0.54"`)
+        ].join(""),
+        {
+          starCount: 0,
+          backdrop: [
+            panel(32, 40, 256, 160, palette, { opacity: 0.16 }),
+            gridLines("#ffffff", 0.04)
+          ].join("")
+        }
+      );
     default:
       return scene(asset, palette, rocket(160, 160, 1.0, palette));
   }
@@ -461,6 +715,8 @@ function renderSpaceAsset(asset) {
 function scene(asset, palette, inner, options = {}) {
   const id = asset.id.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
   const overlay = [options.grid ? gridLines("#ffffff", 0.07) : "", options.rings ? orbits("#ffffff") : ""].join("");
+  const starCount = options.starCount ?? 16;
+  const stars = starCount > 0 ? starField(id, starCount) : "";
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" fill="none">
     <defs>
@@ -478,7 +734,8 @@ function scene(asset, palette, inner, options = {}) {
     </defs>
     <rect width="320" height="320" rx="44" fill="url(#bg-${id})"/>
     <circle cx="160" cy="124" r="110" fill="url(#glow-${id})"/>
-    ${starField(id, options.starCount || 16)}
+    ${options.backdrop || ""}
+    ${stars}
     ${overlay}
     <g filter="url(#shadow-${id})">
       ${inner}

@@ -6,13 +6,13 @@ const BOOK_LEGENDS_BLOOKS = [
   { id: "book-greg", name: "Greg Heffley", image: "/assets/books/greg-heffley.png", icon: "BL", rarity: "Common", series: "Diary of a Wimpy Kid", motif: "notebook" },
   { id: "book-percy", name: "Percy Jackson", image: "/assets/books/percy-jackson.jpg", icon: "BL", rarity: "Common", series: "Percy Jackson", motif: "trident" },
   { id: "book-alice", name: "Alice", image: "/assets/books/alice.jpg", icon: "BL", rarity: "Common", series: "Alice in Wonderland", motif: "teacup" },
-  { id: "book-dorothy", name: "Dorothy Gale", image: "/assets/books/dorothy.jpg", icon: "BL", rarity: "Common", series: "The Wizard of Oz", motif: "ruby" },
+  { id: "book-dorothy", name: "Dorothy Gale", image: "/assets/books/dorothy.png", icon: "BL", rarity: "Common", series: "The Wizard of Oz", motif: "ruby" },
   { id: "book-charlie", name: "Charlie Bucket", image: "/assets/books/charlie-bucket.jpg", icon: "BL", rarity: "Common", series: "Charlie and the Chocolate Factory", motif: "ticket" },
   { id: "book-wonka", name: "Willy Wonka", image: "/assets/books/willy-wonka.png", icon: "BL", rarity: "Common", series: "Charlie and the Chocolate Factory", motif: "top-hat" },
   { id: "book-peter", name: "Peter Pan", image: "/assets/books/peter-pan.jpg", icon: "BL", rarity: "Common", series: "Peter Pan", motif: "feather" },
   { id: "book-pippi", name: "Pippi Longstocking", image: "/assets/books/pippi.jpg", icon: "BL", rarity: "Common", series: "Pippi Longstocking", motif: "braids" },
-  { id: "book-paddington", name: "Paddington Bear", image: "/assets/books/paddington.jpg", icon: "BL", rarity: "Common", series: "Paddington", motif: "duffle-coat" },
-  { id: "book-pooh", name: "Winnie the Pooh", image: "/assets/books/pooh.jpg", icon: "BL", rarity: "Common", series: "Winnie the Pooh", motif: "honey" },
+  { id: "book-paddington", name: "Paddington Bear", image: "/assets/books/paddington.png", icon: "BL", rarity: "Common", series: "Paddington", motif: "duffle-coat" },
+  { id: "book-pooh", name: "Winnie the Pooh", image: "/assets/books/pooh.png", icon: "BL", rarity: "Common", series: "Winnie the Pooh", motif: "honey" },
   { id: "book-charlotte", name: "Charlotte", image: "/assets/books/charlotte.jpg", icon: "BL", rarity: "Common", series: "Charlotte's Web", motif: "web" },
   { id: "book-wilbur", name: "Wilbur", image: "/assets/books/wilbur.jpg", icon: "BL", rarity: "Common", series: "Charlotte's Web", motif: "barn" },
   { id: "book-stuart", name: "Stuart Little", image: "/assets/books/stuart-little.png", icon: "BL", rarity: "Common", series: "Stuart Little", motif: "boat" },
@@ -25,10 +25,10 @@ const BOOK_LEGENDS_BLOOKS = [
   { id: "book-mercy", name: "Mercy Watson", image: "/assets/books/mercy-watson.jpg", icon: "BL", rarity: "Common", series: "Mercy Watson", motif: "toast" },
   { id: "book-junie", name: "Junie B. Jones", image: "/assets/books/junie-b-jones.png", icon: "BL", rarity: "Common", series: "Junie B. Jones", motif: "ribbon" },
   { id: "book-geronimo", name: "Geronimo Stilton", image: "/assets/books/geronimo-stilton.jpg", icon: "BL", rarity: "Common", series: "Geronimo Stilton", motif: "newsboy" },
-  { id: "book-frizzle", name: "Ms. Frizzle", image: "/assets/books/ms-frizzle.png", icon: "BL", rarity: "Common", series: "Magic School Bus", motif: "bus" },
+  { id: "book-frizzle", name: "Ms. Frizzle", image: "/assets/books/ms-frizzle.jpg", icon: "BL", rarity: "Common", series: "Magic School Bus", motif: "bus" },
   { id: "book-arthur", name: "Arthur", image: "/assets/books/arthur.png", icon: "BL", rarity: "Common", series: "Arthur", motif: "glasses" },
   { id: "book-clifford", name: "Clifford", image: "/assets/books/clifford.png", icon: "BL", rarity: "Common", series: "Clifford", motif: "paw" },
-  { id: "book-george", name: "Curious George", image: "/assets/books/curious-george.jpg", icon: "BL", rarity: "Common", series: "Curious George", motif: "banana" }
+  { id: "book-george", name: "Curious George", image: "/assets/books/curious-george.png", icon: "BL", rarity: "Common", series: "Curious George", motif: "banana" }
 ];
 
 module.exports = {

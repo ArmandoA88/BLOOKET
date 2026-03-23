@@ -1,0 +1,4 @@
+Blooket-style game server listening on http://localhost:3000
+HTTPS is disabled or unavailable, so the app is serving over HTTP.
+Chromebook/LAN join URLs:
+  http://10.0.0.7:3000

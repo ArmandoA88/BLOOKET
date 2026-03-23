@@ -3,326 +3,201 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Quiz Arena Host</title>
+    <title>Blooket-Style Dashboard</title>
     <link rel="preload" as="image" href="/assets/minigames/shared/question.svg" />
     <link rel="preload" as="image" href="/assets/minigames/soccer_shootout/soccer.svg" />
     <link rel="preload" as="image" href="/assets/minigames/tap_rush/tap.svg" />
     <link rel="preload" as="image" href="/assets/minigames/sequence_memory/sequence.svg" />
     <link rel="preload" as="image" href="/assets/minigames/precision_stop/precision.svg" />
     <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/blooket-shell.css" />
   </head>
-  <body>
-    <main class="page">
-      <section class="topbar">
-        <div>
-          <h1 class="brand">Host Dashboard</h1>
-          <p class="sub">Create your room and control every round in realtime.</p>
-        </div>
-        <div class="button-row">
-          <a class="action secondary" href="/play.html?catalog=1#accountPanel">View All Blooks</a>
-          <a class="action ghost" href="/">Back</a>
-        </div>
-      </section>
+  <body class="dashboard-body">
+    <div class="dashboard-floating" aria-hidden="true"></div>
+    <main class="dashboard-shell">
+      <aside class="dashboard-sidebar">
+        <a class="dashboard-logo" href="/">Blooket</a>
+        <div class="dashboard-logo-sub">Exact same flow, local repo data</div>
 
-      <section id="setupCard" class="card strong fade-in">
-        <h2 class="title">Select Featured Mini-Game</h2>
-        <div class="mode-picker-layout">
-          <section class="mode-picker-stage">
-            <div class="mode-picker-banner">Select Featured Mini-Game</div>
-            <select id="mode" class="hidden">
-              <option value="classic" selected>Foosball</option>
-              <option value="gold">Tower Stacker</option>
-              <option value="brawl">Space Invaders</option>
-            </select>
-            <div id="modePickerGrid" class="mode-picker-grid"></div>
-          </section>
+        <nav class="dashboard-nav" aria-label="Dashboard">
+          <a class="dashboard-nav-link" data-route="host" href="/host.html"><span>Host Live</span><span class="route-pill">Live</span></a>
+          <a class="dashboard-nav-link" data-route="create" href="/create"><span>Create</span><span class="route-pill">Build</span></a>
+          <a class="dashboard-nav-link" data-route="discover" href="/discover"><span>Discover</span><span class="route-pill">Browse</span></a>
+          <a class="dashboard-nav-link" data-route="my-sets" href="/my-sets"><span>My Sets</span><span class="route-pill">Local</span></a>
+          <a class="dashboard-nav-link" data-route="favorites" href="/favorites"><span>Favorites</span><span class="route-pill">Top</span></a>
+          <a class="dashboard-nav-link" data-route="history" href="/history"><span>History</span><span class="route-pill">Live</span></a>
+          <a class="dashboard-nav-link" data-route="homeworks" href="/homeworks"><span>Homework</span><span class="route-pill">Ready</span></a>
+          <a class="dashboard-nav-link" href="/play"><span>Play</span><span class="route-pill">Join</span></a>
+          <a class="dashboard-nav-link" data-route="settings" href="/settings"><span>Settings</span><span class="route-pill">Server</span></a>
+          <a class="dashboard-nav-link" data-route="stats" href="/stats"><span>Stats</span><span class="route-pill">Data</span></a>
+          <a class="dashboard-nav-link" data-route="blooks" href="/blooks"><span>Blooks</span><span class="route-pill">Catalog</span></a>
+          <a class="dashboard-nav-link" data-route="market" href="/market"><span>Market</span><span class="route-pill">Coins</span></a>
+        </nav>
 
-          <aside class="mode-preview-card">
-            <h3 id="modePreviewTitle">Foosball Frenzy</h3>
-            <p id="modePreviewTagline" class="mode-preview-tagline">Fast classroom table soccer with clear student action.</p>
-            <div class="mode-preview-metrics">
-              <div><span>Difficulty</span><strong id="modePreviewDifficulty">Simple</strong></div>
-              <div><span>Skills</span><strong id="modePreviewSkills">Timing</strong></div>
-              <div><span>Ideal Time</span><strong id="modePreviewTime">5 min</strong></div>
-              <div><span>Questions</span><strong id="modePreviewQuestions">Fast rounds</strong></div>
-              <div><span>Players</span><strong id="modePreviewPlayers">2 - 300</strong></div>
+        <div class="dashboard-sidebar-foot">
+          <a class="dashboard-action secondary" href="/play">Student Join Page</a>
+        </div>
+      </aside>
+
+      <section class="dashboard-main">
+        <div class="dashboard-top">
+          <div class="dashboard-title-wrap">
+            <span id="dashboardRoutePill" class="route-pill">Dashboard</span>
+            <h1 id="dashboardPageTitle" class="dashboard-title">Dashboard</h1>
+            <p id="dashboardPageCopy" class="dashboard-copy">Loading dashboard route...</p>
+          </div>
+          <div class="dashboard-userbar">
+            <img id="dashboardUserAvatar" class="dashboard-avatar" alt="User avatar" hidden />
+            <div>
+              <div id="dashboardUserName" class="site-nav-link" style="padding: 0; background: transparent">Loading status...</div>
+              <div id="dashboardUserMeta" class="muted-copy">Checking local auth and host status.</div>
             </div>
-          </aside>
+          </div>
         </div>
 
-        <section class="mode-config-card">
-          <div id="modeConfigQuizTitle" class="mode-config-header">Quiz Set</div>
-          <button id="createBtn" class="mode-config-host-btn">Host Now</button>
-
-          <div class="mode-end-grid">
-            <button id="endTypeTimeBtn" class="mode-end-tile selected" type="button" data-end-type="time">
-              <strong>Time</strong>
-              <span>The game ends after the set time has passed.</span>
-            </button>
-            <button id="endTypeWeightBtn" class="mode-end-tile" type="button" data-end-type="weight">
-              <strong>Weight</strong>
-              <span>The game ends after a player reaches the target weight.</span>
-            </button>
-          </div>
-
-          <div class="mode-duration-row">
-            <label id="quickDurationLabel" for="quickDurationMin">Time (minutes)</label>
-            <input id="quickDurationMin" type="number" min="2" max="20" value="7" />
-          </div>
-
-          <h3 id="modeSettingsHeading" class="mode-settings-heading">Mode Settings</h3>
-          <div class="mode-setting-row">
-            <span>Show Instructions</span>
-            <button class="mode-setting-toggle on" type="button" data-setting-toggle="instructions" aria-pressed="true">✓</button>
-          </div>
-          <div class="mode-setting-row">
-            <span>Allow Late Joining</span>
-            <button class="mode-setting-toggle on" type="button" data-setting-toggle="late_join" aria-pressed="true">✓</button>
-          </div>
-          <div class="mode-setting-row">
-            <span>Use Random Names</span>
-            <button class="mode-setting-toggle" type="button" data-setting-toggle="random_names" aria-pressed="false">✓</button>
-          </div>
-          <div class="mode-setting-row">
-            <span>Allow Student Accounts</span>
-            <button class="mode-setting-toggle on" type="button" data-setting-toggle="student_accounts" aria-pressed="true">✓</button>
-          </div>
-          <p class="mode-setting-help">Disabling student accounts hides account creation options for students.</p>
+        <section class="dashboard-head-card">
+          <div id="dashboardSummaryGrid" class="summary-grid"></div>
         </section>
 
-        <details class="host-advanced-settings">
-          <summary>Advanced Settings</summary>
-          <div class="form-grid" style="margin-top: 10px">
+        <section class="dashboard-callout">
+          <div id="dashboardActiveRoomCallout">
+            <strong>Checking active room...</strong>
+            <div class="muted-copy">Local server status is loading.</div>
+          </div>
+          <div id="dashboardLinkRail" class="dashboard-link-rail"></div>
+        </section>
+
+        <section id="pane-host" class="dashboard-pane">
+          <div class="dashboard-pane-head">
             <div>
-              <label for="questionSetSearch">Quiz Search</label>
-              <input id="questionSetSearch" maxlength="64" placeholder="Search by title or tag" />
+              <span class="section-kicker">Live Host Workspace</span>
+              <h2 class="section-title">Host a game from the current repo</h2>
             </div>
-            <div>
-              <label for="questionSetCategory">Quiz Category</label>
-              <select id="questionSetCategory">
-                <option value="">All Categories</option>
-              </select>
-            </div>
-            <div>
-              <label for="hostName">Host Name</label>
-              <input id="hostName" maxlength="24" value="Teacher" />
-            </div>
-            <div>
-              <label for="questionSet">Quiz Set</label>
-              <select id="questionSet">
-                <option value="multiplication_1_digit">Multiplication 1-Digit</option>
-              </select>
-            </div>
-            <div>
-              <label for="timer">Question Timer (sec)</label>
-              <input id="timer" type="number" min="8" max="45" value="15" />
-            </div>
-            <div>
-              <label for="explanationReveal">Explanation Reveal (sec, 0 = instant)</label>
-              <input id="explanationReveal" type="number" min="0" max="10" value="2" />
-            </div>
-            <div>
-              <label for="count">Question Count</label>
-              <input id="count" type="number" min="5" max="30" value="10" />
-            </div>
-            <div>
-              <label for="shuffleQuestionOptions">
-                <input id="shuffleQuestionOptions" type="checkbox" />
-                Shuffle Answer Options
-              </label>
-            </div>
-            <div>
-              <label for="preventQuestionRepeats">
-                <input id="preventQuestionRepeats" type="checkbox" />
-                No Repeated Questions
-              </label>
-            </div>
-            <div>
-              <label for="miniRotation">Mini-Game Rotation</label>
-              <select id="miniRotation">
-                <option value="fixed">Fixed Order</option>
-                <option value="random">Random Order</option>
-                <option value="popular">Most Played First</option>
-                <option value="soccer_only">Soccer Only</option>
-                <option value="off">Disable Mini-Games</option>
-              </select>
-            </div>
-            <div>
-              <label for="miniDuration">Mini-Game Duration (sec)</label>
-              <input id="miniDuration" type="number" min="5" max="30" value="10" />
+            <div class="dashboard-note-row">
+              <span class="metric-badge">Lobby</span>
+              <span class="metric-badge">Quiz Builder</span>
+              <span class="metric-badge">Mini-Game Tests</span>
             </div>
           </div>
-        </details>
-        <div class="button-row" style="margin-top: 12px">
-          <span id="setupNotice" class="notice hidden"></span>
-        </div>
-      </section>
 
-      <section id="gameCard" class="hidden fade-in">
-        <div id="hostGameLayout" class="layout">
-          <article class="card strong">
-            <div class="topbar" style="margin-bottom: 8px">
-              <div>
-                <h2 class="title" style="margin-bottom: 2px">Room <span id="roomCode" class="mono">------</span></h2>
-                <div class="button-row" style="margin-bottom: 4px">
-                  <button id="copyCodeBtn" class="ghost">Copy Room Code</button>
+          <div id="dashboardFocusNote" class="host-focus-note" hidden></div>
+
+          <section id="setupCard" class="card strong fade-in">
+            <h2 class="title">Select Featured Mini-Game</h2>
+            <div class="mode-picker-layout">
+              <section class="mode-picker-stage">
+                <div class="mode-picker-banner">Select Featured Mini-Game</div>
+                <select id="mode" class="hidden">
+                  <option value="classic" selected>Foosball</option>
+                  <option value="gold">Tower Stacker</option>
+                  <option value="brawl">Space Invaders</option>
+                </select>
+                <div id="modePickerGrid" class="mode-picker-grid"></div>
+              </section>
+
+              <aside class="mode-preview-card">
+                <h3 id="modePreviewTitle">Foosball Frenzy</h3>
+                <p id="modePreviewTagline" class="mode-preview-tagline">Fast classroom table soccer with clear student action.</p>
+                <div class="mode-preview-metrics">
+                  <div><span>Difficulty</span><strong id="modePreviewDifficulty">Simple</strong></div>
+                  <div><span>Skills</span><strong id="modePreviewSkills">Timing</strong></div>
+                  <div><span>Ideal Time</span><strong id="modePreviewTime">5 min</strong></div>
+                  <div><span>Questions</span><strong id="modePreviewQuestions">Fast rounds</strong></div>
+                  <div><span>Players</span><strong id="modePreviewPlayers">2 - 300</strong></div>
                 </div>
-                <div class="sub" id="modeLabel">Mode: Classic</div>
-                <div class="sub" id="quizLabel">Quiz: Multiplication 1-Digit</div>
-              </div>
-              <div class="topbar-phase">
-                <div class="badge">Phase: <span id="phaseText">Lobby</span></div>
-                <span id="hostConnectionPill" class="status-pill">Connecting...</span>
-              </div>
+              </aside>
             </div>
 
-            <section id="phaseBanner" class="phase-banner phase-lobby" aria-live="polite">
-              <div class="phase-banner-row">
-                <div class="phase-banner-title-wrap">
-                  <span class="phase-banner-kicker">Game State</span>
-                  <strong id="phaseBannerTitle">Lobby Open</strong>
-                </div>
-                <span id="miniGameActiveFlag" class="phase-banner-flag hidden">Mini-Game Running</span>
+            <section class="mode-config-card">
+              <div id="modeConfigQuizTitle" class="mode-config-header">Quiz Set</div>
+              <button id="createBtn" class="mode-config-host-btn">Host Now</button>
+
+              <div class="mode-end-grid">
+                <button id="endTypeTimeBtn" class="mode-end-tile selected" type="button" data-end-type="time">
+                  <strong>Time</strong>
+                  <span>The game ends after the set time has passed.</span>
+                </button>
+                <button id="endTypeWeightBtn" class="mode-end-tile" type="button" data-end-type="weight">
+                  <strong>Weight</strong>
+                  <span>The game ends after a player reaches the target weight.</span>
+                </button>
               </div>
-              <div id="phaseBannerDetail" class="phase-banner-detail">Students can join and pick blooks.</div>
+
+              <div class="mode-duration-row">
+                <label id="quickDurationLabel" for="quickDurationMin">Time (minutes)</label>
+                <input id="quickDurationMin" type="number" min="2" max="20" value="7" />
+              </div>
+
+              <h3 id="modeSettingsHeading" class="mode-settings-heading">Mode Settings</h3>
+              <div class="mode-setting-row">
+                <span>Show Instructions</span>
+                <button class="mode-setting-toggle on" type="button" data-setting-toggle="instructions" aria-pressed="true">&#10003;</button>
+              </div>
+              <div class="mode-setting-row">
+                <span>Allow Late Joining</span>
+                <button class="mode-setting-toggle on" type="button" data-setting-toggle="late_join" aria-pressed="true">&#10003;</button>
+              </div>
+              <div class="mode-setting-row">
+                <span>Use Random Names</span>
+                <button class="mode-setting-toggle" type="button" data-setting-toggle="random_names" aria-pressed="false">&#10003;</button>
+              </div>
+              <div class="mode-setting-row">
+                <span>Allow Student Accounts</span>
+                <button class="mode-setting-toggle on" type="button" data-setting-toggle="student_accounts" aria-pressed="true">&#10003;</button>
+              </div>
+              <p class="mode-setting-help">Disabling student accounts hides account creation options for students.</p>
             </section>
 
-            <section id="lobbyBoard" class="lobby-board">
-              <div class="lobby-board-top">
-                <div class="lobby-qr-wrap">
-                  <img id="lobbyJoinQr" class="lobby-qr" alt="Student join QR code" />
-                  <div class="help">Scan to join</div>
-                </div>
-                <div class="lobby-headline">
-                  Go to <span id="lobbyJoinHost" class="mono">localhost:3000/play.html</span><br />
-                  and enter Game ID:
-                </div>
-                <div id="lobbyCodeBig" class="lobby-code mono">------</div>
-                <div class="lobby-actions">
-                  <button id="copyJoinLinkBigBtn" class="ghost">Copy Join Link</button>
-                  <a id="previewBlooksBtn" class="action secondary" href="/play.html?catalog=1#accountPanel" target="_blank" rel="noopener">Preview Blooks</a>
-                  <button id="playAsHostBtn" class="secondary">Play as Host</button>
-                  <button id="lobbyStartBtn">Start 3..2..1</button>
-                </div>
-              </div>
-              <div class="lobby-board-main">
-                <div class="lobby-player-title"><span id="lobbyPlayerCount">0</span> students joined - <span id="lobbyReadyCount">0</span> ready</div>
-                <div class="help" style="margin-bottom: 10px">Blook pick stays open until the host starts.</div>
-                <div id="lobbyPlayers" class="lobby-player-grid">
-                  <div class="help">No students joined yet.</div>
-                </div>
-              </div>
-            </section>
-
-            <div class="kpis" style="margin-bottom: 12px">
-              <div class="kpi"><div id="kpiPlayers" class="v">0</div><div class="l">Players</div></div>
-              <div class="kpi"><div id="kpiAnswers" class="v">0</div><div class="l">Answers</div></div>
-              <div class="kpi"><div id="kpiCorrect" class="v">0</div><div class="l">Correct</div></div>
-              <div class="kpi"><div id="kpiRound" class="v">0 / 0</div><div class="l">Round</div></div>
-            </div>
-
-            <div id="hostNotice" class="notice">Waiting for players to join.</div>
-            <img id="phaseIllustration" class="game-illustration hidden" alt="Game phase image" style="margin-top: 12px" />
-
-            <div id="questionPanel" class="hidden" style="margin-top: 12px">
-              <div class="ticker" id="questionTimer">Time left: --</div>
-              <div class="question" id="questionText">Question text appears here.</div>
-              <img id="hostQuestionMedia" class="question-media hidden" alt="Question reference image" />
-              <div id="answerStats" class="answers"></div>
-            </div>
-
-            <div id="miniGameDashboardPanel" class="card hidden" style="margin-top: 12px">
-              <h3 id="miniGameDashboardTitle" class="title">Mini-Game Dashboard</h3>
-              <div id="miniGameDashboardMeta" class="help">Live student progress will appear here.</div>
-              <div id="miniGameDashboardBody" style="margin-top: 10px"></div>
-            </div>
-
-            <div id="feedPanel" class="card" style="margin-top: 12px">
-              <h3 id="feedTitle" class="title">Mode Feed</h3>
-              <div id="feedList" class="feed"><div class="help">Mode events appear here when active.</div></div>
-            </div>
-
-            <div class="card" style="margin-top: 12px">
-              <h3 class="title">Leaderboard</h3>
-              <table>
-                <thead>
-                  <tr><th>#</th><th>Name</th><th>Score</th><th>Streak</th><th>Correct</th></tr>
-                </thead>
-                <tbody id="leaderboardBody"></tbody>
-              </table>
-            </div>
-          </article>
-
-          <aside id="hostControlsCard" class="card strong">
-            <h2 class="title">Host Controls</h2>
-            <div class="button-row" style="margin-bottom: 12px">
-              <button id="startBtn">Start 3..2..1</button>
-              <button id="pauseResumeBtn" class="secondary">Pause Game</button>
-              <button id="nextBtn" class="secondary">Next Round</button>
-              <button id="forceNextQuestionBtn" class="ghost">Force Next Question</button>
-              <button id="endBtn" class="danger">End Game</button>
-            </div>
-            <div class="button-row" style="margin-bottom: 12px">
-              <button id="lateJoinToggleBtn" class="ghost">Lock Late Join</button>
-              <button id="skipMiniGameBtn" class="ghost">Skip Mini-Game</button>
-              <span id="lateJoinStatusText" class="help">Late join currently allowed.</span>
-            </div>
-
-            <div id="hostLobbyOnlySection">
-              <div class="form-grid">
+            <details class="host-advanced-settings">
+              <summary>Advanced Settings</summary>
+              <div class="form-grid" style="margin-top: 10px">
                 <div>
-                  <label for="liveMode">Mode</label>
-                  <select id="liveMode">
-                    <option value="classic">Classic Quiz</option>
-                    <option value="gold">Gold Quest</option>
-                    <option value="crypto">Crypto Hack</option>
-                    <option value="fishing">Fishing Frenzy</option>
-                    <option value="brawl">Monster Brawl</option>
-                  </select>
+                  <label for="questionSetSearch">Quiz Search</label>
+                  <input id="questionSetSearch" maxlength="64" placeholder="Search by title or tag" />
                 </div>
                 <div>
-                  <label for="liveQuestionSetSearch">Quiz Search</label>
-                  <input id="liveQuestionSetSearch" maxlength="64" placeholder="Search by title or tag" />
-                </div>
-                <div>
-                  <label for="liveQuestionSetCategory">Quiz Category</label>
-                  <select id="liveQuestionSetCategory">
+                  <label for="questionSetCategory">Quiz Category</label>
+                  <select id="questionSetCategory">
                     <option value="">All Categories</option>
                   </select>
                 </div>
                 <div>
-                  <label for="liveQuestionSet">Quiz Set</label>
-                  <select id="liveQuestionSet">
+                  <label for="hostName">Host Name</label>
+                  <input id="hostName" maxlength="24" value="Teacher" />
+                </div>
+                <div>
+                  <label for="questionSet">Quiz Set</label>
+                  <select id="questionSet">
                     <option value="multiplication_1_digit">Multiplication 1-Digit</option>
                   </select>
                 </div>
                 <div>
-                  <label for="liveTimer">Timer (sec)</label>
-                  <input id="liveTimer" type="number" min="8" max="45" value="15" />
+                  <label for="timer">Question Timer (sec)</label>
+                  <input id="timer" type="number" min="8" max="45" value="15" />
                 </div>
                 <div>
-                  <label for="liveExplanationReveal">Explanation Reveal (sec, 0 = instant)</label>
-                  <input id="liveExplanationReveal" type="number" min="0" max="10" value="2" />
+                  <label for="explanationReveal">Explanation Reveal (sec, 0 = instant)</label>
+                  <input id="explanationReveal" type="number" min="0" max="10" value="2" />
                 </div>
                 <div>
-                  <label for="liveCount">Question Count</label>
-                  <input id="liveCount" type="number" min="5" max="30" value="10" />
+                  <label for="count">Question Count</label>
+                  <input id="count" type="number" min="5" max="30" value="10" />
                 </div>
                 <div>
-                  <label for="liveShuffleQuestionOptions">
-                    <input id="liveShuffleQuestionOptions" type="checkbox" />
+                  <label for="shuffleQuestionOptions">
+                    <input id="shuffleQuestionOptions" type="checkbox" />
                     Shuffle Answer Options
                   </label>
                 </div>
                 <div>
-                  <label for="livePreventQuestionRepeats">
-                    <input id="livePreventQuestionRepeats" type="checkbox" />
+                  <label for="preventQuestionRepeats">
+                    <input id="preventQuestionRepeats" type="checkbox" />
                     No Repeated Questions
                   </label>
                 </div>
                 <div>
-                  <label for="liveMiniRotation">Mini-Game Rotation</label>
-                  <select id="liveMiniRotation">
+                  <label for="miniRotation">Mini-Game Rotation</label>
+                  <select id="miniRotation">
                     <option value="fixed">Fixed Order</option>
                     <option value="random">Random Order</option>
                     <option value="popular">Most Played First</option>
@@ -331,114 +206,455 @@
                   </select>
                 </div>
                 <div>
-                  <label for="liveMiniDuration">Mini-Game Duration (sec)</label>
-                  <input id="liveMiniDuration" type="number" min="5" max="30" value="10" />
+                  <label for="miniDuration">Mini-Game Duration (sec)</label>
+                  <input id="miniDuration" type="number" min="5" max="30" value="10" />
                 </div>
               </div>
-              <div class="button-row" style="margin-top: 8px">
-                <button id="saveSettingsBtn" class="ghost">Save Lobby Settings</button>
+              <div class="button-row" style="margin-top: 12px">
+                <span id="setupNotice" class="notice hidden"></span>
               </div>
+            </details>
+          </section>
 
-              <div class="card" style="margin-top: 12px">
-                <h3 class="title">Quiz Import/Export</h3>
-                <div class="form-grid">
+          <section id="gameCard" class="hidden fade-in">
+            <div id="hostGameLayout" class="layout">
+              <article class="card strong">
+                <div class="topbar" style="margin-bottom: 8px">
                   <div>
-                    <label for="quizUploadTitle">Quiz Title (optional)</label>
-                    <input id="quizUploadTitle" maxlength="64" placeholder="e.g. Multiplication Challenge" />
+                    <h2 class="title" style="margin-bottom: 2px">Room <span id="roomCode" class="mono">------</span></h2>
+                    <div class="button-row" style="margin-bottom: 4px">
+                      <button id="copyCodeBtn" class="ghost">Copy Room Code</button>
+                    </div>
+                    <div class="sub" id="modeLabel">Mode: Classic</div>
+                    <div class="sub" id="quizLabel">Quiz: Multiplication 1-Digit</div>
                   </div>
-                  <div>
-                    <label for="quizUploadFile">CSV, Excel, or JSON File</label>
-                    <input id="quizUploadFile" type="file" accept=".csv,.xlsx,.xls,.json" />
-                  </div>
-                </div>
-                <div class="button-row" style="margin-top: 8px">
-                  <button id="uploadQuizBtn" class="secondary">Import Quiz File</button>
-                  <button id="exportQuizBtn" class="ghost">Export Custom Quizzes (.json)</button>
-                </div>
-                <div id="quizUploadNotice" class="notice hidden" style="margin-top: 8px"></div>
-                <p class="help" style="margin-top: 8px">
-                  Import supports CSV/Excel headers (question/prompt, optionA-optionD, answer, optional image) or JSON quiz bundles.
-                </p>
-              </div>
-
-              <div class="card" style="margin-top: 12px">
-                <h3 class="title">Quiz Builder</h3>
-                <div class="form-grid">
-                  <div>
-                    <label for="builderSetSelect">Custom Set</label>
-                    <select id="builderSetSelect">
-                      <option value="">New Custom Quiz</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label for="builderTitleInput">Quiz Title</label>
-                    <input id="builderTitleInput" maxlength="64" placeholder="e.g. Science Sprint" />
-                  </div>
-                  <div>
-                    <label for="builderCategoryInput">Category</label>
-                    <input id="builderCategoryInput" maxlength="40" placeholder="e.g. Science" />
-                  </div>
-                  <div>
-                    <label for="builderTagsInput">Tags (comma separated)</label>
-                    <input id="builderTagsInput" maxlength="160" placeholder="e.g. planets, space, grade-5" />
+                  <div class="topbar-phase">
+                    <div class="badge">Phase: <span id="phaseText">Lobby</span></div>
+                    <span id="hostConnectionPill" class="status-pill">Connecting...</span>
                   </div>
                 </div>
-                <div class="button-row" style="margin-top: 8px">
-                  <button id="builderLoadBtn" class="ghost">Load Selected Set</button>
-                  <button id="builderNewBtn" class="ghost">Start New Set</button>
-                </div>
-                <div id="builderQuestions" class="quiz-builder-list" style="margin-top: 10px"></div>
-                <div class="button-row" style="margin-top: 8px">
-                  <button id="builderAddQuestionBtn" class="secondary">Add Question</button>
-                  <button id="builderSaveBtn" class="ghost">Save Custom Quiz</button>
-                </div>
-                <div id="builderNotice" class="notice hidden" style="margin-top: 8px"></div>
-                <p class="help" style="margin-top: 8px">
-                  Add at least 5 questions. Each question needs prompt, 4 options, and a correct answer. Optional image URL supported.
-                </p>
-              </div>
 
-              <div id="miniGameTestPanel" class="card" style="margin-top: 12px">
-                <h3 class="title">Mini-Game Test</h3>
-                <div>
-                  <label for="testMiniGameType">Mini-game</label>
-                  <select id="testMiniGameType">
-                    <option value="soccer_shootout">Soccer Shootout</option>
-                    <option value="tap_rush">Tap Rush</option>
-                    <option value="reaction_duel">Reaction Duel</option>
-                    <option value="sequence_memory">Sequence Memory</option>
-                    <option value="obstacle_dodge">Obstacle Dodge</option>
-                    <option value="precision_stop">Precision Stop</option>
-                    <option value="word_scramble">Word Scramble</option>
-                  </select>
+                <section id="phaseBanner" class="phase-banner phase-lobby" aria-live="polite">
+                  <div class="phase-banner-row">
+                    <div class="phase-banner-title-wrap">
+                      <span class="phase-banner-kicker">Game State</span>
+                      <strong id="phaseBannerTitle">Lobby Open</strong>
+                    </div>
+                    <span id="miniGameActiveFlag" class="phase-banner-flag hidden">Mini-Game Running</span>
+                  </div>
+                  <div id="phaseBannerDetail" class="phase-banner-detail">Students can join and pick blooks.</div>
+                </section>
+
+                <section id="lobbyBoard" class="lobby-board">
+                  <div class="lobby-board-top">
+                    <div class="lobby-qr-wrap">
+                      <img id="lobbyJoinQr" class="lobby-qr" alt="Student join QR code" />
+                      <div class="help">Scan to join</div>
+                    </div>
+                    <div class="lobby-headline">
+                      Go to <span id="lobbyJoinHost" class="mono">localhost:3000/play.html</span><br />
+                      and enter Game ID:
+                    </div>
+                    <div id="lobbyCodeBig" class="lobby-code mono">------</div>
+                    <div class="lobby-actions">
+                      <button id="copyJoinLinkBigBtn" class="ghost">Copy Join Link</button>
+                      <a id="previewBlooksBtn" class="action secondary" href="/play.html?catalog=1#accountPanel" target="_blank" rel="noopener">Preview Blooks</a>
+                      <button id="playAsHostBtn" class="secondary">Play as Host</button>
+                      <button id="lobbyStartBtn">Start 3..2..1</button>
+                    </div>
+                  </div>
+                  <div class="lobby-board-main">
+                    <div class="lobby-player-title"><span id="lobbyPlayerCount">0</span> students joined - <span id="lobbyReadyCount">0</span> ready</div>
+                    <div class="help" style="margin-bottom: 10px">Blook pick stays open until the host starts.</div>
+                    <div id="lobbyPlayers" class="lobby-player-grid">
+                      <div class="help">No students joined yet.</div>
+                    </div>
+                  </div>
+                </section>
+
+                <div class="kpis" style="margin-bottom: 12px">
+                  <div class="kpi"><div id="kpiPlayers" class="v">0</div><div class="l">Players</div></div>
+                  <div class="kpi"><div id="kpiAnswers" class="v">0</div><div class="l">Answers</div></div>
+                  <div class="kpi"><div id="kpiCorrect" class="v">0</div><div class="l">Correct</div></div>
+                  <div class="kpi"><div id="kpiRound" class="v">0 / 0</div><div class="l">Round</div></div>
                 </div>
-                <div class="button-row" style="margin-top: 8px">
-                  <button id="testMiniGameBtn" class="secondary">Play Mini-Game Only</button>
+
+                <div id="hostNotice" class="notice">Waiting for players to join.</div>
+                <img id="phaseIllustration" class="game-illustration hidden" alt="Game phase image" style="margin-top: 12px" />
+
+                <div id="questionPanel" class="hidden" style="margin-top: 12px">
+                  <div class="ticker" id="questionTimer">Time left: --</div>
+                  <div class="question" id="questionText">Question text appears here.</div>
+                  <img id="hostQuestionMedia" class="question-media hidden" alt="Question reference image" />
+                  <div id="answerStats" class="answers"></div>
                 </div>
-                <div id="miniGameTestNotice" class="notice hidden" style="margin-top: 8px"></div>
-                <p class="help" style="margin-top: 8px">Runs for all joined students without needing a question answer.</p>
-              </div>
 
-              <h3 class="title" style="margin-top: 16px">Student Join Links</h3>
-              <div id="joinLinks" class="feed">
-                <div class="help">LAN links will appear here when available.</div>
-              </div>
+                <div id="miniGameDashboardPanel" class="card hidden" style="margin-top: 12px">
+                  <h3 id="miniGameDashboardTitle" class="title">Mini-Game Dashboard</h3>
+                  <div id="miniGameDashboardMeta" class="help">Live student progress will appear here.</div>
+                  <div id="miniGameDashboardBody" style="margin-top: 10px"></div>
+                </div>
 
-              <h3 class="title" style="margin-top: 16px">Mini-Games</h3>
-              <div id="miniGamesList" class="feed">
-                <div class="help">Loading mini-games...</div>
-              </div>
-              <div id="miniGamePopularity" class="notice" style="margin-top: 8px">Loading mini-game trends...</div>
+                <div id="feedPanel" class="card" style="margin-top: 12px">
+                  <h3 id="feedTitle" class="title">Mode Feed</h3>
+                  <div id="feedList" class="feed"><div class="help">Mode events appear here when active.</div></div>
+                </div>
 
-              <h3 class="title" style="margin-top: 16px">Players</h3>
-              <ul id="playersList" class="player-list"></ul>
+                <div class="card" style="margin-top: 12px">
+                  <h3 class="title">Leaderboard</h3>
+                  <table>
+                    <thead>
+                      <tr><th>#</th><th>Name</th><th>Score</th><th>Streak</th><th>Correct</th></tr>
+                    </thead>
+                    <tbody id="leaderboardBody"></tbody>
+                  </table>
+                </div>
+              </article>
+
+              <aside id="hostControlsCard" class="card strong">
+                <h2 class="title">Host Controls</h2>
+                <div class="button-row" style="margin-bottom: 12px">
+                  <button id="startBtn">Start 3..2..1</button>
+                  <button id="pauseResumeBtn" class="secondary">Pause Game</button>
+                  <button id="nextBtn" class="secondary">Next Round</button>
+                  <button id="forceNextQuestionBtn" class="ghost">Force Next Question</button>
+                  <button id="endBtn" class="danger">End Game</button>
+                </div>
+                <div class="button-row" style="margin-bottom: 12px">
+                  <button id="lateJoinToggleBtn" class="ghost">Lock Late Join</button>
+                  <button id="skipMiniGameBtn" class="ghost">Skip Mini-Game</button>
+                  <span id="lateJoinStatusText" class="help">Late join currently allowed.</span>
+                </div>
+
+                <div id="hostLobbyOnlySection">
+                  <div class="form-grid">
+                    <div>
+                      <label for="liveMode">Mode</label>
+                      <select id="liveMode">
+                        <option value="classic">Classic Quiz</option>
+                        <option value="gold">Gold Quest</option>
+                        <option value="crypto">Crypto Hack</option>
+                        <option value="fishing">Fishing Frenzy</option>
+                        <option value="brawl">Monster Brawl</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="liveQuestionSetSearch">Quiz Search</label>
+                      <input id="liveQuestionSetSearch" maxlength="64" placeholder="Search by title or tag" />
+                    </div>
+                    <div>
+                      <label for="liveQuestionSetCategory">Quiz Category</label>
+                      <select id="liveQuestionSetCategory">
+                        <option value="">All Categories</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="liveQuestionSet">Quiz Set</label>
+                      <select id="liveQuestionSet">
+                        <option value="multiplication_1_digit">Multiplication 1-Digit</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="liveTimer">Timer (sec)</label>
+                      <input id="liveTimer" type="number" min="8" max="45" value="15" />
+                    </div>
+                    <div>
+                      <label for="liveExplanationReveal">Explanation Reveal (sec, 0 = instant)</label>
+                      <input id="liveExplanationReveal" type="number" min="0" max="10" value="2" />
+                    </div>
+                    <div>
+                      <label for="liveCount">Question Count</label>
+                      <input id="liveCount" type="number" min="5" max="30" value="10" />
+                    </div>
+                    <div>
+                      <label for="liveShuffleQuestionOptions">
+                        <input id="liveShuffleQuestionOptions" type="checkbox" />
+                        Shuffle Answer Options
+                      </label>
+                    </div>
+                    <div>
+                      <label for="livePreventQuestionRepeats">
+                        <input id="livePreventQuestionRepeats" type="checkbox" />
+                        No Repeated Questions
+                      </label>
+                    </div>
+                    <div>
+                      <label for="liveMiniRotation">Mini-Game Rotation</label>
+                      <select id="liveMiniRotation">
+                        <option value="fixed">Fixed Order</option>
+                        <option value="random">Random Order</option>
+                        <option value="popular">Most Played First</option>
+                        <option value="soccer_only">Soccer Only</option>
+                        <option value="off">Disable Mini-Games</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="liveMiniDuration">Mini-Game Duration (sec)</label>
+                      <input id="liveMiniDuration" type="number" min="5" max="30" value="10" />
+                    </div>
+                  </div>
+                  <div class="button-row" style="margin-top: 8px">
+                    <button id="saveSettingsBtn" class="ghost">Save Lobby Settings</button>
+                  </div>
+
+                  <div class="card" style="margin-top: 12px">
+                    <h3 class="title">Quiz Import/Export</h3>
+                    <div class="form-grid">
+                      <div>
+                        <label for="quizUploadTitle">Quiz Title (optional)</label>
+                        <input id="quizUploadTitle" maxlength="64" placeholder="e.g. Multiplication Challenge" />
+                      </div>
+                      <div>
+                        <label for="quizUploadFile">CSV, Excel, or JSON File</label>
+                        <input id="quizUploadFile" type="file" accept=".csv,.xlsx,.xls,.json" />
+                      </div>
+                    </div>
+                    <div class="button-row" style="margin-top: 8px">
+                      <button id="uploadQuizBtn" class="secondary">Import Quiz File</button>
+                      <button id="exportQuizBtn" class="ghost">Export Custom Quizzes (.json)</button>
+                    </div>
+                    <div id="quizUploadNotice" class="notice hidden" style="margin-top: 8px"></div>
+                    <p class="help" style="margin-top: 8px">
+                      Import supports CSV/Excel headers (question/prompt, optionA-optionD, answer, optional image) or JSON quiz bundles.
+                    </p>
+                  </div>
+
+                  <div class="card" style="margin-top: 12px">
+                    <h3 class="title">Quiz Builder</h3>
+                    <div class="form-grid">
+                      <div>
+                        <label for="builderSetSelect">Custom Set</label>
+                        <select id="builderSetSelect">
+                          <option value="">New Custom Quiz</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label for="builderTitleInput">Quiz Title</label>
+                        <input id="builderTitleInput" maxlength="64" placeholder="e.g. Science Sprint" />
+                      </div>
+                      <div>
+                        <label for="builderCategoryInput">Category</label>
+                        <input id="builderCategoryInput" maxlength="40" placeholder="e.g. Science" />
+                      </div>
+                      <div>
+                        <label for="builderTagsInput">Tags (comma separated)</label>
+                        <input id="builderTagsInput" maxlength="160" placeholder="e.g. planets, space, grade-5" />
+                      </div>
+                    </div>
+                    <div class="button-row" style="margin-top: 8px">
+                      <button id="builderLoadBtn" class="ghost">Load Selected Set</button>
+                      <button id="builderNewBtn" class="ghost">Start New Set</button>
+                    </div>
+                    <div id="builderQuestions" class="quiz-builder-list" style="margin-top: 10px"></div>
+                    <div class="button-row" style="margin-top: 8px">
+                      <button id="builderAddQuestionBtn" class="secondary">Add Question</button>
+                      <button id="builderSaveBtn" class="ghost">Save Custom Quiz</button>
+                    </div>
+                    <div id="builderNotice" class="notice hidden" style="margin-top: 8px"></div>
+                    <p class="help" style="margin-top: 8px">
+                      Add at least 5 questions. Each question needs prompt, 4 options, and a correct answer. Optional image URL supported.
+                    </p>
+                  </div>
+
+                  <div id="miniGameTestPanel" class="card" style="margin-top: 12px">
+                    <h3 class="title">Mini-Game Test</h3>
+                    <div>
+                      <label for="testMiniGameType">Mini-game</label>
+                      <select id="testMiniGameType">
+                        <option value="soccer_shootout">Soccer Shootout</option>
+                        <option value="tap_rush">Tap Rush</option>
+                        <option value="reaction_duel">Reaction Duel</option>
+                        <option value="sequence_memory">Sequence Memory</option>
+                        <option value="obstacle_dodge">Obstacle Dodge</option>
+                        <option value="precision_stop">Precision Stop</option>
+                        <option value="word_scramble">Word Scramble</option>
+                      </select>
+                    </div>
+                    <div class="button-row" style="margin-top: 8px">
+                      <button id="testMiniGameBtn" class="secondary">Play Mini-Game Only</button>
+                    </div>
+                    <div id="miniGameTestNotice" class="notice hidden" style="margin-top: 8px"></div>
+                    <p class="help" style="margin-top: 8px">Runs for all joined students without needing a question answer.</p>
+                  </div>
+
+                  <h3 class="title" style="margin-top: 16px">Student Join Links</h3>
+                  <div id="joinLinks" class="feed">
+                    <div class="help">LAN links will appear here when available.</div>
+                  </div>
+
+                  <h3 class="title" style="margin-top: 16px">Mini-Games</h3>
+                  <div id="miniGamesList" class="feed">
+                    <div class="help">Loading mini-games...</div>
+                  </div>
+                  <div id="miniGamePopularity" class="notice" style="margin-top: 8px">Loading mini-game trends...</div>
+
+                  <h3 class="title" style="margin-top: 16px">Players</h3>
+                  <ul id="playersList" class="player-list"></ul>
+                </div>
+              </aside>
             </div>
-          </aside>
-        </div>
+          </section>
+        </section>
+        <section id="pane-create" class="dashboard-pane">
+          <div class="dashboard-pane-head">
+            <div>
+              <span class="section-kicker">Question Set Creator</span>
+              <h2 class="section-title">Build from the repo tools</h2>
+            </div>
+          </div>
+          <div class="helper-grid">
+            <article class="feature-card">
+              <div class="feature-icon">A</div>
+              <h3>Open Quiz Builder</h3>
+              <p class="muted-copy">Jump into the existing custom quiz editor that already saves to this repository.</p>
+              <div class="quiz-card-actions">
+                <a id="createBuilderLink" class="dashboard-action" href="/host.html?focus=builder">Open Builder</a>
+              </div>
+            </article>
+            <article class="feature-card">
+              <div class="feature-icon">B</div>
+              <h3>Import CSV, Excel, or JSON</h3>
+              <p class="muted-copy">Use the current upload pipeline without changing any backend logic.</p>
+              <div class="quiz-card-actions">
+                <a id="createImportLink" class="dashboard-action secondary" href="/host.html?focus=import">Open Import Tools</a>
+              </div>
+            </article>
+            <article class="feature-card">
+              <div class="feature-icon">C</div>
+              <h3>Host Immediately</h3>
+              <p class="muted-copy">Skip straight into the live host workspace when the set is already ready.</p>
+              <div class="quiz-card-actions">
+                <a id="createHostLink" class="dashboard-action ghost" href="/host.html?focus=setup">Open Host Workspace</a>
+              </div>
+            </article>
+          </div>
+          <div class="dashboard-inline-note">
+            <span id="createSetCount">0 sets ready</span> |
+            <span id="createPackCount">0 packs available</span> |
+            <span id="createMiniCount">0 mini-games loaded</span>
+          </div>
+        </section>
+
+        <section id="pane-discover" class="dashboard-pane">
+          <div class="dashboard-pane-head">
+            <div>
+              <span class="section-kicker">Discover Sets</span>
+              <h2 class="section-title">Browse local quiz data</h2>
+            </div>
+          </div>
+          <div id="discoverGrid" class="quiz-grid"></div>
+        </section>
+
+        <section id="pane-my-sets" class="dashboard-pane">
+          <div class="dashboard-pane-head">
+            <div>
+              <span class="section-kicker">My Sets</span>
+              <h2 class="section-title">Local question bank</h2>
+            </div>
+          </div>
+          <div id="mySetsGrid" class="quiz-grid"></div>
+        </section>
+
+        <section id="pane-favorites" class="dashboard-pane">
+          <div class="dashboard-pane-head">
+            <div>
+              <span class="section-kicker">Favorites</span>
+              <h2 class="section-title">Highlighted launch picks</h2>
+            </div>
+          </div>
+          <div id="favoritesGrid" class="quiz-grid"></div>
+        </section>
+
+        <section id="pane-history" class="dashboard-pane">
+          <div class="dashboard-pane-head">
+            <div>
+              <span class="section-kicker">History</span>
+              <h2 class="section-title">Current repo telemetry</h2>
+            </div>
+          </div>
+          <div id="historyList" class="history-list"></div>
+        </section>
+
+        <section id="pane-homeworks" class="dashboard-pane">
+          <div class="dashboard-pane-head">
+            <div>
+              <span class="section-kicker">Homework</span>
+              <h2 class="section-title">Follow-up friendly sets</h2>
+            </div>
+          </div>
+          <div class="dashboard-inline-note">This repo does not yet store homework assignments, so this route surfaces ready-to-host follow-up sets instead.</div>
+          <div id="homeworkList" class="homework-list"></div>
+        </section>
+
+        <section id="pane-settings" class="dashboard-pane">
+          <div class="dashboard-pane-head">
+            <div>
+              <span class="section-kicker">Settings</span>
+              <h2 class="section-title">Server and auth details</h2>
+            </div>
+          </div>
+          <div id="settingsList" class="settings-list"></div>
+        </section>
+
+        <section id="pane-stats" class="dashboard-pane">
+          <div class="dashboard-pane-head">
+            <div>
+              <span class="section-kicker">Stats</span>
+              <h2 class="section-title">Mini-game performance</h2>
+            </div>
+          </div>
+          <div id="statsGrid" class="mini-stat-grid"></div>
+        </section>
+
+        <section id="pane-blooks" class="dashboard-pane">
+          <div class="dashboard-pane-head">
+            <div>
+              <span class="section-kicker">Blooks</span>
+              <h2 class="section-title">Pack catalog</h2>
+            </div>
+          </div>
+          <div id="blooksGrid" class="pack-grid"></div>
+        </section>
+
+        <section id="pane-market" class="dashboard-pane">
+          <div class="dashboard-pane-head">
+            <div>
+              <span class="section-kicker">Market</span>
+              <h2 class="section-title">Local economy and pack openings</h2>
+            </div>
+          </div>
+          <div class="summary-grid" style="margin-bottom: 18px">
+            <article class="summary-card">
+              <span>Coins</span>
+              <strong id="marketCoins">0</strong>
+              <div class="muted-copy">Tracked in the local account store.</div>
+            </article>
+            <article class="summary-card">
+              <span>Free Opens</span>
+              <strong id="marketFreeOpens">0</strong>
+              <div class="muted-copy">Free first opens stay intact in the repo economy.</div>
+            </article>
+            <article class="summary-card">
+              <span>Route Flow</span>
+              <strong>/market</strong>
+              <div class="muted-copy">Pack opening now lives on a Blooket-style market path.</div>
+            </article>
+          </div>
+          <div id="marketReward" class="market-result" hidden></div>
+          <div id="marketGrid" class="market-grid"></div>
+          <div class="dashboard-pane-head" style="margin-top: 20px">
+            <div>
+              <span class="section-kicker">Inventory</span>
+              <h2 class="section-title" style="font-size: 2rem">Recent unlocks</h2>
+            </div>
+          </div>
+          <div id="marketInventory" class="settings-list"></div>
+        </section>
       </section>
     </main>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="/host.js"></script>
+    <script src="/dashboard-shell.js"></script>
   </body>
 </html>

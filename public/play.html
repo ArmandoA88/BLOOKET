@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Quiz Arena Player</title>
+    <title>Play Blooket-Style Join</title>
     <link rel="preload" as="image" href="/assets/minigames/shared/question.svg" />
     <link rel="preload" as="image" href="/assets/minigames/soccer_shootout/soccer.svg" />
     <link rel="preload" as="image" href="/assets/minigames/tap_rush/tap.svg" />
@@ -15,175 +15,218 @@
     <link rel="preload" as="image" href="/assets/minigames/soccer_shootout/mbappe.svg" />
     <link rel="preload" as="image" href="/assets/minigames/soccer_shootout/goalie-bot.svg" />
     <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/blooket-shell.css" />
   </head>
-  <body>
-    <main class="page">
-      <section id="landingTopbar" class="topbar">
-        <div>
-          <h1 class="brand">Student Join</h1>
-          <p id="landingSub" class="sub">Enter game code and nickname to play.</p>
+  <body class="join-body">
+    <div class="join-floating" aria-hidden="true"></div>
+
+    <header class="play-header">
+      <a class="play-logo" href="/">Blooket</a>
+      <nav class="play-header-links" aria-label="Play header">
+        <a class="play-header-link" href="/my-sets">Dashboard</a>
+        <a class="play-header-link" href="/host.html">Host Live</a>
+      </nav>
+    </header>
+
+    <main class="join-shell">
+      <section class="join-stage">
+        <div class="join-main-copy">
+          <span class="section-kicker">Join a Game</span>
+          <h1 class="join-title">Enter a game ID and jump in.</h1>
+          <p class="join-subtitle">
+            This page keeps the repo's existing join, blook, and live play logic, but now follows the same public join-page structure as Blooket.
+          </p>
+          <div class="catalog-strip">
+            <span class="catalog-chip">Room code</span>
+            <span class="catalog-chip">Nickname</span>
+            <span class="catalog-chip">Blook pack</span>
+            <span class="catalog-chip">Live lobby</span>
+          </div>
         </div>
-        <a class="action ghost" href="/">Back</a>
+
+        <aside class="join-side-card">
+          <span class="section-kicker">How the flow works</span>
+          <h3>Join, answer, and unlock.</h3>
+          <p class="muted-copy">Students use a room code, pick a nickname, choose from unlocked blooks, then stay on this same page for questions, mini-games, and the leaderboard.</p>
+          <div class="catalog-strip">
+            <span class="catalog-chip">Question rounds</span>
+            <span class="catalog-chip">Mini-games</span>
+            <span class="catalog-chip">Coins</span>
+          </div>
+        </aside>
       </section>
 
-      <section id="joinCard" class="card strong fade-in">
-        <h2 id="joinCardTitle" class="title">Join Room</h2>
-        <div class="form-grid">
-          <div>
-            <label for="code">Game Code</label>
-            <input id="code" class="mono" maxlength="6" placeholder="ABC123" />
-          </div>
-          <div>
-            <label for="name">Nickname</label>
-            <input id="name" maxlength="24" placeholder="Your name" />
-          </div>
-        </div>
-        <div id="accountPanel" style="margin-top: 12px">
-          <div>
-            <label>Blook Packs</label>
-            <div class="button-row" style="margin-bottom: 8px">
-              <div class="notice">Coins: <strong id="accountCoins">0</strong></div>
-              <div class="notice">Free Opens: <strong id="accountFreeOpen">0</strong></div>
+      <section class="join-card-shell">
+        <main class="page">
+          <section id="landingTopbar" class="topbar">
+            <div>
+              <h1 class="brand">Student Join</h1>
+              <p id="landingSub" class="sub">Enter game code and nickname to play.</p>
             </div>
-            <div id="packTabs" class="pack-tabs">
-              <span class="help">Pick a pack before joining. Avatar is randomized from that pack.</span>
-            </div>
-            <div class="button-row" style="margin-top: 10px">
-              <button id="openPackBtn" class="secondary" type="button">Open Pack</button>
-              <button id="sellDuplicateBtn" class="ghost" type="button">Sell Duplicate</button>
-            </div>
-            <div id="packOdds" class="help" style="margin-top: 8px"></div>
-            <div id="packResult" class="notice hidden" style="margin-top: 8px"></div>
-            <div id="packOpenAnimation" class="pack-open-animation hidden" aria-live="polite"></div>
-          </div>
-          <div style="margin-top: 10px">
-            <label>Available Blooks</label>
-            <div id="blookGrid" class="blook-grid"></div>
-          </div>
-        </div>
-        <div id="accountPolicyNotice" class="notice hidden" style="margin-top: 10px"></div>
-        <div id="pickedBlook" class="notice" style="margin-top: 10px">Your join avatar is randomized from your selected pack.</div>
-        <div class="button-row" style="margin-top: 12px">
-          <button id="joinBtn">Join Game</button>
-          <span id="joinNotice" class="notice hidden"></span>
-        </div>
-      </section>
+            <a class="action ghost" href="/">Back</a>
+          </section>
 
-      <section id="playCard" class="hidden fade-in">
-        <section id="fishingHud" class="fishing-hud hidden" aria-hidden="true">
-          <div class="fishing-hud-left">
-            <span class="fishing-hud-audio">SFX ON</span>
-            <span id="fishingHudName">PLAYER</span>
-          </div>
-          <div id="fishingHudTimer" class="fishing-hud-timer">--:--</div>
-          <div class="fishing-hud-right">
-            <span id="fishingHudCode">ID: ------</span>
-          </div>
-        </section>
-
-        <section id="fishingBoard" class="fishing-board hidden" aria-hidden="true">
-          <div id="fishingRankCard" class="fishing-rank-card hidden">
-            <span id="fishingRankPlace" class="fishing-rank-place">1st</span>
-            <span id="fishingRankIcon" class="fishing-rank-icon">🐻</span>
-            <span id="fishingRankName" class="fishing-rank-name">PLAYER</span>
-            <span id="fishingRankWeight" class="fishing-rank-weight">0 lbs</span>
-          </div>
-          <div id="fishingFinalPanel" class="fishing-final-panel hidden">
-            <button id="fishingPlayAgainBtn" class="fishing-play-again" type="button">Play Again</button>
-            <div class="fishing-winner-card">
-              <div class="fishing-winner-badge">1st</div>
-              <div id="fishingWinnerName" class="fishing-winner-name">PLAYER</div>
-              <div id="fishingWinnerWeight" class="fishing-winner-weight">0 lbs</div>
-              <div id="fishingWinnerIcon" class="fishing-winner-icon">🐻</div>
-            </div>
-          </div>
-          <div class="fishing-board-waterline"></div>
-          <div class="fishing-board-waves"></div>
-        </section>
-
-        <div class="layout">
-          <article class="card strong">
-            <div class="topbar" style="margin-bottom: 8px">
+          <section id="joinCard" class="card strong fade-in">
+            <h2 id="joinCardTitle" class="title">Join Room</h2>
+            <div class="form-grid">
               <div>
-                <h2 class="title" style="margin-bottom: 2px">Room <span id="roomCode" class="mono">------</span></h2>
-                <div class="sub">Playing as <span id="playerName">Player</span></div>
+                <label for="code">Game Code</label>
+                <input id="code" class="mono" maxlength="6" placeholder="ABC123" />
               </div>
-              <div class="topbar-phase">
-                <div class="badge">Phase: <span id="phaseText">Lobby</span></div>
-                <span id="playerConnectionPill" class="status-pill">Connecting...</span>
-                <button id="soundToggleBtn" class="ghost sound-toggle-btn" type="button" aria-pressed="true">Sound: On</button>
+              <div>
+                <label for="name">Nickname</label>
+                <input id="name" maxlength="24" placeholder="Your name" />
               </div>
             </div>
-
-            <section id="phaseBanner" class="phase-banner phase-lobby" aria-live="polite">
-              <div class="phase-banner-row">
-                <div class="phase-banner-title-wrap">
-                  <span class="phase-banner-kicker">Your Phase</span>
-                  <strong id="phaseBannerTitle">Lobby</strong>
+            <div id="accountPanel" style="margin-top: 12px">
+              <div>
+                <label>Blook Packs</label>
+                <div class="button-row" style="margin-bottom: 8px">
+                  <div class="notice">Coins: <strong id="accountCoins">0</strong></div>
+                  <div class="notice">Free Opens: <strong id="accountFreeOpen">0</strong></div>
                 </div>
-                <span id="miniGameActiveFlag" class="phase-banner-flag hidden">Mini-Game Running</span>
+                <div id="packTabs" class="pack-tabs">
+                  <span class="help">Pick a pack before joining. Avatar is randomized from that pack.</span>
+                </div>
+                <div class="button-row" style="margin-top: 10px">
+                  <button id="openPackBtn" class="secondary" type="button">Open Pack</button>
+                  <button id="sellDuplicateBtn" class="ghost" type="button">Sell Duplicate</button>
+                </div>
+                <div id="packOdds" class="help" style="margin-top: 8px"></div>
+                <div id="packResult" class="notice hidden" style="margin-top: 8px"></div>
+                <div id="packOpenAnimation" class="pack-open-animation hidden" aria-live="polite"></div>
               </div>
-              <div id="phaseBannerDetail" class="phase-banner-detail">Waiting for the host to start.</div>
-            </section>
-            <div id="mainNotice" class="notice">Waiting in lobby for host to start.</div>
-
-            <section id="questionSection" class="hidden" style="margin-top: 12px">
-              <img id="questionIllustration" class="game-illustration hidden" alt="Question round" />
-              <div class="ticker" id="timerText">Time left: --</div>
-              <div class="question" id="questionText">Question appears here.</div>
-              <img id="questionMedia" class="question-media hidden" alt="Question reference image" />
-              <div id="answers" class="answers"></div>
-            </section>
-
-            <section id="chestSection" class="hidden" style="margin-top: 12px">
-              <img id="chestIllustration" class="game-illustration hidden" alt="Mini-game" />
-              <h3 id="eventTitle" class="title">Mini-game</h3>
-              <div class="sub" id="chestTimer">Mini-game ends in --</div>
-              <div class="button-row mini-game-tools">
-                <button id="miniTutorialBtn" class="ghost mini-tool-btn hidden" type="button">How to Play</button>
+              <div style="margin-top: 10px">
+                <label>Available Blooks</label>
+                <div id="blookGrid" class="blook-grid"></div>
               </div>
-              <div id="chests" class="chests" style="margin-top: 10px"></div>
+            </div>
+            <div id="accountPolicyNotice" class="notice hidden" style="margin-top: 10px"></div>
+            <div id="pickedBlook" class="notice" style="margin-top: 10px">Your join avatar is randomized from your selected pack.</div>
+            <div class="button-row" style="margin-top: 12px">
+              <button id="joinBtn">Join Game</button>
+              <span id="joinNotice" class="notice hidden"></span>
+            </div>
+          </section>
+
+          <section id="playCard" class="hidden fade-in">
+            <section id="fishingHud" class="fishing-hud hidden" aria-hidden="true">
+              <div class="fishing-hud-left">
+                <span class="fishing-hud-audio">SFX ON</span>
+                <span id="fishingHudName">PLAYER</span>
+              </div>
+              <div id="fishingHudTimer" class="fishing-hud-timer">--:--</div>
+              <div class="fishing-hud-right">
+                <span id="fishingHudCode">ID: ------</span>
+              </div>
             </section>
 
-            <section id="resultSection" class="hidden" style="margin-top: 12px">
-              <h3 class="title">Round Results</h3>
-              <div id="resultText" class="notice">Result details show here.</div>
+            <section id="fishingBoard" class="fishing-board hidden" aria-hidden="true">
+              <div id="fishingRankCard" class="fishing-rank-card hidden">
+                <span id="fishingRankPlace" class="fishing-rank-place">1st</span>
+                <span id="fishingRankIcon" class="fishing-rank-icon">BEAR</span>
+                <span id="fishingRankName" class="fishing-rank-name">PLAYER</span>
+                <span id="fishingRankWeight" class="fishing-rank-weight">0 lbs</span>
+              </div>
+              <div id="fishingFinalPanel" class="fishing-final-panel hidden">
+                <button id="fishingPlayAgainBtn" class="fishing-play-again" type="button">Play Again</button>
+                <div class="fishing-winner-card">
+                  <div class="fishing-winner-badge">1st</div>
+                  <div id="fishingWinnerName" class="fishing-winner-name">PLAYER</div>
+                  <div id="fishingWinnerWeight" class="fishing-winner-weight">0 lbs</div>
+                  <div id="fishingWinnerIcon" class="fishing-winner-icon">BEAR</div>
+                </div>
+              </div>
+              <div class="fishing-board-waterline"></div>
+              <div class="fishing-board-waves"></div>
             </section>
-          </article>
 
-          <aside class="card strong">
-            <h2 class="title">Leaderboard</h2>
-            <table>
-              <thead>
-                <tr><th>#</th><th>Name</th><th>Score</th><th>Streak</th></tr>
-              </thead>
-              <tbody id="leaderboardBody"></tbody>
-            </table>
+            <div class="layout">
+              <article class="card strong">
+                <div class="topbar" style="margin-bottom: 8px">
+                  <div>
+                    <h2 class="title" style="margin-bottom: 2px">Room <span id="roomCode" class="mono">------</span></h2>
+                    <div class="sub">Playing as <span id="playerName">Player</span></div>
+                  </div>
+                  <div class="topbar-phase">
+                    <div class="badge">Phase: <span id="phaseText">Lobby</span></div>
+                    <span id="playerConnectionPill" class="status-pill">Connecting...</span>
+                    <button id="soundToggleBtn" class="ghost sound-toggle-btn" type="button" aria-pressed="true">Sound: On</button>
+                  </div>
+                </div>
 
-            <div class="card" style="margin-top: 12px">
-              <h3 id="feedTitle" class="title">Mode Feed</h3>
-              <div id="feedList" class="feed"><div class="help">Mode events show up here when active.</div></div>
+                <section id="phaseBanner" class="phase-banner phase-lobby" aria-live="polite">
+                  <div class="phase-banner-row">
+                    <div class="phase-banner-title-wrap">
+                      <span class="phase-banner-kicker">Your Phase</span>
+                      <strong id="phaseBannerTitle">Lobby</strong>
+                    </div>
+                    <span id="miniGameActiveFlag" class="phase-banner-flag hidden">Mini-Game Running</span>
+                  </div>
+                  <div id="phaseBannerDetail" class="phase-banner-detail">Waiting for the host to start.</div>
+                </section>
+                <div id="mainNotice" class="notice">Waiting in lobby for host to start.</div>
+
+                <section id="questionSection" class="hidden" style="margin-top: 12px">
+                  <img id="questionIllustration" class="game-illustration hidden" alt="Question round" />
+                  <div class="ticker" id="timerText">Time left: --</div>
+                  <div class="question" id="questionText">Question appears here.</div>
+                  <img id="questionMedia" class="question-media hidden" alt="Question reference image" />
+                  <div id="answers" class="answers"></div>
+                </section>
+
+                <section id="chestSection" class="hidden" style="margin-top: 12px">
+                  <img id="chestIllustration" class="game-illustration hidden" alt="Mini-game" />
+                  <h3 id="eventTitle" class="title">Mini-game</h3>
+                  <div class="sub" id="chestTimer">Mini-game ends in --</div>
+                  <div class="button-row mini-game-tools">
+                    <button id="miniTutorialBtn" class="ghost mini-tool-btn hidden" type="button">How to Play</button>
+                  </div>
+                  <div id="chests" class="chests" style="margin-top: 10px"></div>
+                </section>
+
+                <section id="resultSection" class="hidden" style="margin-top: 12px">
+                  <h3 class="title">Round Results</h3>
+                  <div id="resultText" class="notice">Result details show here.</div>
+                </section>
+              </article>
+
+              <aside class="card strong">
+                <h2 class="title">Leaderboard</h2>
+                <table>
+                  <thead>
+                    <tr><th>#</th><th>Name</th><th>Score</th><th>Streak</th></tr>
+                  </thead>
+                  <tbody id="leaderboardBody"></tbody>
+                </table>
+
+                <div class="card" style="margin-top: 12px">
+                  <h3 id="feedTitle" class="title">Mode Feed</h3>
+                  <div id="feedList" class="feed"><div class="help">Mode events show up here when active.</div></div>
+                </div>
+
+                <div class="card" style="margin-top: 12px">
+                  <h3 class="title">Mini-Games</h3>
+                  <div id="miniGamesList" class="feed"><div class="help">Loading mini-games...</div></div>
+                  <div id="miniGamePopularity" class="notice" style="margin-top: 8px">Loading mini-game trends...</div>
+                </div>
+              </aside>
             </div>
+          </section>
 
-            <div class="card" style="margin-top: 12px">
-              <h3 class="title">Mini-Games</h3>
-              <div id="miniGamesList" class="feed"><div class="help">Loading mini-games...</div></div>
-              <div id="miniGamePopularity" class="notice" style="margin-top: 8px">Loading mini-game trends...</div>
-            </div>
-          </aside>
-        </div>
-      </section>
-      <div id="miniTutorialOverlay" class="tutorial-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="miniTutorialTitle">
-        <section class="tutorial-card">
-          <span class="tutorial-kicker">First-Time Mini-Game Tips</span>
-          <h3 id="miniTutorialTitle" class="title">Mini-Game Tutorial</h3>
-          <p id="miniTutorialIntro" class="help">Tutorial details will appear here.</p>
-          <ul id="miniTutorialSteps" class="tutorial-steps"></ul>
-          <div class="button-row" style="margin-top: 12px">
-            <button id="miniTutorialCloseBtn" type="button">Got It</button>
+          <div id="miniTutorialOverlay" class="tutorial-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="miniTutorialTitle">
+            <section class="tutorial-card">
+              <span class="tutorial-kicker">First-Time Mini-Game Tips</span>
+              <h3 id="miniTutorialTitle" class="title">Mini-Game Tutorial</h3>
+              <p id="miniTutorialIntro" class="help">Tutorial details will appear here.</p>
+              <ul id="miniTutorialSteps" class="tutorial-steps"></ul>
+              <div class="button-row" style="margin-top: 12px">
+                <button id="miniTutorialCloseBtn" type="button">Got It</button>
+              </div>
+            </section>
           </div>
-        </section>
-      </div>
+        </main>
+      </section>
     </main>
 
     <script src="/socket.io/socket.io.js"></script>

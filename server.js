@@ -1634,12 +1634,42 @@ function loadTlsOptions() {
   }
 }
 
+const DASHBOARD_ROUTE_PATHS = new Set([
+  "/dashboard",
+  "/host.html",
+  "/my-sets",
+  "/discover",
+  "/create",
+  "/favorites",
+  "/history",
+  "/homeworks",
+  "/settings",
+  "/stats",
+  "/blooks",
+  "/market"
+]);
+
+const DASHBOARD_ALIAS_PATHS = [
+  "/my-sets",
+  "/discover",
+  "/create",
+  "/favorites",
+  "/history",
+  "/homeworks",
+  "/settings",
+  "/stats",
+  "/blooks",
+  "/market"
+];
+
+const PLAYER_ALIAS_PATHS = ["/play"];
+
 function pathRequiresLogin(pathname) {
   if (!GOOGLE_AUTH_ENABLED) {
     return false;
   }
 
-  return pathname === "/host.html";
+  return DASHBOARD_ROUTE_PATHS.has(pathname);
 }
 
 const app = express();
@@ -1810,6 +1840,26 @@ app.use(
     }
   })
 );
+
+app.get("/home", (_req, res) => {
+  res.redirect("/");
+});
+
+app.get("/dashboard", (_req, res) => {
+  res.redirect("/my-sets");
+});
+
+for (const route of DASHBOARD_ALIAS_PATHS) {
+  app.get(route, (_req, res) => {
+    res.sendFile(path.join(__dirname, "public", "host.html"));
+  });
+}
+
+for (const route of PLAYER_ALIAS_PATHS) {
+  app.get(route, (_req, res) => {
+    res.sendFile(path.join(__dirname, "public", "play.html"));
+  });
+}
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true, games: games.size, googleAuthEnabled: GOOGLE_AUTH_ENABLED });

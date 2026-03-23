@@ -1,0 +1,1260 @@
+{
+  "generatedAt": "2026-03-23T04:17:25.671Z",
+  "settings": {
+    "startUrls": [
+      "https://dashboard.blooket.com/"
+    ],
+    "maxPages": 5,
+    "delayMs": 1500,
+    "timeoutMs": 30000,
+    "outFile": "output/dashboard-cdp.json",
+    "stateFile": null,
+    "cdpUrl": "http://127.0.0.1:9222",
+    "textLimit": 4000,
+    "extractSelectors": [
+      "[data-testid]",
+      "table tr"
+    ],
+    "htmlDir": "C:\\Users\\Administrator\\Desktop\\scrapping website\\output\\html-cdp",
+    "headed": false,
+    "browserMode": "cdp",
+    "allowedHosts": [
+      "dashboard.blooket.com",
+      "play.blooket.com"
+    ],
+    "scope": "allowed-hosts"
+  },
+  "pages": [
+    {
+      "requestedUrl": "https://dashboard.blooket.com/",
+      "finalUrl": "https://dashboard.blooket.com/my-sets",
+      "status": 200,
+      "title": "Dashboard | Blooket",
+      "canonical": null,
+      "description": "Search and discover new sets from a large collection created by users.",
+      "ogTitle": null,
+      "ogDescription": null,
+      "headings": [],
+      "text": "Create Discover My Sets Favorites History Homework Play Settings Upgrade to Plus mrawesome26 Blooket News My Sets You'll Need a Question Set to Host! Create a Set Discover Sets Getting Started Tutorial",
+      "links": [
+        {
+          "href": "https://dashboard.blooket.com/create",
+          "text": "Create"
+        },
+        {
+          "href": "https://dashboard.blooket.com/discover",
+          "text": "Discover"
+        },
+        {
+          "href": "https://dashboard.blooket.com/my-sets",
+          "text": "My Sets"
+        },
+        {
+          "href": "https://dashboard.blooket.com/favorites",
+          "text": "Favorites"
+        },
+        {
+          "href": "https://dashboard.blooket.com/history",
+          "text": "History"
+        },
+        {
+          "href": "https://dashboard.blooket.com/homeworks",
+          "text": "Homework"
+        },
+        {
+          "href": "https://play.blooket.com/play",
+          "text": "Play"
+        },
+        {
+          "href": "https://dashboard.blooket.com/settings",
+          "text": "Settings"
+        },
+        {
+          "href": "https://dashboard.blooket.com/stats",
+          "text": ""
+        },
+        {
+          "href": "https://dashboard.blooket.com/blooks",
+          "text": ""
+        },
+        {
+          "href": "https://dashboard.blooket.com/market",
+          "text": ""
+        },
+        {
+          "href": "https://dashboard.blooket.com/upgrade",
+          "text": "Upgrade to Plus"
+        },
+        {
+          "href": "https://dashboard.blooket.com/settings",
+          "text": "Settings"
+        },
+        {
+          "href": "https://id.blooket.com/logout",
+          "text": "Logout"
+        },
+        {
+          "href": "https://dashboard.blooket.com/create",
+          "text": "Create"
+        },
+        {
+          "href": "https://dashboard.blooket.com/discover",
+          "text": "Discover"
+        },
+        {
+          "href": "https://dashboard.blooket.com/my-sets",
+          "text": "My Sets"
+        },
+        {
+          "href": "https://dashboard.blooket.com/favorites",
+          "text": "Favorites"
+        },
+        {
+          "href": "https://dashboard.blooket.com/history",
+          "text": "History"
+        },
+        {
+          "href": "https://dashboard.blooket.com/homeworks",
+          "text": "Homework"
+        },
+        {
+          "href": "https://play.blooket.com/play",
+          "text": "Play"
+        },
+        {
+          "href": "https://dashboard.blooket.com/settings",
+          "text": "Settings"
+        },
+        {
+          "href": "https://id.blooket.com/logout",
+          "text": "Logout"
+        },
+        {
+          "href": "https://dashboard.blooket.com/stats",
+          "text": ""
+        },
+        {
+          "href": "https://dashboard.blooket.com/blooks",
+          "text": ""
+        },
+        {
+          "href": "https://dashboard.blooket.com/market",
+          "text": ""
+        },
+        {
+          "href": "https://dashboard.blooket.com/create",
+          "text": "Create a Set"
+        },
+        {
+          "href": "https://dashboard.blooket.com/discover",
+          "text": "Discover Sets"
+        },
+        {
+          "href": "https://help.blooket.com/hc/en-us/articles/16015371934487",
+          "text": "Getting Started Tutorial"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "",
+          "ariaLabel": null,
+          "disabled": false,
+          "type": "div"
+        },
+        {
+          "text": "mrawesome26SettingsLogout",
+          "ariaLabel": null,
+          "disabled": false,
+          "type": "div"
+        },
+        {
+          "text": "",
+          "ariaLabel": null,
+          "disabled": false,
+          "type": "i"
+        }
+      ],
+      "forms": [],
+      "inputs": [],
+      "tables": [],
+      "selectorResults": {
+        "[data-testid]": [],
+        "table tr": []
+      },
+      "htmlSnapshotPath": "C:\\Users\\Administrator\\Desktop\\scrapping website\\output\\html-cdp\\001-dashboard-blooket-com-my-sets.html"
+    },
+    {
+      "requestedUrl": "https://dashboard.blooket.com/create",
+      "finalUrl": "https://dashboard.blooket.com/create",
+      "status": 200,
+      "title": "Set Creator | Blooket",
+      "canonical": null,
+      "description": "Sets are groups of questions that are used in games. Use this page to create a set with a title, description, cover image, and privacy setting.",
+      "ogTitle": null,
+      "ogDescription": null,
+      "headings": [
+        "Select your organization",
+        "Question Set Creator"
+      ],
+      "text": "Accept cookies from Blooket? Cookies are small files placed on your device that collect information when you use Blooket. Essential cookies are used to make our site work and are required. Other types of cookies are used to improve your experience, to analyze how Blooket is used, and to market our service. By clicking “Accept All”, you agree to allow these other cookies. Customize Reject All Accept All Blooket News Close Close Close Select your organization Continue I'm not part of a school or district mrawesome26 Create Discover My Sets Favorites History Homework Play Settings Stats Blooks Market News Upgrade to Plus Question Set Creator Choose a Creation Method This decides how you will start adding questions to your set Manual (Default) Quizlet Import CSV Upload Khanmigo Generator Title (required) Description Privacy Setting This decides who can find and play your question set Public (Playable by everyone) Cover Image Drag and Drop or Upload by URL Upload a File Image Gallery Create Set",
+      "links": [
+        {
+          "href": "https://id.blooket.com/login",
+          "text": "mrawesome26"
+        },
+        {
+          "href": "https://dashboard.blooket.com/settings",
+          "text": "Settings"
+        },
+        {
+          "href": "https://id.blooket.com/logout",
+          "text": "Logout"
+        },
+        {
+          "href": "https://dashboard.blooket.com/create",
+          "text": "Create"
+        },
+        {
+          "href": "https://dashboard.blooket.com/discover",
+          "text": "Discover"
+        },
+        {
+          "href": "https://dashboard.blooket.com/my-sets",
+          "text": "My Sets"
+        },
+        {
+          "href": "https://dashboard.blooket.com/favorites",
+          "text": "Favorites"
+        },
+        {
+          "href": "https://dashboard.blooket.com/history",
+          "text": "History"
+        },
+        {
+          "href": "https://dashboard.blooket.com/homeworks",
+          "text": "Homework"
+        },
+        {
+          "href": "https://play.blooket.com/play",
+          "text": "Play"
+        },
+        {
+          "href": "https://dashboard.blooket.com/settings",
+          "text": "Settings"
+        },
+        {
+          "href": "https://dashboard.blooket.com/stats",
+          "text": "Stats"
+        },
+        {
+          "href": "https://dashboard.blooket.com/blooks",
+          "text": "Blooks"
+        },
+        {
+          "href": "https://dashboard.blooket.com/market",
+          "text": "Market"
+        },
+        {
+          "href": "https://dashboard.blooket.com/create?news=show",
+          "text": "News"
+        },
+        {
+          "href": "https://dashboard.blooket.com/upgrade",
+          "text": "Upgrade to Plus"
+        },
+        {
+          "href": "https://help.blooket.com/hc/en-us/articles/15980599804823-How-to-Create-a-Blooket-Question-Set",
+          "text": ""
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Customize",
+          "ariaLabel": "Customize",
+          "disabled": false,
+          "type": "button"
+        },
+        {
+          "text": "Reject All",
+          "ariaLabel": "Reject All",
+          "disabled": false,
+          "type": "button"
+        },
+        {
+          "text": "Accept All",
+          "ariaLabel": "Accept All",
+          "disabled": false,
+          "type": "button"
+        },
+        {
+          "text": "Close",
+          "ariaLabel": null,
+          "disabled": false,
+          "type": "button"
+        },
+        {
+          "text": "Close",
+          "ariaLabel": null,
+          "disabled": false,
+          "type": "button"
+        },
+        {
+          "text": "Close",
+          "ariaLabel": null,
+          "disabled": false,
+          "type": "button"
+        },
+        {
+          "text": "Continue",
+          "ariaLabel": null,
+          "disabled": true,
+          "type": "submit"
+        },
+        {
+          "text": "I'm not part of a school or district",
+          "ariaLabel": null,
+          "disabled": false,
+          "type": "submit"
+        },
+        {
+          "text": "Upload by URL",
+          "ariaLabel": null,
+          "disabled": false,
+          "type": "button"
+        },
+        {
+          "text": "Upload a File",
+          "ariaLabel": null,
+          "disabled": false,
+          "type": "button"
+        },
+        {
+          "text": "Image Gallery",
+          "ariaLabel": null,
+          "disabled": false,
+          "type": "button"
+        },
+        {
+          "text": "Create Set",
+          "ariaLabel": null,
+          "disabled": true,
+          "type": "submit"
+        }
+      ],
+      "forms": [
+        {
+          "action": "",
+          "method": "post",
+          "inputNames": [
+            "$ACTION_REF_3",
+            "$ACTION_3:0",
+            "$ACTION_3:1",
+            "$ACTION_KEY",
+            "search",
+            "schoolId"
+          ],
+          "buttonTexts": [
+            "Continue",
+            "I'm not part of a school or district"
+          ]
+        },
+        {
+          "action": "",
+          "method": "post",
+          "inputNames": [
+            "$ACTION_REF_2",
+            "$ACTION_2:0",
+            "$ACTION_2:1",
+            "$ACTION_KEY",
+            "title",
+            "desc",
+            "private"
+          ],
+          "buttonTexts": [
+            "Upload by URL",
+            "Upload a File",
+            "Image Gallery",
+            "Create Set"
+          ]
+        }
+      ],
+      "inputs": [
+        {
+          "tag": "input",
+          "type": "checkbox",
+          "name": null,
+          "placeholder": null,
+          "ariaLabel": "Enable Analytics",
+          "valuePreview": "on"
+        },
+        {
+          "tag": "input",
+          "type": "checkbox",
+          "name": null,
+          "placeholder": null,
+          "ariaLabel": "Enable Third-Party",
+          "valuePreview": "on"
+        },
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "$ACTION_REF_3",
+          "placeholder": null,
+          "ariaLabel": null,
+          "valuePreview": null
+        },
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "$ACTION_3:0",
+          "placeholder": null,
+          "ariaLabel": null,
+          "valuePreview": "{\"id\":\"956fe354e7c3d9502c6834e304f2c6a32910d417\",\"bound\":\"$@1\"}"
+        },
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "$ACTION_3:1",
+          "placeholder": null,
+          "ariaLabel": null,
+          "valuePreview": "[{\"status\":\"UNSET\",\"message\":\"\",\"fieldErrors\":{}}]"
+        },
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "$ACTION_KEY",
+          "placeholder": null,
+          "ariaLabel": null,
+          "valuePreview": "k2246224242"
+        },
+        {
+          "tag": "input",
+          "type": "text",
+          "name": "search",
+          "placeholder": "Enter school name or post code",
+          "ariaLabel": null,
+          "valuePreview": null
+        },
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "schoolId",
+          "placeholder": null,
+          "ariaLabel": null,
+          "valuePreview": null
+        },
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "$ACTION_REF_2",
+          "placeholder": null,
+          "ariaLabel": null,
+          "valuePreview": null
+        },
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "$ACTION_2:0",
+          "placeholder": null,
+          "ariaLabel": null,
+          "valuePreview": "{\"id\":\"be03b1237d81d5c540cdd65296df47f1f81ee635\",\"bound\":\"$@1\"}"
+        },
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "$ACTION_2:1",
+          "placeholder": null,
+          "ariaLabel": null,
+          "valuePreview": "[{\"status\":\"UNSET\",\"message\":\"\",\"fieldErrors\":{}}]"
+        },
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "$ACTION_KEY",
+          "placeholder": null,
+          "ariaLabel": null,
+          "valuePreview": "k987011132"
+        },
+        {
+          "tag": "input",
+          "type": "radio",
+          "name": null,
+          "placeholder": null,
+          "ariaLabel": null,
+          "valuePreview": "manual"
+        },
+        {
+          "tag": "input",
+          "type": "radio",
+          "name": null,
+          "placeholder": null,
+          "ariaLabel": null,
+          "valuePreview": "quizlet"
+        },
+        {
+          "tag": "input",
+          "type": "radio",
+          "name": null,
+          "placeholder": null,
+          "ariaLabel": null,
+          "valuePreview": "csv"
+        },
+        {
+          "tag": "input",
+          "type": "radio",
+          "name": null,
+          "placeholder": null,
+          "ariaLabel": null,
+          "valuePreview": "khanmigo"
+        },
+        {
+          "tag": "input",
+          "type": "text",
+          "name": "title",
+          "placeholder": "Add a descriptive title",
+          "ariaLabel": null,
+          "valuePreview": null
+        },
+        {
+          "tag": "textarea",
+          "type": null,
+          "name": "desc",
+          "placeholder": "Tell users about your question set",
+          "ariaLabel": null,
+          "valuePreview": null
+        },
+        {
+          "tag": "input",
+          "type": "checkbox",
+          "name": "private",
+          "placeholder": null,
+          "ariaLabel": "Open",
+          "valuePreview": "on"
+        },
+        {
+          "tag": "input",
+          "type": "file",
+          "name": null,
+          "placeholder": null,
+          "ariaLabel": null,
+          "valuePreview": null
+        }
+      ],
+      "tables": [],
+      "selectorResults": {
+        "[data-testid]": [],
+        "table tr": []
+      },
+      "htmlSnapshotPath": "C:\\Users\\Administrator\\Desktop\\scrapping website\\output\\html-cdp\\002-dashboard-blooket-com-create.html"
+    },
+    {
+      "requestedUrl": "https://dashboard.blooket.com/discover",
+      "finalUrl": "https://dashboard.blooket.com/discover",
+      "status": 200,
+      "title": "Discover Sets | Blooket",
+      "canonical": null,
+      "description": "Search and discover new sets from a large collection created by users.",
+      "ogTitle": null,
+      "ogDescription": null,
+      "headings": [
+        "Select your organization",
+        "Discover",
+        "Multiple Meaning Words",
+        "Basketball Trivia - MATH MARCH MADNESS",
+        "Pi Day",
+        "1st Grade Science: Daylight Changes",
+        "March Madness",
+        "Women's History Month",
+        "Reading Comprehension",
+        "Phonics - Blends and Digraphs",
+        "Traits and Inheritance Vocabulary Review",
+        "Joints",
+        "Popular Picks",
+        "Name That Logo",
+        "Guess the Kids TV show characters",
+        "Multiplication Facts",
+        "Guess the Food Quiz",
+        "Name that Animal",
+        "What's That Animal?",
+        "Who's That Disney Character?",
+        "Minecraft Mob Quiz",
+        "Name that Flag",
+        "Name Disney Movies By Scene",
+        "NAME THAT VIDEO GAME",
+        "Marvel Movie Quiz",
+        "Know Your Blooks: Rarities",
+        "US States",
+        "Division Facts Practice"
+      ],
+      "text": "Accept cookies from Blooket? Cookies are small files placed on your device that collect information when you use Blooket. Essential cookies are used to make our site work and are required. Other types of cookies are used to improve your experience, to analyze how Blooket is used, and to market our service. By clicking “Accept All”, you agree to allow these other cookies. Customize Reject All Accept All Blooket News Close Close Close Select your organization Continue I'm not part of a school or district mrawesome26 Create Discover My Sets Favorites History Homework Play Settings Stats Blooks Market News Upgrade to Plus Discover 54 Questions Multiple Meaning Words 493K Plays Created by MrsDBowers 15 Questions Basketball Trivia - MATH MARCH MADNESS 300K Plays Created by MsZanelli Teacher Verified 32 Questions Pi Day 295K Plays Created by jordanomalley2 Teacher Verified 26 Questions 1st Grade Science: Daylight Changes 198K Plays Created by BlookCurriculum Teacher Verified 15 Questions March Madness 187K Plays Created by CMacLellan Teacher Verified 30 Questions Women's History Month 146K Plays Created by missb17 Teacher Verified 16 Questions Reading Comprehension 102K Plays Created by Loribug12 Teacher Verified 31 Questions Phonics - Blends and Digraphs 38.2K Plays Created by Sarahewoolc Created with Khanmigo 35 Questions Traits and Inheritance Vocabulary Review 14K Plays Created by MsFlorBIS Teacher Verified 27 Questions Joints 7.3K Plays Created by Ms.Bossung Blooket Curriculum Select a Subject to Get Started Math ELA Social Studies Science Languages Creative Arts Trivia Popular Picks Teacher Verified 24 Questions Name That Logo 196M Plays Created by Bot 50 Questions Guess the Kids TV show characters 79.6M Plays Created by myra.sea Teacher Verified 75 Questions Multiplication Facts 72.3M Plays Created by mrosen Teacher Verified 23 Questions Guess the Food Quiz 54.6M Plays Created by Kori Teacher Verified 30 Questions Name that Animal 48.5M Plays Created by Bot Teacher Verified 139 Questions What's That Animal? 35.6M Plays Created by bryjosh Teacher Verified 20 Questions Who's That Disney Character? 31.2M Plays Created by Bot Teacher Verified 76 Questions Minecraft Mob Quiz 23.3M Plays Created by bryjosh Teacher Verified 15 Questions Name that Flag 18.7M Plays Created by Ben Teacher Verified 18 Questions Name Disney Movies By Scene 17.3M Plays Created by TheCreator 80 Questions NAME THAT VIDEO GAME 14.8M Plays Created by MrNoName Teacher Verified 121 Questions Marvel Movie Quiz 11.1M Plays Created by Nate_Conway Teacher Verified 160 Questions Know Your Blooks: Rarities 10.8M Plays Created by Metella Teacher Verified 50 Questions US States 9.4M Plays Created by Caecilius 129 Questions Division Facts Practice 7.0M Plays Created by mrshoover5th",
+      "links": [
+        {
+          "href": "https://id.blooket.com/login",
+          "text": "mrawesome26"
+        },
+        {
+          "href": "https://dashboard.blooket.com/settings",
+          "text": "Settings"
+        },
+        {
+          "href": "https://id.blooket.com/logout",
+          "text": "Logout"
+        },
+        {
+          "href": "https://dashboard.blooket.com/create",
+          "text": "Create"
+        },
+        {
+          "href": "https://dashboard.blooket.com/discover",
+          "text": "Discover"
+        },
+        {
+          "href": "https://dashboard.blooket.com/my-sets",
+          "text": "My Sets"
+        },
+        {
+          "href": "https://dashboard.blooket.com/favorites",
+          "text": "Favorites"
+        },
+        {
+          "href": "https://dashboard.blooket.com/history",
+          "text": "History"
+        },
+        {
+          "href": "https://dashboard.blooket.com/homeworks",
+          "text": "Homework"
+        },
+        {
+          "href": "https://play.blooket.com/play",
+          "text": "Play"
+        },
+        {
+          "href": "https://dashboard.blooket.com/settings",
+          "text": "Settings"
+        },
+        {
+          "href": "https://dashboard.blooket.com/stats",
+          "text": "Stats"
+        },
+        {
+          "href": "https://dashboard.blooket.com/blooks",
+          "text": "Blooks"
+        },
+        {
+          "href": "https://dashboard.blooket.com/market",
+          "text": "Market"
+        },
+        {
+          "href": "https://dashboard.blooket.com/discover?news=show",
+          "text": "News"
+        },
+        {
+          "href": "https://dashboard.blooket.com/upgrade",
+          "text": "Upgrade to Plus"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/620bd651af9a6c01401c06f2",
+          "text": "54 QuestionsMultiple Meaning Words493K PlaysCreated by MrsDBowers"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/602fff4660376b0012799590",
+          "text": "15 QuestionsBasketball Trivia - MATH MARCH MADNESS300K PlaysCreated by MsZanelli"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/6047a09b70520c001dcb3ab7",
+          "text": "Teacher Verified32 QuestionsPi Day295K PlaysCreated by jordanomalley2"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/67058c7538d4aaf3509f68b8",
+          "text": "Teacher Verified26 Questions1st Grade Science: Daylight Changes198K PlaysCreated by BlookCurriculum"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/64092edf4d0de96e22cc697a",
+          "text": "Teacher Verified15 QuestionsMarch Madness187K PlaysCreated by CMacLellan"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/6058de03ce8e3d001ba0cb96",
+          "text": "Teacher Verified30 QuestionsWomen's History Month146K PlaysCreated by missb17"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/67a64dab6ad86314334c2409",
+          "text": "Teacher Verified16 QuestionsReading Comprehension102K PlaysCreated by Loribug12"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/636d2977b1454339a1d26e30",
+          "text": "Teacher Verified31 QuestionsPhonics - Blends and Digraphs38.2K PlaysCreated by Sarahewoolc"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/691c90d9ee891f1772cb5b9a",
+          "text": "Created with Khanmigo35 QuestionsTraits and Inheritance Vocabulary Review14K PlaysCreated by MsFlorBIS"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/636a851587e62fdbde52dff3",
+          "text": "Teacher Verified27 QuestionsJoints7.3K PlaysCreated by Ms.Bossung"
+        },
+        {
+          "href": "https://dashboard.blooket.com/curriculum/Math/1",
+          "text": "Math"
+        },
+        {
+          "href": "https://dashboard.blooket.com/curriculum/ELA/1",
+          "text": "ELA"
+        },
+        {
+          "href": "https://dashboard.blooket.com/curriculum/Social%20Studies/K-2nd%20Grade",
+          "text": "Social Studies"
+        },
+        {
+          "href": "https://dashboard.blooket.com/curriculum/Science/1",
+          "text": "Science"
+        },
+        {
+          "href": "https://dashboard.blooket.com/curriculum/Languages/French",
+          "text": "Languages"
+        },
+        {
+          "href": "https://dashboard.blooket.com/curriculum/Creative%20Arts/Music",
+          "text": "Creative Arts"
+        },
+        {
+          "href": "https://dashboard.blooket.com/curriculum/Trivia/All",
+          "text": "Trivia"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/600b1491d42a140004d5215a",
+          "text": "Teacher Verified24 QuestionsName That Logo196M PlaysCreated by Bot"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/5fac96fe2ca0da00042b018f",
+          "text": "50 QuestionsGuess the Kids TV show characters79.6M PlaysCreated by myra.sea"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/5db75fa3f1fa190017b61c0c",
+          "text": "Teacher Verified75 QuestionsMultiplication Facts72.3M PlaysCreated by mrosen"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/5f88953cdb209e00046522c7",
+          "text": "Teacher Verified23 QuestionsGuess the Food Quiz54.6M PlaysCreated by Kori"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/600b14d8d42a140004d52165",
+          "text": "Teacher Verified30 QuestionsName that Animal48.5M PlaysCreated by Bot"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/5fe260e72a505b00040e2a11",
+          "text": "Teacher Verified139 QuestionsWhat's That Animal?35.6M PlaysCreated by bryjosh"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/600b153ad42a140004d52172",
+          "text": "Teacher Verified20 QuestionsWho's That Disney Character?31.2M PlaysCreated by Bot"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/5fe3d085a529560004cd3076",
+          "text": "Teacher Verified76 QuestionsMinecraft Mob Quiz23.3M PlaysCreated by bryjosh"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/5c5d06a7deebc70017245da7",
+          "text": "Teacher Verified15 QuestionsName that Flag18.7M PlaysCreated by Ben"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/5f5fc017aee59500041a1456",
+          "text": "Teacher Verified18 QuestionsName Disney Movies By Scene17.3M PlaysCreated by TheCreator"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/5fc91a9b4ea2e200046bd49a",
+          "text": "80 QuestionsNAME THAT VIDEO GAME14.8M PlaysCreated by MrNoName"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/5fad491512c8620004918ace",
+          "text": "Teacher Verified121 QuestionsMarvel Movie Quiz11.1M PlaysCreated by Nate_Conway"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/5ff767051b68750004a6fd21",
+          "text": "Teacher Verified160 QuestionsKnow Your Blooks: Rarities10.8M PlaysCreated by Metella"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/5fdcacc85d465a0004b021b9",
+          "text": "Teacher Verified50 QuestionsUS States9.4M PlaysCreated by Caecilius"
+        },
+        {
+          "href": "https://dashboard.blooket.com/set/5fb7eea20bd44300045ba495",
+          "text": "129 QuestionsDivision Facts Practice7.0M PlaysCreated by mrshoover5th"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Customize",
+          "ariaLabel": "Customize",
+          "disabled": false,
+          "type": "button"
+        },
+        {
+          "text": "Reject All",
+          "ariaLabel": "Reject All",
+          "disabled": false,
+          "type": "button"
+        },
+        {
+          "text": "Accept All",
+          "ariaLabel": "Accept All",
+          "disabled": false,
+          "type": "button"
+        },
+        {
+          "text": "Close",
+          "ariaLabel": null,
+          "disabled": false,
+          "type": "button"
+        },
+        {
+          "text": "Close",
+          "ariaLabel": null,
+          "disabled": false,
+          "type": "button"
+        },
+        {
+          "text": "Close",
+          "ariaLabel": null,
+          "disabled": false,
+          "type": "button"
+        },
+        {
+          "text": "Continue",
+          "ariaLabel": null,
+          "disabled": true,
+          "type": "submit"
+        },
+        {
+          "text": "I'm not part of a school or district",
+          "ariaLabel": null,
+          "disabled": false,
+          "type": "submit"
+        },
+        {
+          "text": "",
+          "ariaLabel": "Submit",
+          "disabled": false,
+          "type": "submit"
+        }
+      ],
+      "forms": [
+        {
+          "action": "",
+          "method": "post",
+          "inputNames": [
+            "$ACTION_REF_1",
+            "$ACTION_1:0",
+            "$ACTION_1:1",
+            "$ACTION_KEY",
+            "search",
+            "schoolId"
+          ],
+          "buttonTexts": [
+            "Continue",
+            "I'm not part of a school or district"
+          ]
+        },
+        {
+          "action": "javascript:throw new Error('React form unexpectedly submitted.')",
+          "method": "get",
+          "inputNames": [
+            "s"
+          ],
+          "buttonTexts": []
+        }
+      ],
+      "inputs": [
+        {
+          "tag": "input",
+          "type": "checkbox",
+          "name": null,
+          "placeholder": null,
+          "ariaLabel": "Enable Analytics",
+          "valuePreview": "on"
+        },
+        {
+          "tag": "input",
+          "type": "checkbox",
+          "name": null,
+          "placeholder": null,
+          "ariaLabel": "Enable Third-Party",
+          "valuePreview": "on"
+        },
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "$ACTION_REF_1",
+          "placeholder": null,
+          "ariaLabel": null,
+          "valuePreview": null
+        },
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "$ACTION_1:0",
+          "placeholder": null,
+          "ariaLabel": null,
+          "valuePreview": "{\"id\":\"956fe354e7c3d9502c6834e304f2c6a32910d417\",\"bound\":\"$@1\"}"
+        },
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "$ACTION_1:1",
+          "placeholder": null,
+          "ariaLabel": null,
+          "valuePreview": "[{\"status\":\"UNSET\",\"message\":\"\",\"fieldErrors\":{}}]"
+        },
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "$ACTION_KEY",
+          "placeholder": null,
+          "ariaLabel": null,
+          "valuePreview": "k2246224242"
+        },
+        {
+          "tag": "input",
+          "type": "text",
+          "name": "search",
+          "placeholder": "Enter school name or post code",
+          "ariaLabel": null,
+          "valuePreview": null
+        },
+        {
+          "tag": "input",
+          "type": "hidden",
+          "name": "schoolId",
+          "placeholder": null,
+          "ariaLabel": null,
+          "valuePreview": null
+        },
+        {
+          "tag": "input",
+          "type": "search",
+          "name": "s",
+          "placeholder": "Search for a set...",
+          "ariaLabel": "Search",
+          "valuePreview": null
+        }
+      ],
+      "tables": [],
+      "selectorResults": {
+        "[data-testid]": [],
+        "table tr": []
+      },
+      "htmlSnapshotPath": "C:\\Users\\Administrator\\Desktop\\scrapping website\\output\\html-cdp\\003-dashboard-blooket-com-discover.html"
+    },
+    {
+      "requestedUrl": "https://dashboard.blooket.com/my-sets",
+      "finalUrl": "https://dashboard.blooket.com/my-sets",
+      "status": 200,
+      "title": "Dashboard | Blooket",
+      "canonical": null,
+      "description": "Search and discover new sets from a large collection created by users.",
+      "ogTitle": null,
+      "ogDescription": null,
+      "headings": [],
+      "text": "Create Discover My Sets Favorites History Homework Play Settings Upgrade to Plus mrawesome26 Blooket News My Sets You'll Need a Question Set to Host! Create a Set Discover Sets Getting Started Tutorial",
+      "links": [
+        {
+          "href": "https://dashboard.blooket.com/create",
+          "text": "Create"
+        },
+        {
+          "href": "https://dashboard.blooket.com/discover",
+          "text": "Discover"
+        },
+        {
+          "href": "https://dashboard.blooket.com/my-sets",
+          "text": "My Sets"
+        },
+        {
+          "href": "https://dashboard.blooket.com/favorites",
+          "text": "Favorites"
+        },
+        {
+          "href": "https://dashboard.blooket.com/history",
+          "text": "History"
+        },
+        {
+          "href": "https://dashboard.blooket.com/homeworks",
+          "text": "Homework"
+        },
+        {
+          "href": "https://play.blooket.com/play",
+          "text": "Play"
+        },
+        {
+          "href": "https://dashboard.blooket.com/settings",
+          "text": "Settings"
+        },
+        {
+          "href": "https://dashboard.blooket.com/stats",
+          "text": ""
+        },
+        {
+          "href": "https://dashboard.blooket.com/blooks",
+          "text": ""
+        },
+        {
+          "href": "https://dashboard.blooket.com/market",
+          "text": ""
+        },
+        {
+          "href": "https://dashboard.blooket.com/upgrade",
+          "text": "Upgrade to Plus"
+        },
+        {
+          "href": "https://dashboard.blooket.com/settings",
+          "text": "Settings"
+        },
+        {
+          "href": "https://id.blooket.com/logout",
+          "text": "Logout"
+        },
+        {
+          "href": "https://dashboard.blooket.com/create",
+          "text": "Create"
+        },
+        {
+          "href": "https://dashboard.blooket.com/discover",
+          "text": "Discover"
+        },
+        {
+          "href": "https://dashboard.blooket.com/my-sets",
+          "text": "My Sets"
+        },
+        {
+          "href": "https://dashboard.blooket.com/favorites",
+          "text": "Favorites"
+        },
+        {
+          "href": "https://dashboard.blooket.com/history",
+          "text": "History"
+        },
+        {
+          "href": "https://dashboard.blooket.com/homeworks",
+          "text": "Homework"
+        },
+        {
+          "href": "https://play.blooket.com/play",
+          "text": "Play"
+        },
+        {
+          "href": "https://dashboard.blooket.com/settings",
+          "text": "Settings"
+        },
+        {
+          "href": "https://id.blooket.com/logout",
+          "text": "Logout"
+        },
+        {
+          "href": "https://dashboard.blooket.com/stats",
+          "text": ""
+        },
+        {
+          "href": "https://dashboard.blooket.com/blooks",
+          "text": ""
+        },
+        {
+          "href": "https://dashboard.blooket.com/market",
+          "text": ""
+        },
+        {
+          "href": "https://dashboard.blooket.com/create",
+          "text": "Create a Set"
+        },
+        {
+          "href": "https://dashboard.blooket.com/discover",
+          "text": "Discover Sets"
+        },
+        {
+          "href": "https://help.blooket.com/hc/en-us/articles/16015371934487",
+          "text": "Getting Started Tutorial"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "",
+          "ariaLabel": null,
+          "disabled": false,
+          "type": "div"
+        },
+        {
+          "text": "mrawesome26SettingsLogout",
+          "ariaLabel": null,
+          "disabled": false,
+          "type": "div"
+        },
+        {
+          "text": "",
+          "ariaLabel": null,
+          "disabled": false,
+          "type": "i"
+        }
+      ],
+      "forms": [],
+      "inputs": [],
+      "tables": [],
+      "selectorResults": {
+        "[data-testid]": [],
+        "table tr": []
+      },
+      "htmlSnapshotPath": "C:\\Users\\Administrator\\Desktop\\scrapping website\\output\\html-cdp\\004-dashboard-blooket-com-my-sets.html"
+    },
+    {
+      "requestedUrl": "https://dashboard.blooket.com/favorites",
+      "finalUrl": "https://dashboard.blooket.com/favorites",
+      "status": 200,
+      "title": "Favorites | Blooket",
+      "canonical": null,
+      "description": "Search and discover new sets from a large collection created by users.",
+      "ogTitle": null,
+      "ogDescription": null,
+      "headings": [],
+      "text": "Create Discover My Sets Favorites History Homework Play Settings Upgrade to Plus mrawesome26 Blooket News Favorites You don't have any favorites :( Discover Favorites Learn How to Favorite Sets",
+      "links": [
+        {
+          "href": "https://dashboard.blooket.com/create",
+          "text": "Create"
+        },
+        {
+          "href": "https://dashboard.blooket.com/discover",
+          "text": "Discover"
+        },
+        {
+          "href": "https://dashboard.blooket.com/my-sets",
+          "text": "My Sets"
+        },
+        {
+          "href": "https://dashboard.blooket.com/favorites",
+          "text": "Favorites"
+        },
+        {
+          "href": "https://dashboard.blooket.com/history",
+          "text": "History"
+        },
+        {
+          "href": "https://dashboard.blooket.com/homeworks",
+          "text": "Homework"
+        },
+        {
+          "href": "https://play.blooket.com/play",
+          "text": "Play"
+        },
+        {
+          "href": "https://dashboard.blooket.com/settings",
+          "text": "Settings"
+        },
+        {
+          "href": "https://dashboard.blooket.com/stats",
+          "text": ""
+        },
+        {
+          "href": "https://dashboard.blooket.com/blooks",
+          "text": ""
+        },
+        {
+          "href": "https://dashboard.blooket.com/market",
+          "text": ""
+        },
+        {
+          "href": "https://dashboard.blooket.com/upgrade",
+          "text": "Upgrade to Plus"
+        },
+        {
+          "href": "https://dashboard.blooket.com/settings",
+          "text": "Settings"
+        },
+        {
+          "href": "https://id.blooket.com/logout",
+          "text": "Logout"
+        },
+        {
+          "href": "https://dashboard.blooket.com/create",
+          "text": "Create"
+        },
+        {
+          "href": "https://dashboard.blooket.com/discover",
+          "text": "Discover"
+        },
+        {
+          "href": "https://dashboard.blooket.com/my-sets",
+          "text": "My Sets"
+        },
+        {
+          "href": "https://dashboard.blooket.com/favorites",
+          "text": "Favorites"
+        },
+        {
+          "href": "https://dashboard.blooket.com/history",
+          "text": "History"
+        },
+        {
+          "href": "https://dashboard.blooket.com/homeworks",
+          "text": "Homework"
+        },
+        {
+          "href": "https://play.blooket.com/play",
+          "text": "Play"
+        },
+        {
+          "href": "https://dashboard.blooket.com/settings",
+          "text": "Settings"
+        },
+        {
+          "href": "https://id.blooket.com/logout",
+          "text": "Logout"
+        },
+        {
+          "href": "https://dashboard.blooket.com/stats",
+          "text": ""
+        },
+        {
+          "href": "https://dashboard.blooket.com/blooks",
+          "text": ""
+        },
+        {
+          "href": "https://dashboard.blooket.com/market",
+          "text": ""
+        },
+        {
+          "href": "https://dashboard.blooket.com/discover",
+          "text": "Discover Favorites"
+        },
+        {
+          "href": "https://help.blooket.com/hc/en-us/articles/15999653229463-Favoriting-a-Set",
+          "text": "Learn How to Favorite Sets"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "",
+          "ariaLabel": null,
+          "disabled": false,
+          "type": "div"
+        },
+        {
+          "text": "mrawesome26SettingsLogout",
+          "ariaLabel": null,
+          "disabled": false,
+          "type": "div"
+        },
+        {
+          "text": "",
+          "ariaLabel": null,
+          "disabled": false,
+          "type": "i"
+        }
+      ],
+      "forms": [],
+      "inputs": [],
+      "tables": [],
+      "selectorResults": {
+        "[data-testid]": [],
+        "table tr": []
+      },
+      "htmlSnapshotPath": "C:\\Users\\Administrator\\Desktop\\scrapping website\\output\\html-cdp\\005-dashboard-blooket-com-favorites.html"
+    }
+  ]
+}

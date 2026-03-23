@@ -1,0 +1,690 @@
+<!DOCTYPE html><html lang="en" translate="no"><head>
+  <meta charset="utf-8">
+  <title>Dashboard | Blooket</title>
+  <meta name="description" content="Search and discover new sets from a large collection created by users.">
+
+  <link href="https://res.cloudinary.com" rel="preconnect">
+  <link href="https://res.cloudinary.com" rel="dns-prefetch">
+
+  <link rel="icon" type="image/x-icon" href="https://ac.blooket.com/dashclassic/favicon.ico">
+  <script type="module" crossorigin="" src="https://ac.blooket.com/dashclassic/assets/index-UOJC_7KA.js"></script>
+  <link rel="stylesheet" crossorigin="" href="https://ac.blooket.com/dashclassic/assets/index-ClproaK0.css">
+<style id="react-mathquill-styles">/*
+ * MathQuill v0.11.0, by Han, Jeanine, and Mary
+ * http://mathquill.com | maintainers@mathquill.com
+ *
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a copy of the MPL
+ * was not distributed with this file, You can obtain
+ * one at http://mozilla.org/MPL/2.0/.
+ */
+@font-face {
+  /* Heavy fonts have been removed */
+  font-family: Symbola;
+}
+.mq-editable-field {
+  display: -moz-inline-box;
+  display: inline-block;
+}
+.mq-editable-field .mq-cursor {
+  border-left: 1px solid black;
+  margin-left: -1px;
+  position: relative;
+  z-index: 1;
+  padding: 0;
+  display: -moz-inline-box;
+  display: inline-block;
+}
+.mq-editable-field .mq-cursor.mq-blink {
+  visibility: hidden;
+}
+.mq-editable-field,
+.mq-math-mode .mq-editable-field {
+  border: 1px solid gray;
+}
+.mq-editable-field.mq-focused,
+.mq-math-mode .mq-editable-field.mq-focused {
+  -webkit-box-shadow: #8bd 0 0 1px 2px, inset #6ae 0 0 2px 0;
+  -moz-box-shadow: #8bd 0 0 1px 2px, inset #6ae 0 0 2px 0;
+  box-shadow: #8bd 0 0 1px 2px, inset #6ae 0 0 2px 0;
+  border-color: #709AC0;
+  border-radius: 1px;
+}
+.mq-math-mode .mq-editable-field {
+  margin: 1px;
+}
+.mq-editable-field .mq-latex-command-input {
+  color: inherit;
+  font-family: "Courier New", monospace;
+  border: 1px solid gray;
+  padding-right: 1px;
+  margin-right: 1px;
+  margin-left: 2px;
+}
+.mq-editable-field .mq-latex-command-input.mq-empty {
+  background: transparent;
+}
+.mq-editable-field .mq-latex-command-input.mq-hasCursor {
+  border-color: ActiveBorder;
+}
+.mq-editable-field.mq-empty:after,
+.mq-editable-field.mq-text-mode:after,
+.mq-math-mode .mq-empty:after {
+  visibility: hidden;
+  content: 'c';
+}
+.mq-editable-field .mq-cursor:only-child:after,
+.mq-editable-field .mq-textarea + .mq-cursor:last-child:after {
+  visibility: hidden;
+  content: 'c';
+}
+.mq-editable-field .mq-text-mode .mq-cursor:only-child:after {
+  content: '';
+}
+.mq-editable-field.mq-text-mode {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.mq-root-block,
+.mq-math-mode .mq-root-block {
+  display: -moz-inline-box;
+  display: inline-block;
+  width: 100%;
+  padding: 2px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  vertical-align: middle;
+}
+.mq-math-mode {
+  font-variant: normal;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 115%;
+  line-height: 1;
+  display: -moz-inline-box;
+  display: inline-block;
+}
+.mq-math-mode .mq-non-leaf,
+.mq-math-mode .mq-scaled {
+  display: -moz-inline-box;
+  display: inline-block;
+}
+.mq-math-mode var,
+.mq-math-mode .mq-text-mode,
+.mq-math-mode .mq-nonSymbola {
+  font-family: "Times New Roman", Symbola, serif;
+  line-height: 0.9;
+}
+.mq-math-mode * {
+  font-size: inherit;
+  line-height: inherit;
+  margin: 0;
+  padding: 0;
+  border-color: black;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  box-sizing: border-box;
+}
+.mq-math-mode .mq-empty {
+  background: #ccc;
+}
+.mq-math-mode .mq-empty.mq-root-block {
+  background: transparent;
+}
+.mq-math-mode.mq-empty {
+  background: transparent;
+}
+.mq-math-mode .mq-text-mode {
+  display: inline-block;
+  white-space: pre;
+}
+.mq-math-mode .mq-text-mode.mq-hasCursor {
+  box-shadow: inset darkgray 0 0.1em 0.2em;
+  padding: 0 0.1em;
+  margin: 0 -0.1em;
+  min-width: 1ex;
+}
+.mq-math-mode .mq-font {
+  font: 1em "Times New Roman", Symbola, serif;
+}
+.mq-math-mode .mq-font * {
+  font-family: inherit;
+  font-style: inherit;
+}
+.mq-math-mode b,
+.mq-math-mode b.mq-font {
+  font-weight: bolder;
+}
+.mq-math-mode var,
+.mq-math-mode i,
+.mq-math-mode i.mq-font {
+  font-style: italic;
+}
+.mq-math-mode var.mq-f {
+  margin-right: 0.2em;
+  margin-left: 0.1em;
+}
+.mq-math-mode .mq-roman var.mq-f {
+  margin: 0;
+}
+.mq-math-mode big {
+  font-size: 200%;
+}
+.mq-math-mode .mq-int > big {
+  display: inline-block;
+  -webkit-transform: scaleX(0.7);
+  -moz-transform: scaleX(0.7);
+  -ms-transform: scaleX(0.7);
+  -o-transform: scaleX(0.7);
+  transform: scaleX(0.7);
+  vertical-align: -0.16em;
+}
+.mq-math-mode .mq-int > .mq-supsub {
+  font-size: 80%;
+  vertical-align: -1.1em;
+  padding-right: 0.2em;
+}
+.mq-math-mode .mq-int > .mq-supsub > .mq-sup > .mq-sup-inner {
+  vertical-align: 1.3em;
+}
+.mq-math-mode .mq-int > .mq-supsub > .mq-sub {
+  margin-left: -0.35em;
+}
+.mq-math-mode .mq-roman {
+  font-style: normal;
+}
+.mq-math-mode .mq-sans-serif {
+  font-family: sans-serif, Symbola, serif;
+}
+.mq-math-mode .mq-monospace {
+  font-family: monospace, Symbola, serif;
+}
+.mq-math-mode .mq-overline {
+  border-top: 1px solid black;
+  margin-top: 1px;
+}
+.mq-math-mode .mq-underline {
+  border-bottom: 1px solid black;
+  margin-bottom: 1px;
+}
+.mq-math-mode .mq-binary-operator {
+  padding: 0 0.2em;
+  display: -moz-inline-box;
+  display: inline-block;
+}
+.mq-math-mode .mq-supsub {
+  text-align: left;
+  font-size: 90%;
+  vertical-align: -0.5em;
+}
+.mq-math-mode .mq-supsub.mq-sup-only {
+  vertical-align: 0.5em;
+}
+.mq-math-mode .mq-supsub.mq-sup-only .mq-sup {
+  display: inline-block;
+  vertical-align: text-bottom;
+}
+.mq-math-mode .mq-supsub .mq-sup {
+  display: block;
+}
+.mq-math-mode .mq-supsub .mq-sub {
+  display: block;
+  float: left;
+}
+.mq-math-mode .mq-supsub .mq-binary-operator {
+  padding: 0 0.1em;
+}
+.mq-math-mode .mq-supsub .mq-fraction {
+  font-size: 70%;
+}
+.mq-math-mode sup.mq-nthroot {
+  font-size: 80%;
+  vertical-align: 0.8em;
+  margin-right: -0.6em;
+  margin-left: 0.2em;
+  min-width: 0.5em;
+}
+.mq-math-mode .mq-paren {
+  padding: 0 0.1em;
+  vertical-align: top;
+  -webkit-transform-origin: center 0.06em;
+  -moz-transform-origin: center 0.06em;
+  -ms-transform-origin: center 0.06em;
+  -o-transform-origin: center 0.06em;
+  transform-origin: center 0.06em;
+}
+.mq-math-mode .mq-paren.mq-ghost {
+  color: silver;
+}
+.mq-math-mode .mq-paren + span {
+  margin-top: 0.1em;
+  margin-bottom: 0.1em;
+}
+.mq-math-mode .mq-array {
+  vertical-align: middle;
+  text-align: center;
+}
+.mq-math-mode .mq-array > span {
+  display: block;
+}
+.mq-math-mode .mq-operator-name {
+  font-family: Symbola, "Times New Roman", serif;
+  line-height: 0.9;
+  font-style: normal;
+}
+.mq-math-mode var.mq-operator-name.mq-first {
+  padding-left: 0.2em;
+}
+.mq-math-mode var.mq-operator-name.mq-last,
+.mq-math-mode .mq-supsub.mq-after-operator-name {
+  padding-right: 0.2em;
+}
+.mq-math-mode .mq-fraction {
+  font-size: 90%;
+  text-align: center;
+  vertical-align: -0.4em;
+  padding: 0 0.2em;
+}
+.mq-math-mode .mq-fraction,
+.mq-math-mode .mq-large-operator,
+.mq-math-mode x:-moz-any-link {
+  display: -moz-groupbox;
+}
+.mq-math-mode .mq-fraction,
+.mq-math-mode .mq-large-operator,
+.mq-math-mode x:-moz-any-link,
+.mq-math-mode x:default {
+  display: inline-block;
+}
+.mq-math-mode .mq-numerator,
+.mq-math-mode .mq-denominator,
+.mq-math-mode .mq-dot-recurring {
+  display: block;
+}
+.mq-math-mode .mq-numerator {
+  padding: 0 0.1em;
+}
+.mq-math-mode .mq-denominator {
+  border-top: 1px solid;
+  float: right;
+  width: 100%;
+  padding: 0.1em;
+}
+.mq-math-mode .mq-dot-recurring {
+  text-align: center;
+  height: 0.3em;
+}
+.mq-math-mode .mq-sqrt-prefix {
+  padding-top: 0;
+  position: relative;
+  top: 0.1em;
+  vertical-align: top;
+  -webkit-transform-origin: top;
+  -moz-transform-origin: top;
+  -ms-transform-origin: top;
+  -o-transform-origin: top;
+  transform-origin: top;
+}
+.mq-math-mode .mq-sqrt-stem {
+  border-top: 1px solid;
+  margin-top: 1px;
+  padding-left: 0.15em;
+  padding-right: 0.2em;
+  margin-right: 0.1em;
+  padding-top: 1px;
+}
+.mq-math-mode .mq-diacritic-above {
+  display: block;
+  text-align: center;
+  line-height: 0.4em;
+}
+.mq-math-mode .mq-diacritic-stem {
+  display: block;
+  text-align: center;
+}
+.mq-math-mode .mq-hat-prefix {
+  display: block;
+  text-align: center;
+  line-height: 0.95em;
+  margin-bottom: -0.7em;
+  transform: scaleX(1.5);
+  -moz-transform: scaleX(1.5);
+  -o-transform: scaleX(1.5);
+  -webkit-transform: scaleX(1.5);
+}
+.mq-math-mode .mq-hat-stem {
+  display: block;
+}
+.mq-math-mode .mq-large-operator {
+  vertical-align: -0.2em;
+  padding: 0.2em;
+  text-align: center;
+}
+.mq-math-mode .mq-large-operator .mq-from,
+.mq-math-mode .mq-large-operator big,
+.mq-math-mode .mq-large-operator .mq-to {
+  display: block;
+}
+.mq-math-mode .mq-large-operator .mq-from,
+.mq-math-mode .mq-large-operator .mq-to {
+  font-size: 80%;
+}
+.mq-math-mode .mq-large-operator .mq-from {
+  float: right;
+  /* take out of normal flow to manipulate baseline */
+  width: 100%;
+}
+.mq-math-mode,
+.mq-math-mode .mq-editable-field {
+  cursor: text;
+  font-family: Symbola, "Times New Roman", serif;
+}
+.mq-math-mode .mq-overarc {
+  border-top: 1px solid black;
+  -webkit-border-top-right-radius: 50% 0.3em;
+  -moz-border-radius-topright: 50% 0.3em;
+  border-top-right-radius: 50% 0.3em;
+  -webkit-border-top-left-radius: 50% 0.3em;
+  -moz-border-radius-topleft: 50% 0.3em;
+  border-top-left-radius: 50% 0.3em;
+  margin-top: 1px;
+  padding-top: 0.15em;
+}
+.mq-math-mode .mq-overarrow {
+  min-width: 0.5em;
+  border-top: 1px solid black;
+  margin-top: 1px;
+  padding-top: 0.2em;
+  text-align: center;
+}
+.mq-math-mode .mq-overarrow:before {
+  display: block;
+  position: relative;
+  top: -0.34em;
+  font-size: 0.5em;
+  line-height: 0em;
+  content: '\27A4';
+  text-align: right;
+}
+.mq-math-mode .mq-overarrow.mq-arrow-left:before {
+  -moz-transform: scaleX(-1);
+  -o-transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+  filter: FlipH;
+  -ms-filter: "FlipH";
+}
+.mq-math-mode .mq-overarrow.mq-arrow-both {
+  vertical-align: text-bottom;
+}
+.mq-math-mode .mq-overarrow.mq-arrow-both.mq-empty {
+  min-height: 1.23em;
+}
+.mq-math-mode .mq-overarrow.mq-arrow-both.mq-empty:after {
+  top: -0.34em;
+}
+.mq-math-mode .mq-overarrow.mq-arrow-both:before {
+  -moz-transform: scaleX(-1);
+  -o-transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+  filter: FlipH;
+  -ms-filter: "FlipH";
+}
+.mq-math-mode .mq-overarrow.mq-arrow-both:after {
+  display: block;
+  position: relative;
+  top: -2.3em;
+  font-size: 0.5em;
+  line-height: 0em;
+  content: '\27A4';
+  visibility: visible;
+  text-align: right;
+}
+.mq-math-mode .mq-selection,
+.mq-editable-field .mq-selection,
+.mq-math-mode .mq-selection .mq-non-leaf,
+.mq-editable-field .mq-selection .mq-non-leaf,
+.mq-math-mode .mq-selection .mq-scaled,
+.mq-editable-field .mq-selection .mq-scaled {
+  background: #B4D5FE !important;
+  background: Highlight !important;
+  color: HighlightText;
+  border-color: HighlightText;
+}
+.mq-math-mode .mq-selection .mq-matrixed,
+.mq-editable-field .mq-selection .mq-matrixed {
+  background: #39F !important;
+}
+.mq-math-mode .mq-selection .mq-matrixed-container,
+.mq-editable-field .mq-selection .mq-matrixed-container {
+  filter: progid:DXImageTransform.Microsoft.Chroma(color='#3399FF') !important;
+}
+.mq-math-mode .mq-selection.mq-blur,
+.mq-editable-field .mq-selection.mq-blur,
+.mq-math-mode .mq-selection.mq-blur .mq-non-leaf,
+.mq-editable-field .mq-selection.mq-blur .mq-non-leaf,
+.mq-math-mode .mq-selection.mq-blur .mq-scaled,
+.mq-editable-field .mq-selection.mq-blur .mq-scaled,
+.mq-math-mode .mq-selection.mq-blur .mq-matrixed,
+.mq-editable-field .mq-selection.mq-blur .mq-matrixed {
+  background: #D4D4D4 !important;
+  color: black;
+  border-color: black;
+}
+.mq-math-mode .mq-selection.mq-blur .mq-matrixed-container,
+.mq-editable-field .mq-selection.mq-blur .mq-matrixed-container {
+  filter: progid:DXImageTransform.Microsoft.Chroma(color='#D4D4D4') !important;
+}
+.mq-editable-field .mq-textarea,
+.mq-math-mode .mq-textarea {
+  position: relative;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
+}
+.mq-editable-field .mq-textarea *,
+.mq-math-mode .mq-textarea *,
+.mq-editable-field .mq-selectable,
+.mq-math-mode .mq-selectable {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
+  position: absolute;
+  clip: rect(1em 1em 1em 1em);
+  -webkit-transform: scale(0);
+  -moz-transform: scale(0);
+  -ms-transform: scale(0);
+  -o-transform: scale(0);
+  transform: scale(0);
+  resize: none;
+  width: 1px;
+  height: 1px;
+  box-sizing: content-box;
+}
+.mq-math-mode .mq-matrixed {
+  background: white;
+  display: -moz-inline-box;
+  display: inline-block;
+}
+.mq-math-mode .mq-matrixed-container {
+  filter: progid:DXImageTransform.Microsoft.Chroma(color='white');
+  margin-top: -0.1em;
+}
+</style><script src="https://js.stripe.com/v3"></script><link rel="apple-touch-icon" href="https://ac.blooket.com/dashclassic/assets/BlooketSquare180-BARZEjNt.png" sizes="180x180" data-react-helmet="true"><link rel="icon" type="image/png" href="https://ac.blooket.com/dashclassic/assets/BlooketSquare32-Dsr-B0eG.png" sizes="32x32" data-react-helmet="true"><link rel="icon" type="image/png" href="https://ac.blooket.com/dashclassic/assets/BlooketSquare16-Cad01EB-.png" sizes="16x16" data-react-helmet="true"><meta name="description" content="The Dashboard allows you to access your question sets, favorites, game history, and news about Blooket events!" data-react-helmet="true"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" data-react-helmet="true"><style data-react-tooltip="true">.__react_component_tooltip {
+  border-radius: 3px;
+  display: inline-block;
+  font-size: 13px;
+  left: -999em;
+  opacity: 0;
+  position: fixed;
+  pointer-events: none;
+  transition: opacity 0.3s ease-out;
+  top: -999em;
+  visibility: hidden;
+  z-index: 999;
+}
+.__react_component_tooltip.allow_hover, .__react_component_tooltip.allow_click {
+  pointer-events: auto;
+}
+.__react_component_tooltip::before, .__react_component_tooltip::after {
+  content: "";
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+.__react_component_tooltip.show {
+  opacity: 0.9;
+  margin-top: 0;
+  margin-left: 0;
+  visibility: visible;
+}
+.__react_component_tooltip.place-top::before {
+  bottom: 0;
+  left: 50%;
+  margin-left: -11px;
+}
+.__react_component_tooltip.place-bottom::before {
+  top: 0;
+  left: 50%;
+  margin-left: -11px;
+}
+.__react_component_tooltip.place-left::before {
+  right: 0;
+  top: 50%;
+  margin-top: -9px;
+}
+.__react_component_tooltip.place-right::before {
+  left: 0;
+  top: 50%;
+  margin-top: -9px;
+}
+.__react_component_tooltip .multi-line {
+  display: block;
+  padding: 2px 0;
+  text-align: center;
+}</style></head>
+
+<body>
+  <div id="app"><div><div class="_body_nbamd_71"><div class="_sidebar_l4eyq_1"><img src="https://ac.blooket.com/dashclassic/assets/Blooket-M6jYh_hk.png" alt="Blooket" class="_logo_l4eyq_17"><a class="_button_552gk_1 _bigButton_l4eyq_22" href="/create"><div class="_shadow_552gk_11"></div><div class="_edge_552gk_23" style="background-color: rgb(11, 194, 207);"></div><div class="_front_552gk_33" style="background-color: rgb(11, 194, 207);"><div class="_bigButtonInside_l4eyq_26"><i class="fas fa-edit _bigIcon_l4eyq_39"></i>Create</div></div></a><a href="/discover" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-compass"></i><div class="_pageText_l4eyq_106">Discover</div></a><a class="_pageButton_l4eyq_70 _pageSelected_l4eyq_95" href="/my-sets"><i class="_pageIcon_l4eyq_100 fas fa-list"></i><div class="_pageText_l4eyq_106">My Sets</div></a><a class="_pageButton_l4eyq_70" href="/favorites"><i class="_pageIcon_l4eyq_100 fas fa-star"></i><div class="_pageText_l4eyq_106">Favorites</div></a><a href="/history" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-history"></i><div class="_pageText_l4eyq_106">History</div></a><a href="/homeworks" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-file-alt"></i><div class="_pageText_l4eyq_106">Homework</div></a><a href="https://play.blooket.com/play" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-play"></i><div class="_pageText_l4eyq_106">Play</div></a><a href="/settings" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-cog"></i><div class="_pageText_l4eyq_106">Settings</div></a><div class="_bottomRow_l4eyq_112"><div class="__react_component_tooltip t388aa333-d216-4abc-ac42-f779c9b7e933 place-top type-dark" id="t388aa333-d216-4abc-ac42-f779c9b7e933" data-id="tooltip"><style aria-hidden="true">
+  	.t388aa333-d216-4abc-ac42-f779c9b7e933 {
+	    color: #fff;
+	    background: #222;
+	    border: 1px solid transparent;
+	    border-radius: undefinedpx;
+	    padding: 8px 21px;
+  	}
+
+  	.t388aa333-d216-4abc-ac42-f779c9b7e933.place-top {
+        margin-top: -10px;
+    }
+    .t388aa333-d216-4abc-ac42-f779c9b7e933.place-top::before {
+        content: "";
+        background-color: inherit;
+        position: absolute;
+        z-index: 2;
+        width: 20px;
+        height: 12px;
+    }
+    .t388aa333-d216-4abc-ac42-f779c9b7e933.place-top::after {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-top-right-radius: undefinedpx;
+        border: 1px solid transparent;
+        background-color: #222;
+        z-index: -2;
+        bottom: -6px;
+        left: 50%;
+        margin-left: -6px;
+        transform: rotate(135deg);
+    }
+
+    .t388aa333-d216-4abc-ac42-f779c9b7e933.place-bottom {
+        margin-top: 10px;
+    }
+    .t388aa333-d216-4abc-ac42-f779c9b7e933.place-bottom::before {
+        content: "";
+        background-color: inherit;
+        position: absolute;
+        z-index: -1;
+        width: 18px;
+        height: 10px;
+    }
+    .t388aa333-d216-4abc-ac42-f779c9b7e933.place-bottom::after {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-top-right-radius: undefinedpx;
+        border: 1px solid transparent;
+        background-color: #222;
+        z-index: -2;
+        top: -6px;
+        left: 50%;
+        margin-left: -6px;
+        transform: rotate(45deg);
+    }
+
+    .t388aa333-d216-4abc-ac42-f779c9b7e933.place-left {
+        margin-left: -10px;
+    }
+    .t388aa333-d216-4abc-ac42-f779c9b7e933.place-left::before {
+        content: "";
+        background-color: inherit;
+        position: absolute;
+        z-index: -1;
+        width: 10px;
+        height: 18px;
+    }
+    .t388aa333-d216-4abc-ac42-f779c9b7e933.place-left::after {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-top-right-radius: undefinedpx;
+        border: 1px solid transparent;
+        background-color: #222;
+        z-index: -2;
+        right: -6px;
+        top: 50%;
+        margin-top: -6px;
+        transform: rotate(45deg);
+    }
+
+    .t388aa333-d216-4abc-ac42-f779c9b7e933.place-right {
+        margin-left: 10px;
+    }
+    .t388aa333-d216-4abc-ac42-f779c9b7e933.place-right::before {
+        content: "";
+        background-color: inherit;
+        position: absolute;
+        z-index: -1;
+        width: 10px;
+        height: 18px;
+    }
+    .t388aa333-d216-4abc-ac42-f779c9b7e933.place-right::after {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-top-right-radius: undefinedpx;
+        border: 1px solid transparent;
+        background-color: #222;
+        z-index: -2;
+        left: -6px;
+        top: 50%;
+        margin-top: -6px;
+        transform: rotate(-135deg);
+    }
+  </style></div><a data-tip="Stats" class="_smallButton_l4eyq_125" href="/stats" currentitem="false"><i class="_bottomIcon_l4eyq_137 fas fa-chart-bar"></i></a><a href="/blooks" data-tip="Blooks" class="_smallButton_l4eyq_125" currentitem="false"><i class="_bottomIcon_l4eyq_137 fas fa-suitcase"></i></a><a data-tip="Market" class="_smallButton_l4eyq_125" href="/market" currentitem="false"><i class="_bottomIcon_l4eyq_137 fas fa-store"></i></a><div class="_smallButton_l4eyq_125" data-tip="News" role="button" tabindex="0" currentitem="false"><i class="far fa-newspaper _bottomIcon_l4eyq_137"></i></div></div><a class="_plusButton_l4eyq_44" href="/upgrade"><i class="fas fa-plus _plusIcon_l4eyq_65"></i>Upgrade to Plus</a></div><div class="_topRightRow_l4eyq_142"><div class="_profileContainer_l4eyq_151" role="button" tabindex="0"><div class="_profileRow_l4eyq_168"><div class="_blookContainer_1601v_1 _profileBlook_l4eyq_175"><img src="https://ac.blooket.com/marketassets/blooks/hedgehog.svg" alt="Hedgehog Blook" draggable="false" class="_blook_1601v_1"></div>mrawesome26</div><i class="fas fa-angle-down _profileDropdownIcon_l4eyq_180"></i><div class="_profileDropdownMenu_l4eyq_185"><a class="_profileDropdownOption_l4eyq_212" href="/settings"><i class="fas fa-cog _profileDropdownOptionIcon_l4eyq_234"></i>Settings</a><a class="_profileDropdownOption_l4eyq_212" href="https://id.blooket.com/logout"><i class="fas fa-sign-out-alt _profileDropdownOptionIcon_l4eyq_234"></i>Logout</a></div></div></div><div class="_mNavBar_l4eyq_242"><img src="https://ac.blooket.com/dashclassic/assets/Blooket-M6jYh_hk.png" alt="Blooket" class="_mLogo_l4eyq_261"><i class="_mHamburgerIcon_l4eyq_265 fas fa-bars" role="button" tabindex="0"></i></div><div class="_modal_nbamd_3 _modalTransition_l4eyq_298"></div><div class="_mSidebar_l4eyq_275"><i class="_closeIcon_l4eyq_308 fas fa-times" role="button" tabindex="0"></i><a class="_button_552gk_1 _bigButton_l4eyq_22" href="/create"><div class="_shadow_552gk_11"></div><div class="_edge_552gk_23" style="background-color: rgb(11, 194, 207);"></div><div class="_front_552gk_33" style="background-color: rgb(11, 194, 207);"><div class="_bigButtonInside_l4eyq_26"><i class="fas fa-edit _bigIcon_l4eyq_39"></i>Create</div></div></a><a href="/discover" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-compass"></i><div class="_pageText_l4eyq_106">Discover</div></a><a class="_pageButton_l4eyq_70 _pageSelected_l4eyq_95" href="/my-sets"><i class="_pageIcon_l4eyq_100 fas fa-list"></i><div class="_pageText_l4eyq_106">My Sets</div></a><a class="_pageButton_l4eyq_70" href="/favorites"><i class="_pageIcon_l4eyq_100 fas fa-star"></i><div class="_pageText_l4eyq_106">Favorites</div></a><a href="/history" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-history"></i><div class="_pageText_l4eyq_106">History</div></a><a href="/homeworks" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-file-alt"></i><div class="_pageText_l4eyq_106">Homework</div></a><a href="https://play.blooket.com/play" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-play"></i><div class="_pageText_l4eyq_106">Play</div></a><a href="/settings" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-cog"></i><div class="_pageText_l4eyq_106">Settings</div></a><a href="https://id.blooket.com/logout" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-sign-out-alt"></i><div class="_pageText_l4eyq_106">Logout</div></a><div class="_bottomRow_l4eyq_112 _bottomRowMargin_l4eyq_121"><a class="_smallButton_l4eyq_125" href="/stats"><i class="_bottomIcon_l4eyq_137 fas fa-chart-bar"></i></a><a href="/blooks" class="_smallButton_l4eyq_125"><i class="_bottomIcon_l4eyq_137 fas fa-suitcase"></i></a><a class="_smallButton_l4eyq_125" href="/market"><i class="_bottomIcon_l4eyq_137 fas fa-store"></i></a><div class="_smallButton_l4eyq_125" role="button" tabindex="0"><i class="far fa-newspaper _bottomIcon_l4eyq_137"></i></div></div></div><div class="_container_3myg9_6"><div class="_header_3myg9_25"><i class="far fa-newspaper _newsIcon_3myg9_45"></i><div class="_headerText_3myg9_49">Blooket</div><div class="_newsText_3myg9_55">News</div><i class="fas fa-times _closeIcon_3myg9_61" role="button" tabindex="0"></i></div><div class="_postsContainer_3myg9_73"></div></div><div class="_profileBody_nbamd_406"><div class="_header_3l2cj_1">My Sets</div><div class="_flex_3l2cj_9"><div class="_nothingContainer_3l2cj_565"><div class="_nothingHeader_3l2cj_579">You'll Need a Question Set to Host!</div><div class="_nothingButtonsRow_3l2cj_585"><a class="_button_552gk_1 _nothingButton_3l2cj_585" href="/create"><div class="_shadow_552gk_11"></div><div class="_edge_552gk_23" style="background-color: rgb(154, 73, 170);"></div><div class="_front_552gk_33" style="background-color: rgb(154, 73, 170);"><div class="_nothingButtonInside_3l2cj_596"><i class="fas fa-edit _nothingIcon_3l2cj_609"></i>Create a Set</div></div></a><a class="_button_552gk_1 _nothingButton_3l2cj_585" href="/discover"><div class="_shadow_552gk_11"></div><div class="_edge_552gk_23" style="background-color: rgb(11, 194, 207);"></div><div class="_front_552gk_33" style="background-color: rgb(11, 194, 207);"><div class="_nothingButtonInside_3l2cj_596"><i class="fas fa-compass _nothingIcon_3l2cj_609"></i>Discover Sets</div></div></a></div><a href="https://help.blooket.com/hc/en-us/articles/16015371934487" target="_blank" rel="noopener noreferrer" class="_nothingLink_3l2cj_614">Getting Started Tutorial</a></div></div><div class="_container_3l2cj_79"></div><div class="_spacer_3l2cj_808"></div></div></div></div></div>
+
+
+
+
+<iframe style="display: none;"></iframe><iframe name="__privateStripeMetricsController2120" frameborder="0" allowtransparency="true" scrolling="no" role="presentation" allow="payment *" src="https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html#url=https%3A%2F%2Fdashboard.blooket.com%2Fmy-sets&amp;title=Dashboard%20%7C%20Blooket&amp;referrer=&amp;muid=a7e65438-ef00-4b72-be0b-a27f34000ea678a429&amp;sid=9f48f0e3-79b2-43a8-abc6-a1bc291987cc9f69f6&amp;version=6&amp;preview=false&amp;__shared_params__[version]=v3" aria-hidden="true" tabindex="-1" style="border: none !important; margin: 0px !important; padding: 0px !important; width: 1px !important; min-width: 100% !important; overflow: hidden !important; display: block !important; visibility: hidden !important; position: fixed !important; height: 1px !important; pointer-events: none !important; user-select: none !important;"></iframe></body></html>

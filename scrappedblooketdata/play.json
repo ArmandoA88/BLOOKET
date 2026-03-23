@@ -1,0 +1,40 @@
+{
+  "generatedAt": "2026-03-23T03:49:58.131Z",
+  "settings": {
+    "startUrls": [
+      "https://play.blooket.com/"
+    ],
+    "maxPages": 1,
+    "delayMs": 250,
+    "timeoutMs": 30000,
+    "outFile": "output/play.json",
+    "textLimit": 4000,
+    "scope": "host-only"
+  },
+  "pages": [
+    {
+      "requestedUrl": "https://play.blooket.com/",
+      "finalUrl": "https://play.blooket.com/play",
+      "status": 200,
+      "title": "Play Blooket | Blooket",
+      "canonical": null,
+      "description": "Join a game of Blooket to answer questions and compete in a fierce clash to determine who is the best and what Blook will come out victorious.",
+      "ogTitle": null,
+      "ogDescription": null,
+      "headings": [
+        "Blooket"
+      ],
+      "text": "Accept cookies from Blooket? Cookies are small files placed on your device that collect information when you use Blooket. Essential cookies are used to make our site work and are required. Other types of cookies are used to improve your experience, to analyze how Blooket is used, and to market our service. By clicking “Accept All”, you agree to allow these other cookies. Customize Reject All Accept All Blooket Join a Game Log In Blooket",
+      "links": [
+        {
+          "href": "https://blooket.com/",
+          "text": "Blooket"
+        },
+        {
+          "href": "https://id.blooket.com/login",
+          "text": "Log In"
+        }
+      ]
+    }
+  ]
+}

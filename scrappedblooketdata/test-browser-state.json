@@ -1,0 +1,47 @@
+{
+  "cookies": [
+    {
+      "name": "_cfuvid",
+      "value": "tJgBWulD07uNSw8Hd98SrQbvwXqR7Azw8qEH1z1Jiws-1774238709.9484887-1.0.1.1-BR1ALtChpYpnqyPVtwwhCJQ_XeSjAUGGZd4pf88zPEE",
+      "domain": ".blooket.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "cf_clearance",
+      "value": "9Vq8U__JS4lf2BdvLxAJB3bXlgmXMA62TYisdO2FHLw-1774238710-1.2.1.1-9IRpmgrDI6pJjs_d6bR6mrmDCbNN1P_yrovpvoXlbgLwnq02m9nCDfGFlHmz2S4eiDDiKpDKQ79zVEArkayHFX93eZ97_B5txyQgDm8xCbAnloYsspA7AUlbdWk_zcX2iwGhC9EC_z7C8zvjHVXJb9GWZ_WEp3MVrsst5yLZGGAqXiPrHuuMioA2MKgiiDk5tE3rzkGPozPgWvPe92pzW_hh.eE5fvTLykb9C.NUYOQ",
+      "domain": ".blooket.com",
+      "path": "/",
+      "expires": 1805774710.38679,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None",
+      "partitionKey": "https://blooket.com",
+      "_crHasCrossSiteAncestor": false
+    },
+    {
+      "name": "__cf_bm",
+      "value": "JhQfgWN94H.NO..V.ZQ3f8itbe_tJriT5rFaiH3qOqY-1774238710.6963377-1.0.1.1-yWhuCVdin2hPI1YkWZL.izdVAuCEO0mYa4U1E5XTigZIIPwRSSuim.X3MdUrhbZVkhOHbZgC4fB5jWCw_ISKBix4p4YUtb2YLu_Q7DImtV8aH4LGyvvaV2kQwe2LNVPv",
+      "domain": ".blooket.com",
+      "path": "/",
+      "expires": 1774240510.386987,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "cookieyes-consent",
+      "value": "consentid:ejY4MTF4ZjJJUWg1dFpITVZLUEtZQ21yN1g4emZEQmY,consent:no,action:,necessary:yes,analytics:no,advertisement:no,lastRenewedDate:1752694071000",
+      "domain": ".blooket.com",
+      "path": "/",
+      "expires": 1805774710,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Strict"
+    }
+  ],
+  "origins": []
+}

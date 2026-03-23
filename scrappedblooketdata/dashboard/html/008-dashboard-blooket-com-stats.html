@@ -1,0 +1,802 @@
+<!DOCTYPE html><html lang="en" translate="no"><head>
+  <meta charset="utf-8">
+  <title>mrawesome26 | Blooket</title>
+  <meta name="description" content="Search and discover new sets from a large collection created by users.">
+
+  <link href="https://res.cloudinary.com" rel="preconnect">
+  <link href="https://res.cloudinary.com" rel="dns-prefetch">
+
+  <link rel="icon" type="image/x-icon" href="https://ac.blooket.com/dashclassic/favicon.ico">
+  <script type="module" crossorigin="" src="https://ac.blooket.com/dashclassic/assets/index-UOJC_7KA.js"></script>
+  <link rel="stylesheet" crossorigin="" href="https://ac.blooket.com/dashclassic/assets/index-ClproaK0.css">
+<style id="react-mathquill-styles">/*
+ * MathQuill v0.11.0, by Han, Jeanine, and Mary
+ * http://mathquill.com | maintainers@mathquill.com
+ *
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a copy of the MPL
+ * was not distributed with this file, You can obtain
+ * one at http://mozilla.org/MPL/2.0/.
+ */
+@font-face {
+  /* Heavy fonts have been removed */
+  font-family: Symbola;
+}
+.mq-editable-field {
+  display: -moz-inline-box;
+  display: inline-block;
+}
+.mq-editable-field .mq-cursor {
+  border-left: 1px solid black;
+  margin-left: -1px;
+  position: relative;
+  z-index: 1;
+  padding: 0;
+  display: -moz-inline-box;
+  display: inline-block;
+}
+.mq-editable-field .mq-cursor.mq-blink {
+  visibility: hidden;
+}
+.mq-editable-field,
+.mq-math-mode .mq-editable-field {
+  border: 1px solid gray;
+}
+.mq-editable-field.mq-focused,
+.mq-math-mode .mq-editable-field.mq-focused {
+  -webkit-box-shadow: #8bd 0 0 1px 2px, inset #6ae 0 0 2px 0;
+  -moz-box-shadow: #8bd 0 0 1px 2px, inset #6ae 0 0 2px 0;
+  box-shadow: #8bd 0 0 1px 2px, inset #6ae 0 0 2px 0;
+  border-color: #709AC0;
+  border-radius: 1px;
+}
+.mq-math-mode .mq-editable-field {
+  margin: 1px;
+}
+.mq-editable-field .mq-latex-command-input {
+  color: inherit;
+  font-family: "Courier New", monospace;
+  border: 1px solid gray;
+  padding-right: 1px;
+  margin-right: 1px;
+  margin-left: 2px;
+}
+.mq-editable-field .mq-latex-command-input.mq-empty {
+  background: transparent;
+}
+.mq-editable-field .mq-latex-command-input.mq-hasCursor {
+  border-color: ActiveBorder;
+}
+.mq-editable-field.mq-empty:after,
+.mq-editable-field.mq-text-mode:after,
+.mq-math-mode .mq-empty:after {
+  visibility: hidden;
+  content: 'c';
+}
+.mq-editable-field .mq-cursor:only-child:after,
+.mq-editable-field .mq-textarea + .mq-cursor:last-child:after {
+  visibility: hidden;
+  content: 'c';
+}
+.mq-editable-field .mq-text-mode .mq-cursor:only-child:after {
+  content: '';
+}
+.mq-editable-field.mq-text-mode {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.mq-root-block,
+.mq-math-mode .mq-root-block {
+  display: -moz-inline-box;
+  display: inline-block;
+  width: 100%;
+  padding: 2px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  vertical-align: middle;
+}
+.mq-math-mode {
+  font-variant: normal;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 115%;
+  line-height: 1;
+  display: -moz-inline-box;
+  display: inline-block;
+}
+.mq-math-mode .mq-non-leaf,
+.mq-math-mode .mq-scaled {
+  display: -moz-inline-box;
+  display: inline-block;
+}
+.mq-math-mode var,
+.mq-math-mode .mq-text-mode,
+.mq-math-mode .mq-nonSymbola {
+  font-family: "Times New Roman", Symbola, serif;
+  line-height: 0.9;
+}
+.mq-math-mode * {
+  font-size: inherit;
+  line-height: inherit;
+  margin: 0;
+  padding: 0;
+  border-color: black;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  box-sizing: border-box;
+}
+.mq-math-mode .mq-empty {
+  background: #ccc;
+}
+.mq-math-mode .mq-empty.mq-root-block {
+  background: transparent;
+}
+.mq-math-mode.mq-empty {
+  background: transparent;
+}
+.mq-math-mode .mq-text-mode {
+  display: inline-block;
+  white-space: pre;
+}
+.mq-math-mode .mq-text-mode.mq-hasCursor {
+  box-shadow: inset darkgray 0 0.1em 0.2em;
+  padding: 0 0.1em;
+  margin: 0 -0.1em;
+  min-width: 1ex;
+}
+.mq-math-mode .mq-font {
+  font: 1em "Times New Roman", Symbola, serif;
+}
+.mq-math-mode .mq-font * {
+  font-family: inherit;
+  font-style: inherit;
+}
+.mq-math-mode b,
+.mq-math-mode b.mq-font {
+  font-weight: bolder;
+}
+.mq-math-mode var,
+.mq-math-mode i,
+.mq-math-mode i.mq-font {
+  font-style: italic;
+}
+.mq-math-mode var.mq-f {
+  margin-right: 0.2em;
+  margin-left: 0.1em;
+}
+.mq-math-mode .mq-roman var.mq-f {
+  margin: 0;
+}
+.mq-math-mode big {
+  font-size: 200%;
+}
+.mq-math-mode .mq-int > big {
+  display: inline-block;
+  -webkit-transform: scaleX(0.7);
+  -moz-transform: scaleX(0.7);
+  -ms-transform: scaleX(0.7);
+  -o-transform: scaleX(0.7);
+  transform: scaleX(0.7);
+  vertical-align: -0.16em;
+}
+.mq-math-mode .mq-int > .mq-supsub {
+  font-size: 80%;
+  vertical-align: -1.1em;
+  padding-right: 0.2em;
+}
+.mq-math-mode .mq-int > .mq-supsub > .mq-sup > .mq-sup-inner {
+  vertical-align: 1.3em;
+}
+.mq-math-mode .mq-int > .mq-supsub > .mq-sub {
+  margin-left: -0.35em;
+}
+.mq-math-mode .mq-roman {
+  font-style: normal;
+}
+.mq-math-mode .mq-sans-serif {
+  font-family: sans-serif, Symbola, serif;
+}
+.mq-math-mode .mq-monospace {
+  font-family: monospace, Symbola, serif;
+}
+.mq-math-mode .mq-overline {
+  border-top: 1px solid black;
+  margin-top: 1px;
+}
+.mq-math-mode .mq-underline {
+  border-bottom: 1px solid black;
+  margin-bottom: 1px;
+}
+.mq-math-mode .mq-binary-operator {
+  padding: 0 0.2em;
+  display: -moz-inline-box;
+  display: inline-block;
+}
+.mq-math-mode .mq-supsub {
+  text-align: left;
+  font-size: 90%;
+  vertical-align: -0.5em;
+}
+.mq-math-mode .mq-supsub.mq-sup-only {
+  vertical-align: 0.5em;
+}
+.mq-math-mode .mq-supsub.mq-sup-only .mq-sup {
+  display: inline-block;
+  vertical-align: text-bottom;
+}
+.mq-math-mode .mq-supsub .mq-sup {
+  display: block;
+}
+.mq-math-mode .mq-supsub .mq-sub {
+  display: block;
+  float: left;
+}
+.mq-math-mode .mq-supsub .mq-binary-operator {
+  padding: 0 0.1em;
+}
+.mq-math-mode .mq-supsub .mq-fraction {
+  font-size: 70%;
+}
+.mq-math-mode sup.mq-nthroot {
+  font-size: 80%;
+  vertical-align: 0.8em;
+  margin-right: -0.6em;
+  margin-left: 0.2em;
+  min-width: 0.5em;
+}
+.mq-math-mode .mq-paren {
+  padding: 0 0.1em;
+  vertical-align: top;
+  -webkit-transform-origin: center 0.06em;
+  -moz-transform-origin: center 0.06em;
+  -ms-transform-origin: center 0.06em;
+  -o-transform-origin: center 0.06em;
+  transform-origin: center 0.06em;
+}
+.mq-math-mode .mq-paren.mq-ghost {
+  color: silver;
+}
+.mq-math-mode .mq-paren + span {
+  margin-top: 0.1em;
+  margin-bottom: 0.1em;
+}
+.mq-math-mode .mq-array {
+  vertical-align: middle;
+  text-align: center;
+}
+.mq-math-mode .mq-array > span {
+  display: block;
+}
+.mq-math-mode .mq-operator-name {
+  font-family: Symbola, "Times New Roman", serif;
+  line-height: 0.9;
+  font-style: normal;
+}
+.mq-math-mode var.mq-operator-name.mq-first {
+  padding-left: 0.2em;
+}
+.mq-math-mode var.mq-operator-name.mq-last,
+.mq-math-mode .mq-supsub.mq-after-operator-name {
+  padding-right: 0.2em;
+}
+.mq-math-mode .mq-fraction {
+  font-size: 90%;
+  text-align: center;
+  vertical-align: -0.4em;
+  padding: 0 0.2em;
+}
+.mq-math-mode .mq-fraction,
+.mq-math-mode .mq-large-operator,
+.mq-math-mode x:-moz-any-link {
+  display: -moz-groupbox;
+}
+.mq-math-mode .mq-fraction,
+.mq-math-mode .mq-large-operator,
+.mq-math-mode x:-moz-any-link,
+.mq-math-mode x:default {
+  display: inline-block;
+}
+.mq-math-mode .mq-numerator,
+.mq-math-mode .mq-denominator,
+.mq-math-mode .mq-dot-recurring {
+  display: block;
+}
+.mq-math-mode .mq-numerator {
+  padding: 0 0.1em;
+}
+.mq-math-mode .mq-denominator {
+  border-top: 1px solid;
+  float: right;
+  width: 100%;
+  padding: 0.1em;
+}
+.mq-math-mode .mq-dot-recurring {
+  text-align: center;
+  height: 0.3em;
+}
+.mq-math-mode .mq-sqrt-prefix {
+  padding-top: 0;
+  position: relative;
+  top: 0.1em;
+  vertical-align: top;
+  -webkit-transform-origin: top;
+  -moz-transform-origin: top;
+  -ms-transform-origin: top;
+  -o-transform-origin: top;
+  transform-origin: top;
+}
+.mq-math-mode .mq-sqrt-stem {
+  border-top: 1px solid;
+  margin-top: 1px;
+  padding-left: 0.15em;
+  padding-right: 0.2em;
+  margin-right: 0.1em;
+  padding-top: 1px;
+}
+.mq-math-mode .mq-diacritic-above {
+  display: block;
+  text-align: center;
+  line-height: 0.4em;
+}
+.mq-math-mode .mq-diacritic-stem {
+  display: block;
+  text-align: center;
+}
+.mq-math-mode .mq-hat-prefix {
+  display: block;
+  text-align: center;
+  line-height: 0.95em;
+  margin-bottom: -0.7em;
+  transform: scaleX(1.5);
+  -moz-transform: scaleX(1.5);
+  -o-transform: scaleX(1.5);
+  -webkit-transform: scaleX(1.5);
+}
+.mq-math-mode .mq-hat-stem {
+  display: block;
+}
+.mq-math-mode .mq-large-operator {
+  vertical-align: -0.2em;
+  padding: 0.2em;
+  text-align: center;
+}
+.mq-math-mode .mq-large-operator .mq-from,
+.mq-math-mode .mq-large-operator big,
+.mq-math-mode .mq-large-operator .mq-to {
+  display: block;
+}
+.mq-math-mode .mq-large-operator .mq-from,
+.mq-math-mode .mq-large-operator .mq-to {
+  font-size: 80%;
+}
+.mq-math-mode .mq-large-operator .mq-from {
+  float: right;
+  /* take out of normal flow to manipulate baseline */
+  width: 100%;
+}
+.mq-math-mode,
+.mq-math-mode .mq-editable-field {
+  cursor: text;
+  font-family: Symbola, "Times New Roman", serif;
+}
+.mq-math-mode .mq-overarc {
+  border-top: 1px solid black;
+  -webkit-border-top-right-radius: 50% 0.3em;
+  -moz-border-radius-topright: 50% 0.3em;
+  border-top-right-radius: 50% 0.3em;
+  -webkit-border-top-left-radius: 50% 0.3em;
+  -moz-border-radius-topleft: 50% 0.3em;
+  border-top-left-radius: 50% 0.3em;
+  margin-top: 1px;
+  padding-top: 0.15em;
+}
+.mq-math-mode .mq-overarrow {
+  min-width: 0.5em;
+  border-top: 1px solid black;
+  margin-top: 1px;
+  padding-top: 0.2em;
+  text-align: center;
+}
+.mq-math-mode .mq-overarrow:before {
+  display: block;
+  position: relative;
+  top: -0.34em;
+  font-size: 0.5em;
+  line-height: 0em;
+  content: '\27A4';
+  text-align: right;
+}
+.mq-math-mode .mq-overarrow.mq-arrow-left:before {
+  -moz-transform: scaleX(-1);
+  -o-transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+  filter: FlipH;
+  -ms-filter: "FlipH";
+}
+.mq-math-mode .mq-overarrow.mq-arrow-both {
+  vertical-align: text-bottom;
+}
+.mq-math-mode .mq-overarrow.mq-arrow-both.mq-empty {
+  min-height: 1.23em;
+}
+.mq-math-mode .mq-overarrow.mq-arrow-both.mq-empty:after {
+  top: -0.34em;
+}
+.mq-math-mode .mq-overarrow.mq-arrow-both:before {
+  -moz-transform: scaleX(-1);
+  -o-transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+  filter: FlipH;
+  -ms-filter: "FlipH";
+}
+.mq-math-mode .mq-overarrow.mq-arrow-both:after {
+  display: block;
+  position: relative;
+  top: -2.3em;
+  font-size: 0.5em;
+  line-height: 0em;
+  content: '\27A4';
+  visibility: visible;
+  text-align: right;
+}
+.mq-math-mode .mq-selection,
+.mq-editable-field .mq-selection,
+.mq-math-mode .mq-selection .mq-non-leaf,
+.mq-editable-field .mq-selection .mq-non-leaf,
+.mq-math-mode .mq-selection .mq-scaled,
+.mq-editable-field .mq-selection .mq-scaled {
+  background: #B4D5FE !important;
+  background: Highlight !important;
+  color: HighlightText;
+  border-color: HighlightText;
+}
+.mq-math-mode .mq-selection .mq-matrixed,
+.mq-editable-field .mq-selection .mq-matrixed {
+  background: #39F !important;
+}
+.mq-math-mode .mq-selection .mq-matrixed-container,
+.mq-editable-field .mq-selection .mq-matrixed-container {
+  filter: progid:DXImageTransform.Microsoft.Chroma(color='#3399FF') !important;
+}
+.mq-math-mode .mq-selection.mq-blur,
+.mq-editable-field .mq-selection.mq-blur,
+.mq-math-mode .mq-selection.mq-blur .mq-non-leaf,
+.mq-editable-field .mq-selection.mq-blur .mq-non-leaf,
+.mq-math-mode .mq-selection.mq-blur .mq-scaled,
+.mq-editable-field .mq-selection.mq-blur .mq-scaled,
+.mq-math-mode .mq-selection.mq-blur .mq-matrixed,
+.mq-editable-field .mq-selection.mq-blur .mq-matrixed {
+  background: #D4D4D4 !important;
+  color: black;
+  border-color: black;
+}
+.mq-math-mode .mq-selection.mq-blur .mq-matrixed-container,
+.mq-editable-field .mq-selection.mq-blur .mq-matrixed-container {
+  filter: progid:DXImageTransform.Microsoft.Chroma(color='#D4D4D4') !important;
+}
+.mq-editable-field .mq-textarea,
+.mq-math-mode .mq-textarea {
+  position: relative;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
+}
+.mq-editable-field .mq-textarea *,
+.mq-math-mode .mq-textarea *,
+.mq-editable-field .mq-selectable,
+.mq-math-mode .mq-selectable {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
+  position: absolute;
+  clip: rect(1em 1em 1em 1em);
+  -webkit-transform: scale(0);
+  -moz-transform: scale(0);
+  -ms-transform: scale(0);
+  -o-transform: scale(0);
+  transform: scale(0);
+  resize: none;
+  width: 1px;
+  height: 1px;
+  box-sizing: content-box;
+}
+.mq-math-mode .mq-matrixed {
+  background: white;
+  display: -moz-inline-box;
+  display: inline-block;
+}
+.mq-math-mode .mq-matrixed-container {
+  filter: progid:DXImageTransform.Microsoft.Chroma(color='white');
+  margin-top: -0.1em;
+}
+</style><script src="https://js.stripe.com/v3"></script><style data-react-tooltip="true">.__react_component_tooltip {
+  border-radius: 3px;
+  display: inline-block;
+  font-size: 13px;
+  left: -999em;
+  opacity: 0;
+  position: fixed;
+  pointer-events: none;
+  transition: opacity 0.3s ease-out;
+  top: -999em;
+  visibility: hidden;
+  z-index: 999;
+}
+.__react_component_tooltip.allow_hover, .__react_component_tooltip.allow_click {
+  pointer-events: auto;
+}
+.__react_component_tooltip::before, .__react_component_tooltip::after {
+  content: "";
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+.__react_component_tooltip.show {
+  opacity: 0.9;
+  margin-top: 0;
+  margin-left: 0;
+  visibility: visible;
+}
+.__react_component_tooltip.place-top::before {
+  bottom: 0;
+  left: 50%;
+  margin-left: -11px;
+}
+.__react_component_tooltip.place-bottom::before {
+  top: 0;
+  left: 50%;
+  margin-left: -11px;
+}
+.__react_component_tooltip.place-left::before {
+  right: 0;
+  top: 50%;
+  margin-top: -9px;
+}
+.__react_component_tooltip.place-right::before {
+  left: 0;
+  top: 50%;
+  margin-top: -9px;
+}
+.__react_component_tooltip .multi-line {
+  display: block;
+  padding: 2px 0;
+  text-align: center;
+}</style><link rel="apple-touch-icon" href="https://ac.blooket.com/dashclassic/assets/BlooketSquare180-BARZEjNt.png" sizes="180x180" data-react-helmet="true"><link rel="icon" type="image/png" href="https://ac.blooket.com/dashclassic/assets/BlooketSquare32-Dsr-B0eG.png" sizes="32x32" data-react-helmet="true"><link rel="icon" type="image/png" href="https://ac.blooket.com/dashclassic/assets/BlooketSquare16-Cad01EB-.png" sizes="16x16" data-react-helmet="true"><meta name="description" content="" data-react-helmet="true"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" data-react-helmet="true"></head>
+
+<body>
+  <div id="app"><div><div><div class="_sidebar_l4eyq_1"><img src="https://ac.blooket.com/dashclassic/assets/Blooket-M6jYh_hk.png" alt="Blooket" class="_logo_l4eyq_17"><a class="_button_552gk_1 _bigButton_l4eyq_22" href="/create"><div class="_shadow_552gk_11"></div><div class="_edge_552gk_23" style="background-color: rgb(11, 194, 207);"></div><div class="_front_552gk_33" style="background-color: rgb(11, 194, 207);"><div class="_bigButtonInside_l4eyq_26"><i class="fas fa-edit _bigIcon_l4eyq_39"></i>Create</div></div></a><a href="/discover" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-compass"></i><div class="_pageText_l4eyq_106">Discover</div></a><a class="_pageButton_l4eyq_70" href="/my-sets"><i class="_pageIcon_l4eyq_100 fas fa-list"></i><div class="_pageText_l4eyq_106">My Sets</div></a><a class="_pageButton_l4eyq_70" href="/favorites"><i class="_pageIcon_l4eyq_100 fas fa-star"></i><div class="_pageText_l4eyq_106">Favorites</div></a><a href="/history" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-history"></i><div class="_pageText_l4eyq_106">History</div></a><a href="/homeworks" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-file-alt"></i><div class="_pageText_l4eyq_106">Homework</div></a><a href="https://play.blooket.com/play" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-play"></i><div class="_pageText_l4eyq_106">Play</div></a><a href="/settings" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-cog"></i><div class="_pageText_l4eyq_106">Settings</div></a><div class="_bottomRow_l4eyq_112"><div class="__react_component_tooltip t13c90041-0d15-466d-8798-95a5a04a1ffe place-top type-dark" id="t13c90041-0d15-466d-8798-95a5a04a1ffe" data-id="tooltip"><style aria-hidden="true">
+  	.t13c90041-0d15-466d-8798-95a5a04a1ffe {
+	    color: #fff;
+	    background: #222;
+	    border: 1px solid transparent;
+	    border-radius: undefinedpx;
+	    padding: 8px 21px;
+  	}
+
+  	.t13c90041-0d15-466d-8798-95a5a04a1ffe.place-top {
+        margin-top: -10px;
+    }
+    .t13c90041-0d15-466d-8798-95a5a04a1ffe.place-top::before {
+        content: "";
+        background-color: inherit;
+        position: absolute;
+        z-index: 2;
+        width: 20px;
+        height: 12px;
+    }
+    .t13c90041-0d15-466d-8798-95a5a04a1ffe.place-top::after {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-top-right-radius: undefinedpx;
+        border: 1px solid transparent;
+        background-color: #222;
+        z-index: -2;
+        bottom: -6px;
+        left: 50%;
+        margin-left: -6px;
+        transform: rotate(135deg);
+    }
+
+    .t13c90041-0d15-466d-8798-95a5a04a1ffe.place-bottom {
+        margin-top: 10px;
+    }
+    .t13c90041-0d15-466d-8798-95a5a04a1ffe.place-bottom::before {
+        content: "";
+        background-color: inherit;
+        position: absolute;
+        z-index: -1;
+        width: 18px;
+        height: 10px;
+    }
+    .t13c90041-0d15-466d-8798-95a5a04a1ffe.place-bottom::after {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-top-right-radius: undefinedpx;
+        border: 1px solid transparent;
+        background-color: #222;
+        z-index: -2;
+        top: -6px;
+        left: 50%;
+        margin-left: -6px;
+        transform: rotate(45deg);
+    }
+
+    .t13c90041-0d15-466d-8798-95a5a04a1ffe.place-left {
+        margin-left: -10px;
+    }
+    .t13c90041-0d15-466d-8798-95a5a04a1ffe.place-left::before {
+        content: "";
+        background-color: inherit;
+        position: absolute;
+        z-index: -1;
+        width: 10px;
+        height: 18px;
+    }
+    .t13c90041-0d15-466d-8798-95a5a04a1ffe.place-left::after {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-top-right-radius: undefinedpx;
+        border: 1px solid transparent;
+        background-color: #222;
+        z-index: -2;
+        right: -6px;
+        top: 50%;
+        margin-top: -6px;
+        transform: rotate(45deg);
+    }
+
+    .t13c90041-0d15-466d-8798-95a5a04a1ffe.place-right {
+        margin-left: 10px;
+    }
+    .t13c90041-0d15-466d-8798-95a5a04a1ffe.place-right::before {
+        content: "";
+        background-color: inherit;
+        position: absolute;
+        z-index: -1;
+        width: 10px;
+        height: 18px;
+    }
+    .t13c90041-0d15-466d-8798-95a5a04a1ffe.place-right::after {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-top-right-radius: undefinedpx;
+        border: 1px solid transparent;
+        background-color: #222;
+        z-index: -2;
+        left: -6px;
+        top: 50%;
+        margin-top: -6px;
+        transform: rotate(-135deg);
+    }
+  </style></div><a data-tip="Stats" class="_smallButton_l4eyq_125" href="/stats" currentitem="false"><i class="_bottomIcon_l4eyq_137 fas fa-chart-bar"></i></a><a href="/blooks" data-tip="Blooks" class="_smallButton_l4eyq_125" currentitem="false"><i class="_bottomIcon_l4eyq_137 fas fa-suitcase"></i></a><a data-tip="Market" class="_smallButton_l4eyq_125" href="/market" currentitem="false"><i class="_bottomIcon_l4eyq_137 fas fa-store"></i></a><div class="_smallButton_l4eyq_125" data-tip="News" role="button" tabindex="0" currentitem="false"><i class="far fa-newspaper _bottomIcon_l4eyq_137"></i></div></div><a class="_plusButton_l4eyq_44" href="/upgrade"><i class="fas fa-plus _plusIcon_l4eyq_65"></i>Upgrade to Plus</a></div><div class="_topRightRow_l4eyq_142"><div class="_profileContainer_l4eyq_151" role="button" tabindex="0"><div class="_profileRow_l4eyq_168"><div class="_blookContainer_1601v_1 _profileBlook_l4eyq_175"><img src="https://ac.blooket.com/marketassets/blooks/hedgehog.svg" alt="Hedgehog Blook" draggable="false" class="_blook_1601v_1"></div>mrawesome26</div><i class="fas fa-angle-down _profileDropdownIcon_l4eyq_180"></i><div class="_profileDropdownMenu_l4eyq_185"><a class="_profileDropdownOption_l4eyq_212" href="/settings"><i class="fas fa-cog _profileDropdownOptionIcon_l4eyq_234"></i>Settings</a><a class="_profileDropdownOption_l4eyq_212" href="https://id.blooket.com/logout"><i class="fas fa-sign-out-alt _profileDropdownOptionIcon_l4eyq_234"></i>Logout</a></div></div></div><div class="_mNavBar_l4eyq_242"><img src="https://ac.blooket.com/dashclassic/assets/Blooket-M6jYh_hk.png" alt="Blooket" class="_mLogo_l4eyq_261"><i class="_mHamburgerIcon_l4eyq_265 fas fa-bars" role="button" tabindex="0"></i></div><div class="_modal_nbamd_3 _modalTransition_l4eyq_298"></div><div class="_mSidebar_l4eyq_275"><i class="_closeIcon_l4eyq_308 fas fa-times" role="button" tabindex="0"></i><a class="_button_552gk_1 _bigButton_l4eyq_22" href="/create"><div class="_shadow_552gk_11"></div><div class="_edge_552gk_23" style="background-color: rgb(11, 194, 207);"></div><div class="_front_552gk_33" style="background-color: rgb(11, 194, 207);"><div class="_bigButtonInside_l4eyq_26"><i class="fas fa-edit _bigIcon_l4eyq_39"></i>Create</div></div></a><a href="/discover" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-compass"></i><div class="_pageText_l4eyq_106">Discover</div></a><a class="_pageButton_l4eyq_70" href="/my-sets"><i class="_pageIcon_l4eyq_100 fas fa-list"></i><div class="_pageText_l4eyq_106">My Sets</div></a><a class="_pageButton_l4eyq_70" href="/favorites"><i class="_pageIcon_l4eyq_100 fas fa-star"></i><div class="_pageText_l4eyq_106">Favorites</div></a><a href="/history" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-history"></i><div class="_pageText_l4eyq_106">History</div></a><a href="/homeworks" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-file-alt"></i><div class="_pageText_l4eyq_106">Homework</div></a><a href="https://play.blooket.com/play" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-play"></i><div class="_pageText_l4eyq_106">Play</div></a><a href="/settings" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-cog"></i><div class="_pageText_l4eyq_106">Settings</div></a><a href="https://id.blooket.com/logout" class="_pageButton_l4eyq_70"><i class="_pageIcon_l4eyq_100 fas fa-sign-out-alt"></i><div class="_pageText_l4eyq_106">Logout</div></a><div class="_bottomRow_l4eyq_112 _bottomRowMargin_l4eyq_121"><a class="_smallButton_l4eyq_125" href="/stats"><i class="_bottomIcon_l4eyq_137 fas fa-chart-bar"></i></a><a href="/blooks" class="_smallButton_l4eyq_125"><i class="_bottomIcon_l4eyq_137 fas fa-suitcase"></i></a><a class="_smallButton_l4eyq_125" href="/market"><i class="_bottomIcon_l4eyq_137 fas fa-store"></i></a><div class="_smallButton_l4eyq_125" role="button" tabindex="0"><i class="far fa-newspaper _bottomIcon_l4eyq_137"></i></div></div></div><div class="_container_3myg9_6"><div class="_header_3myg9_25"><i class="far fa-newspaper _newsIcon_3myg9_45"></i><div class="_headerText_3myg9_49">Blooket</div><div class="_newsText_3myg9_55">News</div><i class="fas fa-times _closeIcon_3myg9_61" role="button" tabindex="0"></i></div><div class="_postsContainer_3myg9_73"></div></div><div class="_background_1c2jf_1"><div class="_blooksBackground_1c2jf_11" style="background-image: url(&quot;https://ac.blooket.com/dashclassic/assets/BlookCheckers-BykpA7vd.png&quot;);"></div></div><div class="_profileBodyMax_nbamd_416 _bodyMaxWidth_1c2jf_23"><div class="_fullContainer_1c2jf_27"><div class="_headerRow_1c2jf_35"><div class="_headerLeft_1c2jf_43"><div class="_headerLeftRow_1c2jf_49"><div class="_headerBlookContainer_1c2jf_57" role="button" tabindex="0"><div class="_blookContainer_1601v_1 _headerBlook_1c2jf_57"><img src="https://ac.blooket.com/marketassets/blooks/hedgehog.svg" alt="Hedgehog Blook" draggable="false" class="_blook_1601v_1"></div></div><div class="_headerInfo_1c2jf_69"><div class="_headerBanner_1c2jf_74" role="button" tabindex="0"><img src="https://media.blooket.com/image/upload/v1664361085/Banners/starter.svg" alt="Starter" class="_headerBg_1c2jf_103" draggable="false"><div class="_headerName_1c2jf_112">mrawesome26</div><div class="_headerTitle_1c2jf_118">Newbie</div></div><div class="_levelBarContainer_1c2jf_221"><div class="_levelBar_1c2jf_221"><div class="_levelBarInside_1c2jf_265" style="transform: scaleX(0);"></div></div><div class="_levelStarContainer_1c2jf_227"><img src="https://ac.blooket.com/dashclassic/assets/LevelStar-tmvShqvY.svg" alt="Star" class="_levelStar_1c2jf_227" draggable="false"><div class="_levelStarText_1c2jf_246">0</div></div></div></div></div><div class="_headerLeftButtons_1c2jf_277"><div class="_button_552gk_1 _headerButton_1c2jf_286" role="button" tabindex="0"><div class="_shadow_552gk_11"></div><div class="_edge_552gk_23" style="background-color: rgb(154, 73, 170);"></div><div class="_front_552gk_33" style="background-color: rgb(154, 73, 170);"><div class="_headerButtonInside_1c2jf_286"><i class="_headerButtonIcon_1c2jf_296 fas fa-play"></i>Play Now!</div></div></div><div class="_button_552gk_1 _headerButton_1c2jf_286" role="button" tabindex="0"><div class="_shadow_552gk_11"></div><div class="_edge_552gk_23" style="background-color: rgb(255, 163, 30);"></div><div class="_front_552gk_33" style="background-color: rgb(255, 163, 30);"><div class="_headerButtonInside_1c2jf_286"><i class="_headerButtonIcon_1c2jf_296 fas fa-store"></i>Unlock Blooks</div></div></div><a class="_button_552gk_1 _headerButton_1c2jf_286" href="/blooks"><div class="_shadow_552gk_11"></div><div class="_edge_552gk_23" style="background-color: rgb(30, 146, 255);"></div><div class="_front_552gk_33" style="background-color: rgb(30, 146, 255);"><div class="_headerButtonInside_1c2jf_286"><i class="_headerButtonIcon_1c2jf_296 fas fa-suitcase"></i>Manage Blooks</div></div></a></div></div></div><div class="_passContainer_1wta0_2"><div class="_passInside_1wta0_23" id="pass"><div class="_passBarWrapper_1wta0_37" style="width: 10000px;"><div class="_passBar_1wta0_37" style="width: 0px;"><div class="_passBarInside_1wta0_59"></div></div></div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 100px;">1</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 200px;">2</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 300px;">3</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 400px;">4</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 500px;">5</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 600px;">6</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 700px;">7</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 800px;">8</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 900px;">9</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 1000px;">10</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 1100px;">11</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 1200px;">12</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 1300px;">13</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 1400px;">14</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 1500px;">15</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 1600px;">16</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 1700px;">17</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 1800px;">18</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 1900px;">19</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 2000px;">20</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 2100px;">21</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 2200px;">22</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 2300px;">23</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 2400px;">24</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 2500px;">25</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 2600px;">26</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 2700px;">27</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 2800px;">28</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 2900px;">29</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 3000px;">30</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 3100px;">31</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 3200px;">32</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 3300px;">33</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 3400px;">34</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 3500px;">35</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 3600px;">36</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 3700px;">37</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 3800px;">38</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 3900px;">39</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 4000px;">40</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 4100px;">41</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 4200px;">42</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 4300px;">43</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 4400px;">44</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 4500px;">45</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 4600px;">46</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 4700px;">47</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 4800px;">48</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 4900px;">49</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 5000px;">50</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 5100px;">51</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 5200px;">52</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 5300px;">53</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 5400px;">54</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 5500px;">55</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 5600px;">56</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 5700px;">57</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 5800px;">58</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 5900px;">59</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 6000px;">60</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 6100px;">61</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 6200px;">62</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 6300px;">63</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 6400px;">64</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 6500px;">65</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 6600px;">66</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 6700px;">67</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 6800px;">68</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 6900px;">69</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 7000px;">70</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 7100px;">71</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 7200px;">72</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 7300px;">73</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 7400px;">74</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 7500px;">75</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 7600px;">76</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 7700px;">77</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 7800px;">78</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 7900px;">79</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 8000px;">80</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 8100px;">81</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 8200px;">82</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 8300px;">83</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 8400px;">84</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 8500px;">85</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 8600px;">86</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 8700px;">87</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 8800px;">88</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 8900px;">89</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 9000px;">90</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 9100px;">91</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 9200px;">92</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 9300px;">93</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 9400px;">94</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 9500px;">95</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 9600px;">96</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 9700px;">97</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 9800px;">98</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 9900px;">99</div><div class="_passBarLevel_1wta0_65 _passBarLevelLocked_1wta0_91" style="left: 10000px;">100</div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 100px;"><img src="https://media.blooket.com/image/upload/v1758008870/BlookParts/hat122.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 200px;"><img src="https://media.blooket.com/image/upload/v1758008899/BlookParts/item68.svg" alt="item" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Item</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 300px;"><img src="https://media.blooket.com/image/upload/v1758008838/BlookParts/clothing113.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 400px;"><img src="https://media.blooket.com/image/upload/v1758008871/BlookParts/hat123.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 500px;"><img src="https://media.blooket.com/image/upload/v1758008899/BlookParts/item69.svg" alt="item" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Item</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 600px;"><img src="https://media.blooket.com/image/upload/v1758008838/BlookParts/clothing114.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 700px;"><img src="https://media.blooket.com/image/upload/v1758008871/BlookParts/hat124.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 800px;"><img src="https://media.blooket.com/image/upload/v1758008871/BlookParts/hat125.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 900px;"><img src="https://media.blooket.com/image/upload/v1758008839/BlookParts/clothing115.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 1000px;"><img src="https://media.blooket.com/image/upload/v1758008901/BlookParts/item70.svg" alt="item" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Item</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 1100px;"><img src="https://media.blooket.com/image/upload/v1758008858/BlookParts/eyes20.svg" alt="eyes" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Eyes</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 1200px;"><img src="https://media.blooket.com/image/upload/v1758008839/BlookParts/clothing116.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 1300px;"><img src="https://media.blooket.com/image/upload/v1758008839/BlookParts/clothing117.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 1400px;"><img src="https://media.blooket.com/image/upload/v1758008872/BlookParts/hat126.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 1500px;"><img src="https://media.blooket.com/image/upload/v1758008910/BlookParts/mouth31.svg" alt="mouth" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Mouth</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 1600px;"><img src="https://media.blooket.com/image/upload/v1758008863/BlookParts/glasses34.svg" alt="glasses" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Glasses</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 1700px;"><img src="https://media.blooket.com/image/upload/v1758008858/BlookParts/eyes21.svg" alt="eyes" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Eyes</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 1800px;"><img src="https://media.blooket.com/image/upload/v1758008901/BlookParts/item71.svg" alt="item" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Item</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 1900px;"><img src="https://media.blooket.com/image/upload/v1758008873/BlookParts/hat127.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 2000px;"><img src="https://media.blooket.com/image/upload/v1758008839/BlookParts/clothing118.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 2100px;"><img src="https://media.blooket.com/image/upload/v1758008863/BlookParts/glasses35.svg" alt="glasses" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Glasses</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 2200px;"><img src="https://media.blooket.com/image/upload/v1758008874/BlookParts/hat128.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 2300px;"><img src="https://media.blooket.com/image/upload/v1758008903/BlookParts/item72.svg" alt="item" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Item</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 2400px;"><img src="https://media.blooket.com/image/upload/v1758008874/BlookParts/hat129.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 2500px;"><img src="https://media.blooket.com/image/upload/v1758008866/BlookParts/hair35.svg" alt="hair" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hair</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 2600px;"><img src="https://media.blooket.com/image/upload/v1758008840/BlookParts/clothing119.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 2700px;"><img src="https://media.blooket.com/image/upload/v1767654254/BlookParts/item73v2.svg" alt="item" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Item</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 2800px;"><img src="https://media.blooket.com/image/upload/v1758008875/BlookParts/hat130.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 2900px;"><img src="https://media.blooket.com/image/upload/v1758008878/BlookParts/hat131.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 3000px;"><img src="https://media.blooket.com/image/upload/v1758008840/BlookParts/clothing120.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 3100px;"><img src="https://media.blooket.com/image/upload/v1758008863/BlookParts/glasses36.svg" alt="glasses" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Glasses</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 3200px;"><img src="https://media.blooket.com/image/upload/v1758008878/BlookParts/hat132.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 3300px;"><img src="https://media.blooket.com/image/upload/v1758008841/BlookParts/clothing121.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 3400px;"><img src="https://media.blooket.com/image/upload/v1758008864/BlookParts/glasses37.svg" alt="glasses" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Glasses</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 3500px;"><img src="https://media.blooket.com/image/upload/v1758008869/BlookParts/hair36.svg" alt="hair" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hair</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 3600px;"><img src="https://media.blooket.com/image/upload/v1758008879/BlookParts/hat133.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 3700px;"><img src="https://media.blooket.com/image/upload/v1758008864/BlookParts/glasses38.svg" alt="glasses" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Glasses</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 3800px;"><img src="https://media.blooket.com/image/upload/v1758008879/BlookParts/hat134.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 3900px;"><img src="https://media.blooket.com/image/upload/v1758008841/BlookParts/clothing122.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 4000px;"><img src="https://media.blooket.com/image/upload/v1758008842/BlookParts/clothing123.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 4100px;"><img src="https://media.blooket.com/image/upload/v1758008880/BlookParts/hat135.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 4200px;"><img src="https://media.blooket.com/image/upload/v1758008843/BlookParts/clothing124.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 4300px;"><img src="https://media.blooket.com/image/upload/v1758008903/BlookParts/item74.svg" alt="item" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Item</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 4400px;"><img src="https://media.blooket.com/image/upload/v1758008843/BlookParts/clothing125.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 4500px;"><img src="https://media.blooket.com/image/upload/v1758008881/BlookParts/hat136.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 4600px;"><img src="https://media.blooket.com/image/upload/v1758008903/BlookParts/item75.svg" alt="item" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Item</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 4700px;"><img src="https://media.blooket.com/image/upload/v1758008904/BlookParts/item76.svg" alt="item" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Item</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 4800px;"><img src="https://media.blooket.com/image/upload/v1758008844/BlookParts/clothing126.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 4900px;"><img src="https://media.blooket.com/image/upload/v1758008883/BlookParts/hat137.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 5000px;"><img src="https://media.blooket.com/image/upload/v1758008864/BlookParts/glasses39.svg" alt="glasses" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Glasses</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 5100px;"><img src="https://media.blooket.com/image/upload/v1758008904/BlookParts/item77.svg" alt="item" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Item</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 5200px;"><img src="https://media.blooket.com/image/upload/v1758008845/BlookParts/clothing127.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 5300px;"><img src="https://media.blooket.com/image/upload/v1758008904/BlookParts/item78.svg" alt="item" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Item</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 5400px;"><img src="https://media.blooket.com/image/upload/v1758008911/BlookParts/mouth32.svg" alt="mouth" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Mouth</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 5500px;"><img src="https://media.blooket.com/image/upload/v1758008846/BlookParts/clothing128.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 5600px;"><img src="https://media.blooket.com/image/upload/v1758008883/BlookParts/hat138.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 5700px;"><img src="https://media.blooket.com/image/upload/v1758008883/BlookParts/hat139.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 5800px;"><img src="https://media.blooket.com/image/upload/v1758008864/BlookParts/glasses40.svg" alt="glasses" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Glasses</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 5900px;"><img src="https://media.blooket.com/image/upload/v1758008846/BlookParts/clothing129.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 6000px;"><img src="https://media.blooket.com/image/upload/v1758008846/BlookParts/clothing130.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 6100px;"><img src="https://media.blooket.com/image/upload/v1758008884/BlookParts/hat140.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 6200px;"><img src="https://media.blooket.com/image/upload/v1758008885/BlookParts/hat141.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 6300px;"><img src="https://media.blooket.com/image/upload/v1758008849/BlookParts/clothing131.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 6400px;"><img src="https://media.blooket.com/image/upload/v1758008850/BlookParts/clothing132.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 6500px;"><img src="https://media.blooket.com/image/upload/v1758008885/BlookParts/hat142.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 6600px;"><img src="https://media.blooket.com/image/upload/v1758008851/BlookParts/clothing133.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 6700px;"><img src="https://media.blooket.com/image/upload/v1758008885/BlookParts/hat143.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 6800px;"><img src="https://media.blooket.com/image/upload/v1758008851/BlookParts/clothing134.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 6900px;"><img src="https://media.blooket.com/image/upload/v1758008886/BlookParts/hat144.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 7000px;"><img src="https://media.blooket.com/image/upload/v1758008905/BlookParts/item79.svg" alt="item" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Item</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 7100px;"><img src="https://media.blooket.com/image/upload/v1758008888/BlookParts/hat145.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 7200px;"><img src="https://media.blooket.com/image/upload/v1758008852/BlookParts/clothing135.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 7300px;"><img src="https://media.blooket.com/image/upload/v1758008889/BlookParts/hat146.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 7400px;"><img src="https://media.blooket.com/image/upload/v1758008852/BlookParts/clothing136.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 7500px;"><img src="https://media.blooket.com/image/upload/v1758008890/BlookParts/hat147.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 7600px;"><img src="https://media.blooket.com/image/upload/v1758008911/BlookParts/mouth33.svg" alt="mouth" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Mouth</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 7700px;"><img src="https://media.blooket.com/image/upload/v1758008857/BlookParts/eyebrows13.svg" alt="eyebrows" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Eyebrows</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 7800px;"><img src="https://media.blooket.com/image/upload/v1758008853/BlookParts/clothing137.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 7900px;"><img src="https://media.blooket.com/image/upload/v1758008891/BlookParts/hat148.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 8000px;"><img src="https://media.blooket.com/image/upload/v1758008865/BlookParts/glasses41.svg" alt="glasses" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Glasses</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 8100px;"><img src="https://media.blooket.com/image/upload/v1758008892/BlookParts/hat149.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 8300px;"><img src="https://media.blooket.com/image/upload/v1758008854/BlookParts/clothing138.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 8400px;"><img src="https://media.blooket.com/image/upload/v1758008893/BlookParts/hat150.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 8500px;"><img src="https://media.blooket.com/image/upload/v1758008908/BlookParts/item80.svg" alt="item" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Item</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 8700px;"><img src="https://media.blooket.com/image/upload/v1758008855/BlookParts/clothing139.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 8800px;"><img src="https://media.blooket.com/image/upload/v1758008894/BlookParts/hat151.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 9000px;"><img src="https://media.blooket.com/image/upload/v1758008856/BlookParts/clothing140.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 9100px;"><img src="https://media.blooket.com/image/upload/v1758008894/BlookParts/hat152.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 9300px;"><img src="https://media.blooket.com/image/upload/v1758008857/BlookParts/clothing141.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 9400px;"><img src="https://media.blooket.com/image/upload/v1758008870/BlookParts/hair37.svg" alt="hair" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hair</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 9500px;"><img src="https://media.blooket.com/image/upload/v1758008896/BlookParts/hat153.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 9700px;"><img src="https://media.blooket.com/image/upload/v1758008857/BlookParts/clothing142.svg" alt="clothing" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Clothing</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 9800px;"><img src="https://media.blooket.com/image/upload/v1758008896/BlookParts/hat154.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div><div class="_passPrize_1wta0_97 _passPrizeLocked_1wta0_132" style="left: 10000px;"><img src="https://media.blooket.com/image/upload/v1758008899/BlookParts/hat155.svg" alt="hat" class="_passPart_1wta0_114" draggable="false"><div class="_passPrizeText_1wta0_119">Hat</div></div></div><div class="_passHeader_1wta0_138"><div class="_passHeaderInside_1wta0_155">Class Pass</div></div><div class="_passHeaderRight_1wta0_138"><div class="_passHeaderInside_1wta0_155">0 / 5 XP</div></div></div><div class="_bottomContainer_1c2jf_342"><div class="_left_1c2jf_350"><div class="_historyContainer_1c2jf_553 _historyNoTop_1c2jf_564"><div class="_containerHeader_1c2jf_373"><div class="_containerHeaderInside_1c2jf_385">History</div></div><div class="_historyNothing_1c2jf_600">No Games Played Yet</div></div></div><div class="_right_1c2jf_354"><div class="_customBlookContainer_1c2jf_358"><div class="_containerHeader_1c2jf_373"><div class="_containerHeaderInside_1c2jf_385">Custom Blooks</div></div><div class="_noBlookContainer_1c2jf_407" role="button" tabindex="0"><i class="fas fa-plus-square _noBlookIcon_1c2jf_427"></i>New Blook</div><div class="_noBlookContainer_1c2jf_407" role="button" tabindex="0"><i class="fas fa-plus-square _noBlookIcon_1c2jf_427"></i>New Blook</div><div class="_noBlookContainer_1c2jf_407" role="button" tabindex="0"><i class="fas fa-plus-square _noBlookIcon_1c2jf_427"></i>New Blook</div><div class="_noBlookContainer_1c2jf_407" role="button" tabindex="0"><i class="fas fa-plus-square _noBlookIcon_1c2jf_427"></i>New Blook</div><div class="_noBlookContainer_1c2jf_407" role="button" tabindex="0"><i class="fas fa-plus-square _noBlookIcon_1c2jf_427"></i>New Blook</div></div><div class="_statsContainer_1c2jf_651"><div class="_containerHeader_1c2jf_373"><div class="_containerHeaderInside_1c2jf_385">Stats</div></div><div class="_topStats_1c2jf_663"><div class="__react_component_tooltip t2bb36520-e5fa-40dd-8d85-9626e82e964a place-bottom type-dark" id="t2bb36520-e5fa-40dd-8d85-9626e82e964a" data-id="tooltip"><style aria-hidden="true">
+  	.t2bb36520-e5fa-40dd-8d85-9626e82e964a {
+	    color: #fff;
+	    background: #222;
+	    border: 1px solid transparent;
+	    border-radius: undefinedpx;
+	    padding: 8px 21px;
+  	}
+
+  	.t2bb36520-e5fa-40dd-8d85-9626e82e964a.place-top {
+        margin-top: -10px;
+    }
+    .t2bb36520-e5fa-40dd-8d85-9626e82e964a.place-top::before {
+        content: "";
+        background-color: inherit;
+        position: absolute;
+        z-index: 2;
+        width: 20px;
+        height: 12px;
+    }
+    .t2bb36520-e5fa-40dd-8d85-9626e82e964a.place-top::after {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-top-right-radius: undefinedpx;
+        border: 1px solid transparent;
+        background-color: #222;
+        z-index: -2;
+        bottom: -6px;
+        left: 50%;
+        margin-left: -6px;
+        transform: rotate(135deg);
+    }
+
+    .t2bb36520-e5fa-40dd-8d85-9626e82e964a.place-bottom {
+        margin-top: 10px;
+    }
+    .t2bb36520-e5fa-40dd-8d85-9626e82e964a.place-bottom::before {
+        content: "";
+        background-color: inherit;
+        position: absolute;
+        z-index: -1;
+        width: 18px;
+        height: 10px;
+    }
+    .t2bb36520-e5fa-40dd-8d85-9626e82e964a.place-bottom::after {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-top-right-radius: undefinedpx;
+        border: 1px solid transparent;
+        background-color: #222;
+        z-index: -2;
+        top: -6px;
+        left: 50%;
+        margin-left: -6px;
+        transform: rotate(45deg);
+    }
+
+    .t2bb36520-e5fa-40dd-8d85-9626e82e964a.place-left {
+        margin-left: -10px;
+    }
+    .t2bb36520-e5fa-40dd-8d85-9626e82e964a.place-left::before {
+        content: "";
+        background-color: inherit;
+        position: absolute;
+        z-index: -1;
+        width: 10px;
+        height: 18px;
+    }
+    .t2bb36520-e5fa-40dd-8d85-9626e82e964a.place-left::after {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-top-right-radius: undefinedpx;
+        border: 1px solid transparent;
+        background-color: #222;
+        z-index: -2;
+        right: -6px;
+        top: 50%;
+        margin-top: -6px;
+        transform: rotate(45deg);
+    }
+
+    .t2bb36520-e5fa-40dd-8d85-9626e82e964a.place-right {
+        margin-left: 10px;
+    }
+    .t2bb36520-e5fa-40dd-8d85-9626e82e964a.place-right::before {
+        content: "";
+        background-color: inherit;
+        position: absolute;
+        z-index: -1;
+        width: 10px;
+        height: 18px;
+    }
+    .t2bb36520-e5fa-40dd-8d85-9626e82e964a.place-right::after {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-top-right-radius: undefinedpx;
+        border: 1px solid transparent;
+        background-color: #222;
+        z-index: -2;
+        left: -6px;
+        top: 50%;
+        margin-top: -6px;
+        transform: rotate(-135deg);
+    }
+  </style></div><div class="_statContainer_1c2jf_677" data-tip="Total Tokens Earned at Any Time" currentitem="false"><div class="_statTitle_1c2jf_692">Total Tokens</div><div class="_statNum_1c2jf_697">0</div><img src="https://ac.blooket.com/dashclassic/assets/Token-DmrosBZF.svg" alt="Total Tokens" class="_tokenImg_1c2jf_712" draggable="false"></div><div class="_statContainer_1c2jf_677" data-tip="Total Unique Blooks Unlocked in the Market" currentitem="false"><div class="_statTitle_1c2jf_692">Blooks Unlocked</div><div class="_statNum_1c2jf_697">0</div><img src="https://ac.blooket.com/dashclassic/assets/BlooksUnlocked-C2aoxAs0.svg" alt="Blooks Unlocked" class="_statImg_1c2jf_703" draggable="false"></div></div><div class="_statsWrapper_1c2jf_670"><div class="_statContainer_1c2jf_677"><div class="_statTitle_1c2jf_692">Wins</div><div class="_statNum_1c2jf_697">0</div><img src="https://ac.blooket.com/dashclassic/assets/Wins-DwAC4320.svg" alt="Wins" class="_statImg_1c2jf_703" draggable="false"></div><div class="_statContainer_1c2jf_677"><div class="_statTitle_1c2jf_692">Top 5s</div><div class="_statNum_1c2jf_697">0</div><img src="https://ac.blooket.com/dashclassic/assets/Top5s-DqVmEajZ.svg" alt="Top 5s" class="_statImg_1c2jf_703" draggable="false"></div><div class="_statContainer_1c2jf_677"><div class="_statTitle_1c2jf_692">Total Points</div><div class="_statNum_1c2jf_697">0</div><img src="https://ac.blooket.com/dashclassic/assets/Points-D4uD8X6I.svg" alt="Total Points" class="_statImg_1c2jf_703" draggable="false"></div><div class="_statContainer_1c2jf_677"><div class="_statTitle_1c2jf_692">Racing Progress</div><div class="_statNum_1c2jf_697">0</div><img src="https://ac.blooket.com/dashclassic/assets/RacingProgress-CBfHMMYl.svg" alt="Racing Progress" class="_statImg_1c2jf_703" draggable="false"></div><div class="_statContainer_1c2jf_677"><div class="_statTitle_1c2jf_692">Total Cash</div><div class="_statNum_1c2jf_697">0</div><img src="https://ac.blooket.com/dashclassic/assets/TotalCash-0BjvtiRQ.svg" alt="Total Cash" class="_statImg_1c2jf_703" draggable="false"></div><div class="_statContainer_1c2jf_677"><div class="_statTitle_1c2jf_692">Players Defeated</div><div class="_statNum_1c2jf_697">0</div><img src="https://ac.blooket.com/dashclassic/assets/PlayersDefeated-CO8z_rNu.svg" alt="Players Defeated" class="_statImg_1c2jf_703" draggable="false"></div><div class="_statContainer_1c2jf_677"><div class="_statTitle_1c2jf_692">Correct Answers</div><div class="_statNum_1c2jf_697">0</div><img src="https://ac.blooket.com/dashclassic/assets/CorrectAnswers-BMzYvD5t.svg" alt="Correct Answers" class="_statImg_1c2jf_703" draggable="false"></div><div class="_statContainer_1c2jf_677"><div class="_statTitle_1c2jf_692">Games Played</div><div class="_statNum_1c2jf_697">0</div><img src="https://ac.blooket.com/dashclassic/assets/GamesPlayed-ChTFMXFQ.svg" alt="Games Played" class="_statImg_1c2jf_703" draggable="false"></div><div class="_statContainer_1c2jf_677"><div class="_statTitle_1c2jf_692">Showdown Wins</div><div class="_statNum_1c2jf_697">0</div><img src="https://ac.blooket.com/dashclassic/assets/ShowdownWins-DoV57TSn.svg" alt="Showdown Wins" class="_statImg_1c2jf_703" draggable="false"></div><div class="_statContainer_1c2jf_677"><div class="_statTitle_1c2jf_692">Total Crypto</div><div class="_statNum_1c2jf_697">0</div><img src="https://ac.blooket.com/dashclassic/assets/CryptoIcon-UVd8wGsI.svg" alt="Total Crypto" class="_statImg_1c2jf_703" draggable="false"></div><div class="_statContainer_1c2jf_677"><div class="_statTitle_1c2jf_692">Total Gold</div><div class="_statNum_1c2jf_697">0</div><img src="https://ac.blooket.com/dashclassic/assets/Gold-CrltWEr0.svg" alt="Total Gold" class="_statImg_1c2jf_703" draggable="false"></div><div class="_statContainer_1c2jf_677"><div class="_statTitle_1c2jf_692">Total Fish Weight</div><div class="_statNum_1c2jf_697">0</div><img src="https://ac.blooket.com/dashclassic/assets/FishWeight-DxmrKsPp.svg" alt="Total Fish Weight" class="_statImg_1c2jf_703" draggable="false"></div><div class="_statContainer_1c2jf_677"><div class="_statTitle_1c2jf_692">Daily Tokens Available</div><div class="_statNum_1c2jf_697">500</div><img src="https://ac.blooket.com/dashclassic/assets/Days-DFrhXKWm.svg" alt="Daily Tokens Available" class="_statImg_1c2jf_703" draggable="false"></div><div class="_statContainer_1c2jf_677"><div class="_statTitle_1c2jf_692">Time Before Reset</div><div class="_statNum_1c2jf_697">19:38</div><img src="https://ac.blooket.com/dashclassic/assets/TimeBeforeReset-CDNOz-Y-.svg" alt="Time Before Reset" class="_statImg_1c2jf_703" draggable="false"></div></div></div></div></div></div></div></div></div></div>
+
+
+
+
+<iframe style="display: none;"></iframe><iframe name="__privateStripeMetricsController5870" frameborder="0" allowtransparency="true" scrolling="no" role="presentation" allow="payment *" src="https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html#url=https%3A%2F%2Fdashboard.blooket.com%2Fstats&amp;title=mrawesome26%20%7C%20Blooket&amp;referrer=&amp;muid=a7e65438-ef00-4b72-be0b-a27f34000ea678a429&amp;sid=9f48f0e3-79b2-43a8-abc6-a1bc291987cc9f69f6&amp;version=6&amp;preview=false&amp;__shared_params__[version]=v3" aria-hidden="true" tabindex="-1" style="border: none !important; margin: 0px !important; padding: 0px !important; width: 1px !important; min-width: 100% !important; overflow: hidden !important; display: block !important; visibility: hidden !important; position: fixed !important; height: 1px !important; pointer-events: none !important; user-select: none !important;"></iframe></body></html>

@@ -1,0 +1,152 @@
+{
+  "generatedAt": "2026-03-23T03:48:35.840Z",
+  "settings": {
+    "startUrls": [
+      "https://www.blooket.com/"
+    ],
+    "maxPages": 2,
+    "delayMs": 250,
+    "timeoutMs": 30000,
+    "outFile": "output/home.json",
+    "textLimit": 4000,
+    "scope": "host-only"
+  },
+  "pages": [
+    {
+      "requestedUrl": "https://www.blooket.com/",
+      "finalUrl": "https://www.blooket.com/",
+      "status": 200,
+      "title": "Blooket – Fun, Free, Educational Games for Everyone",
+      "canonical": "https://www.blooket.com/",
+      "description": "Blooket is an exciting new take on the modern classroom review game. It aims to match action with education to create the ultimate learning experience!",
+      "ogTitle": "Blooket – Fun, Free, Educational Games for Everyone",
+      "ogDescription": "Blooket is an exciting new take on the modern classroom review game. It aims to match action with education to create the ultimate learning experience!",
+      "headings": [
+        "Blooket",
+        "Fun, free, educational games for everyone!",
+        "Easy Setup, Lasting Results",
+        "Instant Feedback",
+        "Free, Fresh, and Fun",
+        "How It Works",
+        "Engagement for Everyone"
+      ],
+      "text": "Accept cookies from Blooket? Cookies are small files placed on your device that collect information when you use Blooket. Essential cookies are used to make our site work and are required. Other types of cookies are used to improve your experience, to analyze how Blooket is used, and to market our service. By clicking “Accept All”, you agree to allow these other cookies. Customize Reject All Accept All Blooket Join a game Log in Fun, free, educational games for everyone! Sign up Pronounced (\"Blue-kit\") Click to scroll down Easy Setup, Lasting Results Find a question set from our library or create your own. Then, get started with a live or asynchronous game in just a few clicks! Instant Feedback Ensure every student is on track with detailed reports at the end of each game. Identify knowledge gaps and guide students toward success. Free, Fresh, and Fun Keep your students engaged with our ever-expanding library of game modes. We're always working on new ways to make learning fun! Serious Learning. Serious Fun. Join the millions of educators around the world who have already discovered the power of Blooket! Get started How It Works Get a question set Choose a game mode Play, learn, and analyze Engagement for Everyone Blooket’s gameplay is designed for students from early elementary to high school and beyond! Product Upgrade Group Plans Contact Help Center FAQ contact-us@blooket.com More Privacy Policy Terms of Service Cookie Settings Created by Ben Stewart Connect Copyright © 2026 Blooket LLC. All Rights Reserved.",
+      "links": [
+        {
+          "href": "https://www.blooket.com/home",
+          "text": "Blooket"
+        },
+        {
+          "href": "https://play.blooket.com/",
+          "text": "Join a game"
+        },
+        {
+          "href": "https://play.blooket.com/",
+          "text": "Join game"
+        },
+        {
+          "href": "https://id.blooket.com/login",
+          "text": "Log in"
+        },
+        {
+          "href": "https://id.blooket.com/signup",
+          "text": "Sign up"
+        },
+        {
+          "href": "https://id.blooket.com/signup",
+          "text": "Sign up"
+        },
+        {
+          "href": "https://play.blooket.com/",
+          "text": "Join a game"
+        },
+        {
+          "href": "https://id.blooket.com/login",
+          "text": "Log in"
+        },
+        {
+          "href": "https://id.blooket.com/signup",
+          "text": "Get started"
+        },
+        {
+          "href": "https://dashboard.blooket.com/upgrade",
+          "text": "Upgrade"
+        },
+        {
+          "href": "https://dashboard.blooket.com/upgrade/group/price",
+          "text": "Group Plans"
+        },
+        {
+          "href": "https://help.blooket.com/hc/en-us",
+          "text": "Help Center"
+        },
+        {
+          "href": "https://help.blooket.com/hc/en-us/categories/17350274621847-Frequently-Asked-Questions",
+          "text": "FAQ"
+        },
+        {
+          "href": "mailto:contact-us@blooket.com",
+          "text": "contact-us@blooket.com"
+        },
+        {
+          "href": "https://www.blooket.com/privacy",
+          "text": "Privacy Policy"
+        },
+        {
+          "href": "https://www.blooket.com/terms",
+          "text": "Terms of Service"
+        },
+        {
+          "href": "https://www.blooket.com/#",
+          "text": "Cookie Settings"
+        },
+        {
+          "href": "https://www.benstewart.io/",
+          "text": "Created by Ben Stewart"
+        },
+        {
+          "href": "https://www.facebook.com/PlayBlooket",
+          "text": ""
+        },
+        {
+          "href": "https://www.instagram.com/PlayBlooket",
+          "text": ""
+        },
+        {
+          "href": "https://www.youtube.com/@PlayBlooket?sub_confirmation=1",
+          "text": ""
+        },
+        {
+          "href": "https://x.com/PlayBlooket",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "requestedUrl": "https://www.blooket.com/home",
+      "finalUrl": "https://www.blooket.com/home",
+      "status": 403,
+      "title": "Just a moment...",
+      "canonical": null,
+      "description": null,
+      "ogTitle": null,
+      "ogDescription": null,
+      "headings": [
+        "www.blooket.com",
+        "Performing security verification",
+        "Verification successful. Waiting for www.blooket.com to respond"
+      ],
+      "text": "www.blooket.com Performing security verification This website uses a security service to protect against malicious bots. This page is displayed while the website verifies you are not a bot. Ray ID: 9e0a7610ce5ae79a Performance and Security by Cloudflare Privacy",
+      "links": [
+        {
+          "href": "https://www.cloudflare.com/?utm_source=challenge&utm_campaign=m",
+          "text": "Cloudflare"
+        },
+        {
+          "href": "https://www.cloudflare.com/privacypolicy/",
+          "text": "Privacy"
+        }
+      ]
+    }
+  ]
+}

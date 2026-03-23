@@ -2377,6 +2377,22 @@ const whackGame = (() => {
   ];
   const whackCursor = "url('/assets/arcade/whack/whack-mallet.svg') 14 6, pointer";
   const whackCursorDown = "url('/assets/arcade/whack/whack-mallet-down.svg') 12 4, pointer";
+  const whackPortraitScale = 1.5;
+  const whackCardWidth = Math.round(120 * whackPortraitScale);
+  const whackCardHeight = Math.round(132 * whackPortraitScale);
+  const whackCardRadius = Math.round(26 * whackPortraitScale);
+  const whackCardTopOffset = Math.round(58 * whackPortraitScale);
+  const whackPortraitRadius = Math.round(35 * whackPortraitScale);
+  const whackPortraitYOffset = Math.round(10 * whackPortraitScale);
+  const whackLabelWidth = Math.round(88 * whackPortraitScale);
+  const whackLabelHeight = Math.round(22 * whackPortraitScale);
+  const whackLabelYOffset = Math.round(34 * whackPortraitScale);
+  const whackHitRadius = Math.round(86 * whackPortraitScale);
+  const whackRiseBase = Math.round(88 * whackPortraitScale);
+  const whackGoldRingRadius = Math.round(44 * whackPortraitScale);
+  const whackBombOffsetX = Math.round(28 * whackPortraitScale);
+  const whackBombTopY = Math.round(38 * whackPortraitScale);
+  const whackBombBottomY = Math.round(18 * whackPortraitScale);
   const bookTargets = [
     { id: "alice", name: "Alice", image: loadSprite("/assets/books/book-alice.jpg") },
     { id: "arthur", name: "Arthur", image: loadSprite("/assets/books/book-arthur.jpg") },
@@ -2423,26 +2439,11 @@ const whackGame = (() => {
   ];
   const targetThemes = [
     {
-      id: "books",
-      label: "1. Book Legends",
-      name: "Book Legends",
-      targets: bookTargets,
-      stageHelp: "Book Legends faces pop up from the holes. Golden targets score big, and red warning targets should be skipped.",
-      bgTop: "#31200f",
-      bgBottom: "#75441f",
-      accent: "rgba(251,191,36,0.74)",
-      ground: "#6b3f19",
-      frame: "#f4d38d",
-      card: "#fdf2d8",
-      labelFill: "rgba(255,255,255,0.82)",
-      labelText: "#4a2c12"
-    },
-    {
       id: "students",
-      label: "2. Student Faces",
-      name: "Student Faces",
+      label: "Student Blooks",
+      name: "Student Blooks",
       targets: studentTargets,
-      stageHelp: "Student faces pop up in the holes for a silly class remix. Golden targets are worth more, and red warning targets cost points.",
+      stageHelp: "Student blooks pop up from the holes. Golden targets are worth more, and red warning targets cost points.",
       bgTop: "#10243f",
       bgBottom: "#16627b",
       accent: "rgba(92,199,255,0.74)",
@@ -2528,53 +2529,64 @@ const whackGame = (() => {
 
   function drawWhackPortrait(target, kind, x, y, theme, time, index) {
     const floatY = y + Math.sin(time * 5.5 + index) * 2.2;
-    const cardX = x - 60;
-    const cardY = floatY - 58;
+    const cardX = x - whackCardWidth / 2;
+    const cardY = floatY - whackCardTopOffset;
     const frameColor = kind === "gold" ? "#facc15" : kind === "bomb" ? "#fb7185" : theme.frame;
     const labelFill = kind === "gold" ? "rgba(250,204,21,0.22)" : kind === "bomb" ? "rgba(251,113,133,0.18)" : theme.labelFill;
 
     ctx.save();
     ctx.shadowBlur = 18;
     ctx.shadowColor = kind === "gold" ? "rgba(250,204,21,0.45)" : kind === "bomb" ? "rgba(251,113,133,0.45)" : "rgba(15,23,42,0.25)";
-    drawRoundedRect(cardX, cardY, 120, 132, 26, theme.card, frameColor);
+    drawRoundedRect(cardX, cardY, whackCardWidth, whackCardHeight, whackCardRadius, theme.card, frameColor);
     ctx.restore();
 
-    const portraitDrawn = drawCircularSprite(target?.image, x, floatY - 10, 35, {
+    const portraitDrawn = drawCircularSprite(target?.image, x, floatY - whackPortraitYOffset, whackPortraitRadius, {
       strokeStyle: frameColor,
       lineWidth: 4
     });
     if (!portraitDrawn) {
-      drawFallbackWhackTarget(x, floatY - 10, 35, kind === "gold" ? "#facc15" : kind === "bomb" ? "#fb7185" : "#8c5a2f");
+      drawFallbackWhackTarget(x, floatY - whackPortraitYOffset, whackPortraitRadius, kind === "gold" ? "#facc15" : kind === "bomb" ? "#fb7185" : "#8c5a2f");
     }
 
-    drawRoundedRect(x - 44, floatY + 34, 88, 22, 12, labelFill);
+    drawRoundedRect(
+      x - whackLabelWidth / 2,
+      floatY + whackLabelYOffset,
+      whackLabelWidth,
+      whackLabelHeight,
+      Math.round(12 * whackPortraitScale),
+      labelFill
+    );
     ctx.fillStyle = theme.labelText;
-    ctx.font = "800 12px Orbitron, monospace";
+    ctx.font = `800 ${Math.round(12 * whackPortraitScale)}px Orbitron, monospace`;
     ctx.textAlign = "center";
-    ctx.fillText(kind === "gold" ? "BONUS" : kind === "bomb" ? "SKIP" : "WHACK", x, floatY + 50);
+    ctx.fillText(
+      kind === "gold" ? "BONUS" : kind === "bomb" ? "SKIP" : "WHACK",
+      x,
+      floatY + whackLabelYOffset + whackLabelHeight - Math.round(6 * whackPortraitScale)
+    );
 
     if (kind === "gold") {
       ctx.strokeStyle = "#fde68a";
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.arc(x, floatY - 10, 44, 0, Math.PI * 2);
+      ctx.arc(x, floatY - whackPortraitYOffset, whackGoldRingRadius, 0, Math.PI * 2);
       ctx.stroke();
     } else if (kind === "bomb") {
       ctx.strokeStyle = "#ef4444";
       ctx.lineWidth = 5;
       ctx.beginPath();
-      ctx.moveTo(x - 28, floatY - 38);
-      ctx.lineTo(x + 28, floatY + 18);
-      ctx.moveTo(x + 28, floatY - 38);
-      ctx.lineTo(x - 28, floatY + 18);
+      ctx.moveTo(x - whackBombOffsetX, floatY - whackBombTopY);
+      ctx.lineTo(x + whackBombOffsetX, floatY + whackBombBottomY);
+      ctx.moveTo(x + whackBombOffsetX, floatY - whackBombTopY);
+      ctx.lineTo(x - whackBombOffsetX, floatY + whackBombBottomY);
       ctx.stroke();
     }
   }
 
   return {
     name: "Whack-a-Mole",
-    description: "Cartoon-style pop-up portraits with Book Legends faces or student faces, bigger targets, and a steadier classroom-friendly pace.",
-    controls: "Click or tap a target before it ducks back down. Press 1 or 2 to switch target themes.",
+    description: "Cartoon-style pop-up student blooks with bigger portraits and a steadier classroom-friendly pace.",
+    controls: "Click or tap a target before it ducks back down.",
     stageTitle: "Whack-a-Mole Arcade",
     stageHelp: targetThemes[selectedThemeIndex].stageHelp,
     getStageHelp(state) {
@@ -2598,6 +2610,9 @@ const whackGame = (() => {
       return state;
     },
     getExtras(state) {
+      if (targetThemes.length <= 1) {
+        return null;
+      }
       return {
         title: "Whack Theme",
         items: targetThemes.map((theme, index) => ({
@@ -2611,7 +2626,7 @@ const whackGame = (() => {
       selectTheme(state, Number(id));
     },
     keydown(state, key) {
-      if (/^[12]$/.test(key)) {
+      if (/^[1-9]$/.test(key) && targetThemes.length > 1) {
         selectTheme(state, Number(key) - 1);
         return;
       }
@@ -2628,7 +2643,7 @@ const whackGame = (() => {
       let hitHole = false;
       for (let index = 0; index < holes.length; index += 1) {
         const hole = holes[index];
-        if (distance(point.x, point.y, hole.x, hole.y - 12) > 86) {
+        if (distance(point.x, point.y, hole.x, hole.y - 12) > whackHitRadius) {
           continue;
         }
 
@@ -2720,7 +2735,7 @@ const whackGame = (() => {
         const slot = state.holes[i];
 
         if (slot.mode === "up") {
-          const rise = 88 + Math.sin(time * 7 + i) * 3.5;
+          const rise = whackRiseBase + Math.sin(time * 7 + i) * 4.5;
           drawWhackPortrait(theme.targets[slot.targetIndex], slot.kind, hole.x, hole.y - rise, theme, time, i);
         }
 
@@ -2740,7 +2755,7 @@ const whackGame = (() => {
         value: `${state.score}`,
         copy: `Time ${formatTime(state.timeLeft)} | Combo ${state.combo} | Theme ${getTheme(state).name}`,
         banner: state.gameOver ? "Time up" : state.status,
-        footer: "Targets are bigger and a little slower now, and you can swap between Book Legends faces and Student Faces from the Whack Theme panel."
+        footer: "Whack-a-Mole now uses student blooks only, and the pop-up portraits are about 1.5x bigger for easier hits."
       };
     }
   };

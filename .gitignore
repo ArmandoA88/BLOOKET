@@ -1,3 +1,40 @@
+# Dependencies
 node_modules/
+
+# Environment
 .env
+.env.*
+!.env.example
+
+# Logs
+*.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.run.out.log
+.run.err.log
+
+# Temp and scratch work
+tmp/
+_tmp_blooket_allchunks/
+_tmp_blooket_chunks/
+_tmp_play_source.html
+tmp-*.jpg
+tmp-*.png
+tmp-*.jpeg
+tmp-*.webp
+
+# Build and coverage
+dist/
+coverage/
+.cache/
+*.tsbuildinfo
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+.vscode/
+.idea/

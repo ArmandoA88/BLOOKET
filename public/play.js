@@ -329,6 +329,8 @@ const MINI_GAME_TUTORIALS = {
   }
 };
 
+const JOIN_ACK_TIMEOUT_MS = 8000;
+
 let activeMiniGameType = "";
 let miniPrecisionValue = 0;
 let miniPrecisionDirection = 1;
@@ -337,6 +339,7 @@ let miniReactionTicker = null;
 let reconnecting = false;
 let reconnectJoinPending = false;
 let reconnectRetryCount = 0;
+let joinRequestPending = false;
 let selectedSoccerStarId = SOCCER_STAR_PLAYERS[0].id;
 let miniSoccerSavedCount = 0;
 let miniSoccerMissCount = 0;
@@ -819,6 +822,22 @@ function setJoinNotice(message, type = "") {
     joinNotice.classList.add(type);
   }
   joinNotice.textContent = message;
+}
+
+function joinConnectionHelpText() {
+  const host = String(window.location.hostname || "").toLowerCase();
+  if (!host || host === "localhost" || host === "127.0.0.1") {
+    return "Cannot reach the game server. Check that the host computer is running the server, then refresh.";
+  }
+  return "Cannot reach the game server. Make sure you are on the same Wi-Fi as the host, then refresh and try again.";
+}
+
+function setJoinBusy(isBusy) {
+  joinRequestPending = isBusy === true;
+  if (joinBtn) {
+    joinBtn.disabled = joinRequestPending;
+    joinBtn.textContent = joinRequestPending ? "Joining..." : "Join Game";
+  }
 }
 
 function boolFlag(value, fallback = true) {
@@ -3213,6 +3232,66 @@ function clonePackRows(packs) {
   }));
 }
 
+function fallbackPackRarityOdds(pack) {
+  const blooks = Array.isArray(pack?.blooks) ? pack.blooks : [];
+  if (blooks.length === 0) {
+    return [];
+  }
+
+  const counts = new Map();
+  for (const blook of blooks) {
+    const rarity = String(blook?.rarity || "Common");
+    counts.set(rarity, (counts.get(rarity) || 0) + 1);
+  }
+
+  return Array.from(counts.entries()).map(([rarity, count]) => ({
+    rarity,
+    chance: Math.round((count / blooks.length) * 100)
+  }));
+}
+
+function fallbackPackCatalog() {
+  return FALLBACK_BLOOKS.map((pack) => {
+    const blooks = Array.isArray(pack?.blooks) ? pack.blooks : [];
+    return {
+      id: pack.id,
+      name: pack.name,
+      description: pack.description,
+      openCost: 0,
+      sellValueEach: 5,
+      totalCount: blooks.length,
+      ownedCount: blooks.length,
+      duplicateCount: 0,
+      rarityOdds: fallbackPackRarityOdds(pack),
+      blooks: blooks.map((blook) => ({
+        ...blook,
+        image: blook.image || null,
+        packId: pack.id,
+        packName: pack.name,
+        count: 1,
+        duplicates: 0,
+        sellValueEach: 5
+      }))
+    };
+  });
+}
+
+function applyFallbackBlookCatalog() {
+  const fallbackPacks = fallbackPackCatalog();
+  catalogPacks = clonePackRows(fallbackPacks);
+  blookPacks = clonePackRows(fallbackPacks);
+
+  const defaultPackId = blookPacks[0]?.id || "";
+  if (!selectedPackId || !getPackById(selectedPackId)) {
+    selectedPackId = defaultPackId;
+  }
+  if (!selectedBlookId || !getOwnedBlookById(selectedBlookId)) {
+    selectedBlookId = pickFirstOwnedBlookIdForPack(selectedPackId) || getInventoryRows()[0]?.id || "";
+  }
+
+  renderEconomyPanel();
+}
+
 function mergeCatalogPackStats(packSummaries) {
   const summaries = Array.isArray(packSummaries) ? packSummaries : [];
   const summaryById = new Map(summaries.map((pack) => [pack.id, pack]));
@@ -3459,7 +3538,7 @@ function applyPublicBlookCatalog(payload) {
   if (!selectedPackId || !getPackById(selectedPackId)) {
     selectedPackId = defaultPackId;
   }
-  if (!selectedBlookId) {
+  if (!selectedBlookId || !getOwnedBlookById(selectedBlookId)) {
     selectedBlookId = pickFirstOwnedBlookIdForPack(selectedPackId) || getInventoryRows()[0]?.id || "";
   }
   renderEconomyPanel();
@@ -3483,7 +3562,7 @@ function applyAccount(account, nextKey = "") {
     selectedPackId = defaultPackId;
   }
 
-  if (!selectedBlookId && accountData?.selectedBlookId) {
+  if ((!selectedBlookId || !getOwnedBlookById(selectedBlookId)) && accountData?.selectedBlookId) {
     selectedBlookId = accountData.selectedBlookId;
   }
 
@@ -3491,7 +3570,7 @@ function applyAccount(account, nextKey = "") {
     selectedBlookId = accountData.selectedBlookId;
   }
 
-  if (!selectedBlookId) {
+  if (!selectedBlookId || !getOwnedBlookById(selectedBlookId)) {
     selectedBlookId = pickFirstOwnedBlookIdForPack(selectedPackId) || getInventoryRows()[0]?.id || "";
   }
 
@@ -3660,17 +3739,8 @@ async function loadBlooks() {
   try {
     await loadPublicBlooks();
   } catch (_error) {
-    blookPacks = [];
-    catalogPacks = [];
-    selectedPackId = "";
-    selectedBlookId = "";
-    setJoinNotice("Could not load the blook catalog. Refresh and try again.", "bad");
-    if (packTabs) {
-      packTabs.innerHTML = `<span class="help">Blook catalog unavailable.</span>`;
-    }
-    if (blookGrid) {
-      blookGrid.innerHTML = `<span class="help">No blooks available.</span>`;
-    }
+    applyFallbackBlookCatalog();
+    setJoinNotice("Could not load the full blook catalog. Starter blooks are ready so you can still join.", "bad");
     return;
   }
 
@@ -3686,7 +3756,7 @@ async function loadBlooks() {
     if (!selectedPackId || !getPackById(selectedPackId)) {
       selectedPackId = defaultPackId;
     }
-    if (!selectedBlookId) {
+    if (!selectedBlookId || !getOwnedBlookById(selectedBlookId)) {
       selectedBlookId = pickFirstOwnedBlookIdForPack(selectedPackId) || getInventoryRows()[0]?.id || "";
     }
     renderEconomyPanel();
@@ -3729,11 +3799,17 @@ function attemptAutoRejoin() {
   }
 
   reconnectJoinPending = true;
-  socket.emit(
+  socket.timeout(JOIN_ACK_TIMEOUT_MS).emit(
     "player:join",
     { code: roomCode, name: playerName, blookId: effectiveJoinBlookId(), accountKey: joinAccountKey() },
-    (res) => {
+    (error, res) => {
       reconnectJoinPending = false;
+      if (error) {
+        reconnecting = false;
+        setNotice("Reconnect timed out. Rejoin from the join screen if needed.", "bad");
+        setPhaseBanner(phase, "Reconnect timed out. Rejoin if sync does not recover.");
+        return;
+      }
       if (!res?.ok) {
         const message = res?.message || "Reconnect failed.";
         if (/taken/i.test(message) && reconnectRetryCount < 2) {
@@ -3817,12 +3893,21 @@ if (miniTutorialOverlay) {
   });
 }
 
-joinBtn.addEventListener("click", () => {
+function requestJoinRoom() {
+  if (joinRequestPending) {
+    return;
+  }
+
   const code = sanitizeRoomCode(codeInput.value);
   const name = nameInput.value.trim();
 
   if (!code || !name) {
     setJoinNotice("Game code and nickname are required.", "bad");
+    return;
+  }
+
+  if (!socket.connected) {
+    setJoinNotice(joinConnectionHelpText(), "bad");
     return;
   }
 
@@ -3835,14 +3920,20 @@ joinBtn.addEventListener("click", () => {
     : selectedPackId;
   const joinBlookId = effectiveJoinBlookId();
 
-  socket.emit("player:join", {
+  setJoinBusy(true);
+  socket.timeout(JOIN_ACK_TIMEOUT_MS).emit("player:join", {
     code,
     name,
     blookId: joinBlookId,
     packId: joinPackId,
     effectId: selectedEffectId,
     accountKey: joinAccountKey()
-  }, (res) => {
+  }, (error, res) => {
+    setJoinBusy(false);
+    if (error) {
+      setJoinNotice(`${joinConnectionHelpText()} Join request timed out.`, "bad");
+      return;
+    }
     if (!res?.ok) {
       setJoinNotice(res?.message || "Unable to join room.", "bad");
       return;
@@ -3886,7 +3977,24 @@ joinBtn.addEventListener("click", () => {
       setNotice(`Joined room ${roomCode} in progress. Syncing to current phase...`, "good");
     }
   });
-});
+}
+
+if (joinBtn) {
+  joinBtn.addEventListener("click", requestJoinRoom);
+}
+
+for (const input of [codeInput, nameInput]) {
+  if (!input) {
+    continue;
+  }
+  input.addEventListener("keydown", (event) => {
+    if (!(event instanceof KeyboardEvent) || event.key !== "Enter") {
+      return;
+    }
+    event.preventDefault();
+    requestJoinRoom();
+  });
+}
 
 maybeAutoJoinFromQuery();
 
@@ -4604,6 +4712,7 @@ socket.on("game:ended", ({ reason }) => {
 });
 
 socket.on("connect", () => {
+  setJoinBusy(false);
   setConnectionPill("Connected", "ok");
   if (!roomCode) {
     loadActiveRoomCode();
@@ -4617,6 +4726,7 @@ socket.on("connect", () => {
 });
 
 socket.on("disconnect", () => {
+  setJoinBusy(false);
   setConnectionPill("Reconnecting...", "warn");
   reconnecting = true;
   reconnectRetryCount = 0;
@@ -4638,6 +4748,7 @@ loadMiniTutorialProgress();
 setupSfxUnlockListeners();
 applyMiniTutorialButtonVisibility("");
 applyRoomSettings(roomSettings);
+applyFallbackBlookCatalog();
 loadBlooks();
 loadMiniGames();
 loadActiveRoomCode();
@@ -4645,11 +4756,12 @@ setInterval(loadMiniGames, 15000);
 setInterval(loadActiveRoomCode, 5000);
 
 socket.on("connect_error", () => {
+  setJoinBusy(false);
   setConnectionPill("Offline", "warn");
   if (!playCard.classList.contains("hidden")) {
     setNotice("Cannot reach server. Trying to reconnect...", "bad");
   } else {
-    setJoinNotice("Cannot connect to server. Check localhost process.", "bad");
+    setJoinNotice(joinConnectionHelpText(), "bad");
   }
 });
 

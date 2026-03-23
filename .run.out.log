@@ -1,8 +1,4 @@
-
-> blooket@1.0.0 start
-> node server.js
-
 Blooket-style game server listening on http://localhost:3000
+HTTPS is disabled or unavailable, so the app is serving over HTTP.
 Chromebook/LAN join URLs:
-  http://192.168.56.1:3000
-  http://10.0.0.8:3000
+  http://10.198.68.78:3000

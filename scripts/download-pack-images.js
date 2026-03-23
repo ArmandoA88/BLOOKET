@@ -27,10 +27,10 @@ const BOOK_LEGENDS_IMAGE_SOURCES = {
     "https://static.wikia.nocookie.net/olympians/images/1/10/Percy_Jackson.jpg/revision/latest?cb=20180319172727&format=original"
   ],
   "alice.jpg": [
-    "https://static.wikia.nocookie.net/aliceinwonderland/images/b/bc/Teatimealice.jpg/revision/latest?cb=20140404080433&format=original"
+    "https://static.wikia.nocookie.net/aliceinwonderland/images/5/58/Alice-wonderland.jpg/revision/latest?cb=20140404101447&format=original"
   ],
-  "dorothy.png": [
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/The_Wonderful_Wizard_of_Oz%2C_006.png/330px-The_Wonderful_Wizard_of_Oz%2C_006.png"
+  "dorothy.jpg": [
+    "https://static.wikia.nocookie.net/ozwikia/images/1/1a/Dorothy_Gale_with_silver_shoes.jpg/revision/latest?cb=20070415184250&format=original"
   ],
   "charlie-bucket.jpg": [
     "https://static.wikia.nocookie.net/charlieandthechocolatefactoryfilm/images/c/c7/13868598026798l-1-.jpg/revision/latest?cb=20150912184131&format=original"
@@ -38,8 +38,8 @@ const BOOK_LEGENDS_IMAGE_SOURCES = {
   "willy-wonka.png": [
     "https://static.wikia.nocookie.net/charlieandthechocolatefactoryfilm/images/8/82/Wonka_2005.png/revision/latest?cb=20240330045911&format=original"
   ],
-  "peter-pan.jpg": [
-    "https://static.wikia.nocookie.net/peterpan/images/8/81/Peter_pan_by_brian_froud.jpg/revision/latest?cb=20150614221615&format=original"
+  "peter-pan.png": [
+    "https://static.wikia.nocookie.net/disney/images/4/43/Peter-pan5.png/revision/latest?cb=20210202014251&format=original"
   ],
   "pippi.jpg": [
     "https://upload.wikimedia.org/wikipedia/en/7/78/L%C3%A5ngstrump_G%C3%A5r_Ombord.jpeg"
@@ -49,7 +49,7 @@ const BOOK_LEGENDS_IMAGE_SOURCES = {
     "https://static.wikia.nocookie.net/paddingtonbear/images/7/77/Paddington_3.png/revision/latest?cb=20171111120812&format=original"
   ],
   "pooh.png": [
-    "https://upload.wikimedia.org/wikipedia/commons/6/67/Winnie-the-Pooh_166-1.png",
+    "https://static.wikia.nocookie.net/disney/images/6/6e/Winnie_The_Pooh.png/revision/latest?cb=20140618203802&format=original",
     "https://upload.wikimedia.org/wikipedia/commons/0/0b/Winnie-the-Pooh_67.png"
   ],
   "charlotte.jpg": [

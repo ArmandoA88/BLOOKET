@@ -1,3 +1,4 @@
+$RefreshRequested = $args -contains "-Refresh" -or $args -contains "--refresh"
 $ErrorActionPreference = "Stop"
 
 $dest = "public\assets\superheroes"
@@ -14,17 +15,36 @@ $entries = @(
   @{ file = "spidergwen.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/4/42/Spider-Gwen_Vol_1_1.jpg" },
   @{ file = "spiderman-2099.png"; url = "https://upload.wikimedia.org/wikipedia/en/b/bb/Spider-Man_%28Miguel_O%27Hara%29.png" },
   @{ file = "spiderman-noir.png"; url = "https://upload.wikimedia.org/wikipedia/en/3/32/Spider-Man_Noir.png" },
-  @{ file = "iron-man.png"; url = "https://upload.wikimedia.org/wikipedia/en/4/47/Iron_Man_%28circa_2018%29.png" },
+  @{ file = "iron-man.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/f/f2/Robert_Downey_Jr._as_Tony_Stark_in_Avengers_Infinity_War.jpg" },
   @{ file = "captain-america-steve.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/9/9e/Captain_America_The_Winter_Soldier_poster.jpg" },
   @{ file = "captain-america-sam.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/thumb/8/8c/Anthony_Mackie_as_Captain_America.jpeg/330px-Anthony_Mackie_as_Captain_America.jpeg" },
-  @{ file = "thor.png"; url = "https://upload.wikimedia.org/wikipedia/en/1/1a/Thor_%28Marvel_Comics%29.png" },
-  @{ file = "hulk.png"; url = "https://upload.wikimedia.org/wikipedia/en/a/aa/Hulk_%28circa_2019%29.png" },
-  @{ file = "black-widow.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/3/37/Natasha_Romanova_incarnations.jpg" },
-  @{ file = "hawkeye.png"; url = "https://upload.wikimedia.org/wikipedia/en/9/99/Hawkeye_%28Clinton_Barton%29.png" },
-  @{ file = "doctor-strange.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/4/4f/Doctor_Strange_Vol_4_2_Ross_Variant_Textless.jpg" },
-  @{ file = "scarlet-witch.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/e/ec/Scarlet_Witch_Various_incarnations_2021.jpg" },
-  @{ file = "black-panther.png"; url = "https://upload.wikimedia.org/wikipedia/en/f/f7/Black_Panther_%28T%27Challa%29.png" },
-  @{ file = "captain-marvel.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/0/02/Carol_Danvers_-_%28evolution%29.jpg" },
+  @{ file = "thor.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/3/3c/Chris_Hemsworth_as_Thor.jpg" },
+  @{ file = "hulk.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/c/cd/Edward_Norton_and_Mark_Ruffalo_as_Bruce_Banner_Hulk.jpg" },
+  @{ file = "black-widow.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/f/f6/Scarlett_Johansson_as_Black_Widow.jpg" },
+  @{ file = "hawkeye.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/d/da/Jeremy_Renner_as_Hawkeye.jpg" },
+  @{ file = "doctor-strange.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/1/18/Benedict_Cumberbatch_as_Doctor_Strange.jpeg" },
+  @{ file = "scarlet-witch.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/d/d9/Elizabeth_Olsen_as_Wanda_Maximoff.jpg" },
+  @{ file = "black-panther.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/1/1a/Chadwick_Boseman_as_T%27Challa.jpg" },
+  @{ file = "captain-marvel.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/f/f1/Brie_Larson_as_Carol_Danvers.jpeg" },
+  @{ file = "ant-man.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/8/88/Paul_Rudd_as_Ant-Man.jpg" },
+  @{ file = "wasp.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/6/6e/Evangeline_Lilly_as_Wasp.jpeg" },
+  @{ file = "winter-soldier.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/4/4b/Sebastian_Stan_as_Bucky_Barnes.jpg" },
+  @{ file = "war-machine.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/b/b7/Terrence_Howard_and_Don_Cheadle_as_James_Rhodes.jpg" },
+  @{ file = "vision.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/thumb/f/fc/Paul_Bettany_as_Vision.jpg/330px-Paul_Bettany_as_Vision.jpg" },
+  @{ file = "shang-chi.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/d/de/Simu_Liu_as_Shang-Chi.jpg" },
+  @{ file = "star-lord.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/b/b2/Chris_Pratt_as_Peter_Quill.jpeg" },
+  @{ file = "gamora.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/5/54/Zoe_Saldana_as_Gamora.jpeg" },
+  @{ file = "groot.png"; url = "https://upload.wikimedia.org/wikipedia/en/3/3b/Groot.png" },
+  @{ file = "rocket.png"; url = "https://upload.wikimedia.org/wikipedia/en/f/fc/Rocket_Raccoon_singing_in_a_spaceship%2C_from_Guardians_of_the_Galaxy_Vol_3%2C_2023.png" },
+  @{ file = "drax.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/3/3d/Dave_Bautista_as_Drax.jpg" },
+  @{ file = "deadpool.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/f/fb/Ryan_Reynolds_as_Deadpool_2016.jpg" },
+  @{ file = "batman.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/a/a4/Unmasked_Batman_DCEU.jpg" },
+  @{ file = "superman.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/d/d6/Superman_Man_of_Steel.jpg" },
+  @{ file = "wonder-woman.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/e/e1/Gal_Gadot_as_Wonder_Woman.jpg" },
+  @{ file = "aquaman.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/b/b2/Jason_Momoa_as_Aquaman.jpg" },
+  @{ file = "flash.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/thumb/c/cd/EzraFlash.jpg/250px-EzraFlash.jpg" },
+  @{ file = "shazam.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/c/c2/Shazam%21_%28film%29_poster.jpg" },
+  @{ file = "blue-beetle.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/6/68/Blue_Beetle_%28film%29_poster.jpg" },
   @{ file = "green-goblin.png"; url = "https://upload.wikimedia.org/wikipedia/en/3/35/Green_Goblin_Comic_Art_by_Miguel_Mercado.png" },
   @{ file = "doctor-octopus.jpg"; url = "https://upload.wikimedia.org/wikipedia/en/b/bc/Dr._Octopus_Marvel.jpg" },
   @{ file = "venom.png"; url = "https://upload.wikimedia.org/wikipedia/en/b/b0/Venom_%28Marvel_Comics_character%29.png" },
@@ -46,7 +66,7 @@ $fail = 0
 
 foreach ($entry in $entries) {
   $outFile = Join-Path $dest $entry.file
-  if (Test-Path $outFile) {
+  if ((-not $RefreshRequested) -and (Test-Path $outFile)) {
     Write-Host "SKIP $($entry.file)"
     $skip += 1
     continue

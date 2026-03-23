@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-03-21T04:12:24.612Z",
+  "savedAt": "2026-03-23T15:57:30.294Z",
   "stats": {
     "foosball_frenzy": {
       "sessions": 49,
@@ -26,8 +26,8 @@
       "totalBonus": 0
     },
     "tower_stacker": {
-      "sessions": 4,
-      "playerEntries": 7,
+      "sessions": 5,
+      "playerEntries": 8,
       "completions": 7,
       "totalBonus": 2471
     },

@@ -9,6 +9,11 @@
     <link rel="preload" as="image" href="/assets/minigames/tap_rush/tap.svg" />
     <link rel="preload" as="image" href="/assets/minigames/sequence_memory/sequence.svg" />
     <link rel="preload" as="image" href="/assets/minigames/precision_stop/precision.svg" />
+    <link rel="preload" as="image" href="/assets/minigames/asteroids/asteroids.svg" />
+    <link rel="preload" as="image" href="/assets/minigames/classroom_cleanup/classroom-cleanup.svg" />
+    <link rel="preload" as="image" href="/assets/minigames/shadow_match/shadow-match.svg" />
+    <link rel="preload" as="image" href="/assets/minigames/battle_royale/battle-royale.svg" />
+    <link rel="preload" as="image" href="/assets/minigames/goalie_rush/goalie-rush.svg" />
     <link rel="preload" as="image" href="/assets/minigames/soccer_shootout/fussball-field.svg" />
     <link rel="preload" as="image" href="/assets/minigames/soccer_shootout/messi.svg" />
     <link rel="preload" as="image" href="/assets/minigames/soccer_shootout/ronaldo.svg" />
@@ -68,7 +73,7 @@
 
           <section id="joinCard" class="card strong fade-in">
             <h2 id="joinCardTitle" class="title">Join Room</h2>
-            <div class="card" style="margin-bottom: 12px">
+            <div id="studentLoginCard" class="card" style="margin-bottom: 12px">
               <h3 class="title" style="margin-bottom: 8px">Student Login</h3>
               <p class="help" style="margin-bottom: 10px">Use your first name only and the class password. Students must log in before they can join a game.</p>
               <div class="form-grid">
@@ -192,6 +197,7 @@
                   <div class="question" id="questionText">Question appears here.</div>
                   <img id="questionMedia" class="question-media hidden" alt="Question reference image" />
                   <div id="answers" class="answers"></div>
+                  <div id="asteroidsQuestionStage" class="asteroids-panel hidden"></div>
                 </section>
 
                 <section id="chestSection" class="hidden" style="margin-top: 12px">

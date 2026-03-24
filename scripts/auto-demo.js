@@ -304,6 +304,26 @@ function autoPlaySoccer(bot, totalShots) {
   }, 420 + randomInt(10, 90));
 }
 
+function autoPlayGoalieRush(bot, payload = {}) {
+  const activeShot = payload?.activeShot || null;
+  const lane = Number.isInteger(Number(activeShot?.lane)) ? Number(activeShot.lane) : randomInt(0, 2);
+
+  scheduleTimeout(bot, async () => {
+    if (bot.resolvedMiniGame) {
+      return;
+    }
+    try {
+      await emitAck(bot.socket, "player:minigameAction", {
+        code: bot.code,
+        action: "set_lane",
+        value: { lane }
+      });
+    } catch (_error) {
+      // Ignore action races when timer ends.
+    }
+  }, 85 + randomInt(10, 70));
+}
+
 function autoPlayTapRush(bot) {
   const intervalId = scheduleInterval(bot, async () => {
     if (bot.resolvedMiniGame) {
@@ -452,6 +472,145 @@ function autoPlayScramble(bot, maxAttempts) {
   scheduleTimeout(bot, tryGuess, 280 + randomInt(20, 80));
 }
 
+function autoPlayHallwayDash(bot) {
+  const intervalId = scheduleInterval(bot, async () => {
+    if (bot.resolvedMiniGame) {
+      clearInterval(intervalId);
+      bot.activeIntervals.delete(intervalId);
+      return;
+    }
+
+    const roll = Math.random();
+    const action = roll < 0.28 ? "jump" : "move_lane";
+    const value =
+      action === "jump"
+        ? undefined
+        : { direction: Math.random() < 0.5 ? "left" : "right" };
+
+    try {
+      await emitAck(bot.socket, "player:minigameAction", {
+        code: bot.code,
+        action,
+        value
+      });
+    } catch (_error) {
+      // Ignore action races when timer ends.
+    }
+  }, 170 + randomInt(20, 90));
+}
+
+function autoPlayDinoDig(bot, board, maxDigs) {
+  const tileCount = Math.max(1, Array.isArray(board) ? board.length : 16);
+  const digsAllowed = Math.max(1, Number(maxDigs) > 0 ? Number(maxDigs) : 7);
+  const digIndexes = Array.from({ length: tileCount }, (_, index) => index)
+    .sort(() => Math.random() - 0.5)
+    .slice(0, digsAllowed);
+  let nextDig = 0;
+
+  const digOnce = async () => {
+    if (bot.resolvedMiniGame || nextDig >= digIndexes.length) {
+      return;
+    }
+
+    try {
+      await emitAck(bot.socket, "player:minigameAction", {
+        code: bot.code,
+        action: "dig",
+        value: digIndexes[nextDig]
+      });
+    } catch (_error) {
+      // Ignore action races when timer ends.
+    }
+
+    nextDig += 1;
+    if (!bot.resolvedMiniGame && nextDig < digIndexes.length) {
+      scheduleTimeout(bot, digOnce, 180 + randomInt(20, 90));
+    }
+  };
+
+  scheduleTimeout(bot, digOnce, 160 + randomInt(20, 70));
+}
+
+function autoPlayClassroomCleanup(bot) {
+  const bins = ["book", "pencil", "trash"];
+  let step = 0;
+  const intervalId = scheduleInterval(bot, async () => {
+    if (bot.resolvedMiniGame) {
+      clearInterval(intervalId);
+      bot.activeIntervals.delete(intervalId);
+      return;
+    }
+
+    const shouldMove = step % 3 === 0;
+    const action = shouldMove ? "move_lane" : "sort_item";
+    const value = shouldMove
+      ? { direction: Math.random() < 0.5 ? "left" : "right" }
+      : { bin: bins[step % bins.length] };
+
+    try {
+      await emitAck(bot.socket, "player:minigameAction", {
+        code: bot.code,
+        action,
+        value
+      });
+    } catch (_error) {
+      // Ignore action races when timer ends.
+    }
+
+    step += 1;
+  }, 150 + randomInt(20, 70));
+}
+
+function autoPlayShadowMatch(bot, cards) {
+  const cardCount = Math.max(2, Array.isArray(cards) ? cards.length : 12);
+  const intervalId = scheduleInterval(bot, async () => {
+    if (bot.resolvedMiniGame) {
+      clearInterval(intervalId);
+      bot.activeIntervals.delete(intervalId);
+      return;
+    }
+
+    try {
+      await emitAck(bot.socket, "player:minigameAction", {
+        code: bot.code,
+        action: "flip_tile",
+        value: { index: randomInt(0, cardCount - 1) }
+      });
+    } catch (_error) {
+      // Ignore action races when timer ends.
+    }
+  }, 145 + randomInt(20, 75));
+}
+
+function autoPlayBattleRoyale(bot, payload = {}) {
+  const playTurn = async () => {
+    if (bot.resolvedMiniGame || payload?.completed === true) {
+      return;
+    }
+
+    const you = payload?.you || {};
+    let action = "attack";
+    if (you.specialReady === true && Math.random() < 0.26) {
+      action = "special";
+    } else if (Number(you.hp || 0) <= Number(you.maxHp || 1) * 0.42) {
+      action = Math.random() < 0.55 ? "heal" : "guard";
+    } else if (Math.random() < 0.22) {
+      action = "guard";
+    }
+
+    try {
+      await emitAck(bot.socket, "player:minigameAction", {
+        code: bot.code,
+        action
+      });
+    } catch (_error) {
+      // Ignore action races when timer ends or the turn already locked.
+    }
+  };
+
+  scheduleTimeout(bot, playTurn, 180 + randomInt(20, 90));
+}
+
 function wireBotGameplay(bot) {
   bot.socket.on("question:start", (payload) => {
     const correctIndex = parseMultiplicationAnswer(payload);
@@ -481,6 +640,10 @@ function wireBotGameplay(bot) {
       autoPlaySoccer(bot, payload?.data?.totalShots);
       return;
     }
+    if (type === "goalie_rush") {
+      autoPlayGoalieRush(bot, payload?.data);
+      return;
+    }
     if (type === "tap_rush") {
       autoPlayTapRush(bot);
       return;
@@ -503,12 +666,54 @@ function wireBotGameplay(bot) {
     }
     if (type === "word_scramble") {
       autoPlayScramble(bot, payload?.data?.maxAttempts);
+      return;
+    }
+    if (type === "hallway_dash") {
+      autoPlayHallwayDash(bot);
+      return;
+    }
+    if (type === "dino_dig") {
+      autoPlayDinoDig(bot, payload?.data?.board, payload?.data?.maxDigs);
+      return;
+    }
+    if (type === "shadow_match") {
+      autoPlayShadowMatch(bot, payload?.data?.cards);
+      return;
+    }
+    if (type === "classroom_cleanup") {
+      autoPlayClassroomCleanup(bot);
+      return;
+    }
+    if (type === "battle_royale") {
+      autoPlayBattleRoyale(bot, payload?.data);
     }
   });
 
   bot.socket.on("minigame:resolved", () => {
     bot.resolvedMiniGame = true;
     clearBotTimers(bot);
+  });
+
+  bot.socket.on("minigame:state", (payload) => {
+    if (bot.resolvedMiniGame) {
+      return;
+    }
+
+    if (payload?.type === "goalie_rush") {
+      if (payload?.completed === true) {
+        return;
+      }
+      autoPlayGoalieRush(bot, payload);
+      return;
+    }
+
+    if (payload?.type !== "battle_royale") {
+      return;
+    }
+    if (payload?.completed === true || payload?.selectedAction) {
+      return;
+    }
+    autoPlayBattleRoyale(bot, payload);
   });
 
   bot.socket.on("game:finished", () => {

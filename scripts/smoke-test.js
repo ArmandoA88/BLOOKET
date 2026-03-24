@@ -13,12 +13,24 @@ const SMOKE_STUDENT_USERNAMES = ["lenin", "nash"];
 const MINI_GAME_TYPES = [
   "foosball_frenzy",
   "soccer_shootout",
+  "goalie_rush",
   "tower_stacker",
-  "space_invaders"
+  "space_invaders",
+  "hallway_dash",
+  "dino_dig",
+  "shadow_match",
+  "classroom_cleanup",
+  "battle_royale"
 ];
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function randomInt(min, max) {
+  const low = Math.min(min, max);
+  const high = Math.max(min, max);
+  return Math.floor(Math.random() * (high - low + 1)) + low;
 }
 
 async function waitForHealth(timeoutMs = 15000) {
@@ -274,6 +286,26 @@ async function playMiniGameActions(type, code, studentA, studentB, dataA, dataB)
     return;
   }
 
+  if (type === "goalie_rush") {
+    const deadline = Date.now() + 2900;
+    let lane = 1;
+    while (Date.now() < deadline) {
+      lane = (lane + 1) % 3;
+      await emitAck(studentA, "player:minigameAction", {
+        code,
+        action: "set_lane",
+        value: { lane }
+      }).catch(() => {});
+      await emitAck(studentB, "player:minigameAction", {
+        code,
+        action: "set_lane",
+        value: { lane: (lane + 1) % 3 }
+      }).catch(() => {});
+      await sleep(140);
+    }
+    return;
+  }
+
   if (type === "space_invaders") {
     await sleep(1200);
     return;
@@ -366,6 +398,109 @@ async function playMiniGameActions(type, code, studentA, studentB, dataA, dataB)
     for (let i = 0; i < attempts; i += 1) {
       await emitAck(studentA, "player:minigameAction", { code, action: "guess", value: "AAAAA" });
       await emitAck(studentB, "player:minigameAction", { code, action: "guess", value: "BBBBB" });
+    }
+    return;
+  }
+
+  if (type === "hallway_dash") {
+    const deadline = Date.now() + 2600;
+    let step = 0;
+    while (Date.now() < deadline) {
+      const actionA = step % 3 === 0 ? "jump" : "move_lane";
+      const valueA = actionA === "jump" ? undefined : { direction: step % 2 === 0 ? "left" : "right" };
+      const actionB = step % 4 === 0 ? "jump" : "move_lane";
+      const valueB = actionB === "jump" ? undefined : { direction: step % 2 === 0 ? "right" : "left" };
+      await emitAck(studentA, "player:minigameAction", { code, action: actionA, value: valueA });
+      await emitAck(studentB, "player:minigameAction", { code, action: actionB, value: valueB });
+      step += 1;
+      await sleep(170);
+    }
+    return;
+  }
+
+  if (type === "dino_dig") {
+    const maxDigs = Math.max(1, Number(dataA?.maxDigs || dataB?.maxDigs || 7));
+    const boardLength = Math.max(1, Number(dataA?.board?.length || dataB?.board?.length || 16));
+    for (let dig = 0; dig < maxDigs; dig += 1) {
+      await emitAck(studentA, "player:minigameAction", {
+        code,
+        action: "dig",
+        value: dig % boardLength
+      });
+      await emitAck(studentB, "player:minigameAction", {
+        code,
+        action: "dig",
+        value: (dig + 1) % boardLength
+      });
+    }
+    return;
+  }
+
+  if (type === "shadow_match") {
+    const deadline = Date.now() + 2800;
+    const cardCount = Math.max(2, Number(dataA?.cards?.length || dataB?.cards?.length || 12));
+    while (Date.now() < deadline) {
+      await emitAck(studentA, "player:minigameAction", {
+        code,
+        action: "flip_tile",
+        value: { index: randomInt(0, cardCount - 1) }
+      }).catch(() => {});
+      await emitAck(studentB, "player:minigameAction", {
+        code,
+        action: "flip_tile",
+        value: { index: randomInt(0, cardCount - 1) }
+      }).catch(() => {});
+      await sleep(140);
+    }
+    return;
+  }
+
+  if (type === "classroom_cleanup") {
+    const deadline = Date.now() + 3000;
+    let step = 0;
+    const bins = ["book", "pencil", "trash"];
+    while (Date.now() < deadline) {
+      await emitAck(studentA, "player:minigameAction", {
+        code,
+        action: step % 2 === 0 ? "move_lane" : "sort_item",
+        value: step % 2 === 0 ? { direction: step % 4 === 0 ? "left" : "right" } : { bin: bins[step % bins.length] }
+      }).catch(() => {});
+      await emitAck(studentB, "player:minigameAction", {
+        code,
+        action: step % 3 === 0 ? "move_lane" : "sort_item",
+        value: step % 3 === 0 ? { direction: step % 2 === 0 ? "right" : "left" } : { bin: bins[(step + 1) % bins.length] }
+      }).catch(() => {});
+      step += 1;
+      await sleep(160);
+    }
+    return;
+  }
+
+  if (type === "battle_royale") {
+    const deadline = Date.now() + 5200;
+    let step = 0;
+    while (Date.now() < deadline) {
+      const actionA =
+        step === 0 && dataA?.you?.specialReady
+          ? "special"
+          : Number(dataA?.you?.hp || 0) <= Number(dataA?.you?.maxHp || 1) * 0.45
+            ? "heal"
+            : step % 3 === 2
+              ? "guard"
+              : "attack";
+      const actionB =
+        step === 0 && dataB?.you?.specialReady
+          ? "special"
+          : Number(dataB?.you?.hp || 0) <= Number(dataB?.you?.maxHp || 1) * 0.45
+            ? "heal"
+            : step % 2 === 0
+              ? "attack"
+              : "guard";
+
+      await emitAck(studentA, "player:minigameAction", { code, action: actionA }).catch(() => {});
+      await emitAck(studentB, "player:minigameAction", { code, action: actionB }).catch(() => {});
+      step += 1;
+      await sleep(320);
     }
   }
 }
@@ -523,12 +658,66 @@ async function run() {
 
     await emitAck(host, "host:end", { code: noMiniCode });
 
+    const createdAsteroids = await emitAck(host, "host:create", {
+      hostName: "SmokeAsteroids",
+      mode: "asteroids",
+      questionSet: "multiplication_1_digit",
+      timerSeconds: 10,
+      questionCount: 5,
+      miniGameRotationMode: "off",
+      miniGameDurationSec: 6
+    });
+
+    const asteroidsCode = createdAsteroids.code;
+    await emitAck(studentA, "player:join", { code: asteroidsCode, name: "Ava3" });
+    await emitAck(studentB, "player:join", { code: asteroidsCode, name: "Ben3" });
+
+    const asteroidsQuestion1A = waitForEvent(studentA, "question:start", {
+      timeoutMs: 12000,
+      predicate: (payload) => payload?.mode === "asteroids" && Number(payload?.questionIndex || 0) === 1
+    });
+    const asteroidsQuestion1B = waitForEvent(studentB, "question:start", {
+      timeoutMs: 12000,
+      predicate: (payload) => payload?.mode === "asteroids" && Number(payload?.questionIndex || 0) === 1
+    });
+    const asteroidsQuestion2A = waitForEvent(studentA, "question:start", {
+      timeoutMs: 22000,
+      predicate: (payload) => payload?.mode === "asteroids" && Number(payload?.questionIndex || 0) === 2
+    });
+    const asteroidsQuestion2B = waitForEvent(studentB, "question:start", {
+      timeoutMs: 22000,
+      predicate: (payload) => payload?.mode === "asteroids" && Number(payload?.questionIndex || 0) === 2
+    });
+
+    await emitAck(host, "host:start", { code: asteroidsCode });
+
+    const asteroidsPayload1 = await asteroidsQuestion1A;
+    await asteroidsQuestion1B;
+    const asteroidsAnswer1 = solveMultiplication(asteroidsPayload1);
+    const asteroidsAck1 = await emitAck(studentA, "player:answer", { code: asteroidsCode, answerIndex: asteroidsAnswer1 });
+    await emitAck(studentB, "player:answer", { code: asteroidsCode, answerIndex: asteroidsAnswer1 });
+    if (!asteroidsAck1?.asteroidBlast || Number(asteroidsAck1.asteroidBlast.blasts || 0) <= 0) {
+      throw new Error("Asteroids mode did not return a blast result for a correct answer.");
+    }
+
+    const asteroidsPayload2 = await asteroidsQuestion2A;
+    await asteroidsQuestion2B;
+    const asteroidsAnswer2 = solveMultiplication(asteroidsPayload2);
+    const asteroidsAck2 = await emitAck(studentA, "player:answer", { code: asteroidsCode, answerIndex: asteroidsAnswer2 });
+    await emitAck(studentB, "player:answer", { code: asteroidsCode, answerIndex: asteroidsAnswer2 });
+    if (Number(asteroidsAck2?.streakCoinsAwarded || 0) <= 0) {
+      throw new Error("Asteroids mode did not award streak coins on a combo answer.");
+    }
+
+    await emitAck(host, "host:end", { code: asteroidsCode });
+
     console.log("\nSMOKE TEST PASSED");
     console.log(`- server: ${BASE_URL}`);
     console.log("- quiz flow verified: host:start + student answers");
     console.log(`- mini-game test verified: ${MINI_GAME_TYPES.join(", ")}`);
     console.log("- default round mini-game verified: foosball_frenzy");
     console.log("- mini-game rotation mode off verified: question goes straight to round summary");
+    console.log("- asteroids mode verified: blast payloads + streak coin rewards");
     console.log("- multiplayer flow: host + 2 students");
   } finally {
     if (host) host.close();

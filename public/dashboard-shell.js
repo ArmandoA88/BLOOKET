@@ -166,6 +166,38 @@
     `;
   }
 
+  function ownedInventoryForPack(packId, limit = 4) {
+    const safePackId = String(packId || "");
+    if (!safePackId || !Array.isArray(state.account?.inventory)) {
+      return [];
+    }
+    return state.account.inventory
+      .filter((entry) => String(entry?.packId || "") === safePackId)
+      .slice(0, Math.max(1, Number(limit) || 4));
+  }
+
+  function renderOwnedPackPreview(pack, ownedCount = 0) {
+    const ownedRows = ownedInventoryForPack(pack?.id, 4);
+    if (!ownedRows.length) {
+      return renderHiddenPackPreview(pack, ownedCount);
+    }
+
+    const totalCount = Math.max(0, Number(pack?.totalCount || 0));
+    const unlockedCount = Math.max(0, Number(ownedCount || 0));
+    const hiddenCount = Math.max(0, totalCount - unlockedCount);
+    return `
+      <div class="blook-preview-row">
+        <span class="blook-pill">${escapeHtml(`${unlockedCount}/${totalCount} unlocked`)}</span>
+        <span class="blook-pill">${escapeHtml(`${hiddenCount} hidden`)}</span>
+      </div>
+      <div class="quiz-card-tags">
+        ${ownedRows
+          .map((row) => `<span class="quiz-tag">${escapeHtml(row.icon || "?" )} ${escapeHtml(row.name || "Owned Blook")}</span>`)
+          .join("")}
+      </div>
+    `;
+  }
+
   function fetchJson(url, options = {}) {
     return fetch(url, {
       credentials: "same-origin",
@@ -623,23 +655,29 @@
 
     blooksGridEl.innerHTML = packs
       .map(
-        (pack, index) => `
+        (pack, index) => {
+          const accountPack = Array.isArray(state.account?.packs)
+            ? state.account.packs.find((entry) => entry.id === pack.id)
+            : null;
+          const ownedCount = Number(accountPack?.ownedCount || 0);
+          return `
           <article class="pack-card" style="background: linear-gradient(180deg, #fff 0%, ${pickAccent(index)} 100%)">
             <div class="pack-card-top">
               <div>
-                <span class="pack-chip">${escapeHtml(`${pack.totalCount} blooks`)}</span>
+                <span class="pack-chip">${escapeHtml(`${ownedCount}/${pack.totalCount} owned`)}</span>
                 <h3 class="pack-card-title">${escapeHtml(pack.name)}</h3>
               </div>
               <span class="pack-chip">${escapeHtml(`${pack.openCost} coins`)}</span>
             </div>
             <p class="pack-card-copy">${escapeHtml(clip(pack.description, 120))}</p>
-            ${renderHiddenPackPreview(pack, 0)}
+            ${renderOwnedPackPreview(pack, ownedCount)}
             <div class="pack-card-actions">
               <a class="dashboard-action" href="/market">Open in Market</a>
-              <a class="dashboard-action ghost" href="/play?catalog=1#accountPanel">View Catalog</a>
+              <a class="dashboard-action ghost" href="/play?catalog=1#accountPanel">Use in Play</a>
             </div>
           </article>
-        `
+        `;
+        }
       )
       .join("");
   }
@@ -800,6 +838,7 @@
       state.account = payload.account || state.account;
       state.reward = payload.reward || null;
       renderMarket();
+      renderBlooks();
     } catch (error) {
       state.reward = {
         name: error?.message || "Pack open failed",
@@ -807,6 +846,7 @@
         rarity: "Notice"
       };
       renderMarket();
+      renderBlooks();
     }
   }
 

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arcade Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Baloo+2:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #07111d;
+      --panel: rgba(255, 255, 255, 0.08);
+      --line: rgba(151, 214, 255, 0.18);
+      --text: #f4fbff;
+      --muted: rgba(244, 251, 255, 0.72);
+      --gold: #ffd447;
+      --cyan: #5cc7ff;
+      --good: #76e39f;
+      --bad: #ff8a8a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Baloo 2", system-ui, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 18% 12%, rgba(92, 199, 255, 0.18), transparent 28%),
+        radial-gradient(circle at 82% 16%, rgba(255, 212, 71, 0.12), transparent 24%),
+        linear-gradient(180deg, #05101b 0%, #12233a 100%);
+    }
+
+    .page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 14px;
+      padding: 14px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 24px 80px rgba(4, 11, 23, 0.35);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 16px 18px;
+    }
+
+    .eyebrow {
+      font-family: "Orbitron", monospace;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.52);
+      font-size: 0.76rem;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Orbitron", monospace;
+      font-size: clamp(1.35rem, 3vw, 2rem);
+      line-height: 1.02;
+    }
+
+    .sub {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.97rem;
+      line-height: 1.45;
+    }
+
+    .meta {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pill {
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-family: "Orbitron", monospace;
+      font-size: 0.76rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+    }
+
+    .pill.good {
+      color: #dfffea;
+      border-color: rgba(118, 227, 159, 0.34);
+      background: rgba(118, 227, 159, 0.14);
+    }
+
+    .pill.bad {
+      color: #fff1f1;
+      border-color: rgba(255, 138, 138, 0.34);
+      background: rgba(255, 138, 138, 0.14);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .action {
+      border: none;
+      border-radius: 16px;
+      padding: 11px 14px;
+      font-family: "Orbitron", monospace;
+      font-weight: 800;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .action:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .action.primary {
+      background: linear-gradient(135deg, #145bc8, #3b82f6);
+      color: #eef7ff;
+    }
+
+    .action.secondary {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text);
+    }
+
+    .stage {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .stage-note {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+
+    .frame-wrap {
+      min-height: 0;
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1px solid rgba(151, 214, 255, 0.24);
+      background: rgba(4, 11, 23, 0.64);
+      position: relative;
+    }
+
+    .loading {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      text-align: center;
+      color: var(--muted);
+      background:
+        radial-gradient(circle at 50% 20%, rgba(92, 199, 255, 0.12), transparent 30%),
+        rgba(4, 11, 23, 0.88);
+      z-index: 1;
+    }
+
+    .loading.hidden {
+      display: none;
+    }
+
+    .loading-card {
+      max-width: 540px;
+    }
+
+    .loading-card strong {
+      display: block;
+      margin-bottom: 8px;
+      font-family: "Orbitron", monospace;
+      color: var(--gold);
+      font-size: 1.05rem;
+    }
+
+    iframe {
+      display: block;
+      width: 100%;
+      height: min(78vh, 840px);
+      min-height: 620px;
+      border: none;
+      background: #09131d;
+    }
+
+    @media (max-width: 900px) {
+      .topbar {
+        flex-direction: column;
+      }
+
+      .meta,
+      .actions {
+        justify-content: flex-start;
+      }
+
+      iframe {
+        height: 78vh;
+        min-height: 540px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="panel topbar">
+      <div>
+        <div class="eyebrow">Arcade Suite Preview</div>
+        <h1 id="previewTitle">Loading Preview</h1>
+        <p class="sub" id="previewSubtitle">Creating a temporary room and loading the player preview.</p>
+      </div>
+      <div>
+        <div class="meta">
+          <span class="pill" id="previewStatus">Preparing room...</span>
+          <span class="pill" id="previewRoom">Room ------</span>
+        </div>
+        <div class="actions" style="margin-top: 10px">
+          <button class="action primary" id="restartPreviewBtn" type="button">Restart Preview</button>
+          <a class="action secondary" href="/arcade-suite.html" target="_top" rel="noopener">Back To Suite</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="panel stage">
+      <div class="stage-note" id="previewNote">
+        The suite is starting a quick guest preview. Click inside the game frame once it loads so keyboard controls go to the player screen.
+      </div>
+      <div class="frame-wrap">
+        <div class="loading" id="previewLoading">
+          <div class="loading-card">
+            <strong id="previewLoadingTitle">Launching preview...</strong>
+            <div id="previewLoadingCopy">Creating room, loading player, and starting the game.</div>
+          </div>
+        </div>
+        <iframe id="previewFrame" title="Arcade preview player" allow="autoplay"></iframe>
+      </div>
+    </main>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/arcade-preview.js"></script>
+</body>
+</html>

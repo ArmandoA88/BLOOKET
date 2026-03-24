@@ -1,0 +1,46 @@
+<svg width="320" height="320" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="320" height="320" rx="36" fill="#081427"/>
+  <rect x="18" y="18" width="284" height="284" rx="28" fill="url(#bg)" stroke="#28456D" stroke-width="2"/>
+  <circle cx="72" cy="72" r="2" fill="white" fill-opacity="0.75"/>
+  <circle cx="264" cy="86" r="2" fill="white" fill-opacity="0.6"/>
+  <circle cx="238" cy="148" r="2.5" fill="white" fill-opacity="0.72"/>
+  <circle cx="94" cy="210" r="2" fill="white" fill-opacity="0.7"/>
+  <circle cx="270" cy="234" r="2" fill="white" fill-opacity="0.7"/>
+  <circle cx="138" cy="110" r="30" fill="url(#asteroid1)"/>
+  <circle cx="232" cy="132" r="22" fill="url(#asteroid2)"/>
+  <circle cx="92" cy="166" r="18" fill="url(#asteroid3)"/>
+  <circle cx="174" cy="70" r="10" fill="url(#coin)"/>
+  <path d="M160 192L196 272H124L160 192Z" fill="url(#ship)" stroke="#BFDBFE" stroke-width="2"/>
+  <path d="M160 144V210" stroke="#7DD3FC" stroke-width="10" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="bg" x1="160" y1="18" x2="160" y2="302" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1D39"/>
+      <stop offset="1" stop-color="#102D55"/>
+    </linearGradient>
+    <radialGradient id="asteroid1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(126 100) rotate(48.3665) scale(42.4264)">
+      <stop stop-color="#F8FAFC"/>
+      <stop offset="0.35" stop-color="#CBD5E1"/>
+      <stop offset="1" stop-color="#475569"/>
+    </radialGradient>
+    <radialGradient id="asteroid2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(224 126) rotate(47.1211) scale(31.1127)">
+      <stop stop-color="#F8FAFC"/>
+      <stop offset="0.42" stop-color="#CBD5E1"/>
+      <stop offset="1" stop-color="#334155"/>
+    </radialGradient>
+    <radialGradient id="asteroid3" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(86 158) rotate(45) scale(25.4558)">
+      <stop stop-color="#E2E8F0"/>
+      <stop offset="0.48" stop-color="#94A3B8"/>
+      <stop offset="1" stop-color="#475569"/>
+    </radialGradient>
+    <radialGradient id="coin" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(170 64) rotate(45) scale(18)">
+      <stop stop-color="#FFF7CC"/>
+      <stop offset="0.4" stop-color="#FACC15"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </radialGradient>
+    <linearGradient id="ship" x1="160" y1="192" x2="160" y2="272" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FAFC"/>
+      <stop offset="0.52" stop-color="#60A5FA"/>
+      <stop offset="1" stop-color="#1D4ED8"/>
+    </linearGradient>
+  </defs>
+</svg>

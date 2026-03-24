@@ -63,7 +63,7 @@
     const BULLET_SPEED = 560;
     const ALIEN_BULLET_SPEED = 220;
     const SHIELD_COUNT = 4;
-    const TOTAL_WAVES = 10;
+    const TOTAL_WAVES = 15;
 
     const ALIEN_PTS = [30, 20, 20, 10, 10];   // per row (top to bottom)
     const ALIEN_COLORS = [
@@ -149,7 +149,7 @@
     }
 
     // =====================================================================
-    //  WAVE DESIGNS — 10 unique formation patterns
+    //  WAVE DESIGNS - 15 campaign waves with rising pressure
     // =====================================================================
     const WAVE_DESIGNS = [
         // Wave 1 — Classic Invasion
@@ -335,6 +335,98 @@
                 radialDownBias: 128,
                 radialCooldown: 1.08
             }
+        },
+        // Wave 11 - Serrated Vanguard
+        {
+            name: 'SERRATED VANGUARD',
+            pattern: () => serratedWall(),
+            colors: ['#ff5d8f', '#ff8b3d', '#ffcf40', '#45d8ff', '#45d8ff'],
+            moveInterval: 0.22,
+            shootInterval: 0.64,
+            speed: 70,
+            armorRows: 3,
+            armorHp: 2,
+            bulletSpeed: 366,
+            shotsPerVolley: 3,
+            aimedChance: 0.78,
+            dropStep: 24,
+            powerDropChance: 0.22,
+            ufoMin: 10,
+            ufoMax: 14
+        },
+        // Wave 12 - Lancer Wedge
+        {
+            name: 'LANCER WEDGE',
+            pattern: () => lancerWedge(),
+            colors: ['#f06cff', '#ff4d94', '#ff8f1f', '#ffd60a', '#6cf5ff'],
+            moveInterval: 0.2,
+            shootInterval: 0.58,
+            speed: 76,
+            armorRows: 3,
+            armorHp: 2,
+            bulletSpeed: 382,
+            shotsPerVolley: 3,
+            aimedChance: 0.82,
+            dropStep: 25,
+            powerDropChance: 0.23,
+            ufoMin: 9,
+            ufoMax: 13
+        },
+        // Wave 13 - Plasma Grid
+        {
+            name: 'PLASMA GRID',
+            pattern: () => plasmaGrid(),
+            colors: ['#61d5ff', '#00ffff', '#72ffcf', '#ffd60a', '#ff7f50'],
+            moveInterval: 0.18,
+            shootInterval: 0.53,
+            speed: 83,
+            armorRows: 4,
+            armorHp: 2,
+            bulletSpeed: 398,
+            shotsPerVolley: 4,
+            aimedChance: 0.86,
+            dropStep: 26,
+            powerDropChance: 0.24,
+            ufoMin: 8,
+            ufoMax: 12
+        },
+        // Wave 14 - Doom Pincer
+        {
+            name: 'DOOM PINCER',
+            pattern: () => doomPincer(),
+            colors: ['#ff3d6e', '#ff6a3d', '#ffb13d', '#b56cff', '#7e7dff'],
+            moveInterval: 0.16,
+            shootInterval: 0.48,
+            speed: 90,
+            armorRows: 4,
+            armorHp: 3,
+            bulletSpeed: 416,
+            shotsPerVolley: 4,
+            aimedChance: 0.9,
+            dropStep: 28,
+            powerDropChance: 0.25,
+            ufoMin: 8,
+            ufoMax: 11
+        },
+        // Wave 15 - Overlord Core
+        {
+            name: 'OVERLORD CORE',
+            pattern: () => [],
+            colors: [],
+            boss: {
+                maxHp: 220,
+                size: 210,
+                height: 84,
+                vx: 210,
+                shootInterval: 0.48,
+                singleVy: 350,
+                spreadVy: 314,
+                spreadDx: 104,
+                radialShots: 18,
+                radialSpeed: 262,
+                radialDownBias: 138,
+                radialCooldown: 0.82
+            }
         }
     ];
 
@@ -416,6 +508,62 @@
         return cells.filter(c => { const k = `${c.row},${c.col}`; if (seen.has(k)) return false; seen.add(k); return true; });
     }
 
+    function serratedWall() {
+        const cells = [];
+        for (let r = 0; r < 5; r++)
+            for (let c = 0; c < 11; c++) {
+                const edgeRamp = c === 0 || c === 10;
+                const centerTeeth = (c + r) % 2 === 0 && c >= 2 && c <= 8;
+                const upperBrace = r <= 1 && c >= 3 && c <= 7;
+                if (edgeRamp || centerTeeth || upperBrace) cells.push({ row: r, col: c });
+            }
+        return cells;
+    }
+
+    function lancerWedge() {
+        const cells = [];
+        const center = 5;
+        for (let r = 0; r < 5; r++)
+            for (let c = 0; c < 11; c++) {
+                const spread = r + 1;
+                const onSpear = Math.abs(c - center) <= spread;
+                const hollowCore = r >= 2 && c === center;
+                const wingTips = r === 4 && (c === 0 || c === 10);
+                if ((onSpear && !hollowCore) || wingTips) cells.push({ row: r, col: c });
+            }
+        return cells;
+    }
+
+    function plasmaGrid() {
+        const cells = [];
+        for (let r = 0; r < 5; r++)
+            for (let c = 0; c < 11; c++) {
+                const outerRail = r === 0 || r === 4 || c === 0 || c === 10;
+                const verticalPulse = c === 2 || c === 5 || c === 8;
+                const middleBand = r === 2 && c >= 1 && c <= 9;
+                if (outerRail || verticalPulse || middleBand) cells.push({ row: r, col: c });
+            }
+        const seen = new Set();
+        return cells.filter(c => { const k = `${c.row},${c.col}`; if (seen.has(k)) return false; seen.add(k); return true; });
+    }
+
+    function doomPincer() {
+        const cells = [];
+        for (let r = 0; r < 5; r++)
+            for (let c = 0; c < 11; c++) {
+                const leftClaw = c <= 4 && (r === 0 || r === 4 || c === r);
+                const rightClaw = c >= 6 && (r === 0 || r === 4 || c === 10 - r);
+                const jaw = r >= 1 && r <= 3 && (c === 0 || c === 10 || c === 5);
+                if (leftClaw || rightClaw || jaw) cells.push({ row: r, col: c });
+            }
+        const seen = new Set();
+        return cells.filter(c => { const k = `${c.row},${c.col}`; if (seen.has(k)) return false; seen.add(k); return true; });
+    }
+
+    function waveDifficultyLevel(waveNumber = wave) {
+        return Math.max(0, Number(waveNumber || 1) - 1);
+    }
+
     let waveDesign = null; // active design
 
     function getWaveDesign(waveNumber = wave) {
@@ -434,9 +582,10 @@
         formationX = 0;
         formationDir = 1;
 
-        formationMoveInterval = waveDesign.moveInterval;
-        alienShootInterval = waveDesign.shootInterval;
-        formationSpeed = waveDesign.speed;
+        const difficultyLevel = waveDifficultyLevel(wave);
+        formationMoveInterval = Math.max(0.12, waveDesign.moveInterval - difficultyLevel * 0.004);
+        alienShootInterval = Math.max(0.34, waveDesign.shootInterval - difficultyLevel * 0.008);
+        formationSpeed = waveDesign.speed + difficultyLevel * 1.8;
 
         const cells = waveDesign.pattern();
         const colors = waveDesign.colors.length ? waveDesign.colors : ALIEN_COLORS;
@@ -511,6 +660,7 @@
 
 
     function startBossWave() {
+        const difficultyLevel = waveDifficultyLevel(wave);
         const bossProfile = waveDesign?.boss || {
             maxHp: 58,
             size: 132,
@@ -539,16 +689,16 @@
             w: bossProfile.size,
             h: bossProfile.height,
             hp: maxHp, maxHp,
-            vx: bossProfile.vx,
+            vx: bossProfile.vx + difficultyLevel * 4,
             shootTimer: 0,
-            shootInterval: bossProfile.shootInterval,
-            radialCooldown: bossProfile.radialCooldown,
-            singleVy: bossProfile.singleVy,
-            spreadVy: bossProfile.spreadVy,
-            spreadDx: bossProfile.spreadDx,
-            radialShots: bossProfile.radialShots,
-            radialSpeed: bossProfile.radialSpeed,
-            radialDownBias: bossProfile.radialDownBias,
+            shootInterval: Math.max(0.26, bossProfile.shootInterval - difficultyLevel * 0.01),
+            radialCooldown: Math.max(0.52, bossProfile.radialCooldown - difficultyLevel * 0.01),
+            singleVy: bossProfile.singleVy + difficultyLevel * 4,
+            spreadVy: bossProfile.spreadVy + difficultyLevel * 4,
+            spreadDx: bossProfile.spreadDx + difficultyLevel * 1.5,
+            radialShots: bossProfile.radialShots + Math.floor(difficultyLevel / 6),
+            radialSpeed: bossProfile.radialSpeed + difficultyLevel * 3,
+            radialDownBias: bossProfile.radialDownBias + difficultyLevel * 2,
             phase: 0,
             flashTime: 0,
             armAngle: 0,
@@ -1077,9 +1227,10 @@
                 alienShootTimer = 0;
                 const liveAliens = aliens.filter(a => a.alive);
                 if (liveAliens.length > 0) {
+                    const difficultyLevel = waveDifficultyLevel(wave);
                     const volleyCount = Math.min(waveDesign?.shotsPerVolley || 1, liveAliens.length);
-                    const bulletSpeed = waveDesign?.bulletSpeed || (ALIEN_BULLET_SPEED + wave * 18);
-                    const aimedChance = waveDesign?.aimedChance || 0;
+                    const bulletSpeed = (waveDesign?.bulletSpeed || (ALIEN_BULLET_SPEED + wave * 18)) + difficultyLevel * 6;
+                    const aimedChance = Math.min(0.96, (waveDesign?.aimedChance || 0) + difficultyLevel * 0.008);
                     const availableShooters = [...liveAliens];
                     for (let shot = 0; shot < volleyCount; shot++) {
                         const aimedShot = Math.random() < aimedChance;

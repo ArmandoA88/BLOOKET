@@ -135,6 +135,54 @@ function drawLabel(text, x, y, size, color, align = "left") {
   ctx.fillText(text, x, y);
 }
 
+function drawWrappedText(
+  text,
+  x,
+  y,
+  maxWidth,
+  lineHeight,
+  color,
+  font = '600 20px "Baloo 2", system-ui, sans-serif',
+  align = "left"
+) {
+  const safeText = String(text || "").trim();
+  if (!safeText) {
+    return y;
+  }
+
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.font = font;
+  ctx.textAlign = align;
+
+  const words = safeText.split(/\s+/);
+  const lines = [];
+  let currentLine = "";
+
+  for (const word of words) {
+    const nextLine = currentLine ? `${currentLine} ${word}` : word;
+    if (currentLine && ctx.measureText(nextLine).width > maxWidth) {
+      lines.push(currentLine);
+      currentLine = word;
+    } else {
+      currentLine = nextLine;
+    }
+  }
+
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+
+  let cursorY = y;
+  for (const line of lines) {
+    ctx.fillText(line, x, cursorY);
+    cursorY += lineHeight;
+  }
+
+  ctx.restore();
+  return cursorY;
+}
+
 function ensureSuiteAudioContext() {
   const ContextCtor = window.AudioContext || window.webkitAudioContext;
   if (!ContextCtor) {
@@ -190,6 +238,47 @@ function playSuiteTone(ctx, frequency, durationMs, gain = 0.03, waveform = "sine
   oscillator.stop(end + 0.02);
 }
 
+function playSuiteNoise(ctx, durationMs, gain = 0.02, delayMs = 0, startFrequency = 1200, endFrequency = startFrequency, q = 0.7, type = "bandpass") {
+  if (!ctx || ctx.state !== "running") {
+    return;
+  }
+
+  const durationSeconds = Math.max(0.05, (Number(durationMs) || 120) / 1000);
+  const start = ctx.currentTime + Math.max(0, Number(delayMs) || 0) / 1000;
+  const end = start + durationSeconds;
+  const frameCount = Math.max(1, Math.floor(ctx.sampleRate * durationSeconds));
+  const buffer = ctx.createBuffer(1, frameCount, ctx.sampleRate);
+  const channel = buffer.getChannelData(0);
+  for (let index = 0; index < frameCount; index += 1) {
+    const decay = 1 - index / frameCount;
+    channel[index] = (Math.random() * 2 - 1) * decay;
+  }
+
+  const source = ctx.createBufferSource();
+  const filter = ctx.createBiquadFilter();
+  const volume = ctx.createGain();
+  const safeStartFrequency = Math.max(80, Number(startFrequency) || 1200);
+  const safeEndFrequency = Math.max(80, Number(endFrequency) || safeStartFrequency);
+
+  source.buffer = buffer;
+  filter.type = type;
+  filter.Q.value = Math.max(0.0001, Number(q) || 0.7);
+  filter.frequency.setValueAtTime(safeStartFrequency, start);
+  if (Math.abs(safeEndFrequency - safeStartFrequency) > 1) {
+    filter.frequency.exponentialRampToValueAtTime(safeEndFrequency, end);
+  }
+
+  volume.gain.setValueAtTime(0.0001, start);
+  volume.gain.exponentialRampToValueAtTime(Math.max(0.0002, gain), Math.min(end, start + 0.02));
+  volume.gain.exponentialRampToValueAtTime(0.0001, end);
+
+  source.connect(filter);
+  filter.connect(volume);
+  volume.connect(ctx.destination);
+  source.start(start);
+  source.stop(end + 0.03);
+}
+
 function playCrossingSfx(kind, detail = "") {
   const ctx = ensureSuiteAudioContext();
   if (!ctx || ctx.state !== "running") {
@@ -204,8 +293,40 @@ function playCrossingSfx(kind, detail = "") {
 
   if (kind === "car") {
     if (detail === "siren") {
+      playSuiteTone(ctx, 180, 160, 0.012, "sawtooth", 0, 135);
       playSuiteTone(ctx, 720, 85, 0.014, "square");
       playSuiteTone(ctx, 540, 85, 0.014, "square", 90);
+      return;
+    }
+    if (detail === "honk") {
+      playSuiteTone(ctx, 520, 130, 0.02, "square");
+      playSuiteTone(ctx, 438, 150, 0.018, "square", 10);
+      return;
+    }
+    if (detail === "skid") {
+      playSuiteNoise(ctx, 170, 0.024, 0, 2400, 900, 1.2, "highpass");
+      playSuiteTone(ctx, 210, 120, 0.012, "sawtooth", 12, 96);
+      return;
+    }
+    if (detail === "crash") {
+      playSuiteNoise(ctx, 210, 0.026, 0, 1800, 420, 1.1, "bandpass");
+      playSuiteTone(ctx, 150, 180, 0.018, "sawtooth", 0, 72);
+      playSuiteTone(ctx, 88, 220, 0.012, "triangle", 18, 54);
+      return;
+    }
+    if (detail === "boost") {
+      playSuiteTone(ctx, 210, 110, 0.017, "sawtooth", 0, 270);
+      playSuiteTone(ctx, 128, 140, 0.012, "triangle", 18, 164);
+      return;
+    }
+    if (detail === "sport") {
+      playSuiteTone(ctx, 240, 100, 0.015, "sawtooth", 0, 188);
+      playSuiteTone(ctx, 160, 130, 0.011, "triangle", 20, 126);
+      return;
+    }
+    if (detail === "engine") {
+      playSuiteTone(ctx, 170, 120, 0.015, "sawtooth", 0, 130);
+      playSuiteTone(ctx, 118, 150, 0.01, "triangle", 24, 98);
       return;
     }
     if (detail === "heavy") {
@@ -239,6 +360,19 @@ function playCrossingSfx(kind, detail = "") {
     playSuiteTone(ctx, 420, 85, 0.02, "triangle");
     playSuiteTone(ctx, 620, 100, 0.024, "triangle", 70);
   }
+}
+
+function suiteCanPlaySfx(state, key, cooldownSeconds) {
+  if (!state?.sfx) {
+    return false;
+  }
+  const now = Math.max(0, Number(state.soundClock || 0));
+  const nextAllowedAt = Math.max(0, Number(state.sfx[key] || 0));
+  if (nextAllowedAt > now) {
+    return false;
+  }
+  state.sfx[key] = now + Math.max(0, Number(cooldownSeconds) || 0);
+  return true;
 }
 
 function formatTime(seconds) {
@@ -1635,16 +1769,7 @@ const crossingGame = (() => {
   }
 
   function crossingCanPlaySfx(state, key, cooldownSeconds) {
-    if (!state?.sfx) {
-      return false;
-    }
-    const now = Math.max(0, Number(state.soundClock || 0));
-    const nextAllowedAt = Math.max(0, Number(state.sfx[key] || 0));
-    if (nextAllowedAt > now) {
-      return false;
-    }
-    state.sfx[key] = now + Math.max(0, Number(cooldownSeconds) || 0);
-    return true;
+    return suiteCanPlaySfx(state, key, cooldownSeconds);
   }
 
   function crossingTrafficSoundDetail(vehicle) {
@@ -1655,7 +1780,10 @@ const crossingGame = (() => {
     if (typeId === "citybus" || typeId === "schoolbus" || typeId === "truck") {
       return "heavy";
     }
-    return "car";
+    if (typeId === "sports") {
+      return "sport";
+    }
+    return "engine";
   }
 
   function maybePlayRoadTrafficSfx(state, lane) {
@@ -1680,10 +1808,15 @@ const crossingGame = (() => {
     }
 
     const detail = crossingTrafficSoundDetail(nearestVehicle);
-    const threshold = detail === "heavy" ? 170 : detail === "siren" ? 150 : 118;
-    const cooldown = detail === "siren" ? 0.7 : detail === "heavy" ? 0.55 : 0.4;
-    if (nearestDistance <= threshold && crossingCanPlaySfx(state, "roadAt", cooldown)) {
+    const threshold = detail === "heavy" ? 188 : detail === "siren" ? 172 : detail === "sport" ? 152 : 136;
+    const closeThreshold = detail === "heavy" ? 112 : detail === "siren" ? 106 : 92;
+    const motorCooldown = detail === "siren" ? 0.6 : detail === "heavy" ? 0.46 : 0.34;
+    const honkCooldown = detail === "heavy" ? 1.1 : 0.82;
+    if (nearestDistance <= threshold && crossingCanPlaySfx(state, "roadMotorAt", motorCooldown)) {
       playCrossingSfx("car", detail);
+    }
+    if (nearestDistance <= closeThreshold && crossingCanPlaySfx(state, "roadHonkAt", honkCooldown)) {
+      playCrossingSfx("car", "honk");
     }
   }
 
@@ -1697,8 +1830,9 @@ const crossingGame = (() => {
   }
 
   function loseLife(state, reason) {
+    const trafficLoss = String(reason || "").toLowerCase().includes("traffic");
     if (crossingCanPlaySfx(state, "lossAt", 0.16)) {
-      playCrossingSfx(String(reason || "").toLowerCase().includes("traffic") ? "car" : "splash", "heavy");
+      playCrossingSfx(trafficLoss ? "car" : "splash", trafficLoss ? "crash" : "heavy");
     }
     state.lives -= 1;
     state.status = reason;
@@ -1775,7 +1909,8 @@ const crossingGame = (() => {
         facing: "up",
         sfx: {
           frogAt: 0,
-          roadAt: 0,
+          roadMotorAt: 0,
+          roadHonkAt: 0,
           riverAt: 0,
           lossAt: 0,
           goalAt: 0
@@ -3733,6 +3868,65 @@ const racerGame = (() => {
     return "mid";
   }
 
+  function racerCanPlaySfx(state, key, cooldownSeconds) {
+    return suiteCanPlaySfx(state, key, cooldownSeconds);
+  }
+
+  function racerTrafficSoundDetail(car) {
+    const id = String(car?.id || "");
+    if (id.includes("police")) {
+      return "siren";
+    }
+    if (id.includes("pickup") || id.includes("minivan")) {
+      return "heavy";
+    }
+    if (id.includes("gallardo") || id.includes("viper")) {
+      return "sport";
+    }
+    return "engine";
+  }
+
+  function maybePlayRacerMotorSfx(state) {
+    const detail = state.boost > 0 ? "boost" : "sport";
+    const cooldown = state.boost > 0 ? 0.11 : 0.18;
+    if (racerCanPlaySfx(state, "playerMotorAt", cooldown)) {
+      playCrossingSfx("car", detail);
+    }
+  }
+
+  function maybePlayRacerTrafficSfx(state, playerCar) {
+    const playerCenterX = laneCenters[state.lane];
+    const playerCenterY = state.playerY + playerCar.drawH / 2;
+    let nearestObstacle = null;
+    let nearestDistance = Infinity;
+
+    for (const obstacle of state.obstacles) {
+      const obstacleCenterX = laneCenters[obstacle.lane];
+      const obstacleCenterY = obstacle.y + obstacle.car.drawH / 2;
+      const weightedDistance = Math.hypot((obstacleCenterX - playerCenterX) * 1.25, obstacleCenterY - playerCenterY);
+      if (weightedDistance < nearestDistance) {
+        nearestDistance = weightedDistance;
+        nearestObstacle = obstacle;
+      }
+    }
+
+    if (!nearestObstacle) {
+      return;
+    }
+
+    const detail = racerTrafficSoundDetail(nearestObstacle.car);
+    const sameLane = nearestObstacle.lane === state.lane;
+    const motorThreshold = sameLane ? 250 : 190;
+    const honkThreshold = sameLane ? 154 : 120;
+    const motorCooldown = detail === "siren" ? 0.42 : detail === "heavy" ? 0.32 : 0.24;
+    if (nearestDistance <= motorThreshold && racerCanPlaySfx(state, "trafficMotorAt", motorCooldown)) {
+      playCrossingSfx("car", detail);
+    }
+    if (nearestDistance <= honkThreshold && racerCanPlaySfx(state, "trafficHonkAt", 0.76)) {
+      playCrossingSfx("car", "honk");
+    }
+  }
+
   return {
     name: "Mini Racer",
     description: "A three-lane arcade racer with real supercar sprites, quick lane swaps, depth movement, and nitro pickups that reward brave lines.",
@@ -3750,8 +3944,17 @@ const racerGame = (() => {
         boostTimer: 2.4,
         distance: 0,
         boost: 0,
+        soundClock: 0,
         status: `${supercarOptions[selectedCarIndex].name} ready`,
-        gameOver: false
+        gameOver: false,
+        sfx: {
+          playerMotorAt: 0,
+          trafficMotorAt: 0,
+          trafficHonkAt: 0,
+          laneSkidAt: 0,
+          crashAt: 0,
+          boostAt: 0
+        }
       };
     },
     getExtras(state) {
@@ -3778,16 +3981,26 @@ const racerGame = (() => {
         return;
       }
       if (key === "arrowleft" || key === "a") {
+        const previousLane = state.lane;
         state.lane = clamp(state.lane - 1, 0, 2);
+        if (state.lane !== previousLane && racerCanPlaySfx(state, "laneSkidAt", 0.12)) {
+          playCrossingSfx("car", "skid");
+        }
       }
       if (key === "arrowright" || key === "d") {
+        const previousLane = state.lane;
         state.lane = clamp(state.lane + 1, 0, 2);
+        if (state.lane !== previousLane && racerCanPlaySfx(state, "laneSkidAt", 0.12)) {
+          playCrossingSfx("car", "skid");
+        }
       }
     },
     update(state, dt) {
       if (state.gameOver) {
         return;
       }
+
+      state.soundClock += dt;
 
       const roadSpeed = 320 + state.distance * 0.03 + (state.boost > 0 ? 180 : 0);
       state.distance += roadSpeed * dt * 0.1;
@@ -3833,9 +4046,14 @@ const racerGame = (() => {
 
       const playerX = carX(state.lane, playerCar);
       const playerRect = carRect(playerX, state.playerY, playerCar);
+      maybePlayRacerMotorSfx(state);
+      maybePlayRacerTrafficSfx(state, playerCar);
       for (const obstacle of state.obstacles) {
         const obstacleX = carX(obstacle.lane, obstacle.car);
         if (rectsOverlap(playerRect, carRect(obstacleX, obstacle.y, obstacle.car))) {
+          if (racerCanPlaySfx(state, "crashAt", 0.2)) {
+            playCrossingSfx("car", "crash");
+          }
           state.gameOver = true;
           state.status = "Traffic collision";
           break;
@@ -3847,6 +4065,9 @@ const racerGame = (() => {
         if (rectsOverlap(playerRect, boostRect)) {
           state.boost = 4;
           state.status = "Nitro boost";
+          if (racerCanPlaySfx(state, "boostAt", 0.18)) {
+            playCrossingSfx("car", "boost");
+          }
           boost.y = H + 200;
         }
       }
@@ -4298,6 +4519,179 @@ function createEmbeddedGame(config) {
   };
 }
 
+function miniGameHostLaunchUrl(type) {
+  return `/host.html?quick=minigame&mini=${encodeURIComponent(type)}#miniGameTestPanel`;
+}
+
+function createSpotlightGame(config) {
+  const icon = loadSprite(config.icon);
+  const topColor = config.topColor || "#0c1830";
+  const bottomColor = config.bottomColor || "#07101c";
+  const accentColor = config.accentColor || "rgba(92, 199, 255, 0.3)";
+  const primaryLink = String(config.primaryLink || "/host.html");
+  const secondaryLink = String(config.secondaryLink || "/student-login");
+  const launchLabel = String(config.launchLabel || "Open Host Setup");
+  const launchCopy = String(config.launchCopy || "Open the host page in a new tab.");
+  const studentCopy = String(config.studentCopy || "Open student login in a new tab.");
+  const stats = Array.isArray(config.stats) ? config.stats.slice(0, 3) : [];
+
+  return {
+    name: config.name,
+    description: config.description,
+    controls:
+      config.controls ||
+      "Use the launch buttons below to open the host setup or student login flow for this classroom game.",
+    stageTitle: config.stageTitle || `${config.name} Spotlight`,
+    stageHelp:
+      config.stageHelp ||
+      "This suite card highlights a classroom game. Launch it from the host tools, then have students join from the student login page.",
+    createState() {
+      return {
+        pulse: rand(0, Math.PI * 2),
+        status: `${config.name} ready to launch`
+      };
+    },
+    getExtras() {
+      return {
+        title: "Launch Options",
+        items: [
+          { id: "primary", label: launchLabel, active: false },
+          { id: "secondary", label: "Open Student Login", active: false }
+        ]
+      };
+    },
+    handleExtra(state, id) {
+      if (id === "primary") {
+        window.open(primaryLink, "_blank", "noopener");
+        state.status = launchCopy;
+        return;
+      }
+      if (id === "secondary") {
+        window.open(secondaryLink, "_blank", "noopener");
+        state.status = studentCopy;
+      }
+    },
+    update(state, dt) {
+      state.pulse += dt * 1.4;
+    },
+    draw(state, time) {
+      drawBackground(topColor, bottomColor, time, accentColor);
+
+      ctx.save();
+      ctx.globalAlpha = 0.12 + Math.sin(state.pulse) * 0.03;
+      ctx.fillStyle = config.glowColor || "#ffd447";
+      ctx.beginPath();
+      ctx.arc(182, 246, 132, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      drawRoundedRect(42, 42, W - 84, H - 84, 30, "rgba(6, 15, 27, 0.82)", "rgba(255,255,255,0.14)");
+      drawRoundedRect(72, 78, 220, 42, 18, "rgba(255,255,255,0.08)", "rgba(255,255,255,0.12)");
+
+      ctx.fillStyle = "#ffd447";
+      ctx.font = '800 17px Orbitron, monospace';
+      ctx.textAlign = "left";
+      ctx.fillText(String(config.badge || "Classroom Spotlight").toUpperCase(), 92, 105);
+
+      drawRoundedRect(72, 148, 240, 248, 28, "rgba(255,255,255,0.06)", "rgba(255,255,255,0.14)");
+
+      if (icon.complete && icon.naturalWidth > 0) {
+        const maxW = 170;
+        const maxH = 170;
+        const scale = Math.min(maxW / icon.naturalWidth, maxH / icon.naturalHeight, 1);
+        const drawW = icon.naturalWidth * scale;
+        const drawH = icon.naturalHeight * scale;
+        ctx.save();
+        ctx.shadowColor = config.iconShadow || "rgba(0, 0, 0, 0.35)";
+        ctx.shadowBlur = 26;
+        ctx.drawImage(icon, 192 - drawW / 2, 218 - drawH / 2, drawW, drawH);
+        ctx.restore();
+      } else {
+        drawLabel(config.name.slice(0, 1), 192, 238, 110, "#eff6ff", "center");
+      }
+
+      drawRoundedRect(102, 324, 180, 42, 18, "rgba(255, 212, 71, 0.14)", "rgba(255, 212, 71, 0.24)");
+      ctx.fillStyle = "#ffe9a0";
+      ctx.font = '800 18px Orbitron, monospace';
+      ctx.textAlign = "center";
+      ctx.fillText(config.stageChip || "Arcade Listing", 192, 351);
+
+      ctx.fillStyle = "#f4fbff";
+      ctx.font = '900 42px Orbitron, monospace';
+      ctx.textAlign = "left";
+      ctx.fillText(config.name, 356, 126);
+
+      let textY = drawWrappedText(
+        config.description,
+        356,
+        170,
+        540,
+        28,
+        "rgba(244,251,255,0.84)",
+        '700 22px "Baloo 2", system-ui, sans-serif'
+      );
+      textY += 8;
+      textY = drawWrappedText(
+        config.showcaseCopy || "Launch from the host page, then let students join with their classroom login to play and earn coins.",
+        356,
+        textY,
+        540,
+        26,
+        "rgba(244,251,255,0.68)",
+        '600 19px "Baloo 2", system-ui, sans-serif'
+      );
+
+      const statWidth = 162;
+      const statGap = 16;
+      const statY = 286;
+      for (let index = 0; index < stats.length; index += 1) {
+        const stat = stats[index];
+        const x = 356 + index * (statWidth + statGap);
+        drawRoundedRect(x, statY, statWidth, 92, 22, "rgba(255,255,255,0.06)", "rgba(255,255,255,0.12)");
+        ctx.fillStyle = "rgba(244,251,255,0.6)";
+        ctx.font = '800 14px Orbitron, monospace';
+        ctx.textAlign = "left";
+        ctx.fillText(String(stat?.label || "").toUpperCase(), x + 16, statY + 26);
+        drawWrappedText(
+          stat?.value || "",
+          x + 16,
+          statY + 54,
+          statWidth - 32,
+          20,
+          "#f4fbff",
+          '700 18px "Baloo 2", system-ui, sans-serif'
+        );
+      }
+
+      drawRoundedRect(356, 404, 540, 118, 24, "rgba(255,255,255,0.05)", "rgba(255,255,255,0.1)");
+      ctx.fillStyle = "#5cc7ff";
+      ctx.font = '800 16px Orbitron, monospace';
+      ctx.textAlign = "left";
+      ctx.fillText("HOW TO LAUNCH", 378, 432);
+      drawWrappedText(
+        config.launchSteps ||
+          "Open the host tools from this tab list, create a room, and use the highlighted setup path for this game. Students join from the Student Login page once the room code is live.",
+        378,
+        462,
+        496,
+        24,
+        "rgba(244,251,255,0.78)",
+        '600 18px "Baloo 2", system-ui, sans-serif'
+      );
+    },
+    hud(state) {
+      return {
+        value: config.hudValue || "Ready",
+        copy: config.hudCopy || `${config.name} is listed in the arcade suite with direct classroom launch links.`,
+        banner: state.status,
+        footer:
+          config.footer ||
+          "Open Host Setup to create a room or preview the game. Open Student Login to join with saved student accounts."
+      };
+    }
+  };
+}
+
 const foosballSuiteGame = createEmbeddedGame({
   name: "Foosball Frenzy",
   description: "Play the full foosball demo inside the arcade suite with grouped rods, kicks, and live score tracking.",
@@ -4320,6 +4714,246 @@ const spaceInvadersSuiteGame = createEmbeddedGame({
   footer: "Use Reload Stage to restart the embedded shooter quickly, or Open Full Page if you want the original standalone view."
 });
 
+const arcadeSpotlightGames = {
+  asteroids: createSpotlightGame({
+    name: "Asteroids",
+    badge: "Quiz Battle Mode",
+    stageChip: "Question Mode",
+    description: "Answer fast to blast asteroid waves, and stack streaks for bonus coins.",
+    showcaseCopy: "This one runs as a room mode instead of a mini-game. Faster correct answers vaporize more asteroids for the class.",
+    icon: "/assets/minigames/asteroids/asteroids.svg",
+    launchLabel: "Open Host Setup",
+    launchCopy: "Asteroids host setup opened in a new tab.",
+    primaryLink: "/host.html?mode=asteroids",
+    stats: [
+      { label: "Type", value: "Quiz mode" },
+      { label: "Rewards", value: "Streak coins" },
+      { label: "Focus", value: "Fast answers" }
+    ],
+    launchSteps:
+      "Open the host setup, choose Asteroids as the room mode, create the game, and students will blast waves while answering questions from /play.",
+    hudValue: "Mode",
+    hudCopy: "Arcade suite spotlight for the Asteroids classroom mode.",
+    topColor: "#1a1022",
+    bottomColor: "#070d18",
+    accentColor: "rgba(255, 130, 112, 0.32)",
+    glowColor: "#ff8d6b",
+    iconShadow: "rgba(255, 141, 107, 0.35)"
+  }),
+  goalie_rush: createSpotlightGame({
+    name: "Goalie Rush",
+    badge: "Classroom Mini-Game",
+    description: "Block soccer shots that get faster every round, with boss saves paying extra coins.",
+    icon: "/assets/minigames/goalie_rush/goalie-rush.svg",
+    launchLabel: "Open Host Test",
+    launchCopy: "Goalie Rush host test opened in a new tab.",
+    primaryLink: miniGameHostLaunchUrl("goalie_rush"),
+    stats: [
+      { label: "Type", value: "Mini-game" },
+      { label: "Rewards", value: "Boss coins" },
+      { label: "Focus", value: "Lane timing" }
+    ],
+    launchSteps:
+      "Open the host test panel, create a room, and Goalie Rush will already be selected so you can launch a preview or run it for the class.",
+    hudValue: "Saves",
+    hudCopy: "Arcade suite spotlight for the Goalie Rush classroom mini-game.",
+    topColor: "#0f2034",
+    bottomColor: "#08131f",
+    accentColor: "rgba(94, 235, 183, 0.24)",
+    glowColor: "#58d5ae",
+    iconShadow: "rgba(88, 213, 174, 0.34)"
+  }),
+  hallway_dash: createSpotlightGame({
+    name: "Hallway Dash",
+    badge: "Classroom Mini-Game",
+    description: "Race through a school hallway, dodge clutter, jump hazards, and scoop up coins.",
+    icon: "/assets/minigames/hallway_dash/hallway.svg",
+    launchLabel: "Open Host Test",
+    launchCopy: "Hallway Dash host test opened in a new tab.",
+    primaryLink: miniGameHostLaunchUrl("hallway_dash"),
+    stats: [
+      { label: "Type", value: "Endless runner" },
+      { label: "Rewards", value: "Hallway coins" },
+      { label: "Focus", value: "Jump timing" }
+    ],
+    launchSteps:
+      "Open the host test panel, create a room, and Hallway Dash will already be picked for a quick hallway-run preview.",
+    hudValue: "Dash",
+    hudCopy: "Arcade suite spotlight for Hallway Dash.",
+    topColor: "#10233b",
+    bottomColor: "#08111a",
+    accentColor: "rgba(93, 162, 255, 0.28)",
+    glowColor: "#7ac6ff",
+    iconShadow: "rgba(122, 198, 255, 0.32)"
+  }),
+  dino_dig: createSpotlightGame({
+    name: "Dino Dig",
+    badge: "Classroom Mini-Game",
+    description: "Dig tiles to uncover fossils, bones, coin caches, and a rare dinosaur blook jackpot.",
+    icon: "/assets/dinos/dino-tyrannosaurus.png",
+    launchLabel: "Open Host Test",
+    launchCopy: "Dino Dig host test opened in a new tab.",
+    primaryLink: miniGameHostLaunchUrl("dino_dig"),
+    stats: [
+      { label: "Type", value: "Tile dig" },
+      { label: "Rewards", value: "Coins + dino blooks" },
+      { label: "Focus", value: "Fast picks" }
+    ],
+    launchSteps:
+      "Open the host test panel, create a room, and Dino Dig will be preselected so you can start a fossil-hunt preview right away.",
+    hudValue: "Dig",
+    hudCopy: "Arcade suite spotlight for Dino Dig.",
+    topColor: "#22180f",
+    bottomColor: "#0d0a08",
+    accentColor: "rgba(255, 184, 84, 0.26)",
+    glowColor: "#ffbf6e",
+    iconShadow: "rgba(255, 191, 110, 0.32)"
+  }),
+  shadow_match: createSpotlightGame({
+    name: "Shadow Match",
+    badge: "Classroom Mini-Game",
+    description: "Flip hidden blooks, match the pairs, and build streaks to unlock rarer reward packs.",
+    icon: "/assets/minigames/shadow_match/shadow-match.svg",
+    launchLabel: "Open Host Test",
+    launchCopy: "Shadow Match host test opened in a new tab.",
+    primaryLink: miniGameHostLaunchUrl("shadow_match"),
+    stats: [
+      { label: "Type", value: "Memory match" },
+      { label: "Rewards", value: "Rarer packs" },
+      { label: "Focus", value: "Match streaks" }
+    ],
+    launchSteps:
+      "Open the host test panel, create a room, and Shadow Match will already be selected for a quick memory-game preview.",
+    hudValue: "Match",
+    hudCopy: "Arcade suite spotlight for Shadow Match.",
+    topColor: "#17122f",
+    bottomColor: "#090812",
+    accentColor: "rgba(169, 123, 255, 0.24)",
+    glowColor: "#9b83ff",
+    iconShadow: "rgba(155, 131, 255, 0.32)"
+  }),
+  classroom_cleanup: createSpotlightGame({
+    name: "Classroom Cleanup",
+    badge: "Classroom Mini-Game",
+    description: "Sort books, pencils, and trash in a rush before the classroom timer runs out.",
+    icon: "/assets/minigames/classroom_cleanup/classroom-cleanup.svg",
+    launchLabel: "Open Host Test",
+    launchCopy: "Classroom Cleanup host test opened in a new tab.",
+    primaryLink: miniGameHostLaunchUrl("classroom_cleanup"),
+    stats: [
+      { label: "Type", value: "Sorting sprint" },
+      { label: "Rewards", value: "Bonus points" },
+      { label: "Focus", value: "Fast sorting" }
+    ],
+    launchSteps:
+      "Open the host test panel, create a room, and Classroom Cleanup will be ready to launch from the mini-game selector.",
+    hudValue: "Sort",
+    hudCopy: "Arcade suite spotlight for Classroom Cleanup.",
+    topColor: "#10251f",
+    bottomColor: "#08110f",
+    accentColor: "rgba(104, 224, 177, 0.24)",
+    glowColor: "#6ce0b1",
+    iconShadow: "rgba(108, 224, 177, 0.3)"
+  }),
+  battle_royale: createSpotlightGame({
+    name: "Battle Royale",
+    badge: "Classroom Mini-Game",
+    description: "Simple 1v1 turn-based blook battles where every chosen blook gets a small power.",
+    icon: "/assets/minigames/battle_royale/battle-royale.svg",
+    launchLabel: "Open Host Test",
+    launchCopy: "Battle Royale host test opened in a new tab.",
+    primaryLink: miniGameHostLaunchUrl("battle_royale"),
+    stats: [
+      { label: "Type", value: "1v1 battles" },
+      { label: "Rewards", value: "Round points" },
+      { label: "Focus", value: "Blook powers" }
+    ],
+    launchSteps:
+      "Open the host test panel, create a room, and Battle Royale will already be chosen so you can start a duel preview quickly.",
+    hudValue: "Duel",
+    hudCopy: "Arcade suite spotlight for Battle Royale.",
+    topColor: "#221023",
+    bottomColor: "#0a0811",
+    accentColor: "rgba(255, 107, 129, 0.24)",
+    glowColor: "#ff8ca4",
+    iconShadow: "rgba(255, 140, 164, 0.3)"
+  })
+};
+
+function arcadeSuitePreviewUrl(gameId) {
+  return `/arcade-preview.html?game=${encodeURIComponent(gameId)}`;
+}
+
+function createArcadePreviewEmbeddedGame(config) {
+  return createEmbeddedGame({
+    name: config.name,
+    description: config.description,
+    controls: config.controls,
+    stageTitle: config.stageTitle || config.name,
+    stageHelp:
+      config.stageHelp ||
+      "This loads a temporary playable classroom preview inside the arcade suite. Click inside the player frame first so keyboard controls go to the game.",
+    embedUrl: arcadeSuitePreviewUrl(config.id),
+    hudCopy: config.hudCopy || `Embedded playable preview for ${config.name}.`,
+    footer:
+      config.footer ||
+      "Use Reload Stage to start a fresh preview room, or Open Full Page if you want the preview in its own tab."
+  });
+}
+
+const arcadeLaunchablePreviewGames = {
+  asteroids: createArcadePreviewEmbeddedGame({
+    id: "asteroids",
+    name: "Asteroids",
+    description: "Answer fast to blast asteroid waves, with streaks giving bonus coins.",
+    controls: "Click inside the stage, then answer questions directly in the player frame to blast more asteroids.",
+    stageHelp: "This launches a real Asteroids mode preview room and auto-joins a guest player inside the suite.",
+    hudCopy: "Embedded playable Asteroids preview with a temporary guest room."
+  }),
+  goalie_rush: createArcadePreviewEmbeddedGame({
+    id: "goalie_rush",
+    name: "Goalie Rush",
+    description: "Block soccer shots that get faster each round, with boss rounds for extra coins.",
+    controls: "Click inside the stage, then use Left and Right to move between goal lanes and block shots.",
+    hudCopy: "Embedded playable Goalie Rush preview with an auto-starting guest room."
+  }),
+  hallway_dash: createArcadePreviewEmbeddedGame({
+    id: "hallway_dash",
+    name: "Hallway Dash",
+    description: "A school-themed endless runner with cones, backpacks, puddles, and coin pickups.",
+    controls: "Click inside the stage, then use Left and Right or A and D to swap lanes and Space to jump.",
+    hudCopy: "Embedded playable Hallway Dash preview with direct guest auto-join."
+  }),
+  dino_dig: createArcadePreviewEmbeddedGame({
+    id: "dino_dig",
+    name: "Dino Dig",
+    description: "Dig tiles to uncover fossils, bones, coins, and rare dinosaur blooks.",
+    controls: "Click inside the stage, then dig tiles directly from the player board.",
+    hudCopy: "Embedded playable Dino Dig preview with a temporary guest room."
+  }),
+  shadow_match: createArcadePreviewEmbeddedGame({
+    id: "shadow_match",
+    name: "Shadow Match",
+    description: "Match hidden blooks and build streaks to unlock rarer rewards.",
+    controls: "Click inside the stage, then flip cards and match pairs before time runs out.",
+    hudCopy: "Embedded playable Shadow Match preview with direct suite launch."
+  }),
+  classroom_cleanup: createArcadePreviewEmbeddedGame({
+    id: "classroom_cleanup",
+    name: "Classroom Cleanup",
+    description: "Sort books, pencils, and trash before time runs out.",
+    controls: "Click inside the stage, move across rows, and use the cleanup controls shown on the player screen.",
+    hudCopy: "Embedded playable Classroom Cleanup preview with guest auto-join."
+  }),
+  battle_royale: createArcadePreviewEmbeddedGame({
+    id: "battle_royale",
+    name: "Battle Royale",
+    description: "Simple 1v1 turn-based battles where each owned blook has a small power.",
+    controls: "Click inside the stage, then choose battle actions from the player controls during the duel.",
+    hudCopy: "Embedded playable Battle Royale preview with an instant duel room."
+  })
+};
+
 const games = {
   pong: pongGame,
   maze: mazeGame,
@@ -4331,7 +4965,8 @@ const games = {
   racer: racerGame,
   fishing: fishingGame,
   foosball: foosballSuiteGame,
-  invaders: spaceInvadersSuiteGame
+  invaders: spaceInvadersSuiteGame,
+  ...arcadeLaunchablePreviewGames
 };
 
 const gameOrder = Object.keys(games);

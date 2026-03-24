@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-03-24T16:42:47.643Z",
+  "savedAt": "2026-03-24T19:45:28.919Z",
   "accounts": [
     {
       "id": "guest:mmbcb9q8er3q7dmw",
@@ -269,6 +269,12 @@
           "bestBonus": 200,
           "totalBonus": 200
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -318,6 +324,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -599,6 +635,12 @@
           "bestBonus": 200,
           "totalBonus": 200
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 1,
           "wins": 1,
@@ -648,6 +690,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -929,6 +1001,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -978,6 +1056,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -1259,6 +1367,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -1308,6 +1422,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -1589,6 +1733,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -1638,6 +1788,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -1919,6 +2099,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -1968,6 +2154,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -2249,6 +2465,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -2298,6 +2520,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -2579,6 +2831,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -2628,6 +2886,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -2909,6 +3197,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -2958,6 +3252,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -3239,6 +3563,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -3288,6 +3618,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -3569,6 +3929,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -3618,6 +3984,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -3899,6 +4295,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -3948,6 +4350,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -4229,6 +4661,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -4278,6 +4716,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -4559,6 +5027,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -4608,6 +5082,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -4889,6 +5393,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -4938,6 +5448,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -5219,6 +5759,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -5268,6 +5814,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -5549,6 +6125,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -5598,6 +6180,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -5879,6 +6491,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -5928,6 +6546,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -6209,6 +6857,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -6258,6 +6912,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -6539,6 +7223,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -6588,6 +7278,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -6869,6 +7589,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -6918,6 +7644,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -7199,6 +7955,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -7248,6 +8010,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -7529,6 +8321,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -7578,6 +8376,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -7859,6 +8687,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -7908,6 +8742,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -8189,6 +9053,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -8238,6 +9108,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -8519,6 +9419,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -8568,6 +9474,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -8849,6 +9785,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -8898,6 +9840,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -9179,6 +10151,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -9228,6 +10206,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -9509,6 +10517,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -9558,6 +10572,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -9839,6 +10883,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -9888,6 +10938,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -10169,6 +11249,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -10218,6 +11304,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -10499,6 +11615,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -10548,6 +11670,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -10829,6 +11981,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -10878,6 +12036,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -11159,6 +12347,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -11208,6 +12402,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -11489,6 +12713,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -11538,6 +12768,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -11574,6 +12834,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -11623,6 +12889,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -11658,6 +12954,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -11707,6 +13009,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -11768,6 +13100,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -11817,6 +13155,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -11852,6 +13220,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -11901,6 +13275,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -11936,6 +13340,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -11985,6 +13395,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -12021,6 +13461,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -12070,6 +13516,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -12107,6 +13583,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -12156,6 +13638,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -12191,6 +13703,12 @@
           "bestBonus": 0,
           "totalBonus": 0
         },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
         "space_invaders": {
           "plays": 0,
           "wins": 0,
@@ -12240,6 +13758,36 @@
           "totalBonus": 0
         },
         "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
           "plays": 0,
           "wins": 0,
           "bestBonus": 0,
@@ -12255,32 +13803,42 @@
     },
     {
       "id": "student:lenin",
-      "coins": 10,
+      "coins": 1081,
       "freePackOpensRemaining": 0,
-      "starterGrantVersion": 2,
-      "selectedBlookId": "ath-mahomes",
+      "starterGrantVersion": 3,
+      "selectedBlookId": "dino-argentinosaurus",
       "inventory": {
         "ath-mahomes": 1,
-        "student-face-24": 1
+        "student-face-24": 1,
+        "science-lab-rat": 1,
+        "nfl-bengals": 1,
+        "soc-man-utd": 1,
+        "dino-argentinosaurus": 1
       },
       "miniGameStats": {
         "foosball_frenzy": {
-          "plays": 2,
-          "wins": 1,
-          "bestBonus": 1687,
-          "totalBonus": 3210
+          "plays": 11,
+          "wins": 4,
+          "bestBonus": 1851,
+          "totalBonus": 16914
         },
         "soccer_shootout": {
-          "plays": 2,
+          "plays": 11,
+          "wins": 10,
+          "bestBonus": 368,
+          "totalBonus": 3296
+        },
+        "goalie_rush": {
+          "plays": 1,
           "wins": 1,
-          "bestBonus": 326,
-          "totalBonus": 600
+          "bestBonus": 583,
+          "totalBonus": 583
         },
         "space_invaders": {
-          "plays": 2,
-          "wins": 2,
+          "plays": 11,
+          "wins": 11,
           "bestBonus": 515,
-          "totalBonus": 1030
+          "totalBonus": 5665
         },
         "snake": {
           "plays": 0,
@@ -12289,10 +13847,10 @@
           "totalBonus": 0
         },
         "tower_stacker": {
-          "plays": 2,
-          "wins": 2,
-          "bestBonus": 404,
-          "totalBonus": 802
+          "plays": 11,
+          "wins": 8,
+          "bestBonus": 440,
+          "totalBonus": 3990
         },
         "tap_rush": {
           "plays": 0,
@@ -12329,6 +13887,36 @@
           "wins": 0,
           "bestBonus": 0,
           "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 7,
+          "wins": 3,
+          "bestBonus": 649,
+          "totalBonus": 3035
+        },
+        "dino_dig": {
+          "plays": 8,
+          "wins": 4,
+          "bestBonus": 486,
+          "totalBonus": 3163
+        },
+        "shadow_match": {
+          "plays": 2,
+          "wins": 2,
+          "bestBonus": 278,
+          "totalBonus": 393
+        },
+        "classroom_cleanup": {
+          "plays": 3,
+          "wins": 3,
+          "bestBonus": 110,
+          "totalBonus": 330
+        },
+        "battle_royale": {
+          "plays": 4,
+          "wins": 4,
+          "bestBonus": 621,
+          "totalBonus": 2484
         }
       },
       "gamesPlayed": 0,
@@ -12336,10 +13924,1185 @@
       "totalScore": 0,
       "bestRank": 0,
       "createdAt": "2026-03-24T15:03:27.108Z",
-      "updatedAt": "2026-03-24T15:43:31.270Z"
+      "updatedAt": "2026-03-24T19:25:55.650Z"
     },
     {
       "id": "student:nash",
+      "coins": 1109,
+      "freePackOpensRemaining": 0,
+      "starterGrantVersion": 3,
+      "selectedBlookId": "ath-mahomes",
+      "inventory": {
+        "ath-mahomes": 1
+      },
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 11,
+          "wins": 8,
+          "bestBonus": 1851,
+          "totalBonus": 17240
+        },
+        "soccer_shootout": {
+          "plays": 11,
+          "wins": 5,
+          "bestBonus": 690,
+          "totalBonus": 3558
+        },
+        "goalie_rush": {
+          "plays": 1,
+          "wins": 0,
+          "bestBonus": 249,
+          "totalBonus": 249
+        },
+        "space_invaders": {
+          "plays": 11,
+          "wins": 11,
+          "bestBonus": 515,
+          "totalBonus": 5665
+        },
+        "snake": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tower_stacker": {
+          "plays": 11,
+          "wins": 3,
+          "bestBonus": 415,
+          "totalBonus": 3791
+        },
+        "tap_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "reaction_duel": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "sequence_memory": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "obstacle_dodge": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "precision_stop": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 7,
+          "wins": 4,
+          "bestBonus": 609,
+          "totalBonus": 2807
+        },
+        "dino_dig": {
+          "plays": 8,
+          "wins": 4,
+          "bestBonus": 462,
+          "totalBonus": 3016
+        },
+        "shadow_match": {
+          "plays": 2,
+          "wins": 1,
+          "bestBonus": 115,
+          "totalBonus": 230
+        },
+        "classroom_cleanup": {
+          "plays": 3,
+          "wins": 3,
+          "bestBonus": 110,
+          "totalBonus": 330
+        },
+        "battle_royale": {
+          "plays": 4,
+          "wins": 0,
+          "bestBonus": 467,
+          "totalBonus": 1868
+        }
+      },
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-24T15:21:58.178Z",
+      "updatedAt": "2026-03-24T19:19:39.538Z"
+    },
+    {
+      "id": "student:eli",
+      "coins": 0,
+      "freePackOpensRemaining": 0,
+      "starterGrantVersion": 3,
+      "selectedBlookId": "ath-mahomes",
+      "inventory": {
+        "ath-mahomes": 1,
+        "ath-curry": 1,
+        "student-face-01": 6,
+        "student-face-20": 3,
+        "student-face-19": 6,
+        "student-face-08": 3,
+        "student-face-21": 3,
+        "student-face-03": 5,
+        "student-face-17": 3,
+        "student-face-22": 2,
+        "student-face-41": 1,
+        "student-face-06": 4,
+        "student-face-13": 5,
+        "student-face-16": 5,
+        "student-face-04": 6,
+        "student-face-14": 2,
+        "student-face-02": 3,
+        "student-face-18": 4,
+        "student-face-23": 3,
+        "student-face-10": 4,
+        "student-face-05": 3,
+        "student-face-15": 3,
+        "student-face-07": 3,
+        "student-face-28": 1,
+        "student-face-12": 1,
+        "student-face-24": 1,
+        "student-face-11": 2,
+        "nfl-ravens": 4,
+        "nfl-steelers": 3,
+        "nfl-chiefs": 2,
+        "nfl-jaguars": 6,
+        "nfl-seahawks": 4,
+        "nfl-jets": 7,
+        "nfl-colts": 4,
+        "nfl-browns": 4,
+        "nfl-saints": 3,
+        "nfl-bears": 4,
+        "nfl-49ers": 7,
+        "nfl-dolphins": 8,
+        "nfl-bengals": 2,
+        "nfl-rams": 4,
+        "nfl-buccaneers": 3,
+        "nfl-patriots": 5,
+        "nfl-packers": 4,
+        "nfl-falcons": 1,
+        "nfl-cowboys": 1,
+        "nfl-titans": 3,
+        "nfl-eagles": 1,
+        "nfl-panthers": 2,
+        "nfl-vikings": 1,
+        "nfl-bills": 1,
+        "nfl-chargers": 2,
+        "nfl-raiders": 2,
+        "nfl-cardinals": 3,
+        "nfl-texans": 2,
+        "nfl-commanders": 2,
+        "nfl-broncos": 2,
+        "nfl-giants": 3
+      },
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "space_invaders": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "snake": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tower_stacker": {
+          "plays": 1,
+          "wins": 1,
+          "bestBonus": 140,
+          "totalBonus": 140
+        },
+        "tap_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "reaction_duel": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "sequence_memory": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "obstacle_dodge": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "precision_stop": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        }
+      },
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-24T16:55:02.897Z",
+      "updatedAt": "2026-03-24T18:17:45.441Z"
+    },
+    {
+      "id": "student:brandon",
+      "coins": 1000,
+      "freePackOpensRemaining": 0,
+      "starterGrantVersion": 3,
+      "selectedBlookId": "ath-mahomes",
+      "inventory": {
+        "ath-mahomes": 1
+      },
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "space_invaders": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "snake": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tower_stacker": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tap_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "reaction_duel": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "sequence_memory": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "obstacle_dodge": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "precision_stop": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        }
+      },
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-24T17:06:45.124Z",
+      "updatedAt": "2026-03-24T17:06:45.124Z"
+    },
+    {
+      "id": "student:holland",
+      "coins": 840,
+      "freePackOpensRemaining": 0,
+      "starterGrantVersion": 3,
+      "selectedBlookId": "ath-mahomes",
+      "inventory": {
+        "ath-mahomes": 1,
+        "book-dogman": 2,
+        "book-alice": 3,
+        "book-wonka": 1,
+        "book-charlotte": 2,
+        "book-pippi": 1,
+        "book-percy": 1,
+        "book-ron": 1,
+        "book-pooh": 1,
+        "student-face-14": 1,
+        "student-face-15": 1,
+        "student-face-04": 1,
+        "student-face-07": 1,
+        "nature-thunder-eagle": 1,
+        "nature-polar-bear": 2,
+        "nature-volcano-fox": 1
+      },
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "space_invaders": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "snake": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tower_stacker": {
+          "plays": 1,
+          "wins": 1,
+          "bestBonus": 140,
+          "totalBonus": 140
+        },
+        "tap_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "reaction_duel": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "sequence_memory": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "obstacle_dodge": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "precision_stop": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        }
+      },
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-24T18:07:35.339Z",
+      "updatedAt": "2026-03-24T18:17:30.753Z"
+    },
+    {
+      "id": "student:charlotte",
+      "coins": 1000,
+      "freePackOpensRemaining": 0,
+      "starterGrantVersion": 3,
+      "selectedBlookId": "ath-mahomes",
+      "inventory": {
+        "ath-mahomes": 1
+      },
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "space_invaders": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "snake": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tower_stacker": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tap_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "reaction_duel": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "sequence_memory": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "obstacle_dodge": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "precision_stop": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        }
+      },
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-24T18:08:31.829Z",
+      "updatedAt": "2026-03-24T18:46:38.609Z"
+    },
+    {
+      "id": "guest:f113e40d-b31a-4d29-8533-756b54bde87b",
+      "coins": 0,
+      "freePackOpensRemaining": 0,
+      "starterGrantVersion": 2,
+      "selectedBlookId": "ath-mahomes",
+      "inventory": {
+        "ath-mahomes": 1,
+        "book-wilbur": 1
+      },
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "space_invaders": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "snake": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tower_stacker": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tap_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "reaction_duel": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "sequence_memory": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "obstacle_dodge": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "precision_stop": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        }
+      },
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-24T18:12:14.459Z",
+      "updatedAt": "2026-03-24T18:12:28.857Z"
+    },
+    {
+      "id": "student:mattie",
+      "coins": 980,
+      "freePackOpensRemaining": 0,
+      "starterGrantVersion": 3,
+      "selectedBlookId": "ath-mahomes",
+      "inventory": {
+        "ath-mahomes": 1,
+        "nature-polar-bear": 1,
+        "nature-forest-owl": 1
+      },
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "space_invaders": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "snake": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tower_stacker": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tap_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "reaction_duel": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "sequence_memory": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "obstacle_dodge": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "precision_stop": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        }
+      },
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-24T18:12:25.036Z",
+      "updatedAt": "2026-03-24T19:23:07.100Z"
+    },
+    {
+      "id": "guest:046152df-6511-4161-9507-4391050e6c13",
+      "coins": 0,
+      "freePackOpensRemaining": 0,
+      "starterGrantVersion": 2,
+      "selectedBlookId": "ath-mahomes",
+      "inventory": {
+        "ath-mahomes": 1,
+        "ath-judge": 1
+      },
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "space_invaders": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "snake": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tower_stacker": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tap_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "reaction_duel": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "sequence_memory": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "obstacle_dodge": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "precision_stop": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        }
+      },
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-24T18:14:43.879Z",
+      "updatedAt": "2026-03-24T18:16:30.759Z"
+    },
+    {
+      "id": "student:oscar",
+      "coins": 640,
+      "freePackOpensRemaining": 0,
+      "starterGrantVersion": 3,
+      "selectedBlookId": "ath-mahomes",
+      "inventory": {
+        "ath-mahomes": 2,
+        "ath-judge": 1,
+        "ath-mbappe": 3,
+        "ath-curry": 2,
+        "ath-hill": 2,
+        "ath-ohtani": 1,
+        "ath-harper": 2,
+        "ath-kelce": 4,
+        "ath-messi": 2,
+        "ath-burrow": 1,
+        "ath-haaland": 1,
+        "ath-lebron": 2,
+        "ath-luka": 1,
+        "ath-giannis": 2,
+        "soc-psg": 3,
+        "soc-man-utd": 2,
+        "nfl-49ers": 2,
+        "soc-liverpool": 1,
+        "nfl-ravens": 2,
+        "nfl-dolphins": 1
+      },
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "space_invaders": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "snake": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tower_stacker": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tap_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "reaction_duel": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "sequence_memory": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "obstacle_dodge": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "precision_stop": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        }
+      },
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-24T18:16:00.656Z",
+      "updatedAt": "2026-03-24T18:45:41.696Z"
+    },
+    {
+      "id": "guest:5491ee7b-e98a-4e79-becb-0ad3a889dca5",
       "coins": 10,
       "freePackOpensRemaining": 0,
       "starterGrantVersion": 2,
@@ -12349,22 +15112,28 @@
       },
       "miniGameStats": {
         "foosball_frenzy": {
-          "plays": 2,
-          "wins": 1,
-          "bestBonus": 1851,
-          "totalBonus": 2880
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
         },
         "soccer_shootout": {
-          "plays": 2,
-          "wins": 1,
-          "bestBonus": 690,
-          "totalBonus": 974
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
         },
         "space_invaders": {
-          "plays": 2,
-          "wins": 2,
-          "bestBonus": 515,
-          "totalBonus": 1030
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
         },
         "snake": {
           "plays": 0,
@@ -12373,10 +15142,10 @@
           "totalBonus": 0
         },
         "tower_stacker": {
-          "plays": 2,
+          "plays": 0,
           "wins": 0,
-          "bestBonus": 357,
-          "totalBonus": 690
+          "bestBonus": 0,
+          "totalBonus": 0
         },
         "tap_rush": {
           "plays": 0,
@@ -12413,14 +15182,1081 @@
           "wins": 0,
           "bestBonus": 0,
           "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
         }
       },
       "gamesPlayed": 0,
       "totalCorrect": 0,
       "totalScore": 0,
       "bestRank": 0,
-      "createdAt": "2026-03-24T15:21:58.178Z",
-      "updatedAt": "2026-03-24T15:43:31.281Z"
+      "createdAt": "2026-03-24T18:16:14.858Z",
+      "updatedAt": "2026-03-24T18:16:14.858Z"
+    },
+    {
+      "id": "student:sierra",
+      "coins": 1000,
+      "freePackOpensRemaining": 0,
+      "starterGrantVersion": 3,
+      "selectedBlookId": "ath-mahomes",
+      "inventory": {
+        "ath-mahomes": 1
+      },
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "space_invaders": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "snake": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tower_stacker": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tap_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "reaction_duel": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "sequence_memory": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "obstacle_dodge": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "precision_stop": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        }
+      },
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-24T18:16:26.876Z",
+      "updatedAt": "2026-03-24T18:16:26.876Z"
+    },
+    {
+      "id": "guest:cdc717ae-0a3b-4a97-a88f-9378d6ee9c97",
+      "coins": 0,
+      "freePackOpensRemaining": 0,
+      "starterGrantVersion": 2,
+      "selectedBlookId": "ath-mahomes",
+      "inventory": {
+        "ath-mahomes": 1,
+        "book-charlie": 1
+      },
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "space_invaders": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "snake": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tower_stacker": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tap_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "reaction_duel": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "sequence_memory": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "obstacle_dodge": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "precision_stop": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        }
+      },
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-24T18:35:56.376Z",
+      "updatedAt": "2026-03-24T18:36:10.393Z"
+    },
+    {
+      "id": "guest:c2b837c5-76c3-45e4-a662-2a97edc9de4c",
+      "coins": 10,
+      "freePackOpensRemaining": 0,
+      "starterGrantVersion": 2,
+      "selectedBlookId": "ath-mahomes",
+      "inventory": {
+        "ath-mahomes": 1
+      },
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "space_invaders": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "snake": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tower_stacker": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tap_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "reaction_duel": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "sequence_memory": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "obstacle_dodge": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "precision_stop": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        }
+      },
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-24T18:43:07.559Z",
+      "updatedAt": "2026-03-24T18:43:07.559Z"
+    },
+    {
+      "id": "guest:f1ab2ec3-2631-42ed-b9ac-fb9c0a7b5321",
+      "coins": 0,
+      "freePackOpensRemaining": 0,
+      "starterGrantVersion": 2,
+      "selectedBlookId": "ath-mahomes",
+      "inventory": {
+        "ath-mahomes": 1,
+        "book-junie": 1
+      },
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "space_invaders": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "snake": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tower_stacker": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tap_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "reaction_duel": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "sequence_memory": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "obstacle_dodge": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "precision_stop": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        }
+      },
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-24T18:43:25.375Z",
+      "updatedAt": "2026-03-24T18:43:44.523Z"
+    },
+    {
+      "id": "student:henry",
+      "coins": 0,
+      "freePackOpensRemaining": 0,
+      "starterGrantVersion": 3,
+      "selectedBlookId": "ath-mahomes",
+      "inventory": {
+        "ath-mahomes": 1,
+        "ath-mbappe": 3,
+        "ath-ohtani": 4,
+        "ath-haaland": 1,
+        "ath-luka": 3,
+        "ath-jackson": 3,
+        "ath-allen": 3,
+        "ath-giannis": 1,
+        "ath-trout": 2,
+        "ath-kelce": 1,
+        "ath-durant": 2,
+        "ath-hill": 2,
+        "ath-burrow": 2,
+        "ath-harper": 2,
+        "ath-messi": 2,
+        "ath-lebron": 1,
+        "ath-curry": 2,
+        "ath-ronaldo": 3,
+        "ath-judge": 2,
+        "ath-brady": 2,
+        "nfl-ravens": 7,
+        "soc-bayern": 2,
+        "soc-liverpool": 5,
+        "nfl-cowboys": 4,
+        "nfl-bengals": 3,
+        "nfl-packers": 4,
+        "nfl-bills": 3,
+        "nfl-eagles": 4,
+        "nfl-dolphins": 5,
+        "soc-psg": 3,
+        "nfl-lions": 4,
+        "soc-real-madrid": 2,
+        "soc-chelsea": 3,
+        "soc-leverkusen": 4,
+        "soc-man-city": 4,
+        "nfl-chiefs": 1,
+        "soc-man-utd": 1,
+        "student-face-41": 2,
+        "student-face-23": 3,
+        "student-face-13": 6,
+        "student-face-20": 3,
+        "student-face-07": 1,
+        "student-face-18": 2,
+        "student-face-04": 2,
+        "student-face-10": 5,
+        "student-face-28": 1,
+        "student-face-01": 1,
+        "student-face-02": 2,
+        "student-face-06": 2,
+        "student-face-08": 2,
+        "student-face-22": 2,
+        "student-face-15": 2,
+        "student-face-03": 4,
+        "student-face-14": 1,
+        "student-face-16": 2,
+        "student-face-19": 2,
+        "student-face-24": 2,
+        "student-face-12": 1
+      },
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "space_invaders": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "snake": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tower_stacker": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tap_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "reaction_duel": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "sequence_memory": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "obstacle_dodge": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "precision_stop": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        }
+      },
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-24T19:21:19.291Z",
+      "updatedAt": "2026-03-24T19:22:38.413Z"
+    },
+    {
+      "id": "guest:6f0f2d25-b2da-4739-9ae2-7eae103a6e33",
+      "coins": 10,
+      "freePackOpensRemaining": 0,
+      "starterGrantVersion": 2,
+      "selectedBlookId": "ath-mahomes",
+      "inventory": {
+        "ath-mahomes": 1
+      },
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "space_invaders": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "snake": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tower_stacker": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tap_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "reaction_duel": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "sequence_memory": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "obstacle_dodge": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "precision_stop": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        }
+      },
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-24T19:21:25.697Z",
+      "updatedAt": "2026-03-24T19:21:25.697Z"
+    },
+    {
+      "id": "guest:8289e805-39d9-4d98-8f55-4a4772b26eaa",
+      "coins": 0,
+      "freePackOpensRemaining": 0,
+      "starterGrantVersion": 2,
+      "selectedBlookId": "ath-mahomes",
+      "inventory": {
+        "ath-mahomes": 1,
+        "book-matilda": 1
+      },
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "space_invaders": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "snake": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tower_stacker": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tap_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "reaction_duel": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "sequence_memory": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "obstacle_dodge": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "precision_stop": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        }
+      },
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-24T19:22:05.762Z",
+      "updatedAt": "2026-03-24T19:22:29.109Z"
+    },
+    {
+      "id": "guest:b8029a85-2c59-4c30-82a7-b51f90ab5e5d",
+      "coins": 10,
+      "freePackOpensRemaining": 0,
+      "starterGrantVersion": 2,
+      "selectedBlookId": "ath-mahomes",
+      "inventory": {
+        "ath-mahomes": 1
+      },
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "space_invaders": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "snake": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tower_stacker": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tap_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "reaction_duel": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "sequence_memory": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "obstacle_dodge": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "precision_stop": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        }
+      },
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-24T19:32:53.343Z",
+      "updatedAt": "2026-03-24T19:32:53.343Z"
+    },
+    {
+      "id": "guest:mn50y62g19nyohi9",
+      "coins": 10,
+      "freePackOpensRemaining": 0,
+      "starterGrantVersion": 2,
+      "selectedBlookId": "ath-mahomes",
+      "inventory": {
+        "ath-mahomes": 1
+      },
+      "miniGameStats": {},
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-24T19:45:28.918Z",
+      "updatedAt": "2026-03-24T19:45:28.918Z"
     }
   ]
 }

@@ -14,6 +14,7 @@ const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const { BOOK_LEGENDS_BLOOKS } = require("./data/pack-blooks");
 const { CARTOON_NETWORK_BLOOKS } = require("./data/cartoon-network-blooks");
+const { DINOSAUR_BLOOKS } = require("./data/dinosaur-blooks");
 const { SCIENCE_BLOOKS, SPACE_BLOOKS } = require("./data/science-space-blooks");
 
 const PORT = process.env.PORT || 3000;
@@ -556,6 +557,12 @@ const BLOOK_PACKS = [
     ]
   },
   {
+    id: "dinosaurs",
+    name: "Dinosaur Pack",
+    description: "20 realistic prehistoric dinosaur restorations, from giant sauropods to feathered hunters.",
+    blooks: DINOSAUR_BLOOKS
+  },
+  {
     id: "books",
     name: "Book Legends",
     description: "30 iconic characters from your favorite childhood stories. Adventure awaits!",
@@ -643,8 +650,10 @@ const STARTER_COMMON_BLOOK_IDS = [DEFAULT_BLOOK?.id].filter(Boolean);
 const PACK_OPEN_COST = 10;
 const DUPLICATE_SELL_RATE = 0.3;
 const STARTER_COINS = 10;
+const STUDENT_STARTER_COINS = 1000;
 const STARTER_FREE_PACK_OPENS = 0;
 const STARTER_GRANT_VERSION = 2;
+const STUDENT_STARTER_GRANT_VERSION = 3;
 const BLOOK_RARITY_WEIGHT = {
   Common: 60,
   Rare: 20,
@@ -674,6 +683,18 @@ function normalizeAccountKey(value) {
   }
 
   return trimmed;
+}
+
+function isStudentAccountKey(accountKey) {
+  return normalizeAccountKey(accountKey).startsWith("student:");
+}
+
+function starterCoinsForAccountKey(accountKey) {
+  return isStudentAccountKey(accountKey) ? STUDENT_STARTER_COINS : STARTER_COINS;
+}
+
+function starterGrantVersionForAccountKey(accountKey) {
+  return isStudentAccountKey(accountKey) ? STUDENT_STARTER_GRANT_VERSION : STARTER_GRANT_VERSION;
 }
 
 function migrateLegacyBlookId(blookId) {
@@ -783,8 +804,8 @@ function countDuplicateInventoryItems(account) {
   return duplicates;
 }
 
-function shouldResetLegacyFullUnlockInventory(account) {
-  if (!account || account.starterGrantVersion >= STARTER_GRANT_VERSION) {
+function shouldResetLegacyFullUnlockInventory(account, targetStarterGrantVersion = STARTER_GRANT_VERSION) {
+  if (!account || account.starterGrantVersion >= targetStarterGrantVersion) {
     return false;
   }
 
@@ -809,23 +830,25 @@ function ensureStarterCommonBlooks(account) {
     account.inventory = {};
   }
 
+  const targetStarterCoins = starterCoinsForAccountKey(account.id);
+  const targetStarterGrantVersion = starterGrantVersionForAccountKey(account.id);
   let changed = migrateLegacyAccountBlooks(account);
-  account.coins = Math.max(0, Math.floor(parseStoredNumber(account.coins, STARTER_COINS)));
+  account.coins = Math.max(0, Math.floor(parseStoredNumber(account.coins, targetStarterCoins)));
   account.freePackOpensRemaining = Math.max(0, Math.floor(parseStoredNumber(account.freePackOpensRemaining, STARTER_FREE_PACK_OPENS)));
   account.starterGrantVersion = Math.max(0, Math.floor(parseStoredNumber(account.starterGrantVersion, 0)));
 
-  if (shouldResetLegacyFullUnlockInventory(account)) {
+  if (shouldResetLegacyFullUnlockInventory(account, targetStarterGrantVersion)) {
     account.inventory = buildStarterInventory();
     account.selectedBlookId = "";
-    account.coins = STARTER_COINS;
+    account.coins = targetStarterCoins;
     account.freePackOpensRemaining = STARTER_FREE_PACK_OPENS;
     changed = true;
   }
 
-  if (account.starterGrantVersion < STARTER_GRANT_VERSION) {
-    account.coins = Math.max(account.coins, STARTER_COINS);
+  if (account.starterGrantVersion < targetStarterGrantVersion) {
+    account.coins = Math.max(account.coins, targetStarterCoins);
     account.freePackOpensRemaining = STARTER_FREE_PACK_OPENS;
-    account.starterGrantVersion = STARTER_GRANT_VERSION;
+    account.starterGrantVersion = targetStarterGrantVersion;
     changed = true;
   }
 
@@ -911,7 +934,7 @@ function loadAccountsFromDisk() {
 
       const account = {
         id: key,
-        coins: Math.max(0, Math.floor(parseStoredNumber(record.coins, STARTER_COINS))),
+        coins: Math.max(0, Math.floor(parseStoredNumber(record.coins, starterCoinsForAccountKey(key)))),
         freePackOpensRemaining: Math.max(0, Math.floor(parseStoredNumber(record.freePackOpensRemaining, STARTER_FREE_PACK_OPENS))),
         starterGrantVersion: Math.max(0, Math.floor(parseStoredNumber(record.starterGrantVersion, 0))),
         selectedBlookId,
@@ -976,9 +999,9 @@ function ensureAccount(accountKey) {
     const createdAt = nowIso();
     const created = {
       id: safeKey,
-      coins: STARTER_COINS,
+      coins: starterCoinsForAccountKey(safeKey),
       freePackOpensRemaining: STARTER_FREE_PACK_OPENS,
-      starterGrantVersion: STARTER_GRANT_VERSION,
+      starterGrantVersion: starterGrantVersionForAccountKey(safeKey),
       selectedBlookId: "",
       inventory: {},
       miniGameStats: {},
@@ -1261,9 +1284,7 @@ function openPackForAccount(account, packId) {
   const previousCount = accountOwnedCount(account, reward.id);
   const nextCount = previousCount + 1;
   account.inventory[reward.id] = nextCount;
-  if (!account.selectedBlookId || !accountOwnsBlook(account, account.selectedBlookId)) {
-    account.selectedBlookId = reward.id;
-  }
+  account.selectedBlookId = reward.id;
   account.updatedAt = nowIso();
   saveAccountsToDisk();
 
@@ -1478,6 +1499,20 @@ const MODE_CONFIG = {
     actionLabel: "Use Move",
     fallbackGain: 95,
     unit: "power"
+  },
+  asteroids: {
+    id: "asteroids",
+    label: "Asteroids",
+    baseScore: 520,
+    speedBonusCap: 430,
+    streakStep: 135,
+    streakCap: 620,
+    eventPhase: false,
+    eventName: "Asteroid Wave",
+    feedTitle: "Asteroid Feed",
+    actionLabel: "Blast",
+    fallbackGain: 105,
+    unit: "shards"
   }
 };
 
@@ -1499,6 +1534,11 @@ const MINI_GAME_CATALOG = [
     id: "soccer_shootout",
     name: "Soccer Shootout",
     description: "Penalty kicks: choose lane and power against the goalkeeper."
+  },
+  {
+    id: "goalie_rush",
+    name: "Goalie Rush",
+    description: "Guard the goal, block faster shots each round, and survive boss rounds for extra coins."
   },
   {
     id: "space_invaders",
@@ -1544,6 +1584,31 @@ const MINI_GAME_CATALOG = [
     id: "word_scramble",
     name: "Word Scramble",
     description: "Unscramble the word before your attempts run out."
+  },
+  {
+    id: "hallway_dash",
+    name: "Hallway Dash",
+    description: "Sprint down a school hallway, dodge clutter, jump hazards, and grab coin pickups."
+  },
+  {
+    id: "dino_dig",
+    name: "Dino Dig",
+    description: "Dig fossil tiles, collect coin caches, brush off old bones, and maybe uncover a rare dinosaur blook."
+  },
+  {
+    id: "shadow_match",
+    name: "Shadow Match",
+    description: "Flip hidden blooks, build matching streaks, and unlock rarer bonus packs."
+  },
+  {
+    id: "classroom_cleanup",
+    name: "Classroom Cleanup",
+    description: "Move across classroom rows and quickly sort books, pencils, and trash before the timer ends."
+  },
+  {
+    id: "battle_royale",
+    name: "Battle Royale",
+    description: "Quick 1v1 blook battles where your selected blook brings its own special power."
   }
 ];
 
@@ -1577,6 +1642,111 @@ const WORD_SCRAMBLE_WORDS = [
   "SOCCER",
   "ANIME"
 ];
+const DINO_DIG_BOARD_SIZE = 16;
+const DINO_DIG_RARE_BLOOK_POOL = DINOSAUR_BLOOKS.filter((blook) => ["Rare", "Epic", "Legendary"].includes(String(blook?.rarity || "")));
+const DINO_DIG_FOSSIL_FINDS = [
+  { label: "Amber Shard", icon: "🟠", points: 18 },
+  { label: "Tooth Fossil", icon: "🦷", points: 24 },
+  { label: "Claw Fossil", icon: "🪶", points: 28 },
+  { label: "Rib Fossil", icon: "🦴", points: 32 },
+  { label: "Skull Fossil", icon: "💀", points: 40 },
+  { label: "Full Skeleton", icon: "🦴", points: 52 }
+];
+const DINO_DIG_BONE_FINDS = [
+  { label: "Old Bone", icon: "🦴", points: 6 },
+  { label: "Broken Rib", icon: "🦴", points: 8 },
+  { label: "Dusty Fragment", icon: "🪨", points: 5 },
+  { label: "Tiny Tooth", icon: "🦷", points: 7 }
+];
+const DINO_DIG_COIN_FINDS = [
+  { label: "Coin Cache", icon: "🪙", points: 12, coins: 6 },
+  { label: "Buried Coins", icon: "🪙", points: 14, coins: 8 },
+  { label: "Treasure Pocket", icon: "💰", points: 18, coins: 11 },
+  { label: "Ancient Stash", icon: "💰", points: 20, coins: 14 }
+];
+const HALLWAY_DASH_LANE_COUNT = 3;
+const HALLWAY_DASH_MAX_HITS = 3;
+const HALLWAY_DASH_PLAYER_ZONE_Y = 82;
+const HALLWAY_DASH_ITEM_SPAWN_Y = -12;
+const HALLWAY_DASH_ITEM_KINDS = {
+  cone: { label: "Cone", speed: 29 },
+  backpack: { label: "Backpack", speed: 25 },
+  puddle: { label: "Puddle", speed: 22 },
+  coin: { label: "Coin Spill", speed: 27 }
+};
+const GOALIE_RUSH_LANE_COUNT = 3;
+const GOALIE_RUSH_BOSS_INTERVAL = 5;
+const GOALIE_RUSH_BASE_FLIGHT_MS = 1620;
+const GOALIE_RUSH_MIN_FLIGHT_MS = 520;
+const GOALIE_RUSH_BASE_DELAY_MS = 280;
+const CLASSROOM_CLEANUP_LANE_COUNT = 3;
+const CLASSROOM_CLEANUP_PLAYER_ZONE_Y = 82;
+const CLASSROOM_CLEANUP_ITEM_SPAWN_Y = -12;
+const CLASSROOM_CLEANUP_ITEM_KINDS = {
+  book: { label: "Book Stack", speed: 24, points: 16, binLabel: "Bookshelf" },
+  pencil: { label: "Pencil Bundle", speed: 27, points: 18, binLabel: "Pencil Cup" },
+  trash: { label: "Trash Pile", speed: 23, points: 20, binLabel: "Trash Can" }
+};
+const SHADOW_MATCH_REWARD_TRACK = [
+  { streak: 1, packId: "science" },
+  { streak: 2, packId: "sports" },
+  { streak: 3, packId: "anime" },
+  { streak: 4, packId: "dinosaurs" },
+  { streak: 5, packId: "superheroes" },
+  { streak: 6, packId: "books" }
+];
+const BATTLE_ROYALE_TURN_MS = 2200;
+const BATTLE_ROYALE_BASE_MAX_TURNS = 5;
+const BATTLE_ROYALE_RARITY_STATS = {
+  common: { maxHp: 24, attack: 6, heal: 4, guard: 5 },
+  rare: { maxHp: 26, attack: 7, heal: 4, guard: 6 },
+  epic: { maxHp: 28, attack: 8, heal: 5, guard: 6 },
+  legendary: { maxHp: 31, attack: 9, heal: 5, guard: 7 },
+  chroma: { maxHp: 32, attack: 9, heal: 6, guard: 7 }
+};
+const BATTLE_ROYALE_POWER_TEMPLATES = [
+  {
+    id: "blaze_burst",
+    name: "Blaze Burst",
+    description: "Fire a stronger hit for bonus damage.",
+    damageBonus: 4
+  },
+  {
+    id: "shell_wall",
+    name: "Shell Wall",
+    description: "Raise a thick shield before the next hit lands.",
+    shield: 8
+  },
+  {
+    id: "healing_glow",
+    name: "Healing Glow",
+    description: "Restore HP and add a small shield.",
+    heal: 6,
+    shield: 1
+  },
+  {
+    id: "meteor_dash",
+    name: "Meteor Dash",
+    description: "Crash through guard with a piercing strike.",
+    damage: 7,
+    pierce: 2
+  },
+  {
+    id: "thorn_bloom",
+    name: "Thorn Bloom",
+    description: "Deal damage and recover HP in the same move.",
+    damage: 4,
+    heal: 4
+  },
+  {
+    id: "shock_guard",
+    name: "Shock Guard",
+    description: "Build shield and zap the opponent at the same time.",
+    damage: 4,
+    shield: 4
+  }
+];
+const BATTLE_ROYALE_BOT_NAMES = ["Rogue Bot", "Arena Bot", "Meteor Bot", "Glitch Bot", "Comet Bot"];
 const SOCCER_FIELD_PLAYERS = [
   { id: "messi_left", starId: "messi", lane: 0, row: 2 },
   { id: "ronaldo_mid", starId: "ronaldo", lane: 1, row: 2 },
@@ -1652,6 +1822,610 @@ const TOWER_STACKER_MIN_VISIBLE_HEADROOM = 10;
 const SNAKE_GRID_WIDTH = 18;
 const SNAKE_GRID_HEIGHT = 18;
 const SNAKE_START_LENGTH = 4;
+
+function battleRoyaleHashValue(value) {
+  const safeValue = String(value || "starter");
+  let hash = 0;
+  for (let index = 0; index < safeValue.length; index += 1) {
+    hash = (hash * 31 + safeValue.charCodeAt(index)) >>> 0;
+  }
+  return hash >>> 0;
+}
+
+function battleRoyaleMaxTurns(difficulty) {
+  const tier = clamp(Number(difficulty?.tier || 1), 1, 4);
+  return BATTLE_ROYALE_BASE_MAX_TURNS + (tier >= 4 ? 1 : 0);
+}
+
+function battleRoyaleDefaultBlook() {
+  return {
+    id: "battle-royale-starter",
+    name: "Arena Starter",
+    icon: "BR",
+    rarity: "Rare",
+    packName: "Battle Royale",
+    image: ""
+  };
+}
+
+function battleRoyaleBlookSnapshot(blook) {
+  const source = blook && typeof blook === "object" ? blook : battleRoyaleDefaultBlook();
+  return {
+    id: String(source.id || "battle-royale-starter"),
+    name: String(source.name || "Arena Starter"),
+    icon: String(source.icon || "BR"),
+    image: String(source.image || ""),
+    rarity: String(source.rarity || "Rare"),
+    packId: String(source.packId || "battle_royale"),
+    packName: String(source.packName || "Battle Royale")
+  };
+}
+
+function battleRoyaleStatsForRarity(rarity) {
+  const key = String(rarity || "Common").trim().toLowerCase();
+  return BATTLE_ROYALE_RARITY_STATS[key] || BATTLE_ROYALE_RARITY_STATS.common;
+}
+
+function battleRoyalePowerTemplateForBlook(blook) {
+  const snapshot = battleRoyaleBlookSnapshot(blook);
+  const hash = battleRoyaleHashValue(snapshot.id || snapshot.name || "starter");
+  return BATTLE_ROYALE_POWER_TEMPLATES[hash % BATTLE_ROYALE_POWER_TEMPLATES.length] || BATTLE_ROYALE_POWER_TEMPLATES[0];
+}
+
+function battleRoyalePlayerBlook(player) {
+  if (player?.blook && typeof player.blook === "object") {
+    return battleRoyaleBlookSnapshot(player.blook);
+  }
+  return battleRoyaleDefaultBlook();
+}
+
+function battleRoyaleCombatantFromBlook(id, name, blook, options = {}) {
+  const snapshot = battleRoyaleBlookSnapshot(blook);
+  const stats = battleRoyaleStatsForRarity(snapshot.rarity);
+  const power = battleRoyalePowerTemplateForBlook(snapshot);
+  const bonusHp = Math.max(0, Number(options.bonusHp || 0));
+  const maxHp = Math.max(18, Number(stats.maxHp || 24) + bonusHp);
+  return {
+    id: String(id || ""),
+    name: sanitizeName(name || "Player") || "Player",
+    isBot: options.isBot === true,
+    blook: snapshot,
+    maxHp,
+    hp: maxHp,
+    shield: 0,
+    attackDamage: Math.max(1, Number(stats.attack || 6)),
+    healAmount: Math.max(1, Number(stats.heal || 4)),
+    guardAmount: Math.max(1, Number(stats.guard || 5)),
+    powerId: power.id,
+    powerName: power.name,
+    powerDescription: power.description,
+    powerDamage: Math.max(0, Number(power.damage || 0)),
+    powerDamageBonus: Math.max(0, Number(power.damageBonus || 0)),
+    powerHeal: Math.max(0, Number(power.heal || 0)),
+    powerShield: Math.max(0, Number(power.shield || 0)),
+    powerPierce: Math.max(0, Number(power.pierce || 0)),
+    nextSpecialTurn: 1,
+    totalDamage: 0,
+    totalHealing: 0,
+    turnsActed: 0,
+    knockouts: 0
+  };
+}
+
+function battleRoyaleCombatantFromPlayer(player) {
+  return battleRoyaleCombatantFromBlook(player?.id || "", player?.name || "Player", battleRoyalePlayerBlook(player));
+}
+
+function battleRoyaleBotCombatant(index = 0, difficulty = null) {
+  const tier = clamp(Number(difficulty?.tier || 1), 1, 4);
+  const botName = BATTLE_ROYALE_BOT_NAMES[index % BATTLE_ROYALE_BOT_NAMES.length] || "Arena Bot";
+  const botBlook = {
+    id: `battle-royale-bot-${index + 1}`,
+    name: botName,
+    icon: ["AI", "CPU", "BOT", "VR"][index % 4] || "BOT",
+    rarity: tier >= 3 ? "Epic" : "Rare",
+    packName: "Battle Royale",
+    image: ""
+  };
+  return battleRoyaleCombatantFromBlook(`bot:${index + 1}`, botName, botBlook, {
+    isBot: true,
+    bonusHp: tier >= 4 ? 1 : 0
+  });
+}
+
+function battleRoyaleOtherCombatant(match, combatantId) {
+  const ids = Array.isArray(match?.participants) ? match.participants : [];
+  const otherId = ids.find((id) => id !== combatantId) || "";
+  return otherId ? match?.combatants?.[otherId] || null : null;
+}
+
+function battleRoyaleSpecialReady(match, combatant) {
+  return Number(match?.turn || 1) >= Number(combatant?.nextSpecialTurn || 1);
+}
+
+function battleRoyaleSpecialReadyIn(match, combatant) {
+  return Math.max(0, Number(combatant?.nextSpecialTurn || 1) - Number(match?.turn || 1));
+}
+
+function battleRoyaleSpecialDamage(combatant) {
+  if (Number(combatant?.powerDamage || 0) > 0) {
+    return Math.max(0, Number(combatant.powerDamage || 0));
+  }
+  return Math.max(0, Number(combatant?.attackDamage || 0) + Number(combatant?.powerDamageBonus || 0));
+}
+
+function battleRoyaleApplyHeal(combatant, amount) {
+  const safeAmount = Math.max(0, Number(amount || 0));
+  if (!combatant || safeAmount <= 0) {
+    return 0;
+  }
+  const nextHp = Math.min(Number(combatant.maxHp || 0), Number(combatant.hp || 0) + safeAmount);
+  const healed = Math.max(0, nextHp - Number(combatant.hp || 0));
+  combatant.hp = nextHp;
+  combatant.totalHealing = Math.max(0, Number(combatant.totalHealing || 0)) + healed;
+  return healed;
+}
+
+function battleRoyaleApplyShield(combatant, amount) {
+  const safeAmount = Math.max(0, Number(amount || 0));
+  if (!combatant || safeAmount <= 0) {
+    return 0;
+  }
+  combatant.shield = Math.max(0, Number(combatant.shield || 0)) + safeAmount;
+  return safeAmount;
+}
+
+function battleRoyaleApplyDamage(target, amount, options = {}) {
+  const safeAmount = Math.max(0, Number(amount || 0));
+  const pierce = Math.max(0, Math.min(safeAmount, Number(options?.pierce || 0)));
+  if (!target || safeAmount <= 0) {
+    return {
+      attempted: safeAmount,
+      pierce,
+      hpLoss: 0,
+      absorbed: 0,
+      remainingShield: Math.max(0, Number(target?.shield || 0)),
+      remainingHp: Math.max(0, Number(target?.hp || 0)),
+      knockedOut: Number(target?.hp || 0) <= 0
+    };
+  }
+
+  const shieldBefore = Math.max(0, Number(target.shield || 0));
+  const hpBefore = Math.max(0, Number(target.hp || 0));
+  const normalDamage = Math.max(0, safeAmount - pierce);
+  const absorbed = Math.min(shieldBefore, normalDamage);
+  const hpLoss = pierce + Math.max(0, normalDamage - absorbed);
+
+  target.shield = Math.max(0, shieldBefore - absorbed);
+  target.hp = Math.max(0, hpBefore - hpLoss);
+
+  return {
+    attempted: safeAmount,
+    pierce,
+    hpLoss,
+    absorbed,
+    remainingShield: target.shield,
+    remainingHp: target.hp,
+    knockedOut: target.hp <= 0
+  };
+}
+
+function battleRoyaleChooseAutoAction(match, combatantId) {
+  const combatant = match?.combatants?.[combatantId];
+  const opponent = battleRoyaleOtherCombatant(match, combatantId);
+  if (!combatant || !opponent) {
+    return "attack";
+  }
+
+  if (battleRoyaleSpecialReady(match, combatant)) {
+    const specialDamage = battleRoyaleSpecialDamage(combatant);
+    if (specialDamage > 0 && Number(opponent.hp || 0) <= specialDamage + 1) {
+      return "special";
+    }
+    if (Number(combatant.powerHeal || 0) > 0 && Number(combatant.hp || 0) <= Number(combatant.maxHp || 0) * 0.55) {
+      return "special";
+    }
+    if (Number(combatant.powerShield || 0) > 0 && Number(combatant.hp || 0) <= Number(combatant.maxHp || 0) * 0.45) {
+      return "special";
+    }
+    if (Math.random() < 0.18) {
+      return "special";
+    }
+  }
+
+  if (Number(combatant.hp || 0) <= Number(combatant.maxHp || 0) * 0.35) {
+    return Math.random() < 0.58 ? "heal" : "guard";
+  }
+  if (Number(combatant.shield || 0) <= 2 && Math.random() < 0.22) {
+    return "guard";
+  }
+  return "attack";
+}
+
+function battleRoyaleMatchReady(match) {
+  const ids = Array.isArray(match?.participants) ? match.participants : [];
+  if (ids.length < 2) {
+    return false;
+  }
+  return ids.every((id) => typeof match?.pendingActions?.[id] === "string" && match.pendingActions[id].length > 0);
+}
+
+function battleRoyaleCreateMatch(game, leftPlayerId, rightPlayerId, difficulty, index = 0) {
+  const leftPlayer = game?.players?.get(leftPlayerId) || null;
+  if (!leftPlayer) {
+    return null;
+  }
+
+  const rightPlayer = rightPlayerId ? game?.players?.get(rightPlayerId) || null : null;
+  const leftCombatant = battleRoyaleCombatantFromPlayer(leftPlayer);
+  const rightCombatant = rightPlayer ? battleRoyaleCombatantFromPlayer(rightPlayer) : battleRoyaleBotCombatant(index, difficulty);
+  const matchId = `battle_royale_${Date.now()}_${index + 1}`;
+  const match = {
+    id: matchId,
+    turn: 1,
+    maxTurns: battleRoyaleMaxTurns(difficulty),
+    turnEndsAt: Date.now() + BATTLE_ROYALE_TURN_MS,
+    participants: [leftCombatant.id, rightCombatant.id],
+    playerIds: [leftPlayerId].concat(rightPlayer ? [rightPlayer.id] : []),
+    combatants: {
+      [leftCombatant.id]: leftCombatant,
+      [rightCombatant.id]: rightCombatant
+    },
+    pendingActions: Object.create(null),
+    completed: false,
+    winnerId: "",
+    tie: false,
+    lastSummary: `${leftCombatant.name} faces ${rightCombatant.name}. Pick a move for turn 1.`,
+    lastTurnEvents: [],
+    lastResolutionSeq: 0,
+    logSeq: 0,
+    log: [],
+    resultTextByCombatant: {}
+  };
+  match.log.push({
+    seq: 1,
+    turn: 0,
+    type: "start",
+    text: `${leftCombatant.name} vs ${rightCombatant.name}. Battle start.`
+  });
+  match.logSeq = 1;
+  return match;
+}
+
+function battleRoyaleSyncMatchState(game, match) {
+  if (!match || !(game?.chestPhase instanceof Map)) {
+    return;
+  }
+
+  for (const playerId of match.playerIds || []) {
+    const state = game.chestPhase.get(playerId);
+    const self = match.combatants[playerId];
+    const opponent = battleRoyaleOtherCombatant(match, playerId);
+    if (!state || !self || !opponent) {
+      continue;
+    }
+
+    state.matchId = match.id;
+    state.turn = Math.max(1, Number(match.turn || 1));
+    state.maxTurns = Math.max(1, Number(match.maxTurns || battleRoyaleMaxTurns(game?.minigameDifficulty)));
+    state.turnEndsAt = match.completed ? 0 : Math.max(0, Number(match.turnEndsAt || 0));
+    state.blook = self.blook;
+    state.maxHp = Math.max(1, Number(self.maxHp || 1));
+    state.hp = Math.max(0, Number(self.hp || 0));
+    state.shield = Math.max(0, Number(self.shield || 0));
+    state.attackDamage = Math.max(0, Number(self.attackDamage || 0));
+    state.healAmount = Math.max(0, Number(self.healAmount || 0));
+    state.guardAmount = Math.max(0, Number(self.guardAmount || 0));
+    state.powerName = String(self.powerName || "Special");
+    state.powerDescription = String(self.powerDescription || "");
+    state.specialReady = battleRoyaleSpecialReady(match, self);
+    state.specialReadyIn = battleRoyaleSpecialReadyIn(match, self);
+    state.selectedAction = String(match.pendingActions?.[playerId] || "");
+    state.opponentReady = Boolean(match.pendingActions?.[opponent.id]);
+    state.opponentId = String(opponent.id || "");
+    state.opponentName = String(opponent.name || "Opponent");
+    state.opponentBlook = opponent.blook;
+    state.opponentHp = Math.max(0, Number(opponent.hp || 0));
+    state.opponentMaxHp = Math.max(1, Number(opponent.maxHp || 1));
+    state.opponentShield = Math.max(0, Number(opponent.shield || 0));
+    state.opponentPowerName = String(opponent.powerName || "Special");
+    state.opponentPowerDescription = String(opponent.powerDescription || "");
+    state.isBotMatch = opponent.isBot === true;
+    state.totalDamage = Math.max(0, Number(self.totalDamage || 0));
+    state.totalHealing = Math.max(0, Number(self.totalHealing || 0));
+    state.turnsActed = Math.max(0, Number(self.turnsActed || 0));
+    state.knockouts = Math.max(0, Number(self.knockouts || 0));
+    state.completed = match.completed === true;
+    state.won = match.completed === true && match.winnerId === self.id;
+    state.tie = match.tie === true;
+    state.summary = String(match.lastSummary || "");
+    state.resultText = String(match.resultTextByCombatant?.[self.id] || "");
+    state.log = Array.isArray(match.log) ? match.log.slice(-6) : [];
+    state.lastTurnEvents = Array.isArray(match.lastTurnEvents) ? match.lastTurnEvents.slice() : [];
+    state.resolutionSeq = Math.max(0, Number(match.lastResolutionSeq || 0));
+  }
+}
+
+function battleRoyalePublicData(state) {
+  return {
+    turn: Math.max(1, Number(state?.turn || 1)),
+    maxTurns: Math.max(1, Number(state?.maxTurns || 1)),
+    turnEndsAt: Math.max(0, Number(state?.turnEndsAt || 0)),
+    summary: String(state?.summary || ""),
+    selectedAction: String(state?.selectedAction || ""),
+    opponentReady: state?.opponentReady === true,
+    resolutionSeq: Math.max(0, Number(state?.resolutionSeq || 0)),
+    resultText: String(state?.resultText || ""),
+    won: state?.won === true,
+    tie: state?.tie === true,
+    completed: state?.completed === true,
+    you: {
+      blook: state?.blook || battleRoyaleDefaultBlook(),
+      hp: Math.max(0, Number(state?.hp || 0)),
+      maxHp: Math.max(1, Number(state?.maxHp || 1)),
+      shield: Math.max(0, Number(state?.shield || 0)),
+      attackDamage: Math.max(0, Number(state?.attackDamage || 0)),
+      healAmount: Math.max(0, Number(state?.healAmount || 0)),
+      guardAmount: Math.max(0, Number(state?.guardAmount || 0)),
+      powerName: String(state?.powerName || "Special"),
+      powerDescription: String(state?.powerDescription || ""),
+      specialReady: state?.specialReady === true,
+      specialReadyIn: Math.max(0, Number(state?.specialReadyIn || 0)),
+      totalDamage: Math.max(0, Number(state?.totalDamage || 0)),
+      totalHealing: Math.max(0, Number(state?.totalHealing || 0))
+    },
+    opponent: {
+      id: String(state?.opponentId || ""),
+      name: String(state?.opponentName || "Opponent"),
+      blook: state?.opponentBlook || battleRoyaleDefaultBlook(),
+      hp: Math.max(0, Number(state?.opponentHp || 0)),
+      maxHp: Math.max(1, Number(state?.opponentMaxHp || 1)),
+      shield: Math.max(0, Number(state?.opponentShield || 0)),
+      powerName: String(state?.opponentPowerName || "Special"),
+      powerDescription: String(state?.opponentPowerDescription || ""),
+      isBot: state?.isBotMatch === true
+    },
+    log: Array.isArray(state?.log) ? state.log.slice(-6) : [],
+    lastTurnEvents: Array.isArray(state?.lastTurnEvents) ? state.lastTurnEvents.slice() : []
+  };
+}
+
+function battleRoyaleBroadcastMatchState(game, match, options = {}) {
+  if (!game || !match) {
+    return;
+  }
+
+  battleRoyaleSyncMatchState(game, match);
+  for (const playerId of match.playerIds || []) {
+    const state = game.chestPhase.get(playerId);
+    if (!state) {
+      continue;
+    }
+    io.to(playerId).emit("minigame:state", {
+      type: "battle_royale",
+      ...battleRoyalePublicData(state)
+    });
+  }
+
+  if (options.broadcastProgress !== false) {
+    broadcastMiniGameProgress(game);
+  }
+}
+
+function battleRoyaleResolveTurn(game, match) {
+  if (!game || !match || match.completed === true || !battleRoyaleMatchReady(match)) {
+    return false;
+  }
+
+  const ids = Array.isArray(match.participants) ? match.participants.slice(0, 2) : [];
+  const left = match.combatants[ids[0]];
+  const right = match.combatants[ids[1]];
+  if (!left || !right) {
+    return false;
+  }
+
+  const actions = {
+    [left.id]: String(match.pendingActions?.[left.id] || "attack"),
+    [right.id]: String(match.pendingActions?.[right.id] || "attack")
+  };
+  const turnNumber = Math.max(1, Number(match.turn || 1));
+  const turnEvents = [];
+  const appendEvent = (text, type = "") => {
+    const event = {
+      seq: Math.max(1, Number(match.logSeq || 0) + 1),
+      turn: turnNumber,
+      type: String(type || ""),
+      text: String(text || "")
+    };
+    match.logSeq = event.seq;
+    match.log.push(event);
+    turnEvents.push(event);
+    if (match.log.length > 8) {
+      match.log = match.log.slice(-8);
+    }
+    return event;
+  };
+
+  left.turnsActed = Math.max(0, Number(left.turnsActed || 0)) + 1;
+  right.turnsActed = Math.max(0, Number(right.turnsActed || 0)) + 1;
+
+  for (const combatant of [left, right]) {
+    const action = actions[combatant.id];
+    if (action === "guard") {
+      const gained = battleRoyaleApplyShield(combatant, combatant.guardAmount);
+      appendEvent(`${combatant.name} guarded for +${gained} shield.`, "guard");
+    } else if (action === "heal") {
+      const healed = battleRoyaleApplyHeal(combatant, combatant.healAmount);
+      appendEvent(`${combatant.name} healed ${healed} HP.`, "heal");
+    } else if (action === "special") {
+      if (Number(combatant.powerShield || 0) > 0) {
+        const gained = battleRoyaleApplyShield(combatant, combatant.powerShield);
+        appendEvent(`${combatant.name} used ${combatant.powerName} for +${gained} shield.`, "special");
+      }
+      if (Number(combatant.powerHeal || 0) > 0) {
+        const healed = battleRoyaleApplyHeal(combatant, combatant.powerHeal);
+        appendEvent(`${combatant.name} used ${combatant.powerName} to heal ${healed} HP.`, "special");
+      }
+    }
+  }
+
+  const damageOrder = [
+    { attacker: left, defender: right },
+    { attacker: right, defender: left }
+  ];
+  for (const pair of damageOrder) {
+    const action = actions[pair.attacker.id];
+    if (action !== "attack" && action !== "special") {
+      continue;
+    }
+
+    const damage = action === "special" ? battleRoyaleSpecialDamage(pair.attacker) : Math.max(0, Number(pair.attacker.attackDamage || 0));
+    const outcome = battleRoyaleApplyDamage(pair.defender, damage, {
+      pierce: action === "special" ? Number(pair.attacker.powerPierce || 0) : 0
+    });
+    pair.attacker.totalDamage = Math.max(0, Number(pair.attacker.totalDamage || 0)) + outcome.hpLoss;
+
+    if (action === "special") {
+      appendEvent(
+        `${pair.attacker.name} used ${pair.attacker.powerName} for ${outcome.hpLoss} damage${outcome.absorbed > 0 ? ` (${outcome.absorbed} blocked)` : ""}.`,
+        "special"
+      );
+      pair.attacker.nextSpecialTurn = turnNumber + 2;
+    } else {
+      appendEvent(
+        `${pair.attacker.name} attacked for ${outcome.hpLoss} damage${outcome.absorbed > 0 ? ` (${outcome.absorbed} blocked)` : ""}.`,
+        "attack"
+      );
+    }
+  }
+
+  match.lastResolutionSeq = Math.max(0, Number(match.lastResolutionSeq || 0)) + 1;
+  match.lastTurnEvents = turnEvents.slice(-6);
+  match.pendingActions = Object.create(null);
+
+  const leftHp = Math.max(0, Number(left.hp || 0));
+  const rightHp = Math.max(0, Number(right.hp || 0));
+  const turnCapReached = turnNumber >= Math.max(1, Number(match.maxTurns || 1));
+  let winnerId = "";
+  let tie = false;
+
+  if (leftHp <= 0 && rightHp <= 0) {
+    tie = true;
+  } else if (leftHp <= 0) {
+    winnerId = right.id;
+  } else if (rightHp <= 0) {
+    winnerId = left.id;
+  } else if (turnCapReached) {
+    if (leftHp === rightHp) {
+      const leftDamage = Math.max(0, Number(left.totalDamage || 0));
+      const rightDamage = Math.max(0, Number(right.totalDamage || 0));
+      if (leftDamage === rightDamage) {
+        tie = true;
+      } else {
+        winnerId = leftDamage > rightDamage ? left.id : right.id;
+      }
+    } else {
+      winnerId = leftHp > rightHp ? left.id : right.id;
+    }
+  }
+
+  if (winnerId || tie) {
+    match.completed = true;
+    match.winnerId = winnerId;
+    match.tie = tie;
+    match.turnEndsAt = 0;
+    if (winnerId === left.id) {
+      left.knockouts = Math.max(0, Number(left.knockouts || 0)) + 1;
+    }
+    if (winnerId === right.id) {
+      right.knockouts = Math.max(0, Number(right.knockouts || 0)) + 1;
+    }
+
+    if (tie) {
+      match.lastSummary = leftHp <= 0 && rightHp <= 0
+        ? "Double knockout. The duel ends in a tie."
+        : `Time's up. ${left.name} and ${right.name} finish tied.`;
+    } else {
+      const winner = match.combatants[winnerId];
+      const loser = winnerId === left.id ? right : left;
+      match.lastSummary = `${winner.name} wins the duel over ${loser.name} with ${Math.max(0, Number(winner.hp || 0))} HP left.`;
+    }
+
+    appendEvent(match.lastSummary, "finish");
+    match.resultTextByCombatant = {
+      [left.id]: tie
+        ? `${left.name} finished tied with ${right.name}.`
+        : winnerId === left.id
+          ? `${left.name} defeated ${right.name}.`
+          : `${left.name} lost to ${right.name}.`,
+      [right.id]: tie
+        ? `${right.name} finished tied with ${left.name}.`
+        : winnerId === right.id
+          ? `${right.name} defeated ${left.name}.`
+          : `${right.name} lost to ${left.name}.`
+    };
+  } else {
+    match.turn = turnNumber + 1;
+    match.turnEndsAt = Date.now() + BATTLE_ROYALE_TURN_MS;
+    match.lastSummary = `Turn ${turnNumber} complete. ${left.name} ${leftHp}/${left.maxHp} HP, ${right.name} ${rightHp}/${right.maxHp} HP.`;
+  }
+
+  battleRoyaleBroadcastMatchState(game, match);
+  return true;
+}
+
+function initializeBattleRoyaleMatches(game, eligiblePlayerIds, difficulty) {
+  game.battleRoyaleMatches = new Map();
+
+  const ids = Array.from(new Set(Array.isArray(eligiblePlayerIds) ? eligiblePlayerIds.filter((value) => game?.players?.has(value)) : []));
+  for (let index = ids.length - 1; index > 0; index -= 1) {
+    const swapIndex = randomInt(0, index);
+    [ids[index], ids[swapIndex]] = [ids[swapIndex], ids[index]];
+  }
+
+  let pairIndex = 0;
+  for (let index = 0; index < ids.length; index += 2) {
+    const leftPlayerId = ids[index];
+    const rightPlayerId = ids[index + 1] || "";
+    const match = battleRoyaleCreateMatch(game, leftPlayerId, rightPlayerId, difficulty, pairIndex);
+    pairIndex += 1;
+    if (!match) {
+      continue;
+    }
+    game.battleRoyaleMatches.set(match.id, match);
+    battleRoyaleSyncMatchState(game, match);
+  }
+}
+
+function tickBattleRoyaleMatches(game) {
+  if (!game || game.phase !== "minigame" || game.minigameType !== "battle_royale") {
+    return;
+  }
+
+  const matches = game.battleRoyaleMatches instanceof Map ? Array.from(game.battleRoyaleMatches.values()) : [];
+  const now = Date.now();
+  let resolvedAny = false;
+
+  for (const match of matches) {
+    if (!match || match.completed === true || Number(match.turnEndsAt || 0) > now) {
+      continue;
+    }
+
+    for (const combatantId of match.participants || []) {
+      if (!match.pendingActions[combatantId]) {
+        match.pendingActions[combatantId] = battleRoyaleChooseAutoAction(match, combatantId);
+      }
+    }
+
+    if (battleRoyaleResolveTurn(game, match)) {
+      resolvedAny = true;
+    }
+  }
+
+  if (resolvedAny && allMiniGamesResolved(game)) {
+    finalizeMiniGamePhase(game);
+  }
+}
 
 function publicMiniGameCatalog() {
   return MINI_GAME_CATALOG.map((game) => ({
@@ -1758,6 +2532,153 @@ function randomPlayerName(game) {
 
 function getModeConfig(mode) {
   return MODE_CONFIG[normalizeMode(mode)];
+}
+
+function isAsteroidsMode(modeOrGame) {
+  if (modeOrGame && typeof modeOrGame === "object" && modeOrGame.settings) {
+    return normalizeMode(modeOrGame.settings.mode) === "asteroids";
+  }
+  return normalizeMode(modeOrGame) === "asteroids";
+}
+
+function asteroidsWaveSize(game) {
+  const roundNumber = Math.max(1, Number(game?.currentQuestionIndex || 0) + 1);
+  const playerCount = Math.max(1, Number(game?.players?.size || 1));
+  return clamp(7 + Math.floor((roundNumber - 1) / 2) + Math.floor(playerCount / 4), 7, 18);
+}
+
+function asteroidsQuestionModeData(game) {
+  if (!isAsteroidsMode(game)) {
+    return null;
+  }
+  const roundNumber = Math.max(1, Number(game?.currentQuestionIndex || 0) + 1);
+  const waveSize = asteroidsWaveSize(game);
+  const dangerTier = clamp(1 + Math.floor((roundNumber - 1) / 2), 1, 5);
+  return {
+    mode: "asteroids",
+    waveSize,
+    dangerTier,
+    roundNumber
+  };
+}
+
+function asteroidsBlastOutcome(game, elapsedMs, isCorrect, nextStreak) {
+  const waveSize = asteroidsWaveSize(game);
+  const maxWindowMs = Math.max(1000, Number(game?.settings?.timerSeconds || 15) * 1000);
+  const normalizedSpeed = clamp(1 - Number(elapsedMs || 0) / maxWindowMs, 0, 1);
+  if (!isCorrect) {
+    return {
+      mode: "asteroids",
+      waveSize,
+      blasts: 0,
+      speedTier: "miss",
+      speedLabel: "Miss",
+      normalizedSpeed,
+      streakCoinsAwarded: 0
+    };
+  }
+
+  let speedTier = "glancing";
+  let speedLabel = "Glancing Shot";
+  let speedBlastBonus = 0;
+  if (normalizedSpeed >= 0.82) {
+    speedTier = "warp";
+    speedLabel = "Warp Laser";
+    speedBlastBonus = 3;
+  } else if (normalizedSpeed >= 0.6) {
+    speedTier = "rapid";
+    speedLabel = "Rapid Fire";
+    speedBlastBonus = 2;
+  } else if (normalizedSpeed >= 0.35) {
+    speedTier = "steady";
+    speedLabel = "Steady Shot";
+    speedBlastBonus = 1;
+  }
+
+  const streakBlastBonus = Math.min(3, Math.floor(Math.max(0, Number(nextStreak || 0) - 1) / 2));
+  const blasts = Math.min(waveSize, 1 + speedBlastBonus + streakBlastBonus);
+  const streakCoinsAwarded =
+    nextStreak >= 2
+      ? Math.min(14, Math.max(1, Number(nextStreak || 0) - 1) + (normalizedSpeed >= 0.6 ? 1 : 0))
+      : 0;
+
+  return {
+    mode: "asteroids",
+    waveSize,
+    blasts,
+    speedTier,
+    speedLabel,
+    normalizedSpeed,
+    streakCoinsAwarded
+  };
+}
+
+function buildQuestionStartPayload(game, question, endsAt) {
+  return {
+    questionIndex: game.currentQuestionIndex + 1,
+    totalQuestions: game.questions.length,
+    endsAt,
+    mode: String(game?.settings?.mode || "classic"),
+    modeData: asteroidsQuestionModeData(game),
+    question: {
+      prompt: question.prompt,
+      options: question.options,
+      image: sanitizeQuestionImage(question.image || "")
+    }
+  };
+}
+
+function buildQuestionResultModeData(game, submissions) {
+  if (!isAsteroidsMode(game)) {
+    return null;
+  }
+
+  const waveSize = asteroidsWaveSize(game);
+  const safeSubmissions = Array.isArray(submissions) ? submissions : [];
+  const totalBlasts = safeSubmissions.reduce((sum, item) => sum + Math.max(0, Number(item?.asteroidsBlasted || 0)), 0);
+  const streakCoinsAwarded = safeSubmissions.reduce((sum, item) => sum + Math.max(0, Number(item?.streakCoinsAwarded || 0)), 0);
+  const topPilots = safeSubmissions
+    .filter((item) => Math.max(0, Number(item?.asteroidsBlasted || 0)) > 0)
+    .sort((left, right) => Number(right.asteroidsBlasted || 0) - Number(left.asteroidsBlasted || 0) || Number(left.ms || 0) - Number(right.ms || 0))
+    .slice(0, 4)
+    .map((item) => ({
+      playerId: String(item.playerId || ""),
+      playerName: String(item.playerName || "Player"),
+      blasts: Math.max(0, Number(item.asteroidsBlasted || 0)),
+      speedLabel: String(item.asteroidsSpeedLabel || "")
+    }));
+
+  return {
+    mode: "asteroids",
+    waveSize,
+    destroyedCount: Math.min(waveSize, totalBlasts),
+    totalBlasts,
+    streakCoinsAwarded,
+    topPilots
+  };
+}
+
+function buildQuestionResultPayload(game, question, submissions) {
+  const safeSubmissions = Array.isArray(submissions) ? submissions : [];
+  return {
+    mode: String(game?.settings?.mode || "classic"),
+    modeData: buildQuestionResultModeData(game, safeSubmissions),
+    correctAnswer: question.answerIndex,
+    explanation: question.explanation,
+    submissions: safeSubmissions.map((item) => ({
+      playerId: item.playerId,
+      playerName: item.playerName,
+      correct: item.correct,
+      delta: item.delta,
+      answerIndex: item.answerIndex,
+      ms: item.ms,
+      asteroidsBlasted: Math.max(0, Number(item.asteroidsBlasted || 0)),
+      asteroidsSpeedTier: String(item.asteroidsSpeedTier || ""),
+      asteroidsSpeedLabel: String(item.asteroidsSpeedLabel || ""),
+      streakCoinsAwarded: Math.max(0, Number(item.streakCoinsAwarded || 0))
+    })),
+    leaderboard: sortedPlayers(game)
+  };
 }
 
 function authStatusForRequest(req) {
@@ -2683,6 +3604,682 @@ function scrambleWord(word) {
   }
 
   return scrambled;
+}
+
+function createDinoDigTile(kind, reward = {}) {
+  const safeKind = String(kind || "bone");
+  return {
+    kind: safeKind,
+    dug: false,
+    label: String(reward.label || "Dig Site"),
+    icon: String(reward.icon || "⛏️"),
+    points: Math.max(0, Number(reward.points || 0)),
+    coins: Math.max(0, Number(reward.coins || 0)),
+    blookId: typeof reward.blookId === "string" ? reward.blookId : "",
+    rarity: typeof reward.rarity === "string" ? reward.rarity : "",
+    image: typeof reward.image === "string" ? reward.image : ""
+  };
+}
+
+function dinoDigPublicTile(tile) {
+  if (!tile || tile.dug !== true) {
+    return {
+      dug: false
+    };
+  }
+
+  const publicTile = {
+    dug: true,
+    kind: String(tile.kind || "bone"),
+    label: String(tile.label || "Dig Find"),
+    icon: String(tile.icon || "⛏️"),
+    points: Math.max(0, Number(tile.points || 0)),
+    coins: Math.max(0, Number(tile.coins || 0))
+  };
+
+  if (tile.kind === "rare_blook") {
+    publicTile.blookId = String(tile.blookId || "");
+    publicTile.rarity = String(tile.rarity || "");
+    publicTile.image = String(tile.image || "");
+  }
+
+  return publicTile;
+}
+
+function dinoDigPayload(state) {
+  const board = Array.isArray(state?.board) ? state.board.map(dinoDigPublicTile) : [];
+  const lastReveal = state?.lastReveal && typeof state.lastReveal === "object"
+    ? {
+      seq: Math.max(0, Number(state.lastReveal.seq || 0)),
+      kind: String(state.lastReveal.kind || "bone"),
+      label: String(state.lastReveal.label || "Dig Find"),
+      icon: String(state.lastReveal.icon || "⛏️"),
+      points: Math.max(0, Number(state.lastReveal.points || 0)),
+      coins: Math.max(0, Number(state.lastReveal.coins || 0)),
+      blookId: String(state.lastReveal.blookId || ""),
+      rarity: String(state.lastReveal.rarity || ""),
+      image: String(state.lastReveal.image || "")
+    }
+    : null;
+
+  return {
+    type: "dino_dig",
+    board,
+    digs: Math.max(0, Number(state?.digs || 0)),
+    maxDigs: Math.max(1, Number(state?.maxDigs || 1)),
+    digScore: Math.max(0, Number(state?.digScore || 0)),
+    fossilsFound: Math.max(0, Number(state?.fossilsFound || 0)),
+    fossilPoints: Math.max(0, Number(state?.fossilPoints || 0)),
+    bonesFound: Math.max(0, Number(state?.bonesFound || 0)),
+    coinsFound: Math.max(0, Number(state?.coinsFound || 0)),
+    rareBlooksFound: Math.max(0, Number(state?.rareBlooksFound || 0)),
+    completed: state?.completed === true,
+    lastReveal
+  };
+}
+
+function goalieRushLane(value) {
+  return clamp(Math.round(Number(value ?? 1)), 0, GOALIE_RUSH_LANE_COUNT - 1);
+}
+
+function goalieRushBossCoinValue(round, difficultyTier = 1) {
+  const safeRound = Math.max(1, Math.round(Number(round || 1)));
+  const tier = clamp(Number(difficultyTier || 1), 1, 4);
+  const bossIndex = Math.max(1, Math.ceil(safeRound / GOALIE_RUSH_BOSS_INTERVAL));
+  return 3 + tier * 2 + bossIndex;
+}
+
+function goalieRushShotFlightMs(roundOrState, difficultyTier = null) {
+  const source = roundOrState && typeof roundOrState === "object" ? roundOrState : null;
+  const round = Math.max(1, Math.round(Number(source ? Number(source.shotsFaced || 0) + 1 : roundOrState || 1)));
+  const tier = clamp(Number(source ? source.difficultyTier : difficultyTier || 1), 1, 4);
+  return Math.max(
+    GOALIE_RUSH_MIN_FLIGHT_MS,
+    GOALIE_RUSH_BASE_FLIGHT_MS - (round - 1) * 92 - (tier - 1) * 85
+  );
+}
+
+function goalieRushStateScore(state) {
+  const saves = Math.max(0, Number(state?.saves || 0));
+  const bossSaves = Math.max(0, Number(state?.bossSaves || 0));
+  const bestStreak = Math.max(0, Number(state?.bestStreak || 0));
+  const goalsAllowed = Math.max(0, Number(state?.goalsAllowed || 0));
+  const bossCoinsEarned = Math.max(0, Number(state?.bossCoinsEarned || 0));
+  return Math.max(0, Math.round(saves * 70 + bossSaves * 110 + bestStreak * 28 + bossCoinsEarned * 12 - goalsAllowed * 24));
+}
+
+function goalieRushNextBossRound(state) {
+  const currentRound = state?.activeShot
+    ? Math.max(1, Number(state.activeShot.round || Number(state?.shotsFaced || 0) + 1))
+    : Math.max(1, Number(state?.shotsFaced || 0) + 1);
+  return Math.ceil(currentRound / GOALIE_RUSH_BOSS_INTERVAL) * GOALIE_RUSH_BOSS_INTERVAL;
+}
+
+function goalieRushSetLastEvent(state, details = {}) {
+  if (!state) {
+    return;
+  }
+
+  state.lastEventSeq = Math.max(0, Number(state.lastEventSeq || 0)) + 1;
+  state.lastEvent = {
+    seq: state.lastEventSeq,
+    ts: Date.now(),
+    type: String(details.type || "save"),
+    round: Math.max(1, Number(details.round || Number(state.shotsFaced || 0) + 1)),
+    lane: goalieRushLane(details.lane ?? state.lane),
+    saved: details.saved !== false,
+    boss: details.boss === true,
+    coinsAwarded: Math.max(0, Number(details.coinsAwarded || 0)),
+    saves: Math.max(0, Number(details.saves ?? state.saves ?? 0)),
+    goalsAllowed: Math.max(0, Number(details.goalsAllowed ?? state.goalsAllowed ?? 0)),
+    streak: Math.max(0, Number(details.streak ?? state.streak ?? 0)),
+    bestStreak: Math.max(0, Number(details.bestStreak ?? state.bestStreak ?? 0)),
+    bossSaves: Math.max(0, Number(details.bossSaves ?? state.bossSaves ?? 0)),
+    bossCoinsEarned: Math.max(0, Number(details.bossCoinsEarned ?? state.bossCoinsEarned ?? 0))
+  };
+}
+
+function createGoalieRushShot(state) {
+  const round = Math.max(1, Number(state?.shotsFaced || 0) + 1);
+  const boss = round % GOALIE_RUSH_BOSS_INTERVAL === 0;
+  const seq = Math.max(0, Number(state?.shotSeq || 0)) + 1;
+  if (state) {
+    state.shotSeq = seq;
+  }
+
+  return {
+    id: `goalie_${seq}`,
+    seq,
+    lane: goalieRushLane(randomInt(0, GOALIE_RUSH_LANE_COUNT - 1)),
+    round,
+    boss,
+    coins: boss ? goalieRushBossCoinValue(round, state?.difficultyTier) : 0,
+    flightMs: goalieRushShotFlightMs(round, state?.difficultyTier),
+    spawnedAt: Date.now()
+  };
+}
+
+function goalieRushPayload(state) {
+  const now = Date.now();
+  const activeShot = state?.activeShot && typeof state.activeShot === "object"
+    ? {
+      id: String(state.activeShot.id || ""),
+      seq: Math.max(0, Number(state.activeShot.seq || 0)),
+      lane: goalieRushLane(state.activeShot.lane),
+      round: Math.max(1, Number(state.activeShot.round || 1)),
+      boss: state.activeShot.boss === true,
+      coins: Math.max(0, Number(state.activeShot.coins || 0)),
+      flightMs: Math.max(200, Number(state.activeShot.flightMs || GOALIE_RUSH_BASE_FLIGHT_MS)),
+      spawnedAt: Math.max(0, Number(state.activeShot.spawnedAt || 0)),
+      progress: clamp(
+        (now - Number(state.activeShot.spawnedAt || now)) / Math.max(200, Number(state.activeShot.flightMs || GOALIE_RUSH_BASE_FLIGHT_MS)),
+        0,
+        1
+      )
+    }
+    : null;
+  const lastEvent = state?.lastEvent && typeof state.lastEvent === "object"
+    ? {
+      seq: Math.max(0, Number(state.lastEvent.seq || 0)),
+      ts: Math.max(0, Number(state.lastEvent.ts || 0)),
+      type: String(state.lastEvent.type || "save"),
+      round: Math.max(1, Number(state.lastEvent.round || 1)),
+      lane: goalieRushLane(state.lastEvent.lane),
+      saved: state.lastEvent.saved !== false,
+      boss: state.lastEvent.boss === true,
+      coinsAwarded: Math.max(0, Number(state.lastEvent.coinsAwarded || 0)),
+      saves: Math.max(0, Number(state.lastEvent.saves || 0)),
+      goalsAllowed: Math.max(0, Number(state.lastEvent.goalsAllowed || 0)),
+      streak: Math.max(0, Number(state.lastEvent.streak || 0)),
+      bestStreak: Math.max(0, Number(state.lastEvent.bestStreak || 0)),
+      bossSaves: Math.max(0, Number(state.lastEvent.bossSaves || 0)),
+      bossCoinsEarned: Math.max(0, Number(state.lastEvent.bossCoinsEarned || 0))
+    }
+    : null;
+
+  return {
+    type: "goalie_rush",
+    lanes: GOALIE_RUSH_LANE_COUNT,
+    lane: goalieRushLane(state?.lane),
+    shotsFaced: Math.max(0, Number(state?.shotsFaced || 0)),
+    saves: Math.max(0, Number(state?.saves || 0)),
+    goalsAllowed: Math.max(0, Number(state?.goalsAllowed || 0)),
+    streak: Math.max(0, Number(state?.streak || 0)),
+    bestStreak: Math.max(0, Number(state?.bestStreak || 0)),
+    bossSaves: Math.max(0, Number(state?.bossSaves || 0)),
+    bossCoinsEarned: Math.max(0, Number(state?.bossCoinsEarned || 0)),
+    score: goalieRushStateScore(state),
+    currentRound: activeShot?.round || Math.max(1, Number(state?.shotsFaced || 0) + 1),
+    nextBossRound: goalieRushNextBossRound(state),
+    bossInterval: GOALIE_RUSH_BOSS_INTERVAL,
+    activeShot,
+    completed: false,
+    lastEvent
+  };
+}
+
+function createDinoDigBoard(difficultyTier = 1) {
+  const safeTier = clamp(Number(difficultyTier || 1), 1, 4);
+  const tiles = [];
+  const rareChance = 0.12 + (safeTier - 1) * 0.05;
+
+  if (DINO_DIG_RARE_BLOOK_POOL.length > 0 && Math.random() < rareChance) {
+    const rareBlook = pickRandomBlookFromPack({ blooks: DINO_DIG_RARE_BLOOK_POOL });
+    tiles.push(createDinoDigTile("rare_blook", {
+      label: rareBlook?.name || "Rare Dinosaur Blook",
+      icon: rareBlook?.icon || "🦖",
+      points: 96 + safeTier * 14,
+      blookId: rareBlook?.id || "",
+      rarity: rareBlook?.rarity || "Rare",
+      image: rareBlook?.image || ""
+    }));
+  }
+
+  const coinTileCount = 2 + (safeTier >= 3 ? 1 : 0);
+  const fossilTileCount = 5 + Math.floor((safeTier + 1) / 2);
+  for (let index = 0; index < coinTileCount; index += 1) {
+    tiles.push(createDinoDigTile("coin", DINO_DIG_COIN_FINDS[randomInt(0, DINO_DIG_COIN_FINDS.length - 1)]));
+  }
+  for (let index = 0; index < fossilTileCount; index += 1) {
+    tiles.push(createDinoDigTile("fossil", DINO_DIG_FOSSIL_FINDS[randomInt(0, DINO_DIG_FOSSIL_FINDS.length - 1)]));
+  }
+  while (tiles.length < DINO_DIG_BOARD_SIZE) {
+    tiles.push(createDinoDigTile("bone", DINO_DIG_BONE_FINDS[randomInt(0, DINO_DIG_BONE_FINDS.length - 1)]));
+  }
+
+  return shuffle(tiles).slice(0, DINO_DIG_BOARD_SIZE);
+}
+
+function hallwayDashLane(value) {
+  return clamp(Math.round(Number(value ?? 1)), 0, HALLWAY_DASH_LANE_COUNT - 1);
+}
+
+function classroomCleanupLane(value) {
+  return clamp(Math.round(Number(value ?? 1)), 0, CLASSROOM_CLEANUP_LANE_COUNT - 1);
+}
+
+function classroomCleanupItemProfile(kind) {
+  const key = String(kind || "book").toLowerCase();
+  return CLASSROOM_CLEANUP_ITEM_KINDS[key] || CLASSROOM_CLEANUP_ITEM_KINDS.book;
+}
+
+function classroomCleanupSpawnIntervalMs(difficultyTier = 1) {
+  const tier = clamp(Number(difficultyTier || 1), 1, 4);
+  return Math.max(320, 760 - tier * 90);
+}
+
+function classroomCleanupStateScore(state) {
+  return Math.max(0, Number(state?.score || 0));
+}
+
+function createClassroomCleanupItem(state) {
+  const tier = clamp(Number(state?.difficultyTier || 1), 1, 4);
+  const roll = Math.random();
+  let kind = "book";
+  if (roll < 0.34) {
+    kind = "book";
+  } else if (roll < 0.68) {
+    kind = "pencil";
+  } else {
+    kind = "trash";
+  }
+
+  const profile = classroomCleanupItemProfile(kind);
+  const nextSeq = Math.max(0, Number(state?.itemSeq || 0)) + 1;
+  if (state) {
+    state.itemSeq = nextSeq;
+  }
+
+  return {
+    id: `cleanup_${nextSeq}`,
+    kind,
+    lane: classroomCleanupLane(randomInt(0, CLASSROOM_CLEANUP_LANE_COUNT - 1)),
+    y: CLASSROOM_CLEANUP_ITEM_SPAWN_Y,
+    speed: profile.speed + tier * 1.8 + randomFloat(-1.8, 1.8),
+    points: Math.max(0, Number(profile.points || 0))
+  };
+}
+
+function classroomCleanupSetLastEvent(state, details = {}) {
+  if (!state) {
+    return;
+  }
+
+  state.lastEventSeq = Math.max(0, Number(state.lastEventSeq || 0)) + 1;
+  const profile = classroomCleanupItemProfile(details.kind);
+  state.lastEvent = {
+    seq: state.lastEventSeq,
+    type: String(details.type || "sorted"),
+    kind: String(details.kind || "book"),
+    label: String(details.label || profile.label || "Classroom Item"),
+    binLabel: String(details.binLabel || profile.binLabel || ""),
+    lane: classroomCleanupLane(details.lane ?? state.lane),
+    points: Number.isFinite(Number(details.points)) ? Number(details.points) : 0,
+    combo: Math.max(0, Number(details.combo ?? state.combo ?? 0)),
+    misses: Math.max(0, Number(details.misses ?? state.misses ?? 0)),
+    wrongSorts: Math.max(0, Number(details.wrongSorts ?? state.wrongSorts ?? 0))
+  };
+}
+
+function classroomCleanupPayload(state) {
+  const items = Array.isArray(state?.items)
+    ? state.items.map((item) => ({
+      id: String(item.id || ""),
+      kind: String(item.kind || "book"),
+      lane: classroomCleanupLane(item.lane),
+      y: clamp(Number(item.y || 0), -24, 118)
+    }))
+    : [];
+  const lastEvent = state?.lastEvent && typeof state.lastEvent === "object"
+    ? {
+      seq: Math.max(0, Number(state.lastEvent.seq || 0)),
+      type: String(state.lastEvent.type || "sorted"),
+      kind: String(state.lastEvent.kind || "book"),
+      label: String(state.lastEvent.label || ""),
+      binLabel: String(state.lastEvent.binLabel || ""),
+      lane: classroomCleanupLane(state.lastEvent.lane),
+      points: Number.isFinite(Number(state.lastEvent.points)) ? Number(state.lastEvent.points) : 0,
+      combo: Math.max(0, Number(state.lastEvent.combo || 0)),
+      misses: Math.max(0, Number(state.lastEvent.misses || 0)),
+      wrongSorts: Math.max(0, Number(state.lastEvent.wrongSorts || 0))
+    }
+    : null;
+
+  return {
+    type: "classroom_cleanup",
+    lanes: CLASSROOM_CLEANUP_LANE_COUNT,
+    lane: classroomCleanupLane(state?.lane),
+    items,
+    score: classroomCleanupStateScore(state),
+    sortedCount: Math.max(0, Number(state?.sortedCount || 0)),
+    booksSorted: Math.max(0, Number(state?.booksSorted || 0)),
+    pencilsSorted: Math.max(0, Number(state?.pencilsSorted || 0)),
+    trashSorted: Math.max(0, Number(state?.trashSorted || 0)),
+    misses: Math.max(0, Number(state?.misses || 0)),
+    wrongSorts: Math.max(0, Number(state?.wrongSorts || 0)),
+    combo: Math.max(0, Number(state?.combo || 0)),
+    bestCombo: Math.max(0, Number(state?.bestCombo || 0)),
+    completed: state?.completed === true,
+    lastEvent
+  };
+}
+
+function shadowMatchPackById(packId) {
+  const safePackId = String(packId || "").trim();
+  return BLOOK_PACKS.find((pack) => pack.id === safePackId) || null;
+}
+
+function shadowMatchBlookSnapshot(blook) {
+  const source = blook && typeof blook === "object" ? blook : DEFAULT_BLOOK;
+  const pack = shadowMatchPackById(source.packId);
+  return {
+    id: String(source.id || DEFAULT_BLOOK.id || "shadow-match-default"),
+    name: String(source.name || DEFAULT_BLOOK.name || "Mystery Blook"),
+    image: String(source.image || ""),
+    icon: String(source.icon || DEFAULT_BLOOK.icon || "?"),
+    rarity: String(source.rarity || "Common"),
+    packId: String(source.packId || pack?.id || ""),
+    packName: String(source.packName || pack?.name || "")
+  };
+}
+
+function shadowMatchPairCount(difficultyTier = 1) {
+  const tier = clamp(Number(difficultyTier || 1), 1, 4);
+  return 4 + tier;
+}
+
+function shadowMatchRewardTierByIndex(index) {
+  const numericIndex = Number(index);
+  const safeIndex = Number.isInteger(numericIndex) ? Math.floor(numericIndex) : -1;
+  if (!Number.isInteger(safeIndex) || safeIndex < 0 || safeIndex >= SHADOW_MATCH_REWARD_TRACK.length) {
+    return null;
+  }
+  const base = SHADOW_MATCH_REWARD_TRACK[safeIndex];
+  const pack = shadowMatchPackById(base?.packId || "");
+  return {
+    index: safeIndex,
+    streak: Math.max(1, Number(base?.streak || 1)),
+    packId: String(base?.packId || ""),
+    packName: String(pack?.name || base?.packId || "Bonus Pack")
+  };
+}
+
+function shadowMatchRewardTierForStreak(streak) {
+  const safeStreak = Math.max(0, Number(streak || 0));
+  let unlocked = null;
+  for (let index = 0; index < SHADOW_MATCH_REWARD_TRACK.length; index += 1) {
+    const candidate = SHADOW_MATCH_REWARD_TRACK[index];
+    if (safeStreak < Math.max(1, Number(candidate?.streak || 1))) {
+      break;
+    }
+    unlocked = shadowMatchRewardTierByIndex(index);
+  }
+  return unlocked;
+}
+
+function shadowMatchNextRewardTier(currentIndex) {
+  const nextIndex = Number.isInteger(Number(currentIndex)) ? Math.floor(Number(currentIndex)) + 1 : 0;
+  return shadowMatchRewardTierByIndex(nextIndex);
+}
+
+function createShadowMatchBoard(difficultyTier = 1) {
+  const pairCount = shadowMatchPairCount(difficultyTier);
+  const seen = new Set();
+  const pool = [];
+  for (const reward of SHADOW_MATCH_REWARD_TRACK) {
+    const pack = shadowMatchPackById(reward.packId);
+    const blooks = Array.isArray(pack?.blooks) ? pack.blooks : [];
+    for (const blook of blooks) {
+      const snapshot = shadowMatchBlookSnapshot({
+        ...blook,
+        packId: pack?.id || "",
+        packName: pack?.name || ""
+      });
+      if (!snapshot.id || seen.has(snapshot.id)) {
+        continue;
+      }
+      seen.add(snapshot.id);
+      pool.push(snapshot);
+    }
+  }
+
+  if (pool.length < pairCount) {
+    for (const blook of ALL_BLOOKS) {
+      const snapshot = shadowMatchBlookSnapshot(blook);
+      if (!snapshot.id || seen.has(snapshot.id)) {
+        continue;
+      }
+      seen.add(snapshot.id);
+      pool.push(snapshot);
+    }
+  }
+
+  const selected = shuffle(pool).slice(0, pairCount);
+  const cards = [];
+  for (let index = 0; index < selected.length; index += 1) {
+    const blook = selected[index];
+    const pairId = `shadow_pair_${index + 1}_${blook.id}`;
+    cards.push(
+      { id: `${pairId}_a`, pairId, blook, matched: false },
+      { id: `${pairId}_b`, pairId, blook, matched: false }
+    );
+  }
+
+  return shuffle(cards).map((card, index) => ({
+    ...card,
+    index
+  }));
+}
+
+function shadowMatchActiveSelectedIndexes(state, now = Date.now()) {
+  const boardSize = Array.isArray(state?.board) ? state.board.length : 0;
+  const indexes = Array.isArray(state?.selectedIndexes)
+    ? state.selectedIndexes
+      .map((value) => Math.floor(Number(value)))
+      .filter((value, index, values) => Number.isInteger(value) && value >= 0 && value < boardSize && values.indexOf(value) === index)
+    : [];
+  if (indexes.length <= 1) {
+    return indexes.slice(0, 1);
+  }
+  if (Number(state?.previewExpiresAt || 0) > now) {
+    return indexes.slice(0, 2);
+  }
+  return [];
+}
+
+function shadowMatchClearExpiredSelection(state, now = Date.now()) {
+  if (!state) {
+    return;
+  }
+  if (Array.isArray(state.selectedIndexes) && state.selectedIndexes.length >= 2 && Number(state.previewExpiresAt || 0) <= now) {
+    state.selectedIndexes = [];
+    state.previewExpiresAt = 0;
+  }
+}
+
+function shadowMatchSetLastMove(state, details = {}) {
+  if (!state) {
+    return;
+  }
+  state.lastMoveSeq = Math.max(0, Number(state.lastMoveSeq || 0)) + 1;
+  const rewardTier = details.rewardTier && typeof details.rewardTier === "object" ? details.rewardTier : null;
+  state.lastMove = {
+    seq: state.lastMoveSeq,
+    type: String(details.type || "flip"),
+    firstIndex: Number.isInteger(Number(details.firstIndex)) ? Math.floor(Number(details.firstIndex)) : -1,
+    secondIndex: Number.isInteger(Number(details.secondIndex)) ? Math.floor(Number(details.secondIndex)) : -1,
+    label: String(details.label || ""),
+    points: Math.max(0, Number(details.points || 0)),
+    streak: Math.max(0, Number(details.streak ?? state.streak ?? 0)),
+    bestStreak: Math.max(0, Number(details.bestStreak ?? state.bestStreak ?? 0)),
+    matchedPairs: Math.max(0, Number(details.matchedPairs ?? state.matchedPairs ?? 0)),
+    misses: Math.max(0, Number(details.misses ?? state.misses ?? 0)),
+    rewardPackId: String(rewardTier?.packId || ""),
+    rewardPackName: String(rewardTier?.packName || ""),
+    rewardThreshold: Math.max(0, Number(rewardTier?.streak || 0))
+  };
+}
+
+function shadowMatchPayload(state) {
+  const activeSelected = shadowMatchActiveSelectedIndexes(state);
+  const visibleIndexes = new Set(activeSelected);
+  const rewardTier = shadowMatchRewardTierByIndex(state?.rewardTierIndex);
+  const nextRewardTier = shadowMatchNextRewardTier(state?.rewardTierIndex);
+  const cards = Array.isArray(state?.board)
+    ? state.board.map((card, index) => {
+      const matched = card?.matched === true;
+      const revealed = matched || visibleIndexes.has(index);
+      return {
+        id: String(card?.id || `shadow_card_${index}`),
+        index,
+        matched,
+        revealed,
+        blook: revealed ? shadowMatchBlookSnapshot(card?.blook) : null
+      };
+    })
+    : [];
+  const lastMove = state?.lastMove && typeof state.lastMove === "object"
+    ? {
+      seq: Math.max(0, Number(state.lastMove.seq || 0)),
+      type: String(state.lastMove.type || "flip"),
+      firstIndex: Number.isInteger(Number(state.lastMove.firstIndex)) ? Math.floor(Number(state.lastMove.firstIndex)) : -1,
+      secondIndex: Number.isInteger(Number(state.lastMove.secondIndex)) ? Math.floor(Number(state.lastMove.secondIndex)) : -1,
+      label: String(state.lastMove.label || ""),
+      points: Math.max(0, Number(state.lastMove.points || 0)),
+      streak: Math.max(0, Number(state.lastMove.streak || 0)),
+      bestStreak: Math.max(0, Number(state.lastMove.bestStreak || 0)),
+      matchedPairs: Math.max(0, Number(state.lastMove.matchedPairs || 0)),
+      misses: Math.max(0, Number(state.lastMove.misses || 0)),
+      rewardPackId: String(state.lastMove.rewardPackId || ""),
+      rewardPackName: String(state.lastMove.rewardPackName || ""),
+      rewardThreshold: Math.max(0, Number(state.lastMove.rewardThreshold || 0))
+    }
+    : null;
+
+  return {
+    type: "shadow_match",
+    cards,
+    totalPairs: Math.max(1, Number(state?.totalPairs || 1)),
+    matchedPairs: Math.max(0, Number(state?.matchedPairs || 0)),
+    attempts: Math.max(0, Number(state?.attempts || 0)),
+    misses: Math.max(0, Number(state?.misses || 0)),
+    score: Math.max(0, Number(state?.score || 0)),
+    streak: Math.max(0, Number(state?.streak || 0)),
+    bestStreak: Math.max(0, Number(state?.bestStreak || 0)),
+    rewardPackId: String(rewardTier?.packId || ""),
+    rewardPackName: String(rewardTier?.packName || ""),
+    rewardThreshold: Math.max(0, Number(rewardTier?.streak || 0)),
+    nextRewardPackId: String(nextRewardTier?.packId || ""),
+    nextRewardPackName: String(nextRewardTier?.packName || ""),
+    nextRewardThreshold: Math.max(0, Number(nextRewardTier?.streak || 0)),
+    previewExpiresAt: Math.max(0, Number(state?.previewExpiresAt || 0)),
+    completed: state?.completed === true,
+    lastMove
+  };
+}
+
+function hallwayDashItemProfile(kind) {
+  const key = String(kind || "cone").toLowerCase();
+  return HALLWAY_DASH_ITEM_KINDS[key] || HALLWAY_DASH_ITEM_KINDS.cone;
+}
+
+function hallwayDashSpawnIntervalMs(difficultyTier = 1) {
+  const tier = clamp(Number(difficultyTier || 1), 1, 4);
+  return Math.max(360, 820 - tier * 95);
+}
+
+function hallwayDashStateScore(state) {
+  const distance = Math.max(0, Number(state?.distance || 0));
+  const coinsFound = Math.max(0, Number(state?.coinsFound || 0));
+  const dodges = Math.max(0, Number(state?.dodges || 0));
+  const hits = Math.max(0, Number(state?.hits || 0));
+  return Math.max(0, Math.round(distance * 4 + coinsFound * 52 + dodges * 24 - hits * 70));
+}
+
+function createHallwayDashItem(state) {
+  const tier = clamp(Number(state?.difficultyTier || 1), 1, 4);
+  const roll = Math.random();
+  let kind = "cone";
+  if (roll < 0.26) {
+    kind = "coin";
+  } else if (roll < 0.54) {
+    kind = "cone";
+  } else if (roll < 0.79) {
+    kind = "backpack";
+  } else {
+    kind = "puddle";
+  }
+  const profile = hallwayDashItemProfile(kind);
+  const nextSeq = Math.max(0, Number(state?.itemSeq || 0)) + 1;
+  if (state) {
+    state.itemSeq = nextSeq;
+  }
+  return {
+    id: `hallway_${nextSeq}`,
+    kind,
+    lane: hallwayDashLane(randomInt(0, HALLWAY_DASH_LANE_COUNT - 1)),
+    y: HALLWAY_DASH_ITEM_SPAWN_Y,
+    speed: profile.speed + tier * (kind === "puddle" ? 1.4 : 2.2) + randomFloat(-2.1, 2.1),
+    coinValue: kind === "coin" ? randomInt(2, 3 + tier) : 0
+  };
+}
+
+function hallwayDashSetLastEvent(state, details = {}) {
+  if (!state) {
+    return;
+  }
+  state.lastEventSeq = Math.max(0, Number(state.lastEventSeq || 0)) + 1;
+  const profile = hallwayDashItemProfile(details.kind);
+  state.lastEvent = {
+    seq: state.lastEventSeq,
+    type: String(details.type || "clear"),
+    kind: String(details.kind || ""),
+    label: String(details.label || profile.label || "Hallway Find"),
+    lane: hallwayDashLane(details.lane ?? state.lane),
+    coins: Math.max(0, Number(details.coins || 0)),
+    hits: Math.max(0, Number(details.hits ?? state.hits ?? 0))
+  };
+}
+
+function hallwayDashPayload(state) {
+  const now = Date.now();
+  const items = Array.isArray(state?.items)
+    ? state.items.map((item) => ({
+      id: String(item.id || ""),
+      kind: String(item.kind || "cone"),
+      lane: hallwayDashLane(item.lane),
+      y: clamp(Number(item.y || 0), -24, 118),
+      coinValue: Math.max(0, Number(item.coinValue || 0))
+    }))
+    : [];
+  const lastEvent = state?.lastEvent && typeof state.lastEvent === "object"
+    ? {
+      seq: Math.max(0, Number(state.lastEvent.seq || 0)),
+      type: String(state.lastEvent.type || "clear"),
+      kind: String(state.lastEvent.kind || ""),
+      label: String(state.lastEvent.label || ""),
+      lane: hallwayDashLane(state.lastEvent.lane),
+      coins: Math.max(0, Number(state.lastEvent.coins || 0)),
+      hits: Math.max(0, Number(state.lastEvent.hits || 0))
+    }
+    : null;
+
+  return {
+    type: "hallway_dash",
+    lanes: HALLWAY_DASH_LANE_COUNT,
+    lane: hallwayDashLane(state?.lane),
+    items,
+    distance: Math.max(0, Math.round(Number(state?.distance || 0))),
+    coinsFound: Math.max(0, Number(state?.coinsFound || 0)),
+    dodges: Math.max(0, Number(state?.dodges || 0)),
+    hits: Math.max(0, Number(state?.hits || 0)),
+    maxHits: HALLWAY_DASH_MAX_HITS,
+    score: Math.max(0, Number(state?.score || 0)),
+    jumpActive: Number(state?.jumpUntil || 0) > now,
+    completed: state?.completed === true,
+    failed: state?.failed === true,
+    lastEvent
+  };
 }
 
 function soccerFieldPlayersSnapshot() {
@@ -3855,32 +5452,14 @@ function syncPlayerToCurrentPhase(game, socketId) {
       return;
     }
 
-    io.to(socketId).emit("question:start", {
-      questionIndex: game.currentQuestionIndex + 1,
-      totalQuestions: game.questions.length,
-      endsAt: game.questionEndsAt || Date.now() + 1000,
-      question: {
-        prompt: question.prompt,
-        options: question.options,
-        image: sanitizeQuestionImage(question.image || "")
-      }
-    });
+    io.to(socketId).emit("question:start", buildQuestionStartPayload(game, question, game.questionEndsAt || Date.now() + 1000));
     return;
   }
 
   if (game.phase === "question_result") {
     const question = game.questions[game.currentQuestionIndex];
     if (question) {
-      io.to(socketId).emit("question:start", {
-        questionIndex: game.currentQuestionIndex + 1,
-        totalQuestions: game.questions.length,
-        endsAt: Date.now(),
-        question: {
-          prompt: question.prompt,
-          options: question.options,
-          image: sanitizeQuestionImage(question.image || "")
-        }
-      });
+      io.to(socketId).emit("question:start", buildQuestionStartPayload(game, question, Date.now()));
     }
     if (game.lastQuestionResultPayload) {
       io.to(socketId).emit("question:result", game.lastQuestionResultPayload);
@@ -3899,30 +5478,12 @@ function syncPlayerToCurrentPhase(game, socketId) {
     } else if (pausedFromPhase === "question") {
       const question = game.questions[game.currentQuestionIndex];
       if (question) {
-        io.to(socketId).emit("question:start", {
-          questionIndex: game.currentQuestionIndex + 1,
-          totalQuestions: game.questions.length,
-          endsAt: Date.now() + remainingMs,
-          question: {
-            prompt: question.prompt,
-            options: question.options,
-            image: sanitizeQuestionImage(question.image || "")
-          }
-        });
+        io.to(socketId).emit("question:start", buildQuestionStartPayload(game, question, Date.now() + remainingMs));
       }
     } else if (pausedFromPhase === "question_result") {
       const question = game.questions[game.currentQuestionIndex];
       if (question) {
-        io.to(socketId).emit("question:start", {
-          questionIndex: game.currentQuestionIndex + 1,
-          totalQuestions: game.questions.length,
-          endsAt: Date.now(),
-          question: {
-            prompt: question.prompt,
-            options: question.options,
-            image: sanitizeQuestionImage(question.image || "")
-          }
-        });
+        io.to(socketId).emit("question:start", buildQuestionStartPayload(game, question, Date.now()));
       }
       if (game.lastQuestionResultPayload) {
         io.to(socketId).emit("question:result", game.lastQuestionResultPayload);
@@ -4048,6 +5609,7 @@ function resetMiniGameRuntimeState(game) {
   game.minigameStartedAt = null;
   game.minigameEndsAt = null;
   game.soccerMatch = null;
+  game.battleRoyaleMatches = new Map();
 }
 
 function emitCountdownTick(game, secondsLeft) {
@@ -4119,14 +5681,22 @@ function restartActiveMiniGameTick(game) {
 
   if (
     game.minigameType === "soccer_shootout" ||
+    game.minigameType === "goalie_rush" ||
     game.minigameType === "space_invaders" ||
     game.minigameType === "foosball_frenzy" ||
     game.minigameType === "tower_stacker" ||
-    game.minigameType === "snake"
+    game.minigameType === "snake" ||
+    game.minigameType === "hallway_dash" ||
+    game.minigameType === "classroom_cleanup" ||
+    game.minigameType === "battle_royale"
   ) {
     game.minigameTick = setInterval(() => {
       if (game.minigameType === "soccer_shootout") {
         tickSoccerMatch(game);
+        return;
+      }
+      if (game.minigameType === "goalie_rush") {
+        tickGoalieRushMatch(game);
         return;
       }
       if (game.minigameType === "space_invaders") {
@@ -4143,17 +5713,40 @@ function restartActiveMiniGameTick(game) {
       }
       if (game.minigameType === "snake") {
         tickSnakeMatch(game);
+        return;
+      }
+      if (game.minigameType === "hallway_dash") {
+        tickHallwayDashMatch(game);
+        return;
+      }
+      if (game.minigameType === "classroom_cleanup") {
+        tickClassroomCleanupMatch(game);
+        return;
+      }
+      if (game.minigameType === "battle_royale") {
+        tickBattleRoyaleMatches(game);
       }
     }, 90);
 
     if (game.minigameType === "soccer_shootout") {
       broadcastSoccerMatchState(game);
+    } else if (game.minigameType === "goalie_rush") {
+      broadcastGoalieRushState(game);
     } else if (game.minigameType === "space_invaders") {
       broadcastSpaceInvadersState(game);
     } else if (game.minigameType === "tower_stacker") {
       broadcastTowerStackerState(game);
     } else if (game.minigameType === "snake") {
       broadcastSnakeState(game);
+    } else if (game.minigameType === "hallway_dash") {
+      broadcastHallwayDashState(game);
+    } else if (game.minigameType === "classroom_cleanup") {
+      broadcastClassroomCleanupState(game);
+    } else if (game.minigameType === "battle_royale") {
+      const matches = game.battleRoyaleMatches instanceof Map ? Array.from(game.battleRoyaleMatches.values()) : [];
+      for (const match of matches) {
+        battleRoyaleBroadcastMatchState(game, match, { broadcastProgress: false });
+      }
     } else {
       broadcastFoosballState(game);
     }
@@ -4544,6 +6137,9 @@ function miniGameHostGoal(game, type) {
   if (type === "soccer_shootout") {
     return 4 + tier;
   }
+  if (type === "goalie_rush") {
+    return 6 + tier * 2;
+  }
   if (type === "space_invaders") {
     return 8 + tier * 4;
   }
@@ -4570,6 +6166,23 @@ function miniGameHostGoal(game, type) {
   }
   if (type === "word_scramble") {
     return 1;
+  }
+  if (type === "hallway_dash") {
+    const durationMs = Number(game?.minigameDurationMs || clamp(Number(game?.settings?.miniGameDurationSec) || 10, 5, 30) * 1000);
+    const durationSec = Math.max(5, Math.round(durationMs / 1000));
+    return Math.round(durationSec * (10 + tier * 1.6));
+  }
+  if (type === "dino_dig") {
+    return 6 + tier;
+  }
+  if (type === "shadow_match") {
+    return 4 + tier;
+  }
+  if (type === "classroom_cleanup") {
+    return 11 + tier * 3;
+  }
+  if (type === "battle_royale") {
+    return battleRoyaleMaxTurns(difficulty);
   }
   return 0;
 }
@@ -4600,6 +6213,26 @@ function hostMiniGameProgressRow(state) {
       team: String(state.team || "red"),
       goals,
       kicks,
+      completed: false
+    };
+  }
+
+  if (state.type === "goalie_rush") {
+    const saves = Math.max(0, Number(state.saves || 0));
+    const shotsFaced = Math.max(0, Number(state.shotsFaced || 0));
+    const goalsAllowed = Math.max(0, Number(state.goalsAllowed || 0));
+    const bossSaves = Math.max(0, Number(state.bossSaves || 0));
+    const bossCoinsEarned = Math.max(0, Number(state.bossCoinsEarned || 0));
+    const bestStreak = Math.max(0, Number(state.bestStreak || 0));
+    return {
+      metric: goalieRushStateScore(state) + bossCoinsEarned * 18,
+      progress: saves,
+      saves,
+      shotsFaced,
+      goalsAllowed,
+      bossSaves,
+      bossCoinsEarned,
+      bestStreak,
       completed: false
     };
   }
@@ -4728,6 +6361,116 @@ function hostMiniGameProgressRow(state) {
     };
   }
 
+  if (state.type === "hallway_dash") {
+    const distance = Math.max(0, Math.round(Number(state.distance || 0)));
+    const coinsFound = Math.max(0, Number(state.coinsFound || 0));
+    const dodges = Math.max(0, Number(state.dodges || 0));
+    const hits = Math.max(0, Number(state.hits || 0));
+    return {
+      metric: hallwayDashStateScore(state),
+      progress: distance,
+      distance,
+      coinsFound,
+      dodges,
+      hits,
+      maxHits: HALLWAY_DASH_MAX_HITS,
+      failed: state.failed === true,
+      completed: state.completed === true
+    };
+  }
+
+  if (state.type === "dino_dig") {
+    const fossilsFound = Math.max(0, Number(state.fossilsFound || 0));
+    const fossilPoints = Math.max(0, Number(state.fossilPoints || 0));
+    const bonesFound = Math.max(0, Number(state.bonesFound || 0));
+    const coinsFound = Math.max(0, Number(state.coinsFound || 0));
+    const rareBlooksFound = Math.max(0, Number(state.rareBlooksFound || 0));
+    return {
+      metric: Math.round(Math.max(0, Number(state.digScore || 0)) * 2.2) + coinsFound * 18 + rareBlooksFound * 260,
+      progress: Math.max(0, Number(state.digs || 0)),
+      maxDigs: Math.max(1, Number(state.maxDigs || 1)),
+      fossilsFound,
+      fossilPoints,
+      bonesFound,
+      coinsFound,
+      rareBlooksFound,
+      completed: state.completed === true
+    };
+  }
+
+  if (state.type === "shadow_match") {
+    const matchedPairs = Math.max(0, Number(state.matchedPairs || 0));
+    const attempts = Math.max(0, Number(state.attempts || 0));
+    const misses = Math.max(0, Number(state.misses || 0));
+    const bestStreak = Math.max(0, Number(state.bestStreak || 0));
+    const score = Math.max(0, Number(state.score || 0));
+    const rewardTier = shadowMatchRewardTierByIndex(state.rewardTierIndex);
+    return {
+      metric: score * 4 + matchedPairs * 160 + bestStreak * 34 - misses * 18 - Math.max(0, attempts - matchedPairs) * 8 + (rewardTier ? rewardTier.index * 48 : 0),
+      progress: matchedPairs,
+      totalPairs: Math.max(1, Number(state.totalPairs || 1)),
+      score,
+      matchedPairs,
+      attempts,
+      misses,
+      bestStreak,
+      rewardPackId: String(rewardTier?.packId || ""),
+      rewardPackName: String(rewardTier?.packName || ""),
+      completed: state.completed === true
+    };
+  }
+
+  if (state.type === "classroom_cleanup") {
+    const sortedCount = Math.max(0, Number(state.sortedCount || 0));
+    const booksSorted = Math.max(0, Number(state.booksSorted || 0));
+    const pencilsSorted = Math.max(0, Number(state.pencilsSorted || 0));
+    const trashSorted = Math.max(0, Number(state.trashSorted || 0));
+    const misses = Math.max(0, Number(state.misses || 0));
+    const wrongSorts = Math.max(0, Number(state.wrongSorts || 0));
+    const combo = Math.max(0, Number(state.combo || 0));
+    const bestCombo = Math.max(0, Number(state.bestCombo || 0));
+    const score = classroomCleanupStateScore(state);
+    return {
+      metric: score * 4 + sortedCount * 120 + bestCombo * 22 - misses * 26 - wrongSorts * 32,
+      progress: sortedCount,
+      score,
+      sortedCount,
+      booksSorted,
+      pencilsSorted,
+      trashSorted,
+      misses,
+      wrongSorts,
+      combo,
+      bestCombo,
+      completed: state.completed === true
+    };
+  }
+
+  if (state.type === "battle_royale") {
+    const hp = Math.max(0, Number(state.hp || 0));
+    const maxHp = Math.max(1, Number(state.maxHp || 1));
+    const totalDamage = Math.max(0, Number(state.totalDamage || 0));
+    const totalHealing = Math.max(0, Number(state.totalHealing || 0));
+    const won = state.won === true;
+    const tie = state.tie === true;
+    return {
+      metric: (won ? 10000 : tie ? 7000 : 0) + hp * 28 + totalDamage * 9 + totalHealing * 6,
+      progress: Math.max(0, Number(state.turn || 1) - 1),
+      hp,
+      maxHp,
+      shield: Math.max(0, Number(state.shield || 0)),
+      opponentName: String(state.opponentName || "Opponent"),
+      powerName: String(state.powerName || "Special"),
+      totalDamage,
+      totalHealing,
+      won,
+      tie,
+      selectedAction: String(state.selectedAction || ""),
+      opponentReady: state.opponentReady === true,
+      completed: state.completed === true
+    };
+  }
+
   return {
     metric: 0,
     progress: 0,
@@ -4842,6 +6585,99 @@ function broadcastSoccerMatchState(game) {
       continue;
     }
     io.to(playerId).emit("minigame:state", payload);
+  }
+}
+
+function broadcastGoalieRushState(game) {
+  if (!game || game.phase !== "minigame" || game.minigameType !== "goalie_rush") {
+    return;
+  }
+
+  for (const [playerId, state] of game.chestPhase.entries()) {
+    if (!state || state.type !== "goalie_rush") {
+      continue;
+    }
+    io.to(playerId).emit("minigame:state", goalieRushPayload(state));
+  }
+}
+
+function tickGoalieRushMatch(game) {
+  if (!game || game.phase !== "minigame" || game.minigameType !== "goalie_rush") {
+    return;
+  }
+
+  const now = Date.now();
+  let shouldBroadcastState = false;
+  let shouldBroadcastProgress = false;
+
+  for (const state of game.chestPhase.values()) {
+    if (!state || state.type !== "goalie_rush") {
+      continue;
+    }
+
+    state.lastTickAt = now;
+    state.tick = Math.max(0, Number(state.tick || 0)) + 1;
+    const tier = clamp(Number(state.difficultyTier || 1), 1, 4);
+    const activeShot = state.activeShot && typeof state.activeShot === "object" ? state.activeShot : null;
+
+    if (!activeShot) {
+      if (now >= Number(state.nextShotAt || 0)) {
+        state.activeShot = createGoalieRushShot(state);
+        shouldBroadcastState = true;
+        if (state.activeShot?.boss === true) {
+          shouldBroadcastProgress = true;
+        }
+      }
+    } else if (now >= Number(activeShot.spawnedAt || now) + Number(activeShot.flightMs || GOALIE_RUSH_BASE_FLIGHT_MS)) {
+      const saved = goalieRushLane(state.lane) === goalieRushLane(activeShot.lane);
+      state.shotsFaced = Math.max(0, Number(state.shotsFaced || 0)) + 1;
+      if (saved) {
+        state.saves = Math.max(0, Number(state.saves || 0)) + 1;
+        state.streak = Math.max(0, Number(state.streak || 0)) + 1;
+        state.bestStreak = Math.max(Math.max(0, Number(state.bestStreak || 0)), state.streak);
+        if (activeShot.boss === true) {
+          state.bossSaves = Math.max(0, Number(state.bossSaves || 0)) + 1;
+          state.bossCoinsEarned = Math.max(0, Number(state.bossCoinsEarned || 0)) + Math.max(0, Number(activeShot.coins || 0));
+        }
+        goalieRushSetLastEvent(state, {
+          type: activeShot.boss === true ? "boss_save" : "save",
+          round: activeShot.round,
+          lane: activeShot.lane,
+          saved: true,
+          boss: activeShot.boss === true,
+          coinsAwarded: activeShot.boss === true ? activeShot.coins : 0
+        });
+      } else {
+        state.goalsAllowed = Math.max(0, Number(state.goalsAllowed || 0)) + 1;
+        state.streak = 0;
+        goalieRushSetLastEvent(state, {
+          type: activeShot.boss === true ? "boss_goal" : "goal",
+          round: activeShot.round,
+          lane: activeShot.lane,
+          saved: false,
+          boss: activeShot.boss === true
+        });
+      }
+
+      state.score = goalieRushStateScore(state);
+      state.activeShot = null;
+      state.nextShotAt = now + Math.max(170, GOALIE_RUSH_BASE_DELAY_MS - tier * 20);
+      shouldBroadcastState = true;
+      shouldBroadcastProgress = true;
+    } else if (state.tick % 2 === 0) {
+      shouldBroadcastState = true;
+    }
+
+    if (state.tick % 4 === 0) {
+      shouldBroadcastProgress = true;
+    }
+  }
+
+  if (shouldBroadcastState) {
+    broadcastGoalieRushState(game);
+  }
+  if (shouldBroadcastProgress) {
+    broadcastMiniGameProgress(game);
   }
 }
 
@@ -5092,6 +6928,240 @@ function tickFoosballMatch(game) {
     if (stateChanged || state.tick % 8 === 0) {
       io.to(playerId).emit("minigame:state", foosballStatePayload(state));
     }
+  }
+}
+
+function broadcastClassroomCleanupState(game) {
+  if (!game || game.phase !== "minigame" || game.minigameType !== "classroom_cleanup") {
+    return;
+  }
+
+  for (const [playerId, state] of game.chestPhase.entries()) {
+    if (!state || state.type !== "classroom_cleanup") {
+      continue;
+    }
+    io.to(playerId).emit("minigame:state", classroomCleanupPayload(state));
+  }
+}
+
+function tickClassroomCleanupMatch(game) {
+  if (!game || game.phase !== "minigame" || game.minigameType !== "classroom_cleanup") {
+    return;
+  }
+
+  const now = Date.now();
+  let shouldBroadcastState = false;
+  let shouldBroadcastProgress = false;
+
+  for (const [playerId, state] of game.chestPhase.entries()) {
+    if (!state || state.type !== "classroom_cleanup" || state.completed === true) {
+      continue;
+    }
+
+    const tickMs = clamp(now - Number(state.lastTickAt || now), 16, 200);
+    state.lastTickAt = now;
+    state.tick = Math.max(0, Number(state.tick || 0)) + 1;
+    const tier = clamp(Number(state.difficultyTier || 1), 1, 4);
+
+    if (!Array.isArray(state.items)) {
+      state.items = [];
+    }
+    if (state.items.length < 6 && now - Number(state.lastSpawnAt || 0) >= classroomCleanupSpawnIntervalMs(tier)) {
+      state.items.push(createClassroomCleanupItem(state));
+      state.lastSpawnAt = now;
+      shouldBroadcastState = true;
+    }
+
+    const nextItems = [];
+    for (const item of state.items) {
+      if (!item) {
+        continue;
+      }
+
+      item.y = Number(item.y || CLASSROOM_CLEANUP_ITEM_SPAWN_Y) + Number(item.speed || 24) * (tickMs / 1000);
+      if (item.y > 108) {
+        state.misses = Math.max(0, Number(state.misses || 0)) + 1;
+        state.combo = 0;
+        state.score = Math.max(0, classroomCleanupStateScore(state) - (4 + tier));
+        classroomCleanupSetLastEvent(state, {
+          type: "missed",
+          kind: item.kind,
+          label: classroomCleanupItemProfile(item.kind).label,
+          binLabel: classroomCleanupItemProfile(item.kind).binLabel,
+          lane: item.lane,
+          points: -(4 + tier),
+          misses: state.misses,
+          wrongSorts: state.wrongSorts
+        });
+        shouldBroadcastState = true;
+        shouldBroadcastProgress = true;
+        continue;
+      }
+
+      nextItems.push(item);
+    }
+
+    state.items = nextItems;
+    if (state.tick % 2 === 0) {
+      shouldBroadcastState = true;
+    }
+    if (state.tick % 4 === 0) {
+      shouldBroadcastProgress = true;
+    }
+  }
+
+  if (shouldBroadcastState) {
+    broadcastClassroomCleanupState(game);
+  }
+
+  if (shouldBroadcastProgress) {
+    broadcastMiniGameProgress(game);
+  }
+
+  if (allMiniGamesResolved(game)) {
+    finalizeMiniGamePhase(game);
+  }
+}
+
+function broadcastHallwayDashState(game) {
+  if (!game || game.phase !== "minigame" || game.minigameType !== "hallway_dash") {
+    return;
+  }
+
+  for (const [playerId, state] of game.chestPhase.entries()) {
+    if (!state || state.type !== "hallway_dash") {
+      continue;
+    }
+    io.to(playerId).emit("minigame:state", hallwayDashPayload(state));
+  }
+}
+
+function tickHallwayDashMatch(game) {
+  if (!game || game.phase !== "minigame" || game.minigameType !== "hallway_dash") {
+    return;
+  }
+
+  const now = Date.now();
+  let shouldBroadcastState = false;
+  let shouldBroadcastProgress = false;
+
+  for (const [playerId, state] of game.chestPhase.entries()) {
+    if (!state || state.type !== "hallway_dash" || state.completed === true) {
+      continue;
+    }
+
+    const tickMs = clamp(now - Number(state.lastTickAt || now), 16, 200);
+    state.lastTickAt = now;
+    state.tick = Math.max(0, Number(state.tick || 0)) + 1;
+    const tier = clamp(Number(state.difficultyTier || 1), 1, 4);
+    state.distance = Math.max(0, Number(state.distance || 0) + tickMs * (0.011 + tier * 0.0013));
+
+    if (!Array.isArray(state.items)) {
+      state.items = [];
+    }
+    if (state.items.length < 6 && now - Number(state.lastSpawnAt || 0) >= hallwayDashSpawnIntervalMs(tier)) {
+      state.items.push(createHallwayDashItem(state));
+      state.lastSpawnAt = now;
+      shouldBroadcastState = true;
+    }
+
+    const nextItems = [];
+    for (const item of state.items) {
+      if (!item) {
+        continue;
+      }
+
+      const previousY = Number(item.y || HALLWAY_DASH_ITEM_SPAWN_Y);
+      item.y = previousY + Number(item.speed || 24) * (tickMs / 1000);
+      const crossingRunner = previousY <= HALLWAY_DASH_PLAYER_ZONE_Y + 6 && item.y >= HALLWAY_DASH_PLAYER_ZONE_Y - 6;
+      const sameLane = hallwayDashLane(item.lane) === hallwayDashLane(state.lane);
+      const jumping = Number(state.jumpUntil || 0) > now;
+
+      if (String(item.kind || "") === "coin") {
+        if (sameLane && crossingRunner) {
+          const value = Math.max(1, Number(item.coinValue || 0));
+          state.coinsFound = Math.max(0, Number(state.coinsFound || 0)) + value;
+          hallwayDashSetLastEvent(state, {
+            type: "coin",
+            kind: "coin",
+            label: hallwayDashItemProfile("coin").label,
+            lane: item.lane,
+            coins: value
+          });
+          state.score = hallwayDashStateScore(state);
+          shouldBroadcastState = true;
+          shouldBroadcastProgress = true;
+          continue;
+        }
+      } else if (sameLane && crossingRunner) {
+        if (jumping) {
+          state.dodges = Math.max(0, Number(state.dodges || 0)) + 1;
+          hallwayDashSetLastEvent(state, {
+            type: "clear",
+            kind: item.kind,
+            label: hallwayDashItemProfile(item.kind).label,
+            lane: item.lane
+          });
+        } else {
+          state.hits = Math.max(0, Number(state.hits || 0)) + 1;
+          hallwayDashSetLastEvent(state, {
+            type: "hit",
+            kind: item.kind,
+            label: hallwayDashItemProfile(item.kind).label,
+            lane: item.lane,
+            hits: state.hits
+          });
+          if (state.hits >= HALLWAY_DASH_MAX_HITS) {
+            state.completed = true;
+            state.failed = true;
+            state.items = [];
+          }
+        }
+        state.score = hallwayDashStateScore(state);
+        shouldBroadcastState = true;
+        shouldBroadcastProgress = true;
+        continue;
+      }
+
+      if (item.y > 108) {
+        if (String(item.kind || "") !== "coin") {
+          state.dodges = Math.max(0, Number(state.dodges || 0)) + 1;
+          state.score = hallwayDashStateScore(state);
+          shouldBroadcastProgress = true;
+        }
+        continue;
+      }
+
+      nextItems.push(item);
+    }
+
+    if (state.completed !== true) {
+      state.items = nextItems;
+    }
+    state.score = hallwayDashStateScore(state);
+
+    if (state.tick % 2 === 0) {
+      shouldBroadcastState = true;
+    }
+    if (state.tick % 4 === 0) {
+      shouldBroadcastProgress = true;
+    }
+
+    if (state.completed === true) {
+      io.to(playerId).emit("minigame:state", hallwayDashPayload(state));
+    }
+  }
+
+  if (shouldBroadcastState) {
+    broadcastHallwayDashState(game);
+  }
+
+  if (shouldBroadcastProgress) {
+    broadcastMiniGameProgress(game);
+  }
+
+  if (allMiniGamesResolved(game)) {
+    finalizeMiniGamePhase(game);
   }
 }
 
@@ -6054,6 +8124,29 @@ function createMiniGameState(type, difficulty = null) {
     };
   }
 
+  if (type === "goalie_rush") {
+    return {
+      type,
+      lane: 1,
+      shotsFaced: 0,
+      saves: 0,
+      goalsAllowed: 0,
+      streak: 0,
+      bestStreak: 0,
+      bossSaves: 0,
+      bossCoinsEarned: 0,
+      score: 0,
+      activeShot: null,
+      shotSeq: 0,
+      lastTickAt: Date.now(),
+      nextShotAt: Date.now() + 420,
+      lastEventSeq: 0,
+      lastEvent: null,
+      tick: 0,
+      difficultyTier: safeTier
+    };
+  }
+
   if (type === "space_invaders") {
     return {
       type,
@@ -6145,6 +8238,145 @@ function createMiniGameState(type, difficulty = null) {
       lastGuess: "",
       solved: false,
       completed: false,
+      difficultyTier: safeTier
+    };
+  }
+
+  if (type === "hallway_dash") {
+    const state = {
+      type,
+      lane: 1,
+      distance: 0,
+      dodges: 0,
+      coinsFound: 0,
+      hits: 0,
+      score: 0,
+      items: [],
+      itemSeq: 0,
+      jumpUntil: 0,
+      jumpCooldownUntil: 0,
+      lastTickAt: Date.now(),
+      lastSpawnAt: Date.now() - 320,
+      lastEventSeq: 0,
+      lastEvent: null,
+      tick: 0,
+      completed: false,
+      failed: false,
+      difficultyTier: safeTier
+    };
+    state.items.push(createHallwayDashItem(state));
+    return state;
+  }
+
+  if (type === "dino_dig") {
+    return {
+      type,
+      board: createDinoDigBoard(safeTier),
+      digs: 0,
+      maxDigs: 6 + safeTier,
+      digScore: 0,
+      fossilsFound: 0,
+      fossilPoints: 0,
+      bonesFound: 0,
+      coinsFound: 0,
+      rareBlooksFound: 0,
+      rareBlookIds: [],
+      lastRevealSeq: 0,
+      lastReveal: null,
+      completed: false,
+      difficultyTier: safeTier
+    };
+  }
+
+  if (type === "shadow_match") {
+    return {
+      type,
+      board: createShadowMatchBoard(safeTier),
+      totalPairs: shadowMatchPairCount(safeTier),
+      matchedPairs: 0,
+      attempts: 0,
+      misses: 0,
+      score: 0,
+      streak: 0,
+      bestStreak: 0,
+      rewardTierIndex: -1,
+      selectedIndexes: [],
+      previewExpiresAt: 0,
+      lastMoveSeq: 0,
+      lastMove: null,
+      completed: false,
+      difficultyTier: safeTier
+    };
+  }
+
+  if (type === "classroom_cleanup") {
+    const state = {
+      type,
+      lane: 1,
+      items: [],
+      itemSeq: 0,
+      score: 0,
+      sortedCount: 0,
+      booksSorted: 0,
+      pencilsSorted: 0,
+      trashSorted: 0,
+      misses: 0,
+      wrongSorts: 0,
+      combo: 0,
+      bestCombo: 0,
+      lastTickAt: Date.now(),
+      lastSpawnAt: Date.now() - 300,
+      lastEventSeq: 0,
+      lastEvent: null,
+      tick: 0,
+      completed: false,
+      difficultyTier: safeTier
+    };
+    state.items.push(createClassroomCleanupItem(state));
+    return state;
+  }
+
+  if (type === "battle_royale") {
+    return {
+      type,
+      matchId: "",
+      turn: 1,
+      maxTurns: battleRoyaleMaxTurns(difficulty),
+      turnEndsAt: 0,
+      blook: battleRoyaleDefaultBlook(),
+      maxHp: 24,
+      hp: 24,
+      shield: 0,
+      attackDamage: 6,
+      healAmount: 4,
+      guardAmount: 5,
+      powerName: "Special",
+      powerDescription: "",
+      specialReady: true,
+      specialReadyIn: 0,
+      selectedAction: "",
+      opponentReady: false,
+      opponentId: "",
+      opponentName: "Opponent",
+      opponentBlook: battleRoyaleDefaultBlook(),
+      opponentHp: 24,
+      opponentMaxHp: 24,
+      opponentShield: 0,
+      opponentPowerName: "Special",
+      opponentPowerDescription: "",
+      isBotMatch: false,
+      totalDamage: 0,
+      totalHealing: 0,
+      turnsActed: 0,
+      knockouts: 0,
+      summary: "Waiting for matchup.",
+      resultText: "",
+      log: [],
+      lastTurnEvents: [],
+      resolutionSeq: 0,
+      completed: false,
+      won: false,
+      tie: false,
       difficultyTier: safeTier
     };
   }
@@ -6243,6 +8475,13 @@ function miniGamePublicData(state, game, playerId = "") {
     };
   }
 
+  if (state.type === "goalie_rush") {
+    return {
+      ...goalieRushPayload(state),
+      difficultyTier
+    };
+  }
+
   if (state.type === "space_invaders") {
     return {
       ...spaceInvadersStateSnapshot(state),
@@ -6294,6 +8533,41 @@ function miniGamePublicData(state, game, playerId = "") {
     };
   }
 
+  if (state.type === "hallway_dash") {
+    return {
+      ...hallwayDashPayload(state),
+      difficultyTier
+    };
+  }
+
+  if (state.type === "dino_dig") {
+    return {
+      ...dinoDigPayload(state),
+      difficultyTier
+    };
+  }
+
+  if (state.type === "shadow_match") {
+    return {
+      ...shadowMatchPayload(state),
+      difficultyTier
+    };
+  }
+
+  if (state.type === "classroom_cleanup") {
+    return {
+      ...classroomCleanupPayload(state),
+      difficultyTier
+    };
+  }
+
+  if (state.type === "battle_royale") {
+    return {
+      ...battleRoyalePublicData(state),
+      difficultyTier
+    };
+  }
+
   if (state.type === "tower_stacker") {
     return {
       ...towerStackerPayload(state),
@@ -6318,6 +8592,10 @@ function isMiniGameStateResolved(state) {
   }
 
   if (state.type === "soccer_shootout") {
+    return false;
+  }
+
+  if (state.type === "goalie_rush") {
     return false;
   }
 
@@ -6346,6 +8624,26 @@ function isMiniGameStateResolved(state) {
   }
 
   if (state.type === "word_scramble") {
+    return state.completed === true;
+  }
+
+  if (state.type === "hallway_dash") {
+    return state.completed === true;
+  }
+
+  if (state.type === "dino_dig") {
+    return state.completed === true;
+  }
+
+  if (state.type === "shadow_match") {
+    return state.completed === true;
+  }
+
+  if (state.type === "classroom_cleanup") {
+    return state.completed === true;
+  }
+
+  if (state.type === "battle_royale") {
     return state.completed === true;
   }
 
@@ -6402,6 +8700,22 @@ function miniGameResult(game, player, state) {
     return {
       bonus,
       text: `${player.name} scored ${state.goals} goals on ${state.kicks} kicks. ${SOCCER_TEAMS[team]?.name || "Team"} ${resultText} ${teamGoals}-${opponentGoals} for +${bonus} ${unit}.`
+    };
+  }
+
+  if (state.type === "goalie_rush") {
+    const saves = Math.max(0, Number(state.saves || 0));
+    const shotsFaced = Math.max(0, Number(state.shotsFaced || 0));
+    const bossSaves = Math.max(0, Number(state.bossSaves || 0));
+    const bossCoinsEarned = Math.max(0, Number(state.bossCoinsEarned || 0));
+    const bestStreak = Math.max(0, Number(state.bestStreak || 0));
+    const goalsAllowed = Math.max(0, Number(state.goalsAllowed || 0));
+    const bonus = Math.max(115, 145 + saves * 84 + bossSaves * 130 + bestStreak * 26 - goalsAllowed * 18);
+    const coinText = bossCoinsEarned > 0 ? ` and banked +${bossCoinsEarned} coins` : "";
+    return {
+      bonus,
+      accountCoins: bossCoinsEarned,
+      text: `${player.name} saved ${saves} of ${shotsFaced} shots with ${bossSaves} boss saves${coinText} for +${bonus} ${unit}.`
     };
   }
 
@@ -6522,6 +8836,100 @@ function miniGameResult(game, player, state) {
     };
   }
 
+  if (state.type === "hallway_dash") {
+    const distance = Math.max(0, Math.round(Number(state.distance || 0)));
+    const dodges = Math.max(0, Number(state.dodges || 0));
+    const coinsFound = Math.max(0, Number(state.coinsFound || 0));
+    const hits = Math.max(0, Number(state.hits || 0));
+    const smoothRunBonus = state.failed === true ? 0 : 85;
+    const bonus = Math.max(105, 130 + Math.round(distance * 1.7) + coinsFound * 42 + dodges * 16 + smoothRunBonus - hits * 38);
+    const finishText = state.failed === true ? "wiped out before the bell" : "kept the run alive";
+    return {
+      bonus,
+      accountCoins: coinsFound,
+      text: `${player.name} dashed ${distance} meters, grabbed ${coinsFound} hallway coins, dodged ${dodges} hazards, ${finishText}, and earned +${bonus} ${unit}.`
+    };
+  }
+
+  if (state.type === "dino_dig") {
+    const fossilsFound = Math.max(0, Number(state.fossilsFound || 0));
+    const bonesFound = Math.max(0, Number(state.bonesFound || 0));
+    const coinsFound = Math.max(0, Number(state.coinsFound || 0));
+    const digScore = Math.max(0, Number(state.digScore || 0));
+    const rewardBlookIds = Array.isArray(state.rareBlookIds)
+      ? state.rareBlookIds.map((value) => String(value || "")).filter(Boolean)
+      : [];
+    const rewardBlookNames = rewardBlookIds
+      .map((blookId) => resolveBlookById(blookId)?.name || "")
+      .filter(Boolean);
+    const bonus = Math.max(115, 125 + Math.round(digScore * 1.75) + coinsFound * 4 + rewardBlookIds.length * 180);
+    return {
+      bonus,
+      accountCoins: coinsFound,
+      blookRewardIds: rewardBlookIds,
+      text: `${player.name} uncovered ${fossilsFound} fossils, ${bonesFound} bones, and ${coinsFound} dig coins${rewardBlookNames.length > 0 ? ` plus ${rewardBlookNames.join(", ")}` : ""} for +${bonus} ${unit}.`
+    };
+  }
+
+  if (state.type === "shadow_match") {
+    const matchedPairs = Math.max(0, Number(state.matchedPairs || 0));
+    const totalPairs = Math.max(1, Number(state.totalPairs || 1));
+    const attempts = Math.max(0, Number(state.attempts || 0));
+    const misses = Math.max(0, Number(state.misses || 0));
+    const bestStreak = Math.max(0, Number(state.bestStreak || 0));
+    const score = Math.max(0, Number(state.score || 0));
+    const rewardTier = shadowMatchRewardTierByIndex(state.rewardTierIndex);
+    const rewardPack = shadowMatchPackById(rewardTier?.packId || "");
+    const rewardBlook = rewardPack ? pickRandomBlookFromPack(rewardPack) : null;
+    const rewardBlookIds = rewardBlook?.id ? [rewardBlook.id] : [];
+    const fullClearBonus = matchedPairs >= totalPairs ? 140 : 0;
+    const bonus = Math.max(115, 135 + Math.round(score * 1.08) + matchedPairs * 44 + bestStreak * 28 + fullClearBonus - misses * 16 - Math.max(0, attempts - matchedPairs) * 10);
+    const rewardText = rewardTier && rewardBlook
+      ? ` and unlocked ${rewardTier.packName} reward ${rewardBlook.name}`
+      : rewardTier
+        ? ` and unlocked ${rewardTier.packName}`
+        : "";
+    return {
+      bonus,
+      blookRewardIds: rewardBlookIds,
+      text: `${player.name} matched ${matchedPairs}/${totalPairs} shadow pairs with a best streak of ${bestStreak}${rewardText} for +${bonus} ${unit}.`
+    };
+  }
+
+  if (state.type === "classroom_cleanup") {
+    const score = classroomCleanupStateScore(state);
+    const sortedCount = Math.max(0, Number(state.sortedCount || 0));
+    const booksSorted = Math.max(0, Number(state.booksSorted || 0));
+    const pencilsSorted = Math.max(0, Number(state.pencilsSorted || 0));
+    const trashSorted = Math.max(0, Number(state.trashSorted || 0));
+    const misses = Math.max(0, Number(state.misses || 0));
+    const wrongSorts = Math.max(0, Number(state.wrongSorts || 0));
+    const bestCombo = Math.max(0, Number(state.bestCombo || 0));
+    const bonus = Math.max(110, 130 + Math.round(score * 1.28) + sortedCount * 28 + bestCombo * 16 - misses * 12 - wrongSorts * 18);
+    return {
+      bonus,
+      text: `${player.name} sorted ${sortedCount} classroom items (${booksSorted} books, ${pencilsSorted} pencils, ${trashSorted} trash), missed ${misses}, and earned +${bonus} ${unit}.`
+    };
+  }
+
+  if (state.type === "battle_royale") {
+    const hp = Math.max(0, Number(state.hp || 0));
+    const opponentHp = Math.max(0, Number(state.opponentHp || 0));
+    const totalDamage = Math.max(0, Number(state.totalDamage || 0));
+    const totalHealing = Math.max(0, Number(state.totalHealing || 0));
+    const turnCount = Math.max(1, Number(state.turn || 1));
+    const won = state.won === true || (!state.completed && hp > opponentHp);
+    const tie = state.tie === true || (hp === opponentHp && !won);
+    const resultBonus = won ? 250 : tie ? 170 : 110;
+    const completedBonus = state.completed === true ? 40 : 0;
+    const bonus = Math.max(125, 130 + resultBonus + hp * 8 + totalDamage * 6 + totalHealing * 4 + turnCount * 5 + completedBonus);
+    const resultText = tie ? "tied" : won ? "won" : "finished behind";
+    return {
+      bonus,
+      text: `${player.name}'s ${state.blook?.name || "blook"} used ${state.powerName || "a special power"}, ${resultText} against ${state.opponentName || "the opponent"}, and earned +${bonus} ${unit}.`
+    };
+  }
+
   return {
     bonus: modeConfig.fallbackGain,
     text: `${player.name} received fallback +${modeConfig.fallbackGain} ${unit}.`
@@ -6560,12 +8968,6 @@ function finalizeMiniGamePhase(game) {
     const feedEvent = { playerId: player.id, playerName: player.name, text: result.text };
     game.feed.push(feedEvent);
 
-    io.to(playerId).emit("minigame:resolved", {
-      text: result.text,
-      bonus: result.bonus,
-      leaderboard: sortedPlayers(game)
-    });
-
     const globalBucket = ensureMiniGameStatsBucket(miniGameType);
     if (globalBucket) {
       globalBucket.completions += 1;
@@ -6574,9 +8976,28 @@ function finalizeMiniGamePhase(game) {
     }
 
     const accountKey = normalizeAccountKey(player.accountKey || "");
+    let updatedAccount = null;
     if (accountKey) {
       const account = ensureAccount(accountKey);
       if (account) {
+        const bonusCoins = Math.max(0, Number(result.accountCoins || 0));
+        if (bonusCoins > 0) {
+          account.coins += bonusCoins;
+        }
+
+        const rewardBlookIds = Array.isArray(result.blookRewardIds)
+          ? result.blookRewardIds.map((value) => String(value || "")).filter(Boolean)
+          : [];
+        for (const blookId of rewardBlookIds) {
+          if (!BLOOK_LOOKUP.has(blookId)) {
+            continue;
+          }
+          account.inventory[blookId] = accountOwnedCount(account, blookId) + 1;
+          if (!accountOwnsBlook(account, account.selectedBlookId)) {
+            account.selectedBlookId = blookId;
+          }
+        }
+
         const accountBucket = accountMiniGameBucket(account, miniGameType);
         if (accountBucket) {
           accountBucket.plays += 1;
@@ -6588,8 +9009,16 @@ function finalizeMiniGamePhase(game) {
           account.updatedAt = nowIso();
           accountsTouched = true;
         }
+        updatedAccount = publicAccountSummary(account);
       }
     }
+
+    io.to(playerId).emit("minigame:resolved", {
+      text: result.text,
+      bonus: result.bonus,
+      leaderboard: sortedPlayers(game),
+      account: updatedAccount
+    });
   }
 
   if (miniGameStatsTouched) {
@@ -6679,6 +9108,7 @@ function startMiniGamePhase(game, eligiblePlayerIds, options = {}) {
   game.minigameEndsAt = game.minigameStartedAt + game.minigameDurationMs;
   game.minigameDifficulty = difficulty;
   game.soccerMatch = null;
+  game.battleRoyaleMatches = new Map();
   const globalBucket = ensureMiniGameStatsBucket(miniGameType);
   if (globalBucket) {
     globalBucket.sessions += 1;
@@ -6690,6 +9120,7 @@ function startMiniGamePhase(game, eligiblePlayerIds, options = {}) {
     game.soccerMatch = createSoccerMatchForPlayers(game, eligiblePlayerIds);
   }
 
+  const activePlayerIds = [];
   for (const playerId of eligiblePlayerIds) {
     const state =
       miniGameType === "tower_stacker"
@@ -6705,7 +9136,18 @@ function startMiniGamePhase(game, eligiblePlayerIds, options = {}) {
       towerStackerSpawnPreview(state);
     }
     game.chestPhase.set(playerId, state);
+    activePlayerIds.push(playerId);
+  }
 
+  if (miniGameType === "battle_royale") {
+    initializeBattleRoyaleMatches(game, activePlayerIds, difficulty);
+  }
+
+  for (const playerId of activePlayerIds) {
+    const state = game.chestPhase.get(playerId);
+    if (!state) {
+      continue;
+    }
     io.to(playerId).emit("minigame:yourData", {
       type: miniGameType,
       endsAt: game.minigameEndsAt,
@@ -6872,6 +9314,28 @@ function handleMiniGameAction(game, socketId, action, value) {
     return { ok: true };
   }
 
+  if (state.type === "goalie_rush") {
+    if (action !== "set_lane" && action !== "move_lane") {
+      return { ok: false, message: "Invalid action for Goalie Rush." };
+    }
+
+    const direction = String(value?.direction || value?.dir || value || "").toLowerCase();
+    let nextLane = goalieRushLane(state.lane);
+    if (action === "set_lane") {
+      nextLane = goalieRushLane(value?.lane ?? value);
+    } else if (direction === "left") {
+      nextLane = goalieRushLane(Number(state.lane || 0) - 1);
+    } else if (direction === "right") {
+      nextLane = goalieRushLane(Number(state.lane || 0) + 1);
+    } else {
+      return { ok: false, message: "Choose left, center, or right." };
+    }
+
+    state.lane = nextLane;
+    io.to(socketId).emit("minigame:state", goalieRushPayload(state));
+    return { ok: true, lane: nextLane };
+  }
+
   if (state.type === "snake") {
     if (action !== "set_direction" && action !== "snake_turn") {
       return { ok: false, message: "Invalid action for snake." };
@@ -6948,6 +9412,199 @@ function handleMiniGameAction(game, socketId, action, value) {
     io.to(socketId).emit("minigame:state", towerStackerPayload(state));
     broadcastMiniGameProgress(game);
     return { ok: true };
+  }
+
+  if (state.type === "hallway_dash") {
+    if (state.completed === true) {
+      return { ok: true, completed: true };
+    }
+
+    if (action === "move_lane" || action === "set_lane") {
+      const direction = String(value?.direction || value?.dir || value || "").toLowerCase();
+      let nextLane = hallwayDashLane(state.lane);
+      if (action === "set_lane") {
+        nextLane = hallwayDashLane(value?.lane ?? value);
+      } else if (direction === "left") {
+        nextLane = hallwayDashLane(Number(state.lane || 0) - 1);
+      } else if (direction === "right") {
+        nextLane = hallwayDashLane(Number(state.lane || 0) + 1);
+      } else {
+        return { ok: false, message: "Choose a hallway lane." };
+      }
+      state.lane = nextLane;
+      io.to(socketId).emit("minigame:state", hallwayDashPayload(state));
+      return { ok: true, lane: nextLane };
+    }
+
+    if (action !== "jump") {
+      return { ok: false, message: "Invalid action for Hallway Dash." };
+    }
+
+    const now = Date.now();
+    if (now < Number(state.jumpCooldownUntil || 0)) {
+      return { ok: true, throttled: true };
+    }
+
+    state.jumpUntil = now + 620;
+    state.jumpCooldownUntil = now + 320;
+    io.to(socketId).emit("minigame:state", hallwayDashPayload(state));
+    return { ok: true };
+  }
+
+  if (state.type === "classroom_cleanup") {
+    if (state.completed === true) {
+      return { ok: true, completed: true };
+    }
+
+    if (action === "move_lane" || action === "set_lane") {
+      const direction = String(value?.direction || value?.dir || value || "").toLowerCase();
+      let nextLane = classroomCleanupLane(state.lane);
+      if (action === "set_lane") {
+        nextLane = classroomCleanupLane(value?.lane ?? value);
+      } else if (direction === "left") {
+        nextLane = classroomCleanupLane(Number(state.lane || 0) - 1);
+      } else if (direction === "right") {
+        nextLane = classroomCleanupLane(Number(state.lane || 0) + 1);
+      } else {
+        return { ok: false, message: "Choose a classroom row." };
+      }
+
+      state.lane = nextLane;
+      io.to(socketId).emit("minigame:state", classroomCleanupPayload(state));
+      return { ok: true, lane: nextLane };
+    }
+
+    if (action !== "sort_item") {
+      return { ok: false, message: "Invalid action for Classroom Cleanup." };
+    }
+
+    const bin = String(value?.bin || value?.kind || value || "").trim().toLowerCase();
+    if (!Object.prototype.hasOwnProperty.call(CLASSROOM_CLEANUP_ITEM_KINDS, bin)) {
+      return { ok: false, message: "Sort into books, pencils, or trash." };
+    }
+
+    const items = Array.isArray(state.items) ? state.items : [];
+    let candidateIndex = -1;
+    let closestDistance = Number.POSITIVE_INFINITY;
+    for (let index = 0; index < items.length; index += 1) {
+      const item = items[index];
+      if (!item || classroomCleanupLane(item.lane) !== classroomCleanupLane(state.lane)) {
+        continue;
+      }
+      const distance = Math.abs(Number(item.y || 0) - CLASSROOM_CLEANUP_PLAYER_ZONE_Y);
+      if (distance > 18) {
+        continue;
+      }
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        candidateIndex = index;
+      }
+    }
+
+    if (candidateIndex < 0) {
+      return { ok: true, empty: true };
+    }
+
+    const [item] = items.splice(candidateIndex, 1);
+    const tier = clamp(Number(state.difficultyTier || 1), 1, 4);
+    const profile = classroomCleanupItemProfile(item.kind);
+    if (bin === String(item.kind || "")) {
+      state.sortedCount = Math.max(0, Number(state.sortedCount || 0)) + 1;
+      if (bin === "book") {
+        state.booksSorted = Math.max(0, Number(state.booksSorted || 0)) + 1;
+      } else if (bin === "pencil") {
+        state.pencilsSorted = Math.max(0, Number(state.pencilsSorted || 0)) + 1;
+      } else {
+        state.trashSorted = Math.max(0, Number(state.trashSorted || 0)) + 1;
+      }
+      state.combo = Math.max(0, Number(state.combo || 0)) + 1;
+      state.bestCombo = Math.max(Math.max(0, Number(state.bestCombo || 0)), state.combo);
+      const comboBonus = Math.min(12, Math.max(0, state.combo - 1) * 2);
+      const points = Math.max(0, Number(profile.points || 0)) + comboBonus;
+      state.score = classroomCleanupStateScore(state) + points;
+      classroomCleanupSetLastEvent(state, {
+        type: "sorted",
+        kind: item.kind,
+        label: profile.label,
+        binLabel: profile.binLabel,
+        lane: item.lane,
+        points,
+        combo: state.combo,
+        misses: state.misses,
+        wrongSorts: state.wrongSorts
+      });
+    } else {
+      const penalty = 8 + tier * 2;
+      state.wrongSorts = Math.max(0, Number(state.wrongSorts || 0)) + 1;
+      state.combo = 0;
+      state.score = Math.max(0, classroomCleanupStateScore(state) - penalty);
+      classroomCleanupSetLastEvent(state, {
+        type: "wrong_sort",
+        kind: item.kind,
+        label: profile.label,
+        binLabel: classroomCleanupItemProfile(bin).binLabel,
+        lane: item.lane,
+        points: -penalty,
+        combo: state.combo,
+        misses: state.misses,
+        wrongSorts: state.wrongSorts
+      });
+    }
+
+    io.to(socketId).emit("minigame:state", classroomCleanupPayload(state));
+    broadcastMiniGameProgress(game);
+    return { ok: true, bin };
+  }
+
+  if (state.type === "battle_royale") {
+    if (state.completed === true) {
+      return { ok: true, completed: true };
+    }
+
+    const nextAction = String(action || "").trim().toLowerCase();
+    if (!["attack", "guard", "heal", "special"].includes(nextAction)) {
+      return { ok: false, message: "Choose attack, guard, heal, or your blook power." };
+    }
+
+    const matchLookup = game.battleRoyaleMatches instanceof Map ? game.battleRoyaleMatches : new Map();
+    const match = matchLookup.get(String(state.matchId || ""));
+    if (!match || match.completed === true) {
+      return { ok: false, message: "This battle is already over." };
+    }
+
+    const combatant = match.combatants?.[socketId];
+    if (!combatant) {
+      return { ok: false, message: "Your battle fighter is missing." };
+    }
+
+    if (match.pendingActions?.[socketId]) {
+      return { ok: false, message: "Your move is already locked for this turn." };
+    }
+
+    if (nextAction === "special" && !battleRoyaleSpecialReady(match, combatant)) {
+      const waitTurns = battleRoyaleSpecialReadyIn(match, combatant);
+      return {
+        ok: false,
+        message: `${combatant.powerName} is recharging for ${waitTurns} more turn${waitTurns === 1 ? "" : "s"}.`
+      };
+    }
+
+    match.pendingActions[socketId] = nextAction;
+    const opponent = battleRoyaleOtherCombatant(match, socketId);
+    if (opponent?.isBot === true && !match.pendingActions[opponent.id]) {
+      match.pendingActions[opponent.id] = battleRoyaleChooseAutoAction(match, opponent.id);
+    }
+
+    if (battleRoyaleMatchReady(match)) {
+      battleRoyaleResolveTurn(game, match);
+      if (allMiniGamesResolved(game)) {
+        finalizeMiniGamePhase(game);
+      }
+    } else {
+      battleRoyaleBroadcastMatchState(game, match);
+    }
+
+    return { ok: true, action: nextAction };
   }
 
   if (state.type === "obstacle_dodge") {
@@ -7106,6 +9763,187 @@ function handleMiniGameAction(game, socketId, action, value) {
     return { ok: true, solved: state.solved, completed: state.completed };
   }
 
+  if (state.type === "shadow_match") {
+    if (action !== "flip_tile") {
+      return { ok: false, message: "Invalid action for Shadow Match." };
+    }
+
+    if (state.completed === true) {
+      return { ok: true, completed: true };
+    }
+
+    shadowMatchClearExpiredSelection(state);
+    const activeSelected = shadowMatchActiveSelectedIndexes(state);
+    if (activeSelected.length >= 2) {
+      return { ok: true, locked: true };
+    }
+
+    const indexValue =
+      value && typeof value === "object" && value !== null ? value.index ?? value.value ?? value : value;
+    const index = Math.floor(Number(indexValue));
+    if (!Number.isInteger(index) || index < 0 || index >= Number(state.board?.length || 0)) {
+      return { ok: false, message: "Choose a valid shadow card." };
+    }
+
+    const card = Array.isArray(state.board) ? state.board[index] : null;
+    if (!card) {
+      return { ok: false, message: "That shadow card is missing." };
+    }
+    if (card.matched === true) {
+      return { ok: true, matched: true };
+    }
+    if (Array.isArray(state.selectedIndexes) && state.selectedIndexes.includes(index)) {
+      return { ok: true, selected: true };
+    }
+
+    if (!Array.isArray(state.selectedIndexes)) {
+      state.selectedIndexes = [];
+    }
+    state.selectedIndexes.push(index);
+
+    if (state.selectedIndexes.length < 2) {
+      io.to(socketId).emit("minigame:state", shadowMatchPayload(state));
+      return { ok: true, revealed: true };
+    }
+
+    const [firstIndex, secondIndex] = state.selectedIndexes;
+    const firstCard = state.board[firstIndex];
+    const secondCard = state.board[secondIndex];
+    const matched = firstCard && secondCard && String(firstCard.pairId || "") === String(secondCard.pairId || "");
+    state.attempts = Math.max(0, Number(state.attempts || 0)) + 1;
+
+    if (matched) {
+      firstCard.matched = true;
+      secondCard.matched = true;
+      state.matchedPairs = Math.max(0, Number(state.matchedPairs || 0)) + 1;
+      state.streak = Math.max(0, Number(state.streak || 0)) + 1;
+      state.bestStreak = Math.max(Math.max(0, Number(state.bestStreak || 0)), state.streak);
+      const points = 78 + state.streak * 26 + clamp(Number(state.difficultyTier || 1), 1, 4) * 10;
+      state.score = Math.max(0, Number(state.score || 0)) + points;
+      state.selectedIndexes = [];
+      state.previewExpiresAt = 0;
+
+      const rewardTier = shadowMatchRewardTierForStreak(state.streak);
+      const currentRewardIndex = Math.max(-1, Math.floor(Number(state.rewardTierIndex ?? -1)));
+      const unlockedTier = rewardTier && rewardTier.index > currentRewardIndex ? rewardTier : null;
+      if (rewardTier) {
+        state.rewardTierIndex = Math.max(currentRewardIndex, rewardTier.index);
+      }
+
+      shadowMatchSetLastMove(state, {
+        type: "match",
+        firstIndex,
+        secondIndex,
+        label: firstCard?.blook?.name || secondCard?.blook?.name || "Blook Pair",
+        points,
+        streak: state.streak,
+        bestStreak: state.bestStreak,
+        matchedPairs: state.matchedPairs,
+        misses: state.misses,
+        rewardTier: unlockedTier
+      });
+
+      if (state.matchedPairs >= Math.max(1, Number(state.totalPairs || 1))) {
+        state.completed = true;
+      }
+    } else {
+      state.misses = Math.max(0, Number(state.misses || 0)) + 1;
+      state.streak = 0;
+      state.previewExpiresAt = Date.now() + 780;
+      shadowMatchSetLastMove(state, {
+        type: "miss",
+        firstIndex,
+        secondIndex,
+        label: "Miss",
+        points: 0,
+        streak: state.streak,
+        bestStreak: state.bestStreak,
+        matchedPairs: state.matchedPairs,
+        misses: state.misses
+      });
+    }
+
+    io.to(socketId).emit("minigame:state", shadowMatchPayload(state));
+    broadcastMiniGameProgress(game);
+
+    if (allMiniGamesResolved(game)) {
+      finalizeMiniGamePhase(game);
+    }
+
+    return { ok: true, completed: state.completed === true, matched };
+  }
+
+  if (state.type === "dino_dig") {
+    if (action !== "dig") {
+      return { ok: false, message: "Invalid action for Dino Dig." };
+    }
+
+    if (state.completed === true) {
+      return { ok: true, completed: true };
+    }
+
+    const index = Math.floor(Number(value));
+    if (!Number.isInteger(index) || index < 0 || index >= DINO_DIG_BOARD_SIZE) {
+      return { ok: false, message: "Choose a valid dig tile." };
+    }
+
+    const tile = Array.isArray(state.board) ? state.board[index] : null;
+    if (!tile) {
+      return { ok: false, message: "That dig tile is missing." };
+    }
+    if (tile.dug === true) {
+      return { ok: true, alreadyDug: true };
+    }
+
+    tile.dug = true;
+    state.digs = Math.max(0, Number(state.digs || 0)) + 1;
+    state.digScore = Math.max(0, Number(state.digScore || 0)) + Math.max(0, Number(tile.points || 0));
+
+    if (tile.kind === "fossil") {
+      state.fossilsFound = Math.max(0, Number(state.fossilsFound || 0)) + 1;
+      state.fossilPoints = Math.max(0, Number(state.fossilPoints || 0)) + Math.max(0, Number(tile.points || 0));
+    } else if (tile.kind === "bone") {
+      state.bonesFound = Math.max(0, Number(state.bonesFound || 0)) + 1;
+    } else if (tile.kind === "coin") {
+      state.coinsFound = Math.max(0, Number(state.coinsFound || 0)) + Math.max(0, Number(tile.coins || 0));
+    } else if (tile.kind === "rare_blook") {
+      state.rareBlooksFound = Math.max(0, Number(state.rareBlooksFound || 0)) + 1;
+      if (!Array.isArray(state.rareBlookIds)) {
+        state.rareBlookIds = [];
+      }
+      if (tile.blookId) {
+        state.rareBlookIds.push(tile.blookId);
+      }
+    }
+
+    state.lastRevealSeq = Math.max(0, Number(state.lastRevealSeq || 0)) + 1;
+    state.lastReveal = {
+      seq: state.lastRevealSeq,
+      kind: String(tile.kind || "bone"),
+      label: String(tile.label || "Dig Find"),
+      icon: String(tile.icon || "⛏️"),
+      points: Math.max(0, Number(tile.points || 0)),
+      coins: Math.max(0, Number(tile.coins || 0)),
+      blookId: String(tile.blookId || ""),
+      rarity: String(tile.rarity || ""),
+      image: String(tile.image || "")
+    };
+
+    const allTilesDug = Array.isArray(state.board) && state.board.every((entry) => entry?.dug === true);
+    if (state.digs >= state.maxDigs || allTilesDug) {
+      state.completed = true;
+    }
+
+    io.to(socketId).emit("minigame:state", dinoDigPayload(state));
+    broadcastMiniGameProgress(game);
+
+    if (allMiniGamesResolved(game)) {
+      finalizeMiniGamePhase(game);
+    }
+
+    return { ok: true, completed: state.completed };
+  }
+
   return { ok: false, message: "Unknown mini-game type." };
 }
 
@@ -7159,19 +9997,7 @@ function closeQuestion(game) {
   game.questionEligiblePlayerIds = new Set();
   recordQuestionReportEntry(game, question, submissions);
   game.phase = "question_result";
-  const resultPayload = {
-    correctAnswer: question.answerIndex,
-    explanation: question.explanation,
-    submissions: submissions.map((item) => ({
-      playerId: item.playerId,
-      playerName: item.playerName,
-      correct: item.correct,
-      delta: item.delta,
-      answerIndex: item.answerIndex,
-      ms: item.ms
-    })),
-    leaderboard: sortedPlayers(game)
-  };
+  const resultPayload = buildQuestionResultPayload(game, question, submissions);
   game.lastQuestionResultPayload = resultPayload;
   io.to(game.code).emit("question:result", resultPayload);
   broadcastHostStatus(game);
@@ -7284,16 +10110,7 @@ function startQuestion(game) {
   game.questionStartedAt = Date.now();
   game.questionEndsAt = endsAt;
 
-  io.to(game.code).emit("question:start", {
-    questionIndex: game.currentQuestionIndex + 1,
-    totalQuestions: game.questions.length,
-    endsAt,
-    question: {
-      prompt: question.prompt,
-      options: question.options,
-      image: sanitizeQuestionImage(question.image || "")
-    }
-  });
+  io.to(game.code).emit("question:start", buildQuestionStartPayload(game, question, endsAt));
 
   broadcastHostStatus(game);
 
@@ -7493,6 +10310,7 @@ io.on("connection", (socket) => {
       minigameReturnPhase: "round_summary",
       minigameRotationIndex: 0,
       soccerMatch: null,
+      battleRoyaleMatches: new Map(),
       towerStackerSessions: new Map(),
       report: {
         startedAt: Date.now(),
@@ -7652,7 +10470,7 @@ io.on("connection", (socket) => {
       return;
     }
 
-    if (STUDENT_LOGIN_USERS.length > 0 && !sessionStudent) {
+    if (allowStudentAccounts && STUDENT_LOGIN_USERS.length > 0 && !sessionStudent) {
       if (typeof ack === "function") {
         ack({ ok: false, message: "Student login required. Use your first name and class password before joining." });
       }
@@ -8021,11 +10839,27 @@ io.on("connection", (socket) => {
     const elapsed = clamp(Date.now() - game.questionStartedAt, 0, game.settings.timerSeconds * 1000);
     const correct = safeAnswerIndex === question.answerIndex;
     const score = calculateScore(game, elapsed, correct, player.streak);
+    const asteroidBlast = isAsteroidsMode(game) ? asteroidsBlastOutcome(game, elapsed, correct, score.newStreak) : null;
 
     player.streak = score.newStreak;
     player.score += score.delta;
     if (correct) {
       player.correctCount += 1;
+    }
+
+    let updatedAccount = null;
+    const streakCoinsAwarded = asteroidBlast ? Math.max(0, Number(asteroidBlast.streakCoinsAwarded || 0)) : 0;
+    if (streakCoinsAwarded > 0) {
+      const accountKey = normalizeAccountKey(player.accountKey || "");
+      if (accountKey) {
+        const account = ensureAccount(accountKey);
+        if (account) {
+          account.coins += streakCoinsAwarded;
+          account.updatedAt = nowIso();
+          updatedAccount = publicAccountSummary(account);
+          saveAccountsToDisk();
+        }
+      }
     }
 
     game.submissions.set(socket.id, {
@@ -8034,7 +10868,11 @@ io.on("connection", (socket) => {
       answerIndex: safeAnswerIndex,
       correct,
       delta: score.delta,
-      ms: elapsed
+      ms: elapsed,
+      asteroidsBlasted: Math.max(0, Number(asteroidBlast?.blasts || 0)),
+      asteroidsSpeedTier: String(asteroidBlast?.speedTier || ""),
+      asteroidsSpeedLabel: String(asteroidBlast?.speedLabel || ""),
+      streakCoinsAwarded
     });
 
     game.updatedAt = Date.now();
@@ -8046,7 +10884,10 @@ io.on("connection", (socket) => {
         ok: true,
         correct,
         delta: score.delta,
-        streak: player.streak
+        streak: player.streak,
+        asteroidBlast,
+        streakCoinsAwarded,
+        account: updatedAccount
       });
     }
 

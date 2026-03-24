@@ -1,23 +1,29 @@
 {
-  "savedAt": "2026-03-24T15:43:31.261Z",
+  "savedAt": "2026-03-24T19:52:32.002Z",
   "stats": {
     "foosball_frenzy": {
-      "sessions": 61,
-      "playerEntries": 119,
-      "completions": 59,
-      "totalBonus": 102511
+      "sessions": 81,
+      "playerEntries": 158,
+      "completions": 79,
+      "totalBonus": 133456
     },
     "soccer_shootout": {
-      "sessions": 50,
-      "playerEntries": 98,
-      "completions": 80,
-      "totalBonus": 30884
+      "sessions": 60,
+      "playerEntries": 118,
+      "completions": 100,
+      "totalBonus": 36858
+    },
+    "goalie_rush": {
+      "sessions": 5,
+      "playerEntries": 7,
+      "completions": 5,
+      "totalBonus": 1837
     },
     "space_invaders": {
-      "sessions": 30,
-      "playerEntries": 59,
-      "completions": 59,
-      "totalBonus": 30385
+      "sessions": 40,
+      "playerEntries": 79,
+      "completions": 79,
+      "totalBonus": 40685
     },
     "snake": {
       "sessions": 0,
@@ -26,10 +32,10 @@
       "totalBonus": 0
     },
     "tower_stacker": {
-      "sessions": 11,
-      "playerEntries": 20,
-      "completions": 19,
-      "totalBonus": 6779
+      "sessions": 22,
+      "playerEntries": 42,
+      "completions": 41,
+      "totalBonus": 14017
     },
     "tap_rush": {
       "sessions": 8,
@@ -66,6 +72,36 @@
       "playerEntries": 16,
       "completions": 16,
       "totalBonus": 1440
+    },
+    "hallway_dash": {
+      "sessions": 10,
+      "playerEntries": 18,
+      "completions": 17,
+      "totalBonus": 6964
+    },
+    "dino_dig": {
+      "sessions": 12,
+      "playerEntries": 21,
+      "completions": 19,
+      "totalBonus": 7391
+    },
+    "shadow_match": {
+      "sessions": 5,
+      "playerEntries": 9,
+      "completions": 6,
+      "totalBonus": 990
+    },
+    "classroom_cleanup": {
+      "sessions": 6,
+      "playerEntries": 10,
+      "completions": 9,
+      "totalBonus": 990
+    },
+    "battle_royale": {
+      "sessions": 7,
+      "playerEntries": 12,
+      "completions": 10,
+      "totalBonus": 5470
     }
   }
 }

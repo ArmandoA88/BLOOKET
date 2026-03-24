@@ -9,6 +9,11 @@
     <link rel="preload" as="image" href="/assets/minigames/tap_rush/tap.svg" />
     <link rel="preload" as="image" href="/assets/minigames/sequence_memory/sequence.svg" />
     <link rel="preload" as="image" href="/assets/minigames/precision_stop/precision.svg" />
+    <link rel="preload" as="image" href="/assets/minigames/asteroids/asteroids.svg" />
+    <link rel="preload" as="image" href="/assets/minigames/classroom_cleanup/classroom-cleanup.svg" />
+    <link rel="preload" as="image" href="/assets/minigames/shadow_match/shadow-match.svg" />
+    <link rel="preload" as="image" href="/assets/minigames/battle_royale/battle-royale.svg" />
+    <link rel="preload" as="image" href="/assets/minigames/goalie_rush/goalie-rush.svg" />
     <link rel="stylesheet" href="/style.css" />
     <link rel="stylesheet" href="/blooket-shell.css" />
   </head>
@@ -87,11 +92,17 @@
             <div class="mode-picker-layout">
               <section class="mode-picker-stage">
                 <div class="mode-picker-banner">Select Featured Mini-Game</div>
-                <select id="mode" class="hidden">
-                  <option value="classic" selected>Foosball</option>
-                  <option value="gold">Tower Stacker</option>
-                  <option value="brawl">Space Invaders</option>
-                </select>
+                <div class="mode-duration-row" style="margin-bottom: 14px">
+                  <label for="mode">Game Mode</label>
+                  <select id="mode">
+                    <option value="classic" selected>Classic Quiz</option>
+                    <option value="gold">Gold Quest</option>
+                    <option value="crypto">Crypto Hack</option>
+                    <option value="fishing">Fishing Frenzy</option>
+                    <option value="asteroids">Asteroids</option>
+                    <option value="brawl">Monster Brawl</option>
+                  </select>
+                </div>
                 <div id="modePickerGrid" class="mode-picker-grid"></div>
               </section>
 
@@ -287,6 +298,7 @@
                   <div class="question" id="questionText">Question text appears here.</div>
                   <img id="hostQuestionMedia" class="question-media hidden" alt="Question reference image" />
                   <div id="answerStats" class="answers"></div>
+                  <div id="hostAsteroidsStage" class="asteroids-panel hidden"></div>
                 </div>
 
                 <div id="miniGameDashboardPanel" class="card hidden" style="margin-top: 12px">
@@ -335,6 +347,7 @@
                         <option value="gold">Gold Quest</option>
                         <option value="crypto">Crypto Hack</option>
                         <option value="fishing">Fishing Frenzy</option>
+                        <option value="asteroids">Asteroids</option>
                         <option value="brawl">Monster Brawl</option>
                       </select>
                     </div>
@@ -462,6 +475,7 @@
                       <label for="testMiniGameType">Mini-game</label>
                       <select id="testMiniGameType">
                         <option value="soccer_shootout">Soccer Shootout</option>
+                        <option value="goalie_rush">Goalie Rush</option>
                         <option value="tap_rush">Tap Rush</option>
                         <option value="reaction_duel">Reaction Duel</option>
                         <option value="sequence_memory">Sequence Memory</option>

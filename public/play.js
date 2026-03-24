@@ -24,12 +24,18 @@ const MODE_LABELS = {
   gold: "Tower Stacker",
   crypto: "Crypto Hack",
   fishing: "Fishing Frenzy",
+  asteroids: "Asteroids",
   brawl: "Space Invaders"
 };
 const GAME_IMAGE_MAP = {
   question: "/assets/minigames/shared/question.svg",
+  asteroids: "/assets/minigames/asteroids/asteroids.svg",
+  battle_royale: "/assets/minigames/battle_royale/battle-royale.svg",
+  classroom_cleanup: "/assets/minigames/classroom_cleanup/classroom-cleanup.svg",
+  shadow_match: "/assets/minigames/shadow_match/shadow-match.svg",
   foosball_frenzy: "/assets/minigames/soccer_shootout/soccer.svg",
   soccer_shootout: "/assets/minigames/soccer_shootout/soccer.svg",
+  goalie_rush: "/assets/minigames/goalie_rush/goalie-rush.svg",
   snake: "/assets/minigames/snake/snake.svg",
   tower_stacker: "/assets/minigames/tower_stacker/tower.svg",
   tap_rush: "/assets/minigames/tap_rush/tap.svg",
@@ -37,7 +43,9 @@ const GAME_IMAGE_MAP = {
   sequence_memory: "/assets/minigames/sequence_memory/sequence.svg",
   obstacle_dodge: "/assets/minigames/obstacle_dodge/sequence.svg",
   precision_stop: "/assets/minigames/precision_stop/precision.svg",
-  word_scramble: "/assets/minigames/word_scramble/question.svg"
+  word_scramble: "/assets/minigames/word_scramble/question.svg",
+  hallway_dash: "/assets/minigames/hallway_dash/hallway.svg",
+  dino_dig: "/assets/dinos/dino-tyrannosaurus.png"
 };
 const SOUND_PREF_STORAGE_KEY = "quizArenaSoundEnabled";
 const MINI_TUTORIAL_STORAGE_KEY = "quizArenaMiniTutorialSeen";
@@ -148,6 +156,7 @@ const studentLoginUsernameInput = document.getElementById("studentLoginUsername"
 const studentLoginPasswordInput = document.getElementById("studentLoginPassword");
 const studentLoginBtn = document.getElementById("studentLoginBtn");
 const studentLogoutBtn = document.getElementById("studentLogoutBtn");
+const studentLoginCard = document.getElementById("studentLoginCard");
 const studentLoginSummary = document.getElementById("studentLoginSummary");
 const studentLoginGreeting = document.getElementById("studentLoginGreeting");
 const studentLoginGreetingTitle = document.getElementById("studentLoginGreetingTitle");
@@ -181,6 +190,7 @@ const soundToggleBtn = document.getElementById("soundToggleBtn");
 const questionSection = document.getElementById("questionSection");
 const questionIllustration = document.getElementById("questionIllustration");
 const questionMedia = document.getElementById("questionMedia");
+const asteroidsQuestionStage = document.getElementById("asteroidsQuestionStage");
 const timerText = document.getElementById("timerText");
 const questionText = document.getElementById("questionText");
 const answers = document.getElementById("answers");
@@ -207,6 +217,7 @@ const miniTutorialSteps = document.getElementById("miniTutorialSteps");
 const miniTutorialCloseBtn = document.getElementById("miniTutorialCloseBtn");
 
 const MINI_STEP_LABELS = ["Red", "Blue", "Green", "Yellow"];
+const MINI_HALLWAY_LANE_LABELS = ["Left", "Center", "Right"];
 const SOCCER_LANE_LABELS = ["Left", "Center", "Right"];
 const SOCCER_LANE_POSITIONS = [22, 50, 78];
 const SOCCER_ROW_POSITIONS = [72, 56, 40, 26];
@@ -280,6 +291,14 @@ const MINI_GAME_TUTORIALS = {
       "Higher power is faster but can reduce control."
     ]
   },
+  goalie_rush: {
+    intro: "Slide across the goal mouth and get in front of each incoming shot before it reaches the line.",
+    steps: [
+      "Use Left and Right arrows or the lane buttons to move between the three goal lanes.",
+      "Shots get faster every round, so recenter quickly after each save or goal.",
+      "Every fifth shot is a boss round. Block it to bank bonus coins for your student account."
+    ]
+  },
   snake: {
     intro: "Use simple turns to guide the snake, collect snacks, and avoid walls or your own tail.",
     steps: [
@@ -335,6 +354,46 @@ const MINI_GAME_TUTORIALS = {
       "Submit guesses quickly and refine from feedback.",
       "Solve before max attempts to score."
     ]
+  },
+  hallway_dash: {
+    intro: "Sprint down the school hallway, swap lanes fast, jump hazards, and scoop up coins.",
+    steps: [
+      "Use Left and Right arrows or A and D to change lanes.",
+      "Press Space, Up, or W to jump over cones, backpacks, and puddles.",
+      "Grab coin spills in your lane and avoid three hits before the timer ends."
+    ]
+  },
+  dino_dig: {
+    intro: "Dig through the fossil field to uncover fossils, coins, old bones, and a possible rare dinosaur blook.",
+    steps: [
+      "Tap a dig tile to reveal what is buried there.",
+      "Fossils and coin caches boost your round, while bones are smaller finds.",
+      "A rare dinosaur blook tile is the jackpot, so keep digging until your digs run out."
+    ]
+  },
+  shadow_match: {
+    intro: "Flip hidden blooks, remember their spots, and build streaks to unlock rarer bonus packs.",
+    steps: [
+      "Tap two cards at a time to reveal the hidden blooks underneath.",
+      "Matching pairs build your streak and unlock stronger bonus pack rewards.",
+      "A miss resets your streak, so use memory and speed together before time runs out."
+    ]
+  },
+  classroom_cleanup: {
+    intro: "Move across classroom rows and sort falling clutter into the correct spot before it hits the floor.",
+    steps: [
+      "Use Left and Right arrows or A and D to move to the row under the falling item.",
+      "Press 1 or B for books, 2 or P for pencils, and 3 or T for trash.",
+      "Correct sorts build combo points, but missed or wrong-bin sorts cost you score."
+    ]
+  },
+  battle_royale: {
+    intro: "Battle your opponent in fast 1v1 turns using the blook you joined with.",
+    steps: [
+      "Each turn, choose Attack, Guard, Heal, or your blook's special power.",
+      "Guard adds shield before damage lands, while Heal restores HP right away.",
+      "Special powers are stronger, but they need a short recharge before you can use them again."
+    ]
   }
 };
 
@@ -382,6 +441,21 @@ let miniTowerStackerCtx = null;
 let miniTowerStackerAnimationFrame = 0;
 let miniTowerStackerLastEventSeq = 0;
 let miniTowerStackerCameraTop = 0;
+let miniHallwayDashState = null;
+let miniHallwayDashLastEventSeq = 0;
+let miniGoalieRushState = null;
+let miniGoalieRushLastEventSeq = 0;
+let miniDinoDigState = null;
+let miniDinoDigLastRevealSeq = 0;
+let miniShadowMatchState = null;
+let miniShadowMatchLastMoveSeq = 0;
+let miniShadowMatchPreviewTimer = null;
+let miniClassroomCleanupState = null;
+let miniClassroomCleanupLastEventSeq = 0;
+let miniBattleRoyaleState = null;
+let miniBattleRoyaleTicker = null;
+let miniBattleRoyaleLastResolutionSeq = 0;
+let asteroidRoundState = null;
 let latestLeaderboardRows = [];
 let fishingGameEndsAt = 0;
 let fishingHudTicker = null;
@@ -428,6 +502,7 @@ const FALLBACK_BLOOKS = [
 const FALLBACK_MINI_GAMES = [
   { id: "foosball_frenzy", name: "Foosball Frenzy", description: "Foosball bars stay in formation. Slide laterally, score fast, and race the class leaderboard." },
   { id: "soccer_shootout", name: "Soccer Shootout", description: "Penalty kicks with lane + power choice." },
+  { id: "goalie_rush", name: "Goalie Rush", description: "Guard the goal, block faster shots each round, and survive boss rounds for extra coins." },
   { id: "snake", name: "Snake Strategy", description: "Simple controls, careful turns, and growing path strategy." },
   { id: "tower_stacker", name: "Tower Stacker", description: "Drop cute themed pieces and build a happy tower." },
   { id: "tap_rush", name: "Tap Rush", description: "Tap fast for bonus points." },
@@ -435,7 +510,12 @@ const FALLBACK_MINI_GAMES = [
   { id: "sequence_memory", name: "Sequence Memory", description: "Repeat the color order to score." },
   { id: "obstacle_dodge", name: "Obstacle Dodge", description: "Pick safe lanes across turns." },
   { id: "precision_stop", name: "Precision Stop", description: "Stop the marker near the target zone." },
-  { id: "word_scramble", name: "Word Scramble", description: "Unscramble words before attempts run out." }
+  { id: "word_scramble", name: "Word Scramble", description: "Unscramble words before attempts run out." },
+  { id: "hallway_dash", name: "Hallway Dash", description: "Race through a school hallway, dodge clutter, jump hazards, and collect coins." },
+  { id: "dino_dig", name: "Dino Dig", description: "Dig tiles to uncover fossils, bones, coin caches, and maybe a rare dinosaur blook." },
+  { id: "shadow_match", name: "Shadow Match", description: "Flip hidden blooks, match the pairs, and unlock better reward packs with streaks." },
+  { id: "classroom_cleanup", name: "Classroom Cleanup", description: "Move between classroom rows and sort books, pencils, and trash before time runs out." },
+  { id: "battle_royale", name: "Battle Royale", description: "Simple 1v1 blook battles where every selected blook gets a small power." }
 ];
 
 let autoJoinCodeApplied = "";
@@ -459,6 +539,7 @@ const prefilledCode = pageParams.get("code");
 const prefilledName = String(pageParams.get("name") || "").trim().slice(0, 24);
 const shouldAutoJoinFromQuery = ["1", "true", "yes", "on"].includes(String(pageParams.get("autojoin") || "").toLowerCase());
 const catalogViewRequested = ["1", "true", "yes", "on"].includes(String(pageParams.get("catalog") || "").toLowerCase());
+const previewGuestJoinRequested = ["1", "true", "yes", "on"].includes(String(pageParams.get("previewGuest") || "").toLowerCase());
 let autoJoinFromQueryPending = shouldAutoJoinFromQuery;
 let autoJoinFromQueryAttempted = false;
 if (prefilledCode) {
@@ -552,6 +633,9 @@ function maybeAutoJoinFromQuery() {
     return;
   }
   if (code.length !== 6 || !name) {
+    return;
+  }
+  if (!socket.connected) {
     return;
   }
 
@@ -922,7 +1006,7 @@ function setJoinNotice(message, type = "") {
 }
 
 function requiresStudentLogin() {
-  return studentAuthEnabled !== false;
+  return studentAuthEnabled !== false && !previewGuestJoinRequested;
 }
 
 function canJoinCurrentRoom() {
@@ -997,9 +1081,21 @@ function setStudentLoginNotice(message, type = "") {
 
 function renderStudentLoginState() {
   const loggedIn = Boolean(loggedInStudent);
+  const previewGuest = previewGuestJoinRequested;
+  if (studentLoginCard) {
+    studentLoginCard.classList.toggle("hidden", previewGuest);
+  }
+  if (landingSub && previewGuest) {
+    landingSub.textContent = "Arcade preview is loading a guest player automatically. No student login is needed here.";
+  }
+  if (joinCardTitle && previewGuest) {
+    joinCardTitle.textContent = "Arcade Preview";
+  }
   if (studentLoginSummary) {
     if (loggedIn) {
       studentLoginSummary.textContent = `Hello, ${loggedInStudent.displayName}! Your saved coins and blooks are ready, and your join name stays locked to your first name.`;
+    } else if (previewGuest) {
+      studentLoginSummary.textContent = "Arcade preview guest will join automatically.";
     } else if (requiresStudentLogin()) {
       studentLoginSummary.textContent = "Not logged in. Student login is required before you can join a game.";
     } else {
@@ -1081,6 +1177,16 @@ function applyStudentAuthState(payload) {
 }
 
 async function loadStudentAuthStatus() {
+  if (previewGuestJoinRequested) {
+    studentAuthLoaded = true;
+    studentAuthEnabled = false;
+    loggedInStudent = null;
+    clearStoredStudentAccountKey();
+    renderStudentLoginState();
+    maybeAutoJoinFromQuery();
+    return;
+  }
+
   try {
     const response = await fetch("/api/student-auth/status");
     const payload = await response.json();
@@ -1493,10 +1599,26 @@ function stopMiniSoccerTicker() {
   }
 }
 
+function stopMiniBattleRoyaleTicker() {
+  if (miniBattleRoyaleTicker) {
+    clearInterval(miniBattleRoyaleTicker);
+    miniBattleRoyaleTicker = null;
+  }
+}
+
+function stopMiniShadowMatchPreviewTimer() {
+  if (miniShadowMatchPreviewTimer) {
+    clearTimeout(miniShadowMatchPreviewTimer);
+    miniShadowMatchPreviewTimer = null;
+  }
+}
+
 function stopMiniTickers() {
   stopMiniPrecisionTicker();
   stopMiniReactionTicker();
   stopMiniSoccerTicker();
+  stopMiniBattleRoyaleTicker();
+  stopMiniShadowMatchPreviewTimer();
   destroyMiniFoosballPixi();
   if (miniSnakeAnimationFrame) {
     cancelAnimationFrame(miniSnakeAnimationFrame);
@@ -1515,12 +1637,25 @@ function stopMiniTickers() {
   miniTowerStackerState = null;
   miniTowerStackerLastEventSeq = 0;
   miniTowerStackerCameraTop = 0;
+  miniHallwayDashState = null;
+  miniHallwayDashLastEventSeq = 0;
+  miniGoalieRushState = null;
+  miniGoalieRushLastEventSeq = 0;
+  miniDinoDigState = null;
+  miniDinoDigLastRevealSeq = 0;
+  miniShadowMatchState = null;
+  miniShadowMatchLastMoveSeq = 0;
+  miniClassroomCleanupState = null;
+  miniClassroomCleanupLastEventSeq = 0;
+  miniBattleRoyaleState = null;
+  miniBattleRoyaleLastResolutionSeq = 0;
 }
 
 function miniGameTypeLabel(type) {
   if (type === "tower_stacker") return "Tower Stacker";
   if (type === "foosball_frenzy") return "Foosball Frenzy";
   if (type === "soccer_shootout") return "Soccer Shootout";
+  if (type === "goalie_rush") return "Goalie Rush";
   if (type === "snake") return "Snake Strategy";
   if (type === "tap_rush") return "Tap Rush";
   if (type === "reaction_duel") return "Reaction Duel";
@@ -1528,6 +1663,11 @@ function miniGameTypeLabel(type) {
   if (type === "obstacle_dodge") return "Obstacle Dodge";
   if (type === "precision_stop") return "Precision Stop";
   if (type === "word_scramble") return "Word Scramble";
+  if (type === "hallway_dash") return "Hallway Dash";
+  if (type === "dino_dig") return "Dino Dig";
+  if (type === "shadow_match") return "Shadow Match";
+  if (type === "classroom_cleanup") return "Classroom Cleanup";
+  if (type === "battle_royale") return "Battle Royale";
   return "Mini-game";
 }
 
@@ -3182,6 +3322,953 @@ function applyMiniTowerStackerState(payload = {}, options = {}) {
   }
 }
 
+function miniDinoDigTileTone(tile) {
+  const kind = String(tile?.kind || "");
+  if (kind === "coin") {
+    return {
+      bg: "rgba(255, 212, 71, 0.18)",
+      border: "rgba(255, 212, 71, 0.55)"
+    };
+  }
+  if (kind === "fossil") {
+    return {
+      bg: "rgba(129, 199, 132, 0.18)",
+      border: "rgba(129, 199, 132, 0.48)"
+    };
+  }
+  if (kind === "rare_blook") {
+    return {
+      bg: "rgba(96, 165, 250, 0.2)",
+      border: "rgba(125, 211, 252, 0.58)"
+    };
+  }
+  if (kind === "bone") {
+    return {
+      bg: "rgba(148, 163, 184, 0.18)",
+      border: "rgba(191, 219, 254, 0.34)"
+    };
+  }
+  return {
+    bg: "rgba(255,255,255,0.04)",
+    border: "rgba(151,193,255,0.22)"
+  };
+}
+
+function renderMiniDinoDigBoard(payload = {}) {
+  const grid = document.getElementById("miniDinoGrid");
+  if (!grid) {
+    return;
+  }
+
+  const board = Array.isArray(payload?.board) ? payload.board : [];
+  const completed = payload?.completed === true;
+  grid.innerHTML = board.map((tile, index) => {
+    const dug = tile?.dug === true;
+    const tone = miniDinoDigTileTone(tile);
+    const hiddenTitle = `Dig Site ${index + 1}`;
+    const hiddenDetail = completed ? "Dig complete" : "Tap to dig";
+    const title = dug ? String(tile?.label || "Dig Find") : hiddenTitle;
+    let detail = hiddenDetail;
+    if (dug) {
+      if (String(tile?.kind || "") === "coin") {
+        detail = `+${Number(tile?.coins || 0)} coins`;
+      } else if (String(tile?.kind || "") === "rare_blook") {
+        detail = `${escapeHtml(String(tile?.rarity || "Rare"))} blook`;
+      } else {
+        detail = `+${Number(tile?.points || 0)} dig pts`;
+      }
+    }
+
+    const icon = dug ? String(tile?.icon || "⛏️") : "⛏️";
+    const disabledAttr = dug || completed ? "disabled" : "";
+    const ariaLabel = dug
+      ? `${title} revealed`
+      : `${hiddenTitle}, ${completed ? "completed" : "tap to dig"}`;
+    return `
+      <button
+        type="button"
+        class="answer"
+        data-mini-action="dig"
+        data-mini-value="${index}"
+        aria-label="${escapeHtml(ariaLabel)}"
+        ${disabledAttr}
+        style="min-height:96px;padding:12px;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;text-align:left;background:${tone.bg};border-color:${tone.border};opacity:${dug ? 0.96 : 1};">
+        <span style="font-size:1.45rem;line-height:1">${escapeHtml(icon)}</span>
+        <strong style="font-size:1rem;line-height:1.15">${escapeHtml(title)}</strong>
+        <span class="help" style="margin:0;font-size:0.82rem;line-height:1.15">${escapeHtml(detail)}</span>
+      </button>`;
+  }).join("");
+}
+
+function applyMiniDinoDigState(payload = {}, options = {}) {
+  miniDinoDigState = payload;
+  renderMiniDinoDigBoard(payload);
+
+  const scoreEl = document.getElementById("miniDinoScore");
+  const statsEl = document.getElementById("miniDinoStats");
+  const summaryEl = document.getElementById("miniDinoLast");
+  const digs = Math.max(0, Number(payload?.digs || 0));
+  const maxDigs = Math.max(1, Number(payload?.maxDigs || 1));
+  const fossilsFound = Math.max(0, Number(payload?.fossilsFound || 0));
+  const fossilPoints = Math.max(0, Number(payload?.fossilPoints || 0));
+  const bonesFound = Math.max(0, Number(payload?.bonesFound || 0));
+  const coinsFound = Math.max(0, Number(payload?.coinsFound || 0));
+  const rareBlooksFound = Math.max(0, Number(payload?.rareBlooksFound || 0));
+
+  if (scoreEl) {
+    scoreEl.textContent = `Digs ${digs}/${maxDigs} | Fossil Score ${fossilPoints}`;
+  }
+  if (statsEl) {
+    statsEl.textContent = `${fossilsFound} fossils | ${bonesFound} bones | ${coinsFound} coins | ${rareBlooksFound} rare finds`;
+  }
+
+  if (summaryEl) {
+    const reveal = payload?.lastReveal && typeof payload.lastReveal === "object" ? payload.lastReveal : null;
+    const revealSeq = Math.max(0, Number(reveal?.seq || 0));
+    const forceSummaryText = options.forceSummaryText === true;
+    let handledReveal = false;
+    if (reveal && (forceSummaryText || revealSeq > miniDinoDigLastRevealSeq)) {
+      miniDinoDigLastRevealSeq = revealSeq;
+      handledReveal = true;
+      if (String(reveal.kind || "") === "rare_blook") {
+        summaryEl.textContent = `Jackpot! ${reveal.label} was buried in that tile.`;
+        setNotice(`Rare dinosaur blook found: ${reveal.label}.`, "good");
+        playMiniGameSfx("unlock");
+      } else if (String(reveal.kind || "") === "coin") {
+        summaryEl.textContent = `${reveal.label} uncovered. That tile had +${Number(reveal.coins || 0)} coins.`;
+        setNotice(`Coin cache found: +${Number(reveal.coins || 0)} dig coins.`, "good");
+        playMiniGameSfx("reward");
+      } else if (String(reveal.kind || "") === "fossil") {
+        summaryEl.textContent = `${reveal.label} uncovered for +${Number(reveal.points || 0)} fossil points.`;
+        setNotice(`Fossil found: ${reveal.label}.`, "good");
+        playMiniGameSfx("progress", { cooldownMs: 80 });
+      } else {
+        summaryEl.textContent = `${reveal.label} brushed off for +${Number(reveal.points || 0)} dig points.`;
+        setNotice(`Bone find: ${reveal.label}. Keep digging.`, "");
+        playMiniGameSfx("tap", { cooldownMs: 80 });
+      }
+    }
+
+    if (payload?.completed === true) {
+      if (!handledReveal) {
+        summaryEl.textContent = "Dig complete. Your finds are locked in and results are on the way.";
+      }
+      if (!forceSummaryText) {
+        setNotice("Dino Dig complete. Waiting for results...", "good");
+      } else if (!handledReveal) {
+        setNotice("Dino Dig live. Tap sites quickly before your digs run out.", "");
+      }
+    } else if (forceSummaryText && !handledReveal) {
+      summaryEl.textContent = "Tap any dig site. Fossils and coin caches are great, but a rare dinosaur blook is the jackpot.";
+      setNotice("Dino Dig live. Tap sites quickly before your digs run out.", "");
+    }
+  }
+}
+
+function miniShadowMatchVisibleIndexes(payload = {}) {
+  const cards = Array.isArray(payload?.cards) ? payload.cards : [];
+  const now = Date.now();
+  const previewExpiresAt = Math.max(0, Number(payload?.previewExpiresAt || 0));
+  const visible = new Set();
+  const unmatchedVisible = [];
+
+  for (const card of cards) {
+    if (card?.matched === true) {
+      visible.add(Number(card.index));
+      continue;
+    }
+    if (card?.revealed === true) {
+      unmatchedVisible.push(Number(card.index));
+    }
+  }
+
+  if (previewExpiresAt > now || unmatchedVisible.length <= 1) {
+    unmatchedVisible.forEach((index) => visible.add(index));
+  }
+
+  return visible;
+}
+
+function scheduleMiniShadowMatchPreview(payload = {}) {
+  stopMiniShadowMatchPreviewTimer();
+  const previewExpiresAt = Math.max(0, Number(payload?.previewExpiresAt || 0));
+  const waitMs = previewExpiresAt - Date.now();
+  if (!miniShadowMatchState || waitMs <= 0) {
+    return;
+  }
+  miniShadowMatchPreviewTimer = setTimeout(() => {
+    if (!miniShadowMatchState) {
+      return;
+    }
+    applyMiniShadowMatchState(miniShadowMatchState, { forceSummaryText: false });
+  }, waitMs + 25);
+}
+
+function renderMiniShadowMatchGrid(payload = {}) {
+  const grid = document.getElementById("miniShadowGrid");
+  if (!grid) {
+    return;
+  }
+
+  const cards = Array.isArray(payload?.cards) ? payload.cards : [];
+  const visibleIndexes = miniShadowMatchVisibleIndexes(payload);
+  const previewLocked = Math.max(0, Number(payload?.previewExpiresAt || 0)) > Date.now() && cards.filter((card) => card?.revealed === true && card?.matched !== true).length >= 2;
+  const completed = payload?.completed === true;
+
+  grid.innerHTML = cards.map((card, index) => {
+    const visible = visibleIndexes.has(Number(card?.index ?? index));
+    const matched = card?.matched === true;
+    const revealedBlook = card?.blook || null;
+    const disabled = completed || matched || (visible && !matched) || (previewLocked && !visible);
+    const label = visible && revealedBlook ? String(revealedBlook.name || "Revealed Blook") : `Hidden shadow card ${index + 1}`;
+    const content = visible && revealedBlook
+      ? `
+        <div style="display:flex;justify-content:center;align-items:center;min-height:72px;">${renderBlookWithEffect(revealedBlook, "")}</div>
+        <strong style="display:block;font-size:0.94rem;line-height:1.15;color:#e2e8f0;">${escapeHtml(revealedBlook.name || "Blook")}</strong>
+        <span class="help" style="margin:0;font-size:0.76rem;color:rgba(226,232,240,0.88);">${escapeHtml(revealedBlook.packName || revealedBlook.rarity || "Pack Reward")}</span>`
+      : `
+        <div style="display:flex;justify-content:center;align-items:center;min-height:72px;font-size:2rem;font-weight:900;color:rgba(226,232,240,0.94);letter-spacing:0.08em;">?</div>
+        <strong style="display:block;font-size:0.94rem;line-height:1.15;color:#f8fafc;">Shadow</strong>
+        <span class="help" style="margin:0;font-size:0.76rem;color:rgba(226,232,240,0.82);">Tap to reveal</span>`;
+    const cardBg = visible
+      ? "linear-gradient(180deg, rgba(30,41,59,0.98) 0%, rgba(15,23,42,0.98) 100%)"
+      : "linear-gradient(180deg, rgba(51,65,85,0.96) 0%, rgba(15,23,42,0.98) 100%)";
+    const borderColor = matched
+      ? "rgba(110, 231, 183, 0.8)"
+      : visible
+        ? "rgba(125, 211, 252, 0.72)"
+        : "rgba(148, 163, 184, 0.34)";
+    return `
+      <button
+        type="button"
+        class="answer"
+        data-mini-action="shadow_flip"
+        data-mini-value="${Number(card?.index ?? index)}"
+        aria-label="${escapeHtml(label)}"
+        ${disabled ? "disabled" : ""}
+        style="min-height:150px;padding:12px;display:flex;flex-direction:column;justify-content:space-between;align-items:stretch;text-align:center;background:${cardBg};border-color:${borderColor};box-shadow:${matched ? "0 16px 28px rgba(16,185,129,0.16)" : "0 14px 26px rgba(15,23,42,0.16)"};opacity:${matched ? 0.95 : 1};">
+        ${content}
+      </button>`;
+  }).join("");
+}
+
+function applyMiniShadowMatchState(payload = {}, options = {}) {
+  miniShadowMatchState = payload;
+  scheduleMiniShadowMatchPreview(payload);
+  renderMiniShadowMatchGrid(payload);
+
+  const scoreEl = document.getElementById("miniShadowScore");
+  const statsEl = document.getElementById("miniShadowStats");
+  const rewardEl = document.getElementById("miniShadowReward");
+  const summaryEl = document.getElementById("miniShadowLast");
+  const matchedPairs = Math.max(0, Number(payload?.matchedPairs || 0));
+  const totalPairs = Math.max(1, Number(payload?.totalPairs || 1));
+  const attempts = Math.max(0, Number(payload?.attempts || 0));
+  const misses = Math.max(0, Number(payload?.misses || 0));
+  const score = Math.max(0, Number(payload?.score || 0));
+  const streak = Math.max(0, Number(payload?.streak || 0));
+  const bestStreak = Math.max(0, Number(payload?.bestStreak || 0));
+  const rewardPackName = String(payload?.rewardPackName || "");
+  const nextRewardPackName = String(payload?.nextRewardPackName || "");
+  const nextRewardThreshold = Math.max(0, Number(payload?.nextRewardThreshold || 0));
+
+  if (scoreEl) {
+    scoreEl.textContent = `Pairs ${matchedPairs}/${totalPairs} | Score ${score} | Streak ${streak}`;
+  }
+  if (statsEl) {
+    statsEl.textContent = `Attempts ${attempts} | Misses ${misses} | Best streak ${bestStreak}`;
+  }
+  if (rewardEl) {
+    rewardEl.textContent = rewardPackName
+      ? `Unlocked reward pack: ${rewardPackName}${nextRewardPackName ? ` | Next at streak ${nextRewardThreshold}: ${nextRewardPackName}` : ""}`
+      : nextRewardPackName
+        ? `Next reward pack: streak ${nextRewardThreshold} unlocks ${nextRewardPackName}`
+        : "No more reward packs to unlock.";
+  }
+
+  if (summaryEl) {
+    const lastMove = payload?.lastMove && typeof payload.lastMove === "object" ? payload.lastMove : null;
+    const moveSeq = Math.max(0, Number(lastMove?.seq || 0));
+    const forceSummaryText = options.forceSummaryText === true;
+    let handledMove = false;
+
+    if (lastMove && (forceSummaryText || moveSeq > miniShadowMatchLastMoveSeq)) {
+      miniShadowMatchLastMoveSeq = moveSeq;
+      handledMove = true;
+      if (String(lastMove.type || "") === "match") {
+        const unlockText = lastMove.rewardPackName ? ` Unlocked ${lastMove.rewardPackName}.` : "";
+        summaryEl.textContent = `${lastMove.label || "Pair"} matched for +${Math.max(0, Number(lastMove.points || 0))}. Streak ${Math.max(0, Number(lastMove.streak || 0))}.${unlockText}`;
+        setNotice(
+          lastMove.rewardPackName
+            ? `Match streak ${Math.max(0, Number(lastMove.streak || 0))}. ${lastMove.rewardPackName} unlocked.`
+            : `Match made. Streak ${Math.max(0, Number(lastMove.streak || 0))}.`,
+          "good"
+        );
+        playMiniGameSfx(lastMove.rewardPackName ? "unlock" : "progress", { cooldownMs: 90 });
+      } else if (String(lastMove.type || "") === "miss") {
+        summaryEl.textContent = "No match. Those shadows flip back, and your streak resets.";
+        setNotice(`Missed pair. ${Math.max(0, Number(lastMove.misses || 0))} misses so far.`, "bad");
+        playMiniGameSfx("miss", { cooldownMs: 90 });
+      }
+    }
+
+    if (payload?.completed === true) {
+      if (!handledMove) {
+        summaryEl.textContent = `Shadow Match complete. You found ${matchedPairs}/${totalPairs} pairs with a best streak of ${bestStreak}.`;
+      }
+      if (!forceSummaryText) {
+        setNotice("Shadow Match complete. Waiting for results...", "good");
+      }
+    } else if (forceSummaryText && !handledMove) {
+      summaryEl.textContent = "Flip two cards at a time, remember the blooks you see, and stack streaks to unlock better reward packs.";
+      setNotice("Shadow Match live. Match fast and protect your streak.", "");
+    }
+  }
+}
+
+function clampMiniHallwayLane(value) {
+  return Math.max(0, Math.min(2, Math.round(Number(value ?? 1))));
+}
+
+function miniHallwayDashLaneLabel(value) {
+  return MINI_HALLWAY_LANE_LABELS[clampMiniHallwayLane(value)] || "Center";
+}
+
+function miniHallwayDashItemDisplay(kind) {
+  const key = String(kind || "cone").toLowerCase();
+  if (key === "coin") {
+    return {
+      label: "COIN",
+      bg: "linear-gradient(180deg, rgba(255, 224, 130, 0.95) 0%, rgba(245, 158, 11, 0.98) 100%)",
+      border: "rgba(146, 64, 14, 0.55)",
+      color: "#3b1f06"
+    };
+  }
+  if (key === "backpack") {
+    return {
+      label: "BAG",
+      bg: "linear-gradient(180deg, rgba(248, 180, 120, 0.96) 0%, rgba(180, 83, 9, 0.98) 100%)",
+      border: "rgba(120, 53, 15, 0.5)",
+      color: "#fff6ea"
+    };
+  }
+  if (key === "puddle") {
+    return {
+      label: "WET",
+      bg: "linear-gradient(180deg, rgba(103, 232, 249, 0.92) 0%, rgba(2, 132, 199, 0.98) 100%)",
+      border: "rgba(8, 47, 73, 0.45)",
+      color: "#effbff"
+    };
+  }
+  return {
+    label: "CONE",
+    bg: "linear-gradient(180deg, rgba(251, 191, 36, 0.95) 0%, rgba(234, 88, 12, 0.98) 100%)",
+    border: "rgba(124, 45, 18, 0.48)",
+    color: "#fff7ed"
+  };
+}
+
+function renderMiniHallwayDashScene(payload = {}) {
+  const stage = document.getElementById("miniHallwayStage");
+  if (!stage) {
+    return;
+  }
+
+  const lanePositions = [18, 50, 82];
+  const lane = clampMiniHallwayLane(payload?.lane);
+  const items = Array.isArray(payload?.items) ? payload.items : [];
+  const jumpActive = payload?.jumpActive === true;
+  const runnerTop = jumpActive ? 68 : 82;
+  const runnerName = escapeHtml(((playerName || "You").trim().slice(0, 8) || "YOU").toUpperCase());
+
+  stage.innerHTML = `
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg, rgba(245,248,253,0.98) 0%, rgba(226,234,246,0.98) 18%, rgba(194,207,226,0.98) 100%);"></div>
+    <div style="position:absolute;left:7%;right:7%;top:8%;bottom:8%;border-radius:26px;overflow:hidden;border:1px solid rgba(108, 126, 156, 0.42);box-shadow:inset 0 0 0 1px rgba(255,255,255,0.45), 0 16px 32px rgba(31,41,55,0.18);background:linear-gradient(180deg, rgba(247,250,255,0.92) 0%, rgba(213,223,240,0.95) 100%);">
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(180deg, rgba(255,255,255,0.18) 0 9%, rgba(160,174,192,0.05) 9% 18%);"></div>
+      <div style="position:absolute;left:0;right:0;top:0;height:16%;background:linear-gradient(180deg, rgba(199,210,223,0.9) 0%, rgba(236,242,250,0.75) 100%);border-bottom:1px solid rgba(133,152,182,0.3);"></div>
+      <div style="position:absolute;left:0;right:0;bottom:0;height:20%;background:linear-gradient(180deg, rgba(174,185,204,0.15) 0%, rgba(137,148,168,0.38) 100%);"></div>
+      ${lanePositions
+        .map(
+          (left, index) => `
+            <div style="position:absolute;left:${left}%;top:0;bottom:0;transform:translateX(-50%);width:2px;background:linear-gradient(180deg, rgba(59,130,246,0.08) 0%, rgba(59,130,246,0.18) 38%, rgba(255,255,255,0.06) 100%);"></div>
+            <div style="position:absolute;left:${left}%;top:5.5%;transform:translateX(-50%);font-size:0.72rem;font-weight:800;letter-spacing:0.14em;color:rgba(71,85,105,0.86);">${escapeHtml(miniHallwayDashLaneLabel(index).toUpperCase())}</div>`
+        )
+        .join("")}
+      ${items
+        .map((item) => {
+          const tone = miniHallwayDashItemDisplay(item?.kind);
+          const top = Math.max(-6, Math.min(94, Number(item?.y || 0)));
+          const left = lanePositions[clampMiniHallwayLane(item?.lane)];
+          const coinLine = String(item?.kind || "") === "coin" ? `<div style="font-size:0.68rem;font-weight:700;opacity:0.88;">+${Math.max(0, Number(item?.coinValue || 0))}</div>` : "";
+          return `
+            <div style="position:absolute;left:${left}%;top:${top}%;transform:translate(-50%, -50%);min-width:78px;padding:8px 10px;border-radius:18px;background:${tone.bg};border:1px solid ${tone.border};box-shadow:0 10px 22px rgba(15,23,42,0.18);text-align:center;color:${tone.color};font-weight:900;letter-spacing:0.08em;">
+              <div style="font-size:0.86rem;line-height:1;">${escapeHtml(tone.label)}</div>
+              ${coinLine}
+            </div>`;
+        })
+        .join("")}
+      <div style="position:absolute;left:${lanePositions[lane]}%;top:${runnerTop}%;transform:translate(-50%, -50%);display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <div style="min-width:86px;padding:10px 14px;border-radius:20px;background:linear-gradient(180deg, rgba(59,130,246,0.94) 0%, rgba(30,64,175,0.98) 100%);border:1px solid rgba(191,219,254,0.58);box-shadow:0 12px 26px rgba(30,64,175,0.28);text-align:center;color:#eff6ff;font-weight:900;letter-spacing:0.08em;">${runnerName}</div>
+        <div style="padding:4px 10px;border-radius:999px;background:rgba(15,23,42,0.68);border:1px solid rgba(148,163,184,0.34);font-size:0.7rem;font-weight:800;letter-spacing:0.12em;color:#f8fafc;">${escapeHtml((jumpActive ? "JUMP" : miniHallwayDashLaneLabel(lane)).toUpperCase())}</div>
+      </div>
+    </div>`;
+}
+
+function applyMiniHallwayDashState(payload = {}, options = {}) {
+  miniHallwayDashState = payload;
+  renderMiniHallwayDashScene(payload);
+
+  const scoreEl = document.getElementById("miniHallwayScore");
+  const statsEl = document.getElementById("miniHallwayStats");
+  const summaryEl = document.getElementById("miniHallwayLast");
+  const distance = Math.max(0, Number(payload?.distance || 0));
+  const coinsFound = Math.max(0, Number(payload?.coinsFound || 0));
+  const dodges = Math.max(0, Number(payload?.dodges || 0));
+  const hits = Math.max(0, Number(payload?.hits || 0));
+  const maxHits = Math.max(1, Number(payload?.maxHits || 3));
+  const score = Math.max(0, Number(payload?.score || 0));
+  const lane = clampMiniHallwayLane(payload?.lane);
+
+  if (scoreEl) {
+    scoreEl.textContent = `Distance ${distance} m | Coins ${coinsFound} | Score ${score}`;
+  }
+  if (statsEl) {
+    statsEl.textContent = `Dodges ${dodges} | Hits ${hits}/${maxHits} | Lane ${miniHallwayDashLaneLabel(lane)}`;
+  }
+
+  const hallwayButtons = chests.querySelectorAll(
+    "button[data-mini-action='hallway_left'], button[data-mini-action='hallway_right'], button[data-mini-action='hallway_jump']"
+  );
+  hallwayButtons.forEach((button) => {
+    button.disabled = payload?.completed === true;
+  });
+
+  if (summaryEl) {
+    const lastEvent = payload?.lastEvent && typeof payload.lastEvent === "object" ? payload.lastEvent : null;
+    const eventSeq = Math.max(0, Number(lastEvent?.seq || 0));
+    const forceSummaryText = options.forceSummaryText === true;
+    let handledEvent = false;
+
+    if (lastEvent && (forceSummaryText || eventSeq > miniHallwayDashLastEventSeq)) {
+      miniHallwayDashLastEventSeq = eventSeq;
+      handledEvent = true;
+      const label = String(lastEvent.label || miniHallwayDashItemDisplay(lastEvent.kind).label || "Hallway item");
+      if (String(lastEvent.type || "") === "coin") {
+        summaryEl.textContent = `${label} collected for +${Math.max(0, Number(lastEvent.coins || 0))} coins.`;
+        setNotice(`Hallway coins found: +${Math.max(0, Number(lastEvent.coins || 0))}.`, "good");
+        playMiniGameSfx("reward");
+      } else if (String(lastEvent.type || "") === "hit") {
+        summaryEl.textContent = `${label} clipped your run. Shift sooner or jump over it next time.`;
+        setNotice(`Hit by ${label.toLowerCase()}. ${Math.max(0, maxHits - hits)} hits left.`, "bad");
+        playMiniGameSfx("miss");
+      } else {
+        summaryEl.textContent = `Clean move. ${label} cleared safely.`;
+        setNotice(`${label} cleared. Keep running.`, "good");
+        playMiniGameSfx("progress", { cooldownMs: 90 });
+      }
+    }
+
+    if (payload?.completed === true) {
+      if (!handledEvent) {
+        summaryEl.textContent = payload?.failed === true
+          ? "Too many hits. Your hallway run is locked in."
+          : "Hallway run complete. Results are on the way.";
+      }
+      if (!forceSummaryText) {
+        setNotice(
+          payload?.failed === true ? "Hallway Dash complete. You ran out of hits." : "Hallway Dash complete. Waiting for results...",
+          payload?.failed === true ? "bad" : "good"
+        );
+      }
+    } else if (forceSummaryText && !handledEvent) {
+      summaryEl.textContent = "Stay in a safe lane, jump the clutter, and scoop up the coin spills.";
+      setNotice("Hallway Dash live. Dodge clutter and collect coins.", "");
+    }
+  }
+}
+
+function clampMiniGoalieRushLane(value) {
+  return Math.max(0, Math.min(2, Math.round(Number(value ?? 1))));
+}
+
+function miniGoalieRushLaneLabel(value) {
+  return ["Left", "Center", "Right"][clampMiniGoalieRushLane(value)] || "Center";
+}
+
+function updateMiniGoalieRushLaneButtons(lane) {
+  const safeLane = clampMiniGoalieRushLane(lane);
+  chests.querySelectorAll("button[data-mini-action='goalie_lane']").forEach((button) => {
+    const buttonLane = clampMiniGoalieRushLane(button.getAttribute("data-mini-value"));
+    button.classList.toggle("selected", buttonLane === safeLane);
+  });
+}
+
+function renderMiniGoalieRushScene(payload = {}) {
+  const stage = document.getElementById("miniGoalieStage");
+  if (!stage) {
+    return;
+  }
+
+  const lanePositions = [18, 50, 82];
+  const lane = clampMiniGoalieRushLane(payload?.lane);
+  const activeShot = payload?.activeShot && typeof payload.activeShot === "object" ? payload.activeShot : null;
+  const progress = Math.max(0, Math.min(1, Number(activeShot?.progress || 0)));
+  const shotTop = activeShot ? 18 + progress * 60 : 12;
+  const shotScale = activeShot ? (activeShot?.boss ? 1.18 : 1) * (0.84 + progress * 0.32) : 1;
+  const shotLeft = lanePositions[clampMiniGoalieRushLane(activeShot?.lane)];
+  const goalieName = escapeHtml(((playerName || "You").trim().slice(0, 9) || "YOU").toUpperCase());
+
+  stage.innerHTML = `
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg, rgba(186,230,253,0.95) 0%, rgba(224,242,254,0.95) 24%, rgba(255,255,255,0.96) 58%, rgba(220,252,231,0.98) 100%);"></div>
+    <div style="position:absolute;left:6%;right:6%;top:9%;bottom:8%;border-radius:28px;overflow:hidden;border:1px solid rgba(125,211,252,0.42);box-shadow:inset 0 0 0 1px rgba(255,255,255,0.52),0 16px 34px rgba(15,23,42,0.16);background:linear-gradient(180deg, rgba(240,249,255,0.96) 0%, rgba(224,242,254,0.95) 36%, rgba(220,252,231,0.96) 100%);">
+      <div style="position:absolute;left:10%;right:10%;top:8%;height:12px;border-radius:999px;background:rgba(15,23,42,0.92);"></div>
+      <div style="position:absolute;left:11%;right:11%;top:8%;height:56%;border:4px solid rgba(15,23,42,0.86);border-top:none;border-bottom:none;border-radius:0 0 22px 22px;"></div>
+      <div style="position:absolute;left:12%;right:12%;top:10%;bottom:24%;background:repeating-linear-gradient(90deg, rgba(148,163,184,0.18) 0 5%, rgba(255,255,255,0.1) 5% 10%),repeating-linear-gradient(180deg, rgba(148,163,184,0.14) 0 8%, rgba(255,255,255,0.1) 8% 16%);border-radius:0 0 18px 18px;"></div>
+      <div style="position:absolute;left:0;right:0;top:0;bottom:0;background:linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 30%);"></div>
+      <div style="position:absolute;left:0;right:0;bottom:0;height:24%;background:linear-gradient(180deg, rgba(34,197,94,0.1) 0%, rgba(22,163,74,0.26) 100%);"></div>
+      ${lanePositions
+        .map(
+          (left, index) => `
+            <div style="position:absolute;left:${left}%;top:10%;bottom:16%;transform:translateX(-50%);width:2px;background:linear-gradient(180deg, rgba(14,165,233,0.06) 0%, rgba(14,165,233,0.22) 55%, rgba(255,255,255,0.08) 100%);"></div>
+            <div style="position:absolute;left:${left}%;top:72%;transform:translateX(-50%);padding:4px 10px;border-radius:999px;background:${index === lane ? "rgba(14,116,144,0.88)" : "rgba(255,255,255,0.64)"};border:1px solid ${index === lane ? "rgba(186,230,253,0.66)" : "rgba(148,163,184,0.22)"};font-size:0.7rem;font-weight:800;letter-spacing:0.12em;color:${index === lane ? "#f0fdfa" : "#334155"};">${escapeHtml(miniGoalieRushLaneLabel(index).toUpperCase())}</div>`
+        )
+        .join("")}
+      ${activeShot ? `
+        <div style="position:absolute;left:${shotLeft}%;top:${shotTop}%;transform:translate(-50%, -50%) scale(${shotScale});display:flex;flex-direction:column;align-items:center;gap:4px;z-index:2;">
+          ${activeShot.boss ? `<div style="padding:4px 8px;border-radius:999px;background:linear-gradient(90deg, rgba(251,191,36,0.96) 0%, rgba(249,115,22,0.96) 100%);border:1px solid rgba(146,64,14,0.34);font-size:0.66rem;font-weight:900;letter-spacing:0.12em;color:#431407;">BOSS +${Math.max(0, Number(activeShot.coins || 0))}</div>` : ""}
+          <div style="width:54px;height:54px;border-radius:999px;background:radial-gradient(circle at 34% 34%, rgba(255,255,255,0.96) 0 22%, rgba(226,232,240,0.98) 22% 42%, rgba(15,23,42,0.96) 42% 48%, rgba(255,255,255,0.94) 48% 68%, rgba(15,23,42,0.96) 68% 76%, rgba(226,232,240,0.98) 76% 100%);box-shadow:0 14px 24px rgba(15,23,42,0.2);"></div>
+        </div>` : ""}
+      <div style="position:absolute;left:${lanePositions[lane]}%;top:84%;transform:translate(-50%, -50%);display:flex;flex-direction:column;align-items:center;gap:8px;z-index:3;">
+        <div style="width:74px;height:74px;border-radius:26px;background:linear-gradient(180deg, rgba(37,99,235,0.96) 0%, rgba(30,64,175,0.98) 100%);border:1px solid rgba(191,219,254,0.58);box-shadow:0 14px 28px rgba(30,64,175,0.26);display:flex;align-items:center;justify-content:center;color:#eff6ff;font-size:1.1rem;font-weight:900;letter-spacing:0.06em;">GK</div>
+        <div style="padding:5px 12px;border-radius:999px;background:rgba(15,23,42,0.74);border:1px solid rgba(148,163,184,0.34);font-size:0.72rem;font-weight:800;letter-spacing:0.12em;color:#f8fafc;">${goalieName}</div>
+      </div>
+      <div style="position:absolute;left:10%;right:10%;bottom:15%;height:4px;border-radius:999px;background:rgba(15,23,42,0.7);"></div>
+    </div>`;
+}
+
+function applyMiniGoalieRushState(payload = {}, options = {}) {
+  miniGoalieRushState = payload;
+  renderMiniGoalieRushScene(payload);
+  updateMiniGoalieRushLaneButtons(payload?.lane);
+
+  const scoreEl = document.getElementById("miniGoalieScore");
+  const statsEl = document.getElementById("miniGoalieStats");
+  const summaryEl = document.getElementById("miniGoalieLast");
+  const shotsFaced = Math.max(0, Number(payload?.shotsFaced || 0));
+  const saves = Math.max(0, Number(payload?.saves || 0));
+  const goalsAllowed = Math.max(0, Number(payload?.goalsAllowed || 0));
+  const bossSaves = Math.max(0, Number(payload?.bossSaves || 0));
+  const bossCoinsEarned = Math.max(0, Number(payload?.bossCoinsEarned || 0));
+  const bestStreak = Math.max(0, Number(payload?.bestStreak || 0));
+  const streak = Math.max(0, Number(payload?.streak || 0));
+  const nextBossRound = Math.max(1, Number(payload?.nextBossRound || 5));
+  const currentRound = Math.max(1, Number(payload?.activeShot?.round || payload?.currentRound || shotsFaced + 1));
+
+  if (scoreEl) {
+    scoreEl.textContent = `Saves ${saves} | Boss Saves ${bossSaves} | Coins ${bossCoinsEarned}`;
+  }
+  if (statsEl) {
+    statsEl.textContent = `Shots ${shotsFaced} | Goals Allowed ${goalsAllowed} | Streak ${streak} | Best ${bestStreak} | Round ${currentRound}${currentRound < nextBossRound ? ` | Boss at ${nextBossRound}` : ""}`;
+  }
+
+  const laneButtons = chests.querySelectorAll("button[data-mini-action='goalie_lane']");
+  laneButtons.forEach((button) => {
+    button.disabled = payload?.completed === true;
+  });
+
+  if (!summaryEl) {
+    return;
+  }
+
+  const lastEvent = payload?.lastEvent && typeof payload.lastEvent === "object" ? payload.lastEvent : null;
+  const eventSeq = Math.max(0, Number(lastEvent?.seq || 0));
+  const forceSummaryText = options.forceSummaryText === true;
+  let handledEvent = false;
+
+  if (lastEvent && (forceSummaryText || eventSeq > miniGoalieRushLastEventSeq)) {
+    miniGoalieRushLastEventSeq = eventSeq;
+    handledEvent = true;
+    const laneLabel = miniGoalieRushLaneLabel(lastEvent?.lane);
+    if (String(lastEvent.type || "") === "boss_save") {
+      summaryEl.textContent = `Boss shot saved in the ${laneLabel.toLowerCase()} lane for +${Math.max(0, Number(lastEvent.coinsAwarded || 0))} coins.`;
+      setNotice(`Boss save! +${Math.max(0, Number(lastEvent.coinsAwarded || 0))} bonus coins banked.`, "good");
+      playMiniGameSfx("unlock");
+    } else if (String(lastEvent.type || "") === "save") {
+      summaryEl.textContent = `Clean save in the ${laneLabel.toLowerCase()} lane. Recover fast for the next shot.`;
+      setNotice(`Save made in the ${laneLabel.toLowerCase()} lane.`, "good");
+      playMiniGameSfx("progress", { cooldownMs: 80 });
+    } else if (String(lastEvent.type || "") === "boss_goal") {
+      summaryEl.textContent = `Boss shot slipped past in the ${laneLabel.toLowerCase()} lane. The next one will be even faster.`;
+      setNotice("Boss shot scored. Reset and get ready.", "bad");
+      playMiniGameSfx("miss");
+    } else {
+      summaryEl.textContent = `Shot got past in the ${laneLabel.toLowerCase()} lane. Shift quicker for the next save.`;
+      setNotice(`Goal allowed in the ${laneLabel.toLowerCase()} lane.`, "bad");
+      playMiniGameSfx("miss");
+    }
+  }
+
+  if (payload?.completed === true) {
+    if (!handledEvent) {
+      summaryEl.textContent = `Goalie Rush complete. You blocked ${saves} shots and banked ${bossCoinsEarned} coins.`;
+    }
+    if (!forceSummaryText) {
+      setNotice("Goalie Rush complete. Waiting for results...", "good");
+    }
+  } else if (forceSummaryText && !handledEvent) {
+    summaryEl.textContent = "Slide left and right to guard the goal. Boss shots hit every fifth round and award extra coins when you block them.";
+    setNotice("Goalie Rush live. Get in front of each shot before it reaches the goal line.", "");
+  }
+}
+
+function clampMiniClassroomCleanupLane(value) {
+  return Math.max(0, Math.min(2, Math.round(Number(value ?? 1))));
+}
+
+function miniClassroomCleanupLaneLabel(value) {
+  return ["Window Row", "Center Row", "Door Row"][clampMiniClassroomCleanupLane(value)] || "Center Row";
+}
+
+function miniClassroomCleanupItemDisplay(kind) {
+  const key = String(kind || "book").toLowerCase();
+  if (key === "pencil") {
+    return {
+      label: "PENCIL",
+      bg: "linear-gradient(180deg, rgba(253, 230, 138, 0.96) 0%, rgba(245, 158, 11, 0.98) 100%)",
+      border: "rgba(180, 83, 9, 0.5)",
+      color: "#4a2406"
+    };
+  }
+  if (key === "trash") {
+    return {
+      label: "TRASH",
+      bg: "linear-gradient(180deg, rgba(203, 213, 225, 0.95) 0%, rgba(100, 116, 139, 0.98) 100%)",
+      border: "rgba(51, 65, 85, 0.45)",
+      color: "#f8fafc"
+    };
+  }
+  return {
+    label: "BOOK",
+    bg: "linear-gradient(180deg, rgba(147, 197, 253, 0.95) 0%, rgba(37, 99, 235, 0.98) 100%)",
+    border: "rgba(30, 64, 175, 0.45)",
+    color: "#eff6ff"
+  };
+}
+
+function renderMiniClassroomCleanupScene(payload = {}) {
+  const stage = document.getElementById("miniCleanupStage");
+  if (!stage) {
+    return;
+  }
+
+  const lanePositions = [18, 50, 82];
+  const lane = clampMiniClassroomCleanupLane(payload?.lane);
+  const items = Array.isArray(payload?.items) ? payload.items : [];
+  const runnerName = escapeHtml(((playerName || "You").trim().slice(0, 8) || "YOU").toUpperCase());
+
+  stage.innerHTML = `
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg, rgba(248,250,252,0.98) 0%, rgba(226,232,240,0.98) 24%, rgba(203,213,225,0.98) 100%);"></div>
+    <div style="position:absolute;left:5%;right:5%;top:7%;bottom:8%;border-radius:28px;overflow:hidden;border:1px solid rgba(148,163,184,0.34);box-shadow:inset 0 0 0 1px rgba(255,255,255,0.42),0 18px 32px rgba(15,23,42,0.16);background:linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(226,232,240,0.94) 100%);">
+      <div style="position:absolute;left:0;right:0;top:0;height:17%;background:linear-gradient(180deg, rgba(191,219,254,0.72) 0%, rgba(239,246,255,0.38) 100%);border-bottom:1px solid rgba(148,163,184,0.3);"></div>
+      <div style="position:absolute;left:0;right:0;bottom:0;height:24%;background:linear-gradient(180deg, rgba(148,163,184,0.08) 0%, rgba(148,163,184,0.28) 100%);"></div>
+      <div style="position:absolute;left:9%;right:9%;bottom:14%;height:16px;border-radius:999px;background:rgba(30,41,59,0.12);"></div>
+      ${lanePositions
+        .map(
+          (left, index) => `
+            <div style="position:absolute;left:${left}%;top:0;bottom:0;transform:translateX(-50%);width:2px;background:linear-gradient(180deg, rgba(148,163,184,0.1) 0%, rgba(148,163,184,0.24) 38%, rgba(255,255,255,0.06) 100%);"></div>
+            <div style="position:absolute;left:${left}%;top:6%;transform:translateX(-50%);padding:4px 10px;border-radius:999px;background:rgba(255,255,255,0.6);border:1px solid rgba(148,163,184,0.26);font-size:0.68rem;font-weight:800;letter-spacing:0.12em;color:#475569;">${escapeHtml(miniClassroomCleanupLaneLabel(index).toUpperCase())}</div>`
+        )
+        .join("")}
+      ${items
+        .map((item) => {
+          const tone = miniClassroomCleanupItemDisplay(item?.kind);
+          const top = Math.max(-6, Math.min(94, Number(item?.y || 0)));
+          const left = lanePositions[clampMiniClassroomCleanupLane(item?.lane)];
+          return `
+            <div style="position:absolute;left:${left}%;top:${top}%;transform:translate(-50%, -50%);min-width:88px;padding:9px 10px;border-radius:18px;background:${tone.bg};border:1px solid ${tone.border};box-shadow:0 10px 20px rgba(15,23,42,0.16);text-align:center;color:${tone.color};font-weight:900;letter-spacing:0.08em;">
+              <div style="font-size:0.84rem;line-height:1;">${escapeHtml(tone.label)}</div>
+            </div>`;
+        })
+        .join("")}
+      <div style="position:absolute;left:${lanePositions[lane]}%;top:84%;transform:translate(-50%, -50%);display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <div style="min-width:98px;padding:10px 14px;border-radius:22px;background:linear-gradient(180deg, rgba(15,23,42,0.92) 0%, rgba(51,65,85,0.98) 100%);border:1px solid rgba(203,213,225,0.44);box-shadow:0 12px 24px rgba(15,23,42,0.24);text-align:center;color:#f8fafc;font-weight:900;letter-spacing:0.08em;">${runnerName}</div>
+        <div style="padding:4px 10px;border-radius:999px;background:rgba(255,255,255,0.72);border:1px solid rgba(148,163,184,0.26);font-size:0.7rem;font-weight:800;letter-spacing:0.12em;color:#334155;">${escapeHtml(miniClassroomCleanupLaneLabel(lane).toUpperCase())}</div>
+      </div>
+      <div style="position:absolute;left:8%;right:8%;bottom:4.5%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
+        ${[
+          { key: "book", label: "BOOKSHELF" },
+          { key: "pencil", label: "PENCIL CUP" },
+          { key: "trash", label: "TRASH CAN" }
+        ]
+          .map((bin) => {
+            const tone = miniClassroomCleanupItemDisplay(bin.key);
+            return `<div style="padding:8px 10px;border-radius:16px;background:${tone.bg};border:1px solid ${tone.border};text-align:center;color:${tone.color};font-size:0.74rem;font-weight:900;letter-spacing:0.08em;">${escapeHtml(bin.label)}</div>`;
+          })
+          .join("")}
+      </div>
+    </div>`;
+}
+
+function applyMiniClassroomCleanupState(payload = {}, options = {}) {
+  miniClassroomCleanupState = payload;
+  renderMiniClassroomCleanupScene(payload);
+
+  const scoreEl = document.getElementById("miniCleanupScore");
+  const statsEl = document.getElementById("miniCleanupStats");
+  const summaryEl = document.getElementById("miniCleanupLast");
+  const score = Math.max(0, Number(payload?.score || 0));
+  const sortedCount = Math.max(0, Number(payload?.sortedCount || 0));
+  const booksSorted = Math.max(0, Number(payload?.booksSorted || 0));
+  const pencilsSorted = Math.max(0, Number(payload?.pencilsSorted || 0));
+  const trashSorted = Math.max(0, Number(payload?.trashSorted || 0));
+  const misses = Math.max(0, Number(payload?.misses || 0));
+  const wrongSorts = Math.max(0, Number(payload?.wrongSorts || 0));
+  const combo = Math.max(0, Number(payload?.combo || 0));
+  const bestCombo = Math.max(0, Number(payload?.bestCombo || 0));
+  const lane = clampMiniClassroomCleanupLane(payload?.lane);
+
+  if (scoreEl) {
+    scoreEl.textContent = `Sorted ${sortedCount} | Score ${score} | Combo ${combo}`;
+  }
+  if (statsEl) {
+    statsEl.textContent = `${booksSorted} books | ${pencilsSorted} pencils | ${trashSorted} trash | Misses ${misses} | Wrong bins ${wrongSorts} | Row ${miniClassroomCleanupLaneLabel(lane)}`;
+  }
+
+  const cleanupButtons = chests.querySelectorAll(
+    "button[data-mini-action='cleanup_left'], button[data-mini-action='cleanup_right'], button[data-mini-action='cleanup_book'], button[data-mini-action='cleanup_pencil'], button[data-mini-action='cleanup_trash']"
+  );
+  cleanupButtons.forEach((button) => {
+    button.disabled = payload?.completed === true;
+  });
+
+  if (summaryEl) {
+    const lastEvent = payload?.lastEvent && typeof payload.lastEvent === "object" ? payload.lastEvent : null;
+    const eventSeq = Math.max(0, Number(lastEvent?.seq || 0));
+    const forceSummaryText = options.forceSummaryText === true;
+    let handledEvent = false;
+
+    if (lastEvent && (forceSummaryText || eventSeq > miniClassroomCleanupLastEventSeq)) {
+      miniClassroomCleanupLastEventSeq = eventSeq;
+      handledEvent = true;
+      if (String(lastEvent.type || "") === "sorted") {
+        summaryEl.textContent = `${lastEvent.label} sorted into the ${lastEvent.binLabel} for +${Math.max(0, Number(lastEvent.points || 0))}.`;
+        setNotice(`Clean sort. Combo ${Math.max(0, Number(lastEvent.combo || 0))}.`, "good");
+        playMiniGameSfx(combo >= 3 ? "reward" : "progress", { cooldownMs: 80 });
+      } else if (String(lastEvent.type || "") === "wrong_sort") {
+        summaryEl.textContent = `${lastEvent.label} went into the wrong bin. Reset and refocus.`;
+        setNotice(`Wrong bin. ${Math.max(0, wrongSorts)} wrong sorts so far.`, "bad");
+        playMiniGameSfx("miss", { cooldownMs: 90 });
+      } else if (String(lastEvent.type || "") === "missed") {
+        summaryEl.textContent = `${lastEvent.label} hit the floor before you sorted it.`;
+        setNotice(`Missed item. ${Math.max(0, misses)} misses so far.`, "bad");
+        playMiniGameSfx("miss", { cooldownMs: 90 });
+      }
+    }
+
+    if (payload?.completed === true) {
+      if (!handledEvent) {
+        summaryEl.textContent = `Cleanup complete. You sorted ${sortedCount} items with a best combo of ${bestCombo}.`;
+      }
+      if (!forceSummaryText) {
+        setNotice("Classroom Cleanup complete. Waiting for results...", "good");
+      }
+    } else if (forceSummaryText && !handledEvent) {
+      summaryEl.textContent = "Move to the matching row, then sort books, pencils, and trash before they hit the floor.";
+      setNotice("Classroom Cleanup live. Sort fast and keep your combo going.", "");
+    }
+  }
+}
+
+function battleRoyaleActionLabel(action, payload = {}) {
+  if (action === "attack") return "Attack";
+  if (action === "guard") return "Guard";
+  if (action === "heal") return "Heal";
+  if (action === "special") return String(payload?.you?.powerName || "Special");
+  return "Move";
+}
+
+function battleRoyaleActionDescription(action, payload = {}) {
+  const you = payload?.you || {};
+  if (action === "attack") {
+    return `Deal about ${Math.max(0, Number(you.attackDamage || 0))} damage.`;
+  }
+  if (action === "guard") {
+    return `Add ${Math.max(0, Number(you.guardAmount || 0))} shield before hits land.`;
+  }
+  if (action === "heal") {
+    return `Recover about ${Math.max(0, Number(you.healAmount || 0))} HP.`;
+  }
+  if (action === "special") {
+    if (you.specialReady === true) {
+      return String(you.powerDescription || "Use your blook power.");
+    }
+    return `${String(you.powerName || "Special")} recharges in ${Math.max(0, Number(you.specialReadyIn || 0))} more turn${Math.max(0, Number(you.specialReadyIn || 0)) === 1 ? "" : "s"}.`;
+  }
+  return "";
+}
+
+function battleRoyaleHpPercent(current, max) {
+  const safeMax = Math.max(1, Number(max || 1));
+  return Math.max(0, Math.min(100, Math.round((Math.max(0, Number(current || 0)) / safeMax) * 100)));
+}
+
+function renderMiniBattleRoyaleStage(payload = {}) {
+  const stage = document.getElementById("miniBattleRoyaleStage");
+  if (!stage) {
+    return;
+  }
+
+  const you = payload?.you || {};
+  const opponent = payload?.opponent || {};
+  const selectedAction = String(payload?.selectedAction || "");
+  const completed = payload?.completed === true;
+  const battleEnded = completed || payload?.won === true || payload?.tie === true;
+  const actionButtons = [
+    { id: "attack", tone: "rgba(59,130,246,0.16)", border: "rgba(96,165,250,0.42)" },
+    { id: "guard", tone: "rgba(16,185,129,0.16)", border: "rgba(52,211,153,0.42)" },
+    { id: "heal", tone: "rgba(245,158,11,0.16)", border: "rgba(251,191,36,0.42)" },
+    { id: "special", tone: "rgba(168,85,247,0.18)", border: "rgba(196,181,253,0.44)" }
+  ];
+
+  const buildFighterCard = (label, fighter, accent, isOpponent = false) => {
+    const hp = Math.max(0, Number(fighter?.hp || 0));
+    const maxHp = Math.max(1, Number(fighter?.maxHp || 1));
+    const shield = Math.max(0, Number(fighter?.shield || 0));
+    return `
+      <article style="padding:14px;border-radius:24px;background:${accent};border:1px solid rgba(151,193,255,0.24);box-shadow:0 14px 30px rgba(15,23,42,0.16);">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <div>
+            <div class="help" style="margin:0;letter-spacing:0.12em;text-transform:uppercase;">${escapeHtml(label)}</div>
+            <strong style="display:block;font-size:1.08rem;line-height:1.2;margin-top:4px;">${escapeHtml(isOpponent ? fighter?.name || "Opponent" : playerName || "You")}</strong>
+            <div class="help" style="margin-top:4px;">${escapeHtml(fighter?.blook?.name || "Blook")} | ${escapeHtml(fighter?.blook?.rarity || "Rare")}</div>
+          </div>
+          <div style="min-width:84px;display:flex;justify-content:center;">${renderBlookWithEffect(fighter?.blook, isOpponent ? "" : selectedEffectId)}</div>
+        </div>
+        <div style="margin-top:12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.86rem;font-weight:700;color:#334155;">
+            <span>HP ${hp}/${maxHp}</span>
+            <span>Shield ${shield}</span>
+          </div>
+          <div style="margin-top:6px;height:12px;border-radius:999px;background:rgba(148,163,184,0.2);overflow:hidden;border:1px solid rgba(148,163,184,0.28);">
+            <span style="display:block;height:100%;width:${battleRoyaleHpPercent(hp, maxHp)}%;background:linear-gradient(90deg, rgba(34,197,94,0.95) 0%, rgba(16,185,129,0.95) 100%);"></span>
+          </div>
+        </div>
+        <div style="margin-top:10px;padding:10px 12px;border-radius:18px;background:rgba(255,255,255,0.58);border:1px solid rgba(148,163,184,0.22);">
+          <strong style="display:block;font-size:0.92rem;line-height:1.15;">${escapeHtml(isOpponent ? fighter?.powerName || "Special" : you.powerName || "Special")}</strong>
+          <span class="help" style="margin-top:4px;display:block;">${escapeHtml(isOpponent ? fighter?.powerDescription || "" : you.powerDescription || "")}</span>
+        </div>
+      </article>`;
+  };
+
+  stage.innerHTML = `
+    <div class="notice" id="miniBattleTurn">Turn ${Math.max(1, Number(payload?.turn || 1))}/${Math.max(1, Number(payload?.maxTurns || 1))}</div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px;">
+      ${buildFighterCard("Your Fighter", you, "linear-gradient(180deg, rgba(239,246,255,0.96) 0%, rgba(219,234,254,0.96) 100%)")}
+      ${buildFighterCard(opponent?.isBot ? "Bot Rival" : "Opponent", opponent, "linear-gradient(180deg, rgba(255,247,237,0.96) 0%, rgba(254,215,170,0.96) 100%)", true)}
+    </div>
+    <div class="answers" style="margin-top:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;">
+      ${actionButtons
+        .map((button) => {
+          const isSpecial = button.id === "special";
+          const specialReady = you.specialReady === true;
+          const disabled = completed || (selectedAction && !battleEnded) || (isSpecial && !specialReady);
+          const selected = selectedAction === button.id;
+          return `
+            <button
+              type="button"
+              class="answer"
+              data-mini-action="battle_${button.id}"
+              ${disabled ? "disabled" : ""}
+              style="min-height:98px;padding:12px;text-align:left;background:${button.tone};border-color:${selected ? "rgba(37,99,235,0.85)" : button.border};box-shadow:${selected ? "0 0 0 2px rgba(37,99,235,0.18)" : "none"};">
+              <strong style="display:block;font-size:1rem;line-height:1.15">${escapeHtml(battleRoyaleActionLabel(button.id, payload))}</strong>
+              <span class="help" style="margin-top:8px;display:block;line-height:1.2">${escapeHtml(battleRoyaleActionDescription(button.id, payload))}</span>
+            </button>`;
+        })
+        .join("")}
+    </div>
+    <div id="miniBattleSummary" class="help" style="margin-top:10px;">${escapeHtml(payload?.summary || "Pick a move to start the duel.")}</div>
+    <div id="miniBattleLog" class="feed" style="margin-top:10px;">
+      ${(Array.isArray(payload?.log) ? payload.log : [])
+        .slice(-6)
+        .map((entry) => `<div class="feed-item">${escapeHtml(entry?.text || "")}</div>`)
+        .join("") || `<div class="help">Battle log will appear here.</div>`}
+    </div>
+  `;
+}
+
+function updateMiniBattleRoyaleTurnTimer() {
+  const turnEl = document.getElementById("miniBattleTurn");
+  if (!turnEl) {
+    return;
+  }
+
+  const payload = miniBattleRoyaleState;
+  if (!payload) {
+    turnEl.textContent = "Battle loading...";
+    return;
+  }
+
+  if (payload.completed === true) {
+    turnEl.textContent = payload.tie ? "Duel tied" : payload.won ? "Duel won" : "Duel finished";
+    return;
+  }
+
+  const turn = Math.max(1, Number(payload.turn || 1));
+  const maxTurns = Math.max(1, Number(payload.maxTurns || 1));
+  const timeLeftMs = Math.max(0, Number(payload.turnEndsAt || 0) - Date.now());
+  turnEl.textContent = `Turn ${turn}/${maxTurns} | ${Math.max(0, timeLeftMs / 1000).toFixed(1)}s left`;
+}
+
+function applyMiniBattleRoyaleState(payload = {}, options = {}) {
+  miniBattleRoyaleState = payload;
+  renderMiniBattleRoyaleStage(payload);
+  stopMiniBattleRoyaleTicker();
+  updateMiniBattleRoyaleTurnTimer();
+
+  if (payload?.completed !== true && Number(payload?.turnEndsAt || 0) > Date.now()) {
+    miniBattleRoyaleTicker = setInterval(() => {
+      updateMiniBattleRoyaleTurnTimer();
+    }, 100);
+  }
+
+  const resolutionSeq = Math.max(0, Number(payload?.resolutionSeq || 0));
+  const forceSummaryText = options.forceSummaryText === true;
+  const summaryText =
+    payload?.resultText ||
+    payload?.summary ||
+    (payload?.selectedAction
+      ? `Move locked: ${battleRoyaleActionLabel(payload.selectedAction, payload)}.`
+      : payload?.opponentReady
+        ? "Opponent is ready. Pick your move now."
+        : "Pick attack, guard, heal, or your special power.");
+
+  if (resolutionSeq > miniBattleRoyaleLastResolutionSeq && !forceSummaryText) {
+    if (payload?.completed === true) {
+      if (payload?.won === true) {
+        playMiniGameSfx("unlock");
+        setNotice("You won the duel. Waiting for class results...", "good");
+      } else if (payload?.tie === true) {
+        playMiniGameSfx("complete");
+        setNotice("Battle tied. Waiting for class results...", "good");
+      } else {
+        playMiniGameSfx("miss");
+        setNotice("Duel finished. Waiting for class results...", "");
+      }
+    } else {
+      playMiniGameSfx("progress", { cooldownMs: 90 });
+      setNotice(summaryText, payload?.won === true ? "good" : "");
+    }
+  } else if (forceSummaryText) {
+    setNotice("Battle Royale live. Pick your move each turn before the timer locks it.", "");
+  } else if (payload?.selectedAction) {
+    setNotice(`Move locked: ${battleRoyaleActionLabel(payload.selectedAction, payload)}. Waiting for the turn to resolve.`, "");
+  } else if (payload?.opponentReady) {
+    setNotice("Opponent locked in first. Pick your move now.", "");
+  }
+
+  miniBattleRoyaleLastResolutionSeq = Math.max(miniBattleRoyaleLastResolutionSeq, resolutionSeq);
+}
+
 function renderMiniGame(type, data, actionLabel) {
   stopMiniTickers();
   activeMiniGameType = type;
@@ -3305,6 +4392,26 @@ function renderMiniGame(type, data, actionLabel) {
         <div id="miniSoccerLast" class="help" style="margin-top: 8px;">Kickoff live. Move fast for your team.</div>
       </div>`;
     applyMiniSoccerState(data, { forceSummaryText: true });
+    return;
+  }
+
+  if (type === "goalie_rush") {
+    miniGoalieRushLastEventSeq = Number(data?.lastEvent?.seq || 0);
+    chests.innerHTML = `
+      <div class="chest">
+        <h4>Goalie Rush</h4>
+        <p class="help">Use <strong>Left/Right</strong>, <strong>A/D</strong>, or the lane buttons to slide across the goal and block each incoming shot. Boss shots land every fifth round for extra coins.</p>
+        <div id="miniGoalieScore" class="notice">Saves 0 | Boss Saves 0 | Coins 0</div>
+        <div id="miniGoalieStats" class="help">Shots 0 | Goals Allowed 0 | Streak 0 | Best 0</div>
+        <div id="miniGoalieStage" style="position:relative;height:400px;margin-top:12px;border-radius:30px;overflow:hidden;background:rgba(15,23,42,0.08);border:1px solid rgba(148,163,184,0.24);"></div>
+        <div class="answers" style="margin-top:12px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
+          <button class="answer" data-mini-action="goalie_lane" data-mini-value="0">Guard Left</button>
+          <button class="answer" data-mini-action="goalie_lane" data-mini-value="1">Hold Center</button>
+          <button class="answer" data-mini-action="goalie_lane" data-mini-value="2">Guard Right</button>
+        </div>
+        <div id="miniGoalieLast" class="help" style="margin-top:10px;">Slide left and right to guard the goal. Boss shots hit every fifth round and award extra coins when you block them.</div>
+      </div>`;
+    applyMiniGoalieRushState(data, { forceSummaryText: true });
     return;
   }
 
@@ -3445,6 +4552,94 @@ function renderMiniGame(type, data, actionLabel) {
       </div>`;
     return;
   }
+
+  if (type === "hallway_dash") {
+    miniHallwayDashLastEventSeq = Math.max(0, Number(data?.lastEvent?.seq || 0));
+    chests.innerHTML = `
+      <div class="chest">
+        <h4>Hallway Dash</h4>
+        <p class="help">Race down the school hallway. Use <strong>Left/Right</strong> or <strong>A/D</strong> to switch lanes, then press <strong>Space</strong>, <strong>Up</strong>, or <strong>W</strong> to jump.</p>
+        <div id="miniHallwayScore" class="notice">Distance 0 m | Coins 0 | Score 0</div>
+        <div id="miniHallwayStats" class="help">Dodges 0 | Hits 0/3 | Lane Center</div>
+        <div id="miniHallwayStage" style="position:relative;height:380px;margin-top:12px;border-radius:28px;overflow:hidden;background:rgba(15,23,42,0.18);border:1px solid rgba(148,163,184,0.26);"></div>
+        <div class="answers" style="margin-top:12px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
+          <button class="answer" data-mini-action="hallway_left">Move Left</button>
+          <button class="answer" data-mini-action="hallway_jump">${escapeHtml(actionLabel || "Jump")}</button>
+          <button class="answer" data-mini-action="hallway_right">Move Right</button>
+        </div>
+        <div id="miniHallwayLast" class="help" style="margin-top:10px;">Stay in a safe lane, jump the clutter, and scoop up the coin spills.</div>
+      </div>`;
+    applyMiniHallwayDashState(data, { forceSummaryText: true });
+    return;
+  }
+
+  if (type === "dino_dig") {
+    miniDinoDigLastRevealSeq = Math.max(0, Number(data?.lastReveal?.seq || 0));
+    const maxDigs = Math.max(1, Number(data?.maxDigs || 7));
+    chests.innerHTML = `
+      <div class="chest">
+        <h4>Dino Dig</h4>
+        <p class="help">Tap dig sites to uncover fossils, coins, old bones, and maybe a rare dinosaur blook before your digs run out.</p>
+        <div id="miniDinoScore" class="notice">Digs 0/${maxDigs} | Fossil Score 0</div>
+        <div id="miniDinoStats" class="help">0 fossils | 0 bones | 0 coins | 0 rare finds</div>
+        <div id="miniDinoGrid" class="answers" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px;"></div>
+        <div id="miniDinoLast" class="help" style="margin-top:10px;">Tap any dig site. Fossils and coin caches are great, but a rare dinosaur blook is the jackpot.</div>
+      </div>`;
+    applyMiniDinoDigState(data, { forceSummaryText: true });
+    return;
+  }
+
+  if (type === "shadow_match") {
+    miniShadowMatchLastMoveSeq = Math.max(0, Number(data?.lastMove?.seq || 0));
+    chests.innerHTML = `
+      <div class="chest">
+        <h4>Shadow Match</h4>
+        <p class="help">Flip hidden blooks, remember where they are, and build longer streaks to unlock rarer reward packs.</p>
+        <div id="miniShadowScore" class="notice">Pairs 0/0 | Score 0 | Streak 0</div>
+        <div id="miniShadowStats" class="help">Attempts 0 | Misses 0 | Best streak 0</div>
+        <div id="miniShadowReward" class="help">Make your first match to unlock a reward pack.</div>
+        <div id="miniShadowGrid" class="answers" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px;"></div>
+        <div id="miniShadowLast" class="help" style="margin-top:10px;">Flip two cards at a time and use your memory to keep the streak going.</div>
+      </div>`;
+    applyMiniShadowMatchState(data, { forceSummaryText: true });
+    return;
+  }
+
+  if (type === "classroom_cleanup") {
+    miniClassroomCleanupLastEventSeq = Math.max(0, Number(data?.lastEvent?.seq || 0));
+    chests.innerHTML = `
+      <div class="chest">
+        <h4>Classroom Cleanup</h4>
+        <p class="help">Move between classroom rows with <strong>Left/Right</strong> or <strong>A/D</strong>, then tap the right bin before the item hits the floor. Keys: <strong>1</strong> Book, <strong>2</strong> Pencil, <strong>3</strong> Trash.</p>
+        <div id="miniCleanupScore" class="notice">Sorted 0 | Score 0 | Combo 0</div>
+        <div id="miniCleanupStats" class="help">0 books | 0 pencils | 0 trash | Misses 0 | Wrong bins 0 | Row Center Row</div>
+        <div id="miniCleanupStage" style="position:relative;height:400px;margin-top:12px;border-radius:30px;overflow:hidden;background:rgba(15,23,42,0.08);border:1px solid rgba(148,163,184,0.24);"></div>
+        <div class="answers" style="margin-top:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;">
+          <button class="answer" data-mini-action="cleanup_left">Move Left</button>
+          <button class="answer" data-mini-action="cleanup_right">Move Right</button>
+        </div>
+        <div class="answers" style="margin-top:10px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
+          <button class="answer" data-mini-action="cleanup_book">Sort Book (1)</button>
+          <button class="answer" data-mini-action="cleanup_pencil">Sort Pencil (2)</button>
+          <button class="answer" data-mini-action="cleanup_trash">Sort Trash (3)</button>
+        </div>
+        <div id="miniCleanupLast" class="help" style="margin-top:10px;">Move to the matching row, then sort books, pencils, and trash before they hit the floor.</div>
+      </div>`;
+    applyMiniClassroomCleanupState(data, { forceSummaryText: true });
+    return;
+  }
+
+  if (type === "battle_royale") {
+    miniBattleRoyaleLastResolutionSeq = Math.max(0, Number(data?.resolutionSeq || 0));
+    chests.innerHTML = `
+      <div class="chest">
+        <h4>Battle Royale</h4>
+        <p class="help">Your selected blook is your fighter. Pick a move every turn before the timer locks it in.</p>
+        <div id="miniBattleRoyaleStage"></div>
+      </div>`;
+    applyMiniBattleRoyaleState(data, { forceSummaryText: true });
+    return;
+  }
 }
 
 function renderLeaderboard(players) {
@@ -3480,6 +4675,110 @@ function renderLeaderboard(players) {
       </tr>`;
     })
     .join("");
+}
+
+function isAsteroidsMode() {
+  return String(currentMode || "").trim().toLowerCase() === "asteroids";
+}
+
+function hideAsteroidsQuestionStage() {
+  asteroidRoundState = null;
+  if (!asteroidsQuestionStage) {
+    return;
+  }
+  asteroidsQuestionStage.classList.add("hidden");
+  asteroidsQuestionStage.innerHTML = "";
+}
+
+function asteroidRockLayout(index, total) {
+  const safeTotal = Math.max(1, Number(total || 1));
+  const angle = (index / safeTotal) * Math.PI * 2 - Math.PI / 2;
+  const ring = index % 3;
+  const radiusX = 18 + ring * 11 + (index % 2 === 0 ? 4 : 0);
+  const radiusY = 15 + ring * 9 + (index % 3 === 0 ? 4 : 0);
+  return {
+    left: 50 + Math.cos(angle) * radiusX,
+    top: 38 + Math.sin(angle) * radiusY
+  };
+}
+
+function renderPlayerAsteroidsStage(modeData = {}, options = {}) {
+  if (!asteroidsQuestionStage) {
+    return;
+  }
+  if (!isAsteroidsMode()) {
+    hideAsteroidsQuestionStage();
+    return;
+  }
+
+  const waveSize = Math.max(6, Number(modeData?.waveSize || asteroidRoundState?.waveSize || 8));
+  const destroyedCount = Math.max(0, Math.min(waveSize, Number(options.destroyedCount ?? asteroidRoundState?.destroyedCount ?? 0)));
+  const totalBlasts = Math.max(0, Number(options.totalBlasts ?? asteroidRoundState?.totalBlasts ?? destroyedCount));
+  const streakCoinsAwarded = Math.max(0, Number(options.streakCoinsAwarded ?? asteroidRoundState?.streakCoinsAwarded ?? 0));
+  const speedLabel = String(options.speedLabel || asteroidRoundState?.speedLabel || "");
+  const summaryText =
+    options.summaryText ||
+    (destroyedCount > 0
+      ? `${totalBlasts} asteroids blasted${speedLabel ? ` with ${speedLabel}` : ""}.`
+      : "Answer fast to charge your ship and blast the wave.");
+  const topPilots = Array.isArray(options.topPilots) ? options.topPilots : [];
+
+  asteroidRoundState = {
+    waveSize,
+    destroyedCount,
+    totalBlasts,
+    streakCoinsAwarded,
+    speedLabel
+  };
+
+  asteroidsQuestionStage.classList.remove("hidden");
+  asteroidsQuestionStage.innerHTML = `
+    <div class="asteroids-stage">
+      ${Array.from({ length: waveSize }, (_, index) => {
+        const layout = asteroidRockLayout(index, waveSize);
+        const destroyed = index < destroyedCount;
+        const coinRock = streakCoinsAwarded > 0 && index < Math.min(destroyedCount, streakCoinsAwarded);
+        return `<span class="asteroid-rock${destroyed ? " destroyed" : ""}${coinRock ? " coin-rock" : ""}" style="left:${layout.left}%;top:${layout.top}%;"></span>`;
+      }).join("")}
+      ${destroyedCount > 0 ? `<span class="asteroids-beam"></span>` : ""}
+      <span class="asteroids-ship"></span>
+    </div>
+    <div class="asteroids-meta">
+      <span class="asteroids-pill"><strong>Wave</strong> ${waveSize}</span>
+      <span class="asteroids-pill"><strong>Blasted</strong> ${totalBlasts}</span>
+      <span class="asteroids-pill"><strong>Streak Coins</strong> ${streakCoinsAwarded}</span>
+    </div>
+    <div class="asteroids-summary">${escapeHtml(summaryText)}</div>
+    ${topPilots.length > 0 ? `
+      <div class="asteroids-scoreboard">
+        ${topPilots.map((pilot) => `
+          <div class="asteroids-score-row">
+            <span>${escapeHtml(pilot.playerName || "Player")}</span>
+            <span>${Math.max(0, Number(pilot.blasts || 0))} blasts${pilot.speedLabel ? ` | ${escapeHtml(pilot.speedLabel)}` : ""}</span>
+          </div>`).join("")}
+      </div>` : ""}
+  `;
+}
+
+function applyPlayerAsteroidsAnswerAck(response = {}) {
+  if (!isAsteroidsMode()) {
+    return;
+  }
+  const blast = response?.asteroidBlast && typeof response.asteroidBlast === "object" ? response.asteroidBlast : null;
+  if (!blast || response.correct !== true) {
+    renderPlayerAsteroidsStage({}, {
+      summaryText: "No blast this round. Answer correctly to clear the next wave."
+    });
+    return;
+  }
+  const nextDestroyed = Math.max(0, Math.min(Number(blast.waveSize || 8), Number(asteroidRoundState?.destroyedCount || 0) + Number(blast.blasts || 0)));
+  renderPlayerAsteroidsStage({ waveSize: blast.waveSize }, {
+    destroyedCount: nextDestroyed,
+    totalBlasts: blast.blasts,
+    streakCoinsAwarded: response?.streakCoinsAwarded || 0,
+    speedLabel: blast.speedLabel,
+    summaryText: `${blast.blasts} asteroids blasted${blast.speedLabel ? ` with ${blast.speedLabel}` : ""}.${response?.streakCoinsAwarded ? ` +${response.streakCoinsAwarded} streak coins.` : ""}`
+  });
 }
 
 function getOrCreateAccountKey() {
@@ -3765,6 +5064,19 @@ function getOwnedBlookById(blookId) {
   return getInventoryRows().find((entry) => entry.id === safeId) || null;
 }
 
+function packIdForOwnedBlook(blookId) {
+  return String(getOwnedBlookById(blookId)?.packId || "");
+}
+
+function packContainsOwnedBlook(packId, blookId) {
+  const safePackId = String(packId || "");
+  const safeBlookId = String(blookId || "");
+  if (!safePackId || !safeBlookId) {
+    return false;
+  }
+  return getInventoryRows().some((entry) => entry.packId === safePackId && entry.id === safeBlookId);
+}
+
 function pickFirstOwnedBlookIdForPack(packId) {
   const owned = getInventoryRows().find((entry) => entry.packId === packId);
   return owned?.id || "";
@@ -3820,7 +5132,7 @@ function renderPackTabs() {
     return;
   }
 
-  const preferredPackOrder = ["students", "superheroes", "athletes", "nfl-teams", "sports", "anime", "cartoon-network", "books", "science", "space", "nature"];
+  const preferredPackOrder = ["students", "superheroes", "athletes", "nfl-teams", "sports", "anime", "cartoon-network", "science", "space", "nature", "dinosaurs", "books"];
   const orderIndex = new Map(preferredPackOrder.map((id, index) => [id, index]));
   const sortedPacks = blookPacks.slice().sort((left, right) => {
     const leftIdx = orderIndex.has(left.id) ? orderIndex.get(left.id) : preferredPackOrder.length + 1;
@@ -4014,6 +5326,15 @@ function applyAccount(account, nextKey = "") {
     selectedBlookId = pickFirstOwnedBlookIdForPack(selectedPackId) || getInventoryRows()[0]?.id || "";
   }
 
+  const selectedPackFromBlook = packIdForOwnedBlook(selectedBlookId);
+  if (
+    selectedPackFromBlook &&
+    selectedPackId !== "effects" &&
+    (!selectedPackId || !getPackById(selectedPackId) || !packContainsOwnedBlook(selectedPackId, selectedBlookId))
+  ) {
+    selectedPackId = selectedPackFromBlook;
+  }
+
   renderEconomyPanel();
 }
 
@@ -4066,6 +5387,10 @@ async function openSelectedPack() {
   applyAccount(payload.account, payload.accountKey || "");
   const reward = payload.reward;
   if (reward) {
+    if (accountData) {
+      accountData.selectedBlookId = reward.id;
+    }
+    selectedPackId = reward.packId || pack.id;
     selectedBlookId = reward.id;
     renderEconomyPanel();
     const rewardDisplay = getOwnedBlookById(reward.id) || reward;
@@ -4244,9 +5569,12 @@ function renderQuestion(payload) {
   currentQuestion = payload.question;
   myAnswerIndex = null;
   canAnswer = true;
+  if (payload?.mode) {
+    currentMode = String(payload.mode || currentMode || "classic").toLowerCase();
+  }
 
   showSection(questionSection);
-  setGameIllustration(questionIllustration, "question", "Question round");
+  setGameIllustration(questionIllustration, isAsteroidsMode() ? "asteroids" : "question", isAsteroidsMode() ? "Asteroids round" : "Question round");
   if (chestIllustration) {
     chestIllustration.classList.add("hidden");
   }
@@ -4259,6 +5587,17 @@ function renderQuestion(payload) {
         `<button class="answer" data-answer="${index}"><strong>${String.fromCharCode(65 + index)}.</strong> ${escapeHtml(option)}</button>`
     )
     .join("");
+
+  if (isAsteroidsMode()) {
+    renderPlayerAsteroidsStage(payload?.modeData || {}, {
+      destroyedCount: 0,
+      totalBlasts: 0,
+      streakCoinsAwarded: 0,
+      summaryText: "Answer fast to charge your ship and blast the asteroid wave."
+    });
+  } else {
+    hideAsteroidsQuestionStage();
+  }
 
   startTicker(timerText, payload.endsAt, "Time left");
 }
@@ -4618,8 +5957,20 @@ answers.addEventListener("click", (event) => {
       return;
     }
 
+    if (res.account) {
+      applyAccount(res.account, res.account.id || joinAccountKey() || accountKey);
+    }
+    if (isAsteroidsMode()) {
+      applyPlayerAsteroidsAnswerAck(res);
+    }
     playMiniGameSfx("select");
-    setNotice(`Answer locked. ${res.correct ? "Correct" : "Submitted"} (+${res.delta})`, res.correct ? "good" : "");
+    const streakCoins = Math.max(0, Number(res?.streakCoinsAwarded || 0));
+    const asteroidBlastCount = Math.max(0, Number(res?.asteroidBlast?.blasts || 0));
+    const asteroidNote =
+      isAsteroidsMode() && res.correct
+        ? ` Blasted ${asteroidBlastCount} asteroids${streakCoins > 0 ? ` and earned +${streakCoins} coins` : ""}.`
+        : "";
+    setNotice(`Answer locked. ${res.correct ? "Correct" : "Submitted"} (+${res.delta})${asteroidNote}`, res.correct ? "good" : "");
     lockAnswerButtons();
   });
 });
@@ -4647,6 +5998,10 @@ chests.addEventListener("click", (event) => {
   }
 
   const payload = { code: roomCode, action };
+  if (action === "goalie_lane") {
+    payload.action = "set_lane";
+    payload.value = { lane: clampMiniGoalieRushLane(button.dataset.miniValue) };
+  }
   if (action === "snake_dir") {
     payload.action = "set_direction";
     payload.value = { direction: button.dataset.miniValue || "right" };
@@ -4666,6 +6021,37 @@ chests.addEventListener("click", (event) => {
       }, 130);
     }
   }
+  if (action === "hallway_left") {
+    payload.action = "move_lane";
+    payload.value = { direction: "left" };
+  }
+  if (action === "hallway_right") {
+    payload.action = "move_lane";
+    payload.value = { direction: "right" };
+  }
+  if (action === "hallway_jump") {
+    payload.action = "jump";
+  }
+  if (action === "cleanup_left") {
+    payload.action = "move_lane";
+    payload.value = { direction: "left" };
+  }
+  if (action === "cleanup_right") {
+    payload.action = "move_lane";
+    payload.value = { direction: "right" };
+  }
+  if (action === "cleanup_book") {
+    payload.action = "sort_item";
+    payload.value = { bin: "book" };
+  }
+  if (action === "cleanup_pencil") {
+    payload.action = "sort_item";
+    payload.value = { bin: "pencil" };
+  }
+  if (action === "cleanup_trash") {
+    payload.action = "sort_item";
+    payload.value = { bin: "trash" };
+  }
   if (action === "kick" || action === "shoot") {
     const powerInput = document.getElementById("miniSoccerPower");
     const power = Number(powerInput?.value || 2);
@@ -4682,6 +6068,13 @@ chests.addEventListener("click", (event) => {
   }
   if (action === "dodge") {
     payload.value = Number(button.dataset.miniValue);
+  }
+  if (action === "dig") {
+    payload.value = Number(button.dataset.miniValue);
+  }
+  if (action === "shadow_flip") {
+    payload.action = "flip_tile";
+    payload.value = { index: Number(button.dataset.miniValue) };
   }
   if (action === "stop") {
     payload.value = Math.round(miniPrecisionValue);
@@ -4707,6 +6100,18 @@ chests.addEventListener("click", (event) => {
   }
   if (action === "tower_restart") {
     payload.action = "restart";
+  }
+  if (action === "battle_attack") {
+    payload.action = "attack";
+  }
+  if (action === "battle_guard") {
+    payload.action = "guard";
+  }
+  if (action === "battle_heal") {
+    payload.action = "heal";
+  }
+  if (action === "battle_special") {
+    payload.action = "special";
   }
 
   socket.emit("player:minigameAction", payload, (res) => {
@@ -4741,7 +6146,11 @@ chests.addEventListener("click", (event) => {
       playMiniGameSfx("select", { cooldownMs: 90 });
       return;
     }
-    if (payload.action === "set_direction" || payload.action === "set_lane") {
+    if (payload.action === "set_direction" || payload.action === "set_lane" || payload.action === "move_lane") {
+      playMiniGameSfx("tap", { cooldownMs: 70 });
+      return;
+    }
+    if (payload.action === "jump") {
       playMiniGameSfx("tap", { cooldownMs: 70 });
       return;
     }
@@ -4773,6 +6182,80 @@ window.addEventListener("keydown", (event) => {
   }
 
   const snakeKey = String(event.key || "").toLowerCase();
+  if (activeMiniGameType === "classroom_cleanup") {
+    let cleanupAction = "";
+    if (event.key === "ArrowLeft" || snakeKey === "a") cleanupAction = "cleanup_left";
+    if (event.key === "ArrowRight" || snakeKey === "d") cleanupAction = "cleanup_right";
+    if (event.key === "1" || snakeKey === "b") cleanupAction = "cleanup_book";
+    if (event.key === "2" || snakeKey === "p") cleanupAction = "cleanup_pencil";
+    if (event.key === "3" || snakeKey === "t") cleanupAction = "cleanup_trash";
+    if (cleanupAction) {
+      const button = chests.querySelector(`button[data-mini-action='${cleanupAction}']`);
+      if (button instanceof HTMLButtonElement && !button.disabled) {
+        event.preventDefault();
+        button.click();
+      }
+      return;
+    }
+  }
+
+  if (activeMiniGameType === "battle_royale") {
+    const battleActionMap = {
+      "1": "battle_attack",
+      "2": "battle_guard",
+      "3": "battle_heal",
+      "4": "battle_special"
+    };
+    const battleAction = battleActionMap[event.key] || "";
+    if (battleAction) {
+      const button = chests.querySelector(`button[data-mini-action='${battleAction}']`);
+      if (button instanceof HTMLButtonElement && !button.disabled) {
+        event.preventDefault();
+        button.click();
+      }
+      return;
+    }
+  }
+
+  if (activeMiniGameType === "hallway_dash") {
+    let hallwayAction = "";
+    if (event.key === "ArrowLeft" || snakeKey === "a") hallwayAction = "hallway_left";
+    if (event.key === "ArrowRight" || snakeKey === "d") hallwayAction = "hallway_right";
+    if (event.key === "ArrowUp" || snakeKey === "w" || event.key === " " || event.code === "Space") hallwayAction = "hallway_jump";
+    if (hallwayAction) {
+      const button = chests.querySelector(`button[data-mini-action='${hallwayAction}']`);
+      if (button instanceof HTMLButtonElement && !button.disabled) {
+        event.preventDefault();
+        button.click();
+      }
+      return;
+    }
+  }
+
+  if (activeMiniGameType === "goalie_rush") {
+    let targetLane = null;
+    if (event.key === "ArrowLeft" || snakeKey === "a") {
+      targetLane = clampMiniGoalieRushLane(Number(miniGoalieRushState?.lane ?? 1) - 1);
+    } else if (event.key === "ArrowRight" || snakeKey === "d") {
+      targetLane = clampMiniGoalieRushLane(Number(miniGoalieRushState?.lane ?? 1) + 1);
+    } else if (event.key === "1") {
+      targetLane = 0;
+    } else if (event.key === "2") {
+      targetLane = 1;
+    } else if (event.key === "3") {
+      targetLane = 2;
+    }
+
+    if (targetLane !== null) {
+      const button = chests.querySelector(`button[data-mini-action='goalie_lane'][data-mini-value='${targetLane}']`);
+      if (button instanceof HTMLButtonElement && !button.disabled) {
+        event.preventDefault();
+        button.click();
+      }
+      return;
+    }
+  }
+
   if (activeMiniGameType === "snake") {
     let nextDirection = "";
     if (event.key === "ArrowUp" || snakeKey === "w") nextDirection = "up";
@@ -4860,6 +6343,7 @@ socket.on("lobby:update", (payload) => {
   }
 
   currentMode = String(payload.mode || currentMode || "classic").toLowerCase();
+  hideAsteroidsQuestionStage();
   applyRoomSettings(payload.settings || {});
   setPhase("lobby", `${payload.players.length} students connected. Waiting for host.`);
   showSection(null);
@@ -4945,6 +6429,9 @@ socket.on("players:update", ({ players }) => {
 });
 
 socket.on("question:start", (payload) => {
+  if (payload?.mode) {
+    currentMode = String(payload.mode || currentMode || "classic").toLowerCase();
+  }
   ensureFishingGameTimerStarted();
   setPhase("question", `Question ${payload.questionIndex}/${payload.totalQuestions} is live.`);
   renderQuestion(payload);
@@ -4952,7 +6439,7 @@ socket.on("question:start", (payload) => {
   setNotice(
     roomSettings.showInstructions === false
       ? `Question ${payload.questionIndex}/${payload.totalQuestions} is live.`
-      : `Question ${payload.questionIndex} of ${payload.totalQuestions}. Answer quickly for bonuses.`
+      : `Question ${payload.questionIndex} of ${payload.totalQuestions}.${isAsteroidsMode() ? " Answer fast to blast the asteroid wave." : " Answer quickly for bonuses."}`
   );
 });
 
@@ -4964,6 +6451,9 @@ socket.on("player:locked", ({ leaderboard }) => {
 });
 
 socket.on("question:result", (payload) => {
+  if (payload?.mode) {
+    currentMode = String(payload.mode || currentMode || "classic").toLowerCase();
+  }
   setPhase("question_result", "Answer revealed. Score update in progress.");
   canAnswer = false;
   lockAnswerButtons();
@@ -4980,6 +6470,36 @@ socket.on("question:result", (payload) => {
 
   const mine = payload.submissions.find((entry) => entry.playerId === socket.id);
   const explanation = payload.explanation ? ` ${payload.explanation}` : "";
+  const streakCoins = Math.max(0, Number(mine?.streakCoinsAwarded || 0));
+  const asteroidBlastCount = Math.max(0, Number(mine?.asteroidsBlasted || 0));
+
+  if (isAsteroidsMode()) {
+    const topPilots = Array.isArray(payload?.modeData?.topPilots) ? payload.modeData.topPilots : [];
+    if (!mine) {
+      renderPlayerAsteroidsStage(payload?.modeData || {}, {
+        destroyedCount: Number(payload?.modeData?.destroyedCount || 0),
+        totalBlasts: Number(payload?.modeData?.totalBlasts || 0),
+        topPilots,
+        summaryText: "No answer locked in, so your ship did not fire this wave."
+      });
+    } else if (mine.correct) {
+      renderPlayerAsteroidsStage(payload?.modeData || {}, {
+        destroyedCount: Math.max(0, Number(mine.asteroidsBlasted || 0)),
+        totalBlasts: asteroidBlastCount,
+        streakCoinsAwarded: streakCoins,
+        speedLabel: mine.asteroidsSpeedLabel,
+        topPilots,
+        summaryText: `${asteroidBlastCount} asteroids blasted${mine.asteroidsSpeedLabel ? ` with ${mine.asteroidsSpeedLabel}` : ""}.${streakCoins > 0 ? ` +${streakCoins} streak coins.` : ""}`
+      });
+    } else {
+      renderPlayerAsteroidsStage(payload?.modeData || {}, {
+        destroyedCount: 0,
+        totalBlasts: 0,
+        topPilots,
+        summaryText: "Wrong answer. Your ship missed the wave this round."
+      });
+    }
+  }
 
   if (!mine) {
     playMiniGameSfx("miss");
@@ -4987,7 +6507,7 @@ socket.on("question:result", (payload) => {
   } else {
     playMiniGameSfx(mine.correct ? "correct" : "miss");
     setNotice(
-      `${mine.correct ? "Correct" : "Incorrect"}. ${mine.correct ? `+${mine.delta} points.` : "No points."}${explanation}`,
+      `${mine.correct ? "Correct" : "Incorrect"}. ${mine.correct ? `+${mine.delta} points.` : "No points."}${isAsteroidsMode() && mine.correct ? ` ${asteroidBlastCount} asteroids blasted.${streakCoins > 0 ? ` +${streakCoins} streak coins.` : ""}` : ""}${explanation}`,
       mine.correct ? "good" : "bad"
     );
   }
@@ -5047,6 +6567,11 @@ socket.on("minigame:state", (payload) => {
       }
       setNotice("Soccer round complete. Waiting for results...", "good");
     }
+    return;
+  }
+
+  if (payload.type === "goalie_rush") {
+    applyMiniGoalieRushState(payload, { forceSummaryText: false });
     return;
   }
 
@@ -5195,11 +6720,40 @@ socket.on("minigame:state", (payload) => {
         setNotice(`Out of tries. Answer: ${payload.answer}`, "bad");
       }
     }
+    return;
+  }
+
+  if (payload.type === "hallway_dash") {
+    applyMiniHallwayDashState(payload, { forceSummaryText: false });
+    return;
+  }
+
+  if (payload.type === "dino_dig") {
+    applyMiniDinoDigState(payload, { forceSummaryText: false });
+    return;
+  }
+
+  if (payload.type === "shadow_match") {
+    applyMiniShadowMatchState(payload, { forceSummaryText: false });
+    return;
+  }
+
+  if (payload.type === "classroom_cleanup") {
+    applyMiniClassroomCleanupState(payload, { forceSummaryText: false });
+    return;
+  }
+
+  if (payload.type === "battle_royale") {
+    applyMiniBattleRoyaleState(payload, { forceSummaryText: false });
+    return;
   }
 });
 
-socket.on("minigame:resolved", ({ text, leaderboard }) => {
+socket.on("minigame:resolved", ({ text, leaderboard, account }) => {
   stopMiniTickers();
+  if (account) {
+    applyAccount(account, account.id || joinAccountKey() || accountKey);
+  }
   playMiniGameSfx("reward");
   setNotice(text, "good");
   renderLeaderboard(leaderboard);

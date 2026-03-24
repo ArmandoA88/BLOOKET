@@ -4,17 +4,24 @@ let roomCode = "";
 let phase = "lobby";
 let tickInterval = null;
 let currentQuestionOptions = [];
+let currentMode = "classic";
 const MODE_LABELS = {
   classic: "Foosball",
   gold: "Tower Stacker",
   crypto: "Foosball",
   fishing: "Foosball",
+  asteroids: "Asteroids",
   brawl: "Space Invaders"
 };
 const GAME_IMAGE_MAP = {
   question: "/assets/minigames/shared/question.svg",
+  asteroids: "/assets/minigames/asteroids/asteroids.svg",
+  battle_royale: "/assets/minigames/battle_royale/battle-royale.svg",
+  classroom_cleanup: "/assets/minigames/classroom_cleanup/classroom-cleanup.svg",
+  shadow_match: "/assets/minigames/shadow_match/shadow-match.svg",
   foosball_frenzy: "/assets/minigames/soccer_shootout/soccer.svg",
   soccer_shootout: "/assets/minigames/soccer_shootout/soccer.svg",
+  goalie_rush: "/assets/minigames/goalie_rush/goalie-rush.svg",
   snake: "/assets/minigames/snake/snake.svg",
   tower_stacker: "/assets/minigames/tower_stacker/tower.svg",
   tap_rush: "/assets/minigames/tap_rush/tap.svg",
@@ -22,7 +29,9 @@ const GAME_IMAGE_MAP = {
   sequence_memory: "/assets/minigames/sequence_memory/sequence.svg",
   obstacle_dodge: "/assets/minigames/obstacle_dodge/sequence.svg",
   precision_stop: "/assets/minigames/precision_stop/precision.svg",
-  word_scramble: "/assets/minigames/word_scramble/question.svg"
+  word_scramble: "/assets/minigames/word_scramble/question.svg",
+  hallway_dash: "/assets/minigames/hallway_dash/hallway.svg",
+  dino_dig: "/assets/dinos/dino-tyrannosaurus.png"
 };
 const QUESTION_SET_LABELS = new Map([
   ["multiplication_1_digit", "Multiplication 1-Digit"],
@@ -99,6 +108,7 @@ const PHASE_CLASS_CANDIDATES = [
 const MINI_GAME_LABELS = {
   foosball_frenzy: "Foosball Frenzy",
   soccer_shootout: "Soccer Shootout",
+  goalie_rush: "Goalie Rush",
   snake: "Snake Strategy",
   tower_stacker: "Tower Stacker",
   space_invaders: "Space Invaders",
@@ -107,7 +117,12 @@ const MINI_GAME_LABELS = {
   sequence_memory: "Sequence Memory",
   obstacle_dodge: "Obstacle Dodge",
   precision_stop: "Precision Stop",
-  word_scramble: "Word Scramble"
+  word_scramble: "Word Scramble",
+  hallway_dash: "Hallway Dash",
+  dino_dig: "Dino Dig",
+  shadow_match: "Shadow Match",
+  classroom_cleanup: "Classroom Cleanup",
+  battle_royale: "Battle Royale"
 };
 const MINI_GAME_PREVIEW_COPY = {
   foosball_frenzy: {
@@ -126,6 +141,15 @@ const MINI_GAME_PREVIEW_COPY = {
     skills: "Timing",
     idealTime: "5 min",
     questions: "Goal races",
+    players: "2 - 300"
+  },
+  goalie_rush: {
+    title: "Goalie Rush",
+    tagline: "Students guard the goal, block faster shots each round, and chase boss-save coin bonuses.",
+    difficulty: "Simple",
+    skills: "Reflexes",
+    idealTime: "4 min",
+    questions: "Mini-game only",
     players: "2 - 300"
   },
   tower_stacker: {
@@ -208,6 +232,51 @@ const MINI_GAME_PREVIEW_COPY = {
     idealTime: "4 min",
     questions: "Mini-game only",
     players: "2 - 300"
+  },
+  hallway_dash: {
+    title: "Hallway Dash",
+    tagline: "A school-themed runner with hallway clutter, jumping, lane swaps, and coin pickups.",
+    difficulty: "Simple",
+    skills: "Timing",
+    idealTime: "4 min",
+    questions: "Mini-game only",
+    players: "2 - 300"
+  },
+  dino_dig: {
+    title: "Dino Dig",
+    tagline: "Fast classroom digging with fossils, coin finds, and a shot at a rare dinosaur blook.",
+    difficulty: "Simple",
+    skills: "Discovery",
+    idealTime: "4 min",
+    questions: "Mini-game only",
+    players: "2 - 300"
+  },
+  shadow_match: {
+    title: "Shadow Match",
+    tagline: "A fast classroom memory game where matching streaks unlock better bonus packs.",
+    difficulty: "Medium",
+    skills: "Memory",
+    idealTime: "4 min",
+    questions: "Mini-game only",
+    players: "2 - 300"
+  },
+  classroom_cleanup: {
+    title: "Classroom Cleanup",
+    tagline: "Students race around a messy classroom sorting books, pencils, and trash before the floor piles up.",
+    difficulty: "Simple",
+    skills: "Sorting",
+    idealTime: "4 min",
+    questions: "Mini-game only",
+    players: "2 - 300"
+  },
+  battle_royale: {
+    title: "Battle Royale",
+    tagline: "Quick 1v1 blook battles where each selected blook brings its own special power.",
+    difficulty: "Simple",
+    skills: "Strategy",
+    idealTime: "4 min",
+    questions: "Mini-game only",
+    players: "2 - 300"
   }
 };
 const MINI_GAME_TILE_MEDIA = {
@@ -220,6 +289,11 @@ const MINI_GAME_TILE_MEDIA = {
     image: "/assets/minigames/soccer_shootout/fussball-field.svg",
     accentClass: "theme-soccer",
     hud: "SHOTS"
+  },
+  goalie_rush: {
+    image: "/assets/minigames/goalie_rush/goalie-rush.svg",
+    accentClass: "theme-cloud",
+    hud: "SAVE"
   },
   tower_stacker: {
     image: "/assets/minigames/tower_stacker/tower.svg",
@@ -265,11 +339,37 @@ const MINI_GAME_TILE_MEDIA = {
     image: "/assets/minigames/word_scramble/question.svg",
     accentClass: "theme-foosball",
     hud: "WORD"
+  },
+  hallway_dash: {
+    image: "/assets/minigames/hallway_dash/hallway.svg",
+    accentClass: "theme-cloud",
+    hud: "DASH"
+  },
+  dino_dig: {
+    image: "/assets/dinos/dino-tyrannosaurus.png",
+    accentClass: "theme-stacker",
+    hud: "DIG"
+  },
+  shadow_match: {
+    image: "/assets/minigames/shadow_match/shadow-match.svg",
+    accentClass: "theme-pink",
+    hud: "MATCH"
+  },
+  classroom_cleanup: {
+    image: "/assets/minigames/classroom_cleanup/classroom-cleanup.svg",
+    accentClass: "theme-cloud",
+    hud: "SORT"
+  },
+  battle_royale: {
+    image: "/assets/minigames/battle_royale/battle-royale.svg",
+    accentClass: "theme-pink",
+    hud: "DUEL"
   }
 };
 const HOST_VISIBLE_MINI_GAME_IDS = new Set([
   "foosball_frenzy",
   "soccer_shootout",
+  "goalie_rush",
   "tower_stacker",
   "space_invaders",
   "snake",
@@ -278,7 +378,12 @@ const HOST_VISIBLE_MINI_GAME_IDS = new Set([
   "sequence_memory",
   "obstacle_dodge",
   "precision_stop",
-  "word_scramble"
+  "word_scramble",
+  "hallway_dash",
+  "dino_dig",
+  "shadow_match",
+  "classroom_cleanup",
+  "battle_royale"
 ]);
 
 const setupCard = document.getElementById("setupCard");
@@ -384,6 +489,7 @@ const questionTimer = document.getElementById("questionTimer");
 const questionText = document.getElementById("questionText");
 const hostQuestionMedia = document.getElementById("hostQuestionMedia");
 const answerStats = document.getElementById("answerStats");
+const hostAsteroidsStage = document.getElementById("hostAsteroidsStage");
 const miniGameDashboardPanel = document.getElementById("miniGameDashboardPanel");
 const miniGameDashboardTitle = document.getElementById("miniGameDashboardTitle");
 const miniGameDashboardMeta = document.getElementById("miniGameDashboardMeta");
@@ -429,6 +535,7 @@ const requestedHostName = String(hostPageParams.get("hostName") || "").trim();
 const FALLBACK_MINI_GAMES = [
   { id: "foosball_frenzy", name: "Foosball Frenzy", description: "Foosball bars stay in formation. Slide laterally, score fast, and race the class leaderboard." },
   { id: "soccer_shootout", name: "Soccer Shootout", description: "Quick penalty kicks where students compete to score the most goals." },
+  { id: "goalie_rush", name: "Goalie Rush", description: "Guard the goal, block faster shots each round, and survive boss rounds for extra coins." },
   { id: "snake", name: "Snake Strategy", description: "Simple controls, careful turns, and growing path strategy." },
   { id: "tower_stacker", name: "Tower Stacker", description: "Stack themed critters into the tallest tower you can keep standing." },
   { id: "space_invaders", name: "Space Invaders", description: "Arcade survival shooter with classroom-friendly pacing." },
@@ -437,7 +544,12 @@ const FALLBACK_MINI_GAMES = [
   { id: "sequence_memory", name: "Sequence Memory", description: "Repeat the color order to score." },
   { id: "obstacle_dodge", name: "Obstacle Dodge", description: "Pick safe lanes across turns." },
   { id: "precision_stop", name: "Precision Stop", description: "Stop the marker near the target zone." },
-  { id: "word_scramble", name: "Word Scramble", description: "Unscramble words before attempts run out." }
+  { id: "word_scramble", name: "Word Scramble", description: "Unscramble words before attempts run out." },
+  { id: "hallway_dash", name: "Hallway Dash", description: "Race down the school hallway, dodge clutter, jump hazards, and collect coins." },
+  { id: "dino_dig", name: "Dino Dig", description: "Dig tiles to uncover fossils, bones, coin caches, and a rare dinosaur blook." },
+  { id: "shadow_match", name: "Shadow Match", description: "Flip hidden blooks, match the pairs, and unlock better reward packs with streaks." },
+  { id: "classroom_cleanup", name: "Classroom Cleanup", description: "Move between classroom rows and sort books, pencils, and trash before time runs out." },
+  { id: "battle_royale", name: "Battle Royale", description: "Simple 1v1 blook battles where every selected blook gets a small power." }
 ];
 let setupMiniGameCatalog = FALLBACK_MINI_GAMES.slice();
 
@@ -1497,6 +1609,7 @@ function miniGameRankingValue(type, player) {
     return "Waiting";
   }
   if (type === "soccer_shootout") return `${Number(player.goals || 0)} goals`;
+  if (type === "goalie_rush") return `${Number(player.saves || player.progress || 0)} saves | ${Number(player.bossCoinsEarned || 0)} coins`;
   if (type === "foosball_frenzy") return `${Number(player.goals || 0)} goals`;
   if (type === "tower_stacker") return `${Math.round(Number(player.metric || 0))} pts`;
   if (type === "snake") return `${Number(player.foodsEaten || 0)} snacks`;
@@ -1507,6 +1620,10 @@ function miniGameRankingValue(type, player) {
     return `${Number(player.diff || 0)} away`;
   }
   if (type === "word_scramble") return player.solved === true ? "Solved" : `Attempts ${Number(player.attempts || 0)}`;
+  if (type === "hallway_dash") return `${Number(player.distance || player.progress || 0)} m | ${Number(player.coinsFound || 0)} coins`;
+  if (type === "dino_dig") return `${Number(player.fossilsFound || 0)} fossils | ${Number(player.coinsFound || 0)} coins`;
+  if (type === "shadow_match") return `${Number(player.matchedPairs || player.progress || 0)} pairs | Streak ${Number(player.bestStreak || 0)}`;
+  if (type === "classroom_cleanup") return `${Number(player.score || 0)} pts | ${Number(player.sortedCount || player.progress || 0)} sorted`;
   return `${Math.round(Number(player.metric || player.score || 0))}`;
 }
 
@@ -1657,6 +1774,38 @@ function renderMiniGameDashboard(payload) {
               </div>
               <div class="host-soccer-score">${escapeHtml(teamLabel)} | ${goals} goals</div>
               <div class="help">${kicks} kicks this round</div>
+            </article>`;
+          })
+          .join("")}
+      </div>
+      ${buildMiniGameRankingsTable(type, players)}`;
+    return;
+  }
+
+  if (type === "goalie_rush") {
+    miniGameDashboardBody.innerHTML = `
+      <div class="host-progress-grid">
+        ${players
+          .map((player) => {
+            const saves = Math.max(0, Number(player.saves || player.progress || 0));
+            const goal = Math.max(1, Number(payload.goal || 1));
+            const percent = clampPercent((saves / goal) * 100);
+            const shotsFaced = Math.max(0, Number(player.shotsFaced || 0));
+            const goalsAllowed = Math.max(0, Number(player.goalsAllowed || 0));
+            const bossSaves = Math.max(0, Number(player.bossSaves || 0));
+            const bossCoinsEarned = Math.max(0, Number(player.bossCoinsEarned || 0));
+            const bestStreak = Math.max(0, Number(player.bestStreak || 0));
+            return `
+            <article class="host-progress-card">
+              <div class="host-mini-player">
+                <span class="blook-top-icon">${escapeHtml(player.blook?.icon || "?")}</span>
+                <strong>${escapeHtml(player.name)}</strong>
+              </div>
+              <div class="host-progress-meter">
+                <span style="width:${percent}%"></span>
+              </div>
+              <div class="help">Saves ${saves}/${goal} | Boss saves ${bossSaves} | Coins ${bossCoinsEarned}</div>
+              <div class="help">Shots ${shotsFaced} | Goals allowed ${goalsAllowed} | Best streak ${bestStreak}</div>
             </article>`;
           })
           .join("")}
@@ -1845,6 +1994,166 @@ function renderMiniGameDashboard(payload) {
     return;
   }
 
+  if (type === "hallway_dash") {
+    miniGameDashboardBody.innerHTML = `
+      <div class="host-progress-grid">
+        ${players
+          .map((player) => {
+            const distance = Number(player.distance || player.progress || 0);
+            const goalDistance = Math.max(1, Number(payload.goal || 1));
+            const coinsFound = Number(player.coinsFound || 0);
+            const dodges = Number(player.dodges || 0);
+            const hits = Number(player.hits || 0);
+            const maxHits = Math.max(1, Number(player.maxHits || 3));
+            const percent = clampPercent((distance / goalDistance) * 100);
+            return `
+              <article class="host-progress-card">
+                <div class="host-mini-player">
+                  <span class="blook-top-icon">${escapeHtml(player.blook?.icon || "?")}</span>
+                  <strong>${escapeHtml(player.name)}</strong>
+                </div>
+                <div class="host-progress-meter">
+                  <span style="width:${percent}%"></span>
+                </div>
+                <div class="help">Distance ${distance} m | Coins ${coinsFound} | Dodges ${dodges}</div>
+                <div class="help">Hits ${hits}/${maxHits}${player.failed ? " | Out" : ""}</div>
+              </article>`;
+          })
+          .join("")}
+      </div>
+      ${buildMiniGameRankingsTable(type, players)}`;
+    return;
+  }
+
+  if (type === "dino_dig") {
+    miniGameDashboardBody.innerHTML = `
+      <div class="host-progress-grid">
+        ${players
+          .map((player) => {
+            const digs = Number(player.progress || 0);
+            const maxDigs = Math.max(1, Number(player.maxDigs || payload.goal || 8));
+            const percent = clampPercent((digs / maxDigs) * 100);
+            const fossilsFound = Number(player.fossilsFound || 0);
+            const fossilPoints = Number(player.fossilPoints || 0);
+            const bonesFound = Number(player.bonesFound || 0);
+            const coinsFound = Number(player.coinsFound || 0);
+            const rareBlooksFound = Number(player.rareBlooksFound || 0);
+            return `
+            <article class="host-progress-card">
+              <div class="host-mini-player">
+                <span class="blook-top-icon">${escapeHtml(player.blook?.icon || "?")}</span>
+                <strong>${escapeHtml(player.name)}</strong>
+              </div>
+              <div class="host-progress-meter">
+                <span style="width:${percent}%"></span>
+              </div>
+              <div class="help">Digs ${digs}/${maxDigs} | Fossils ${fossilsFound} (${fossilPoints} pts)</div>
+              <div class="help">Coins ${coinsFound} | Bones ${bonesFound} | Rare ${rareBlooksFound}</div>
+            </article>`;
+          })
+          .join("")}
+      </div>
+      ${buildMiniGameRankingsTable(type, players)}`;
+    return;
+  }
+
+  if (type === "shadow_match") {
+    miniGameDashboardBody.innerHTML = `
+      <div class="host-progress-grid">
+        ${players
+          .map((player) => {
+            const matchedPairs = Math.max(0, Number(player.matchedPairs || player.progress || 0));
+            const totalPairs = Math.max(1, Number(player.totalPairs || payload.goal || 1));
+            const percent = clampPercent((matchedPairs / totalPairs) * 100);
+            const score = Math.max(0, Number(player.score || 0));
+            const attempts = Math.max(0, Number(player.attempts || 0));
+            const misses = Math.max(0, Number(player.misses || 0));
+            const bestStreak = Math.max(0, Number(player.bestStreak || 0));
+            const rewardPackName = String(player.rewardPackName || "");
+            return `
+            <article class="host-progress-card">
+              <div class="host-mini-player">
+                <span class="blook-top-icon">${escapeHtml(player.blook?.icon || "?")}</span>
+                <strong>${escapeHtml(player.name)}</strong>
+              </div>
+              <div class="host-progress-meter">
+                <span style="width:${percent}%"></span>
+              </div>
+              <div class="help">Pairs ${matchedPairs}/${totalPairs} | Score ${score} | Best streak ${bestStreak}</div>
+              <div class="help">Attempts ${attempts} | Misses ${misses}</div>
+              <div class="help">${escapeHtml(rewardPackName ? `Unlocked ${rewardPackName}` : "No reward pack unlocked yet")}</div>
+            </article>`;
+          })
+          .join("")}
+      </div>
+      ${buildMiniGameRankingsTable(type, players)}`;
+    return;
+  }
+
+  if (type === "classroom_cleanup") {
+    miniGameDashboardBody.innerHTML = `
+      <div class="host-progress-grid">
+        ${players
+          .map((player) => {
+            const sortedCount = Math.max(0, Number(player.sortedCount || player.progress || 0));
+            const goal = Math.max(1, Number(payload.goal || 1));
+            const percent = clampPercent((sortedCount / goal) * 100);
+            const score = Math.max(0, Number(player.score || 0));
+            const booksSorted = Math.max(0, Number(player.booksSorted || 0));
+            const pencilsSorted = Math.max(0, Number(player.pencilsSorted || 0));
+            const trashSorted = Math.max(0, Number(player.trashSorted || 0));
+            const misses = Math.max(0, Number(player.misses || 0));
+            const wrongSorts = Math.max(0, Number(player.wrongSorts || 0));
+            const bestCombo = Math.max(0, Number(player.bestCombo || 0));
+            return `
+            <article class="host-progress-card">
+              <div class="host-mini-player">
+                <span class="blook-top-icon">${escapeHtml(player.blook?.icon || "?")}</span>
+                <strong>${escapeHtml(player.name)}</strong>
+              </div>
+              <div class="host-progress-meter">
+                <span style="width:${percent}%"></span>
+              </div>
+              <div class="help">Score ${score} | Sorted ${sortedCount}/${goal} | Combo ${bestCombo}</div>
+              <div class="help">Books ${booksSorted} | Pencils ${pencilsSorted} | Trash ${trashSorted}</div>
+              <div class="help">Misses ${misses} | Wrong bins ${wrongSorts}</div>
+            </article>`;
+          })
+          .join("")}
+      </div>
+      ${buildMiniGameRankingsTable(type, players)}`;
+    return;
+  }
+
+  if (type === "battle_royale") {
+    miniGameDashboardBody.innerHTML = `
+      <div class="host-progress-grid">
+        ${players
+          .map((player) => {
+            const hp = Math.max(0, Number(player.hp || 0));
+            const maxHp = Math.max(1, Number(player.maxHp || 1));
+            const shield = Math.max(0, Number(player.shield || 0));
+            const percent = clampPercent((hp / maxHp) * 100);
+            const statusText = player.tie ? "Tie" : player.won ? "Won" : player.completed ? "Finished" : player.selectedAction ? "Move locked" : "Waiting";
+            return `
+            <article class="host-progress-card">
+              <div class="host-mini-player">
+                <span class="blook-top-icon">${escapeHtml(player.blook?.icon || "?")}</span>
+                <strong>${escapeHtml(player.name)}</strong>
+              </div>
+              <div class="host-progress-meter">
+                <span style="width:${percent}%"></span>
+              </div>
+              <div class="help">HP ${hp}/${maxHp} | Shield ${shield} | ${escapeHtml(player.powerName || "Special")}</div>
+              <div class="help">Vs ${escapeHtml(player.opponentName || "Opponent")} | ${escapeHtml(statusText)}${player.opponentReady && !player.selectedAction ? " | Opponent ready" : ""}</div>
+            </article>`;
+          })
+          .join("")}
+      </div>
+      ${buildMiniGameRankingsTable(type, players)}`;
+    return;
+  }
+
   miniGameDashboardBody.innerHTML = `<div class="help">No custom dashboard for ${escapeHtml(type)} yet.</div>${buildMiniGameRankingsTable(type, players)}`;
 }
 
@@ -1871,6 +2180,80 @@ function renderLeaderboard(players) {
       </tr>`
     )
     .join("");
+}
+
+function isAsteroidsMode() {
+  return String(currentMode || "").trim().toLowerCase() === "asteroids";
+}
+
+function hideHostAsteroidsStage() {
+  if (!hostAsteroidsStage) {
+    return;
+  }
+  hostAsteroidsStage.classList.add("hidden");
+  hostAsteroidsStage.innerHTML = "";
+}
+
+function hostAsteroidRockLayout(index, total) {
+  const safeTotal = Math.max(1, Number(total || 1));
+  const angle = (index / safeTotal) * Math.PI * 2 - Math.PI / 2;
+  const ring = index % 3;
+  const radiusX = 18 + ring * 11 + (index % 2 === 0 ? 4 : 0);
+  const radiusY = 15 + ring * 9 + (index % 3 === 0 ? 4 : 0);
+  return {
+    left: 50 + Math.cos(angle) * radiusX,
+    top: 38 + Math.sin(angle) * radiusY
+  };
+}
+
+function renderHostAsteroidsStage(modeData = {}, submissions = []) {
+  if (!hostAsteroidsStage) {
+    return;
+  }
+  if (!isAsteroidsMode()) {
+    hideHostAsteroidsStage();
+    return;
+  }
+
+  const waveSize = Math.max(6, Number(modeData?.waveSize || 8));
+  const destroyedCount = Math.max(0, Math.min(waveSize, Number(modeData?.destroyedCount || 0)));
+  const totalBlasts = Math.max(0, Number(modeData?.totalBlasts || 0));
+  const streakCoinsAwarded = Math.max(0, Number(modeData?.streakCoinsAwarded || 0));
+  const topPilots = Array.isArray(modeData?.topPilots)
+    ? modeData.topPilots
+    : Array.isArray(submissions)
+      ? submissions
+        .filter((row) => Number(row?.asteroidsBlasted || 0) > 0)
+        .sort((left, right) => Number(right.asteroidsBlasted || 0) - Number(left.asteroidsBlasted || 0))
+        .slice(0, 4)
+      : [];
+
+  hostAsteroidsStage.classList.remove("hidden");
+  hostAsteroidsStage.innerHTML = `
+    <div class="asteroids-stage">
+      ${Array.from({ length: waveSize }, (_, index) => {
+        const layout = hostAsteroidRockLayout(index, waveSize);
+        const destroyed = index < destroyedCount;
+        return `<span class="asteroid-rock${destroyed ? " destroyed" : ""}" style="left:${layout.left}%;top:${layout.top}%;"></span>`;
+      }).join("")}
+      ${destroyedCount > 0 ? `<span class="asteroids-beam"></span>` : ""}
+      <span class="asteroids-ship"></span>
+    </div>
+    <div class="asteroids-meta">
+      <span class="asteroids-pill"><strong>Wave</strong> ${waveSize}</span>
+      <span class="asteroids-pill"><strong>Class Blasts</strong> ${totalBlasts}</span>
+      <span class="asteroids-pill"><strong>Streak Coins</strong> ${streakCoinsAwarded}</span>
+    </div>
+    <div class="asteroids-summary">${destroyedCount > 0 ? `${destroyedCount}/${waveSize} asteroids cleared this round.` : "Waiting for the class to answer and fire."}</div>
+    ${topPilots.length > 0 ? `
+      <div class="asteroids-scoreboard">
+        ${topPilots.map((pilot) => `
+          <div class="asteroids-score-row">
+            <span>${escapeHtml(pilot.playerName || "Player")}</span>
+            <span>${Math.max(0, Number((pilot.blasts ?? pilot.asteroidsBlasted) || 0))} blasts${pilot.speedLabel ? ` | ${escapeHtml(pilot.speedLabel)}` : pilot.asteroidsSpeedLabel ? ` | ${escapeHtml(pilot.asteroidsSpeedLabel)}` : ""}</span>
+          </div>`).join("")}
+      </div>` : ""}
+  `;
 }
 
 function renderPlayers(players) {
@@ -2814,6 +3197,9 @@ socket.on("lobby:update", (payload) => {
   modeLabel.textContent = modeText;
   quizLabel.textContent = sessionLabelText(payload.settings?.miniGameRotationMode, payload.settings?.questionSet, questionSetText);
   feedTitle.textContent = payload.feedTitle || "Mode Feed";
+  currentMode = String(payload.settings?.mode || currentMode || "classic").toLowerCase();
+  hideHostAsteroidsStage();
+  modeInput.value = payload.settings.mode;
   liveMode.value = payload.settings.mode;
   liveQuestionSet.value = payload.settings.questionSet;
   liveTimer.value = payload.settings.timerSeconds;
@@ -2928,8 +3314,11 @@ socket.on("game:resumed", ({ phase: resumedPhase, endsAt }) => {
 });
 
 socket.on("question:start", (payload) => {
+  if (payload?.mode) {
+    currentMode = String(payload.mode || currentMode || "classic").toLowerCase();
+  }
   setPhase("question", `Question ${payload.questionIndex}/${payload.totalQuestions} is live.`);
-  setPhaseIllustration("question", "Question round");
+  setPhaseIllustration(isAsteroidsMode() ? "asteroids" : "question", isAsteroidsMode() ? "Asteroids round" : "Question round");
   questionPanel.classList.remove("hidden");
   questionText.textContent = payload.question.prompt;
   setQuestionMediaImage(hostQuestionMedia, payload.question.image, payload.question.prompt);
@@ -2939,11 +3328,20 @@ socket.on("question:start", (payload) => {
     .map((opt, index) => `<div class="answer"><strong>${String.fromCharCode(65 + index)}.</strong> ${escapeHtml(opt)}<br/><span class="help">0 picks</span></div>`)
     .join("");
 
+  if (isAsteroidsMode()) {
+    renderHostAsteroidsStage(payload?.modeData || {}, []);
+  } else {
+    hideHostAsteroidsStage();
+  }
+
   showNotice(hostNotice, `Question ${payload.questionIndex} is live.`);
   startTicker(questionTimer, payload.endsAt, "Time left");
 });
 
 socket.on("question:result", (payload) => {
+  if (payload?.mode) {
+    currentMode = String(payload.mode || currentMode || "classic").toLowerCase();
+  }
   setPhase("question_result", "Answer revealed and scores updated.");
 
   const counts = currentQuestionOptions.map(() => 0);
@@ -2963,8 +3361,18 @@ socket.on("question:result", (payload) => {
     })
     .join("");
 
+  if (isAsteroidsMode()) {
+    renderHostAsteroidsStage(payload?.modeData || {}, payload?.submissions || []);
+  } else {
+    hideHostAsteroidsStage();
+  }
+
   const explanation = payload.explanation ? ` ${payload.explanation}` : "";
-  showNotice(hostNotice, `Answer revealed.${explanation}`, "good");
+  showNotice(
+    hostNotice,
+    `Answer revealed.${isAsteroidsMode() ? ` Class blasts: ${Math.max(0, Number(payload?.modeData?.totalBlasts || 0))}.` : ""}${explanation}`,
+    "good"
+  );
   renderLeaderboard(payload.leaderboard);
 });
 

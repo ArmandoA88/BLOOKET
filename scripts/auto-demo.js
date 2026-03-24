@@ -1,11 +1,44 @@
 const { spawn } = require("child_process");
 const path = require("path");
+const http = require("http");
+const https = require("https");
+const { URL } = require("url");
 const { io } = require("socket.io-client");
 
 const ROOT = path.resolve(__dirname, "..");
 const PORT = Number(process.env.DEMO_PORT || 3000);
 const BASE_URL = process.env.DEMO_URL || `http://127.0.0.1:${PORT}`;
 const STUDENT_COUNT = Math.max(2, Number(process.env.DEMO_STUDENTS || 10));
+const STUDENT_LOGIN_PASSWORD = "Arratia1!";
+const DEMO_STUDENT_USERNAMES = [
+  "lenin",
+  "nash",
+  "angela",
+  "sierra",
+  "jackson",
+  "conor",
+  "juan",
+  "ariabella",
+  "noah",
+  "charlotte",
+  "ailyn",
+  "eli",
+  "mattie",
+  "samantha",
+  "brandon",
+  "mario",
+  "henry",
+  "ava",
+  "liam",
+  "leo",
+  "oscar",
+  "emilia",
+  "holland",
+  "callum",
+  "elisa",
+  "kayla",
+  "evie"
+];
 const QUESTION_COUNT = Math.max(5, Number(process.env.DEMO_QUESTIONS || 5));
 const TIMER_SECONDS = Math.max(8, Number(process.env.DEMO_TIMER || 8));
 const MODE = process.env.DEMO_MODE || "classic";
@@ -42,6 +75,82 @@ async function waitForHealth(timeoutMs = 20000) {
   return false;
 }
 
+function requestJson(urlString, options = {}) {
+  return new Promise((resolve, reject) => {
+    const target = new URL(urlString);
+    const transport = target.protocol === "https:" ? https : http;
+    const body = options.body ? String(options.body) : "";
+    const headers = {
+      Accept: "application/json",
+      ...(options.headers || {})
+    };
+
+    if (body && !headers["Content-Length"]) {
+      headers["Content-Length"] = Buffer.byteLength(body);
+    }
+
+    const request = transport.request(
+      target,
+      {
+        method: options.method || "GET",
+        headers
+      },
+      (response) => {
+        let raw = "";
+        response.setEncoding("utf8");
+        response.on("data", (chunk) => {
+          raw += chunk;
+        });
+        response.on("end", () => {
+          let payload = {};
+          try {
+            payload = raw ? JSON.parse(raw) : {};
+          } catch (_error) {
+            payload = {};
+          }
+
+          const setCookie = Array.isArray(response.headers["set-cookie"]) ? response.headers["set-cookie"] : [];
+          const cookieHeader = setCookie.map((value) => String(value).split(";")[0]).join("; ");
+          resolve({
+            ok: response.statusCode >= 200 && response.statusCode < 300,
+            statusCode: response.statusCode,
+            payload,
+            cookieHeader
+          });
+        });
+      }
+    );
+
+    request.on("error", reject);
+    if (body) {
+      request.write(body);
+    }
+    request.end();
+  });
+}
+
+async function loginStudentSession(username) {
+  const response = await requestJson(`${BASE_URL}/api/student-auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      username,
+      password: STUDENT_LOGIN_PASSWORD
+    })
+  });
+
+  if (!response.ok || !response.payload?.ok || !response.cookieHeader) {
+    throw new Error(response.payload?.message || `Student login failed for ${username}`);
+  }
+
+  return {
+    cookieHeader: response.cookieHeader,
+    displayName: String(response.payload?.student?.displayName || username)
+  };
+}
+
 function emitAck(socket, eventName, payload, timeoutMs = 9000) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
@@ -59,11 +168,12 @@ function emitAck(socket, eventName, payload, timeoutMs = 9000) {
   });
 }
 
-async function connectSocket(label) {
+async function connectSocket(label, cookieHeader = "") {
   const socket = io(BASE_URL, {
     transports: ["websocket"],
     reconnection: false,
-    timeout: 8000
+    timeout: 8000,
+    extraHeaders: cookieHeader ? { Cookie: cookieHeader } : undefined
   });
 
   await new Promise((resolve, reject) => {
@@ -453,7 +563,7 @@ async function run() {
     console.log(`\nDEMO ROOM READY`);
     console.log(`- Base URL: ${BASE_URL}`);
     console.log(`- Code: ${code}`);
-    console.log(`- Students: ${STUDENT_COUNT}`);
+    console.log(`- Students: ${Math.min(STUDENT_COUNT, DEMO_STUDENT_USERNAMES.length)}`);
     if (!DEMO_CODE) {
       console.log(`- Questions: ${QUESTION_COUNT}`);
     }
@@ -488,10 +598,16 @@ async function run() {
       });
     }
 
-    for (let i = 0; i < STUDENT_COUNT; i += 1) {
-      const socket = await connectSocket(`bot-${i + 1}`);
+    const classroomUsers = DEMO_STUDENT_USERNAMES.slice(0, Math.min(STUDENT_COUNT, DEMO_STUDENT_USERNAMES.length));
+    if (classroomUsers.length < STUDENT_COUNT) {
+      console.log(`Requested ${STUDENT_COUNT} demo students, using ${classroomUsers.length} classroom accounts instead.`);
+    }
+
+    for (let i = 0; i < classroomUsers.length; i += 1) {
+      const login = await loginStudentSession(classroomUsers[i]);
+      const socket = await connectSocket(`bot-${i + 1}`, login.cookieHeader);
       sockets.push(socket);
-      const name = `Bot${String(i + 1).padStart(2, "0")}`;
+      const name = login.displayName || `Bot${String(i + 1).padStart(2, "0")}`;
       const blookId = randomBlookId(blookIds);
 
       await emitAck(socket, "player:join", {

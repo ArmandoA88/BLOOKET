@@ -19,7 +19,6 @@ let accountKey = "";
 let accountData = null;
 let activeEventName = "Event Card";
 let activeActionLabel = "Open";
-const ALL_BLOOKS_AVAILABLE = true;
 const MODE_LABELS = {
   classic: "Foosball",
   gold: "Tower Stacker",
@@ -45,7 +44,7 @@ const MINI_TUTORIAL_STORAGE_KEY = "quizArenaMiniTutorialSeen";
 const PHASE_BANNER_COPY = {
   join: {
     title: "Join Screen",
-    detail: "Enter game code and nickname."
+    detail: "Log in and enter the game code."
   },
   lobby: {
     title: "Lobby",
@@ -145,13 +144,23 @@ const codeInput = document.getElementById("code");
 const nameInput = document.getElementById("name");
 const joinBtn = document.getElementById("joinBtn");
 const joinNotice = document.getElementById("joinNotice");
+const studentLoginUsernameInput = document.getElementById("studentLoginUsername");
+const studentLoginPasswordInput = document.getElementById("studentLoginPassword");
+const studentLoginBtn = document.getElementById("studentLoginBtn");
+const studentLogoutBtn = document.getElementById("studentLogoutBtn");
+const studentLoginSummary = document.getElementById("studentLoginSummary");
+const studentLoginGreeting = document.getElementById("studentLoginGreeting");
+const studentLoginGreetingTitle = document.getElementById("studentLoginGreetingTitle");
+const studentLoginGreetingMeta = document.getElementById("studentLoginGreetingMeta");
+const studentLoginNotice = document.getElementById("studentLoginNotice");
 const accountPanel = document.getElementById("accountPanel");
 const accountPolicyNotice = document.getElementById("accountPolicyNotice");
+const storeLinkBtn = document.getElementById("storeLinkBtn");
+const storeHint = document.getElementById("storeHint");
 const packTabs = document.getElementById("packTabs");
 const blookGrid = document.getElementById("blookGrid");
 const pickedBlook = document.getElementById("pickedBlook");
 const accountCoins = document.getElementById("accountCoins");
-const accountFreeOpen = document.getElementById("accountFreeOpen");
 const openPackBtn = document.getElementById("openPackBtn");
 const sellDuplicateBtn = document.getElementById("sellDuplicateBtn");
 const packOdds = document.getElementById("packOdds");
@@ -340,6 +349,10 @@ let reconnecting = false;
 let reconnectJoinPending = false;
 let reconnectRetryCount = 0;
 let joinRequestPending = false;
+let studentAuthLoaded = false;
+let studentAuthBusy = false;
+let studentAuthEnabled = true;
+let loggedInStudent = null;
 let selectedSoccerStarId = SOCCER_STAR_PLAYERS[0].id;
 let miniSoccerSavedCount = 0;
 let miniSoccerMissCount = 0;
@@ -376,9 +389,16 @@ let currentReportCode = "";
 let packOpenAnimationTimer = null;
 let soundEnabled = true;
 let sfxAudioContext = null;
+let sfxCooldownUntil = Object.create(null);
 let miniTutorialSeen = new Set();
 let activeMiniTutorialType = "";
 let tickerWarningSecond = null;
+let miniReactionGoCuePlayed = false;
+let miniTapLastCount = 0;
+let miniSequenceLastProgress = 0;
+let miniObstacleLastStep = 0;
+let miniObstacleLastHits = 0;
+let miniScrambleLastAttempts = 0;
 
 const FALLBACK_BLOOKS = [
   {
@@ -429,6 +449,10 @@ let roomSettings = {
   endType: "time",
   endTargetValue: 7
 };
+
+function shouldShowAllBlooks() {
+  return roomSettings.allowStudentAccounts === false;
+}
 
 const pageParams = new URLSearchParams(window.location.search);
 const prefilledCode = pageParams.get("code");
@@ -512,12 +536,21 @@ function maybeAutoJoinFromQuery() {
   if (!autoJoinFromQueryPending || autoJoinFromQueryAttempted || !joinBtn || !joinCard) {
     return;
   }
+  if (!studentAuthLoaded) {
+    return;
+  }
   if (roomCode || joinCard.classList.contains("hidden")) {
     return;
   }
 
   const code = sanitizeRoomCode(codeInput?.value || "");
   const name = String(nameInput?.value || "").trim();
+  if (!canJoinCurrentRoom()) {
+    if (code.length === 6) {
+      setJoinNotice(`Log in first to join room ${code}.`, "bad");
+    }
+    return;
+  }
   if (code.length !== 6 || !name) {
     return;
   }
@@ -633,8 +666,25 @@ function playSfxTone(ctx, frequency, durationMs, gain = 0.04, waveform = "sine",
   oscillator.stop(end + 0.02);
 }
 
-function playMiniGameSfx(eventType) {
+function canPlaySfx(key, cooldownMs = 0) {
+  const safeCooldown = Math.max(0, Number(cooldownMs) || 0);
+  if (safeCooldown <= 0) {
+    return true;
+  }
+  const now = Date.now();
+  if (Number(sfxCooldownUntil[key] || 0) > now) {
+    return false;
+  }
+  sfxCooldownUntil[key] = now + safeCooldown;
+  return true;
+}
+
+function playMiniGameSfx(eventType, options = {}) {
   if (!soundEnabled) {
+    return;
+  }
+  const key = String(eventType || "").toLowerCase();
+  if (!key || !canPlaySfx(key, options?.cooldownMs)) {
     return;
   }
   const ctx = ensureSfxAudioContext();
@@ -642,7 +692,6 @@ function playMiniGameSfx(eventType) {
     return;
   }
 
-  const key = String(eventType || "").toLowerCase();
   if (key === "goal") {
     playSfxTone(ctx, 680, 90, 0.04, "triangle");
     playSfxTone(ctx, 880, 120, 0.045, "triangle", 90);
@@ -657,8 +706,56 @@ function playMiniGameSfx(eventType) {
     playSfxTone(ctx, 740, 75, 0.03, "square");
     return;
   }
+  if (key === "start") {
+    playSfxTone(ctx, 520, 70, 0.03, "triangle");
+    playSfxTone(ctx, 660, 90, 0.034, "triangle", 70);
+    return;
+  }
+  if (key === "select") {
+    playSfxTone(ctx, 430, 45, 0.02, "square");
+    playSfxTone(ctx, 560, 65, 0.018, "triangle", 35);
+    return;
+  }
+  if (key === "tap") {
+    playSfxTone(ctx, 560, 30, 0.018, "square");
+    return;
+  }
+  if (key === "progress") {
+    playSfxTone(ctx, 620, 65, 0.024, "triangle");
+    return;
+  }
+  if (key === "go") {
+    playSfxTone(ctx, 880, 80, 0.03, "square");
+    playSfxTone(ctx, 1120, 100, 0.026, "triangle", 75);
+    return;
+  }
+  if (key === "correct") {
+    playSfxTone(ctx, 540, 70, 0.03, "triangle");
+    playSfxTone(ctx, 720, 100, 0.034, "triangle", 60);
+    playSfxTone(ctx, 960, 130, 0.036, "triangle", 140);
+    return;
+  }
+  if (key === "complete") {
+    playSfxTone(ctx, 520, 75, 0.028, "triangle");
+    playSfxTone(ctx, 660, 95, 0.032, "triangle", 65);
+    playSfxTone(ctx, 840, 120, 0.034, "triangle", 145);
+    return;
+  }
+  if (key === "reward") {
+    playSfxTone(ctx, 660, 80, 0.028, "triangle");
+    playSfxTone(ctx, 990, 110, 0.034, "triangle", 70);
+    playSfxTone(ctx, 1320, 145, 0.036, "triangle", 150);
+    return;
+  }
+  if (key === "unlock") {
+    playSfxTone(ctx, 460, 75, 0.028, "triangle");
+    playSfxTone(ctx, 690, 100, 0.032, "triangle", 70);
+    playSfxTone(ctx, 1040, 160, 0.038, "triangle", 150);
+    return;
+  }
   if (key === "miss") {
     playSfxTone(ctx, 260, 100, 0.03, "triangle");
+    playSfxTone(ctx, 200, 120, 0.024, "square", 70);
   }
 }
 
@@ -824,6 +921,33 @@ function setJoinNotice(message, type = "") {
   joinNotice.textContent = message;
 }
 
+function requiresStudentLogin() {
+  return studentAuthEnabled !== false;
+}
+
+function canJoinCurrentRoom() {
+  return !requiresStudentLogin() || Boolean(loggedInStudent);
+}
+
+function focusStudentLoginForm() {
+  if (studentLoginUsernameInput && !studentLoginUsernameInput.disabled) {
+    studentLoginUsernameInput.focus();
+    return;
+  }
+  if (studentLoginPasswordInput && !studentLoginPasswordInput.disabled) {
+    studentLoginPasswordInput.focus();
+  }
+}
+
+function updateJoinButtonState() {
+  if (!joinBtn) {
+    return;
+  }
+
+  joinBtn.disabled = joinRequestPending || !canJoinCurrentRoom();
+  joinBtn.textContent = joinRequestPending ? "Joining..." : (canJoinCurrentRoom() ? "Join Game" : "Log In to Join");
+}
+
 function joinConnectionHelpText() {
   const host = String(window.location.hostname || "").toLowerCase();
   if (!host || host === "localhost" || host === "127.0.0.1") {
@@ -834,9 +958,209 @@ function joinConnectionHelpText() {
 
 function setJoinBusy(isBusy) {
   joinRequestPending = isBusy === true;
-  if (joinBtn) {
-    joinBtn.disabled = joinRequestPending;
-    joinBtn.textContent = joinRequestPending ? "Joining..." : "Join Game";
+  updateJoinButtonState();
+}
+
+function setStudentLoginBusy(isBusy) {
+  studentAuthBusy = isBusy === true;
+  if (studentLoginBtn) {
+    studentLoginBtn.disabled = studentAuthBusy || Boolean(loggedInStudent);
+    studentLoginBtn.textContent = studentAuthBusy ? "Logging In..." : (loggedInStudent ? "Logged In" : "Log In");
+  }
+  if (studentLogoutBtn) {
+    studentLogoutBtn.disabled = studentAuthBusy;
+  }
+  if (studentLoginUsernameInput) {
+    studentLoginUsernameInput.disabled = studentAuthBusy || Boolean(loggedInStudent);
+  }
+  if (studentLoginPasswordInput) {
+    studentLoginPasswordInput.disabled = studentAuthBusy || Boolean(loggedInStudent);
+  }
+}
+
+function setStudentLoginNotice(message, type = "") {
+  if (!studentLoginNotice) {
+    return;
+  }
+  if (!message) {
+    studentLoginNotice.classList.add("hidden");
+    studentLoginNotice.classList.remove("good", "bad");
+    studentLoginNotice.textContent = "";
+    return;
+  }
+  studentLoginNotice.classList.remove("hidden", "good", "bad");
+  if (type) {
+    studentLoginNotice.classList.add(type);
+  }
+  studentLoginNotice.textContent = message;
+}
+
+function renderStudentLoginState() {
+  const loggedIn = Boolean(loggedInStudent);
+  if (studentLoginSummary) {
+    if (loggedIn) {
+      studentLoginSummary.textContent = `Hello, ${loggedInStudent.displayName}! Your saved coins and blooks are ready, and your join name stays locked to your first name.`;
+    } else if (requiresStudentLogin()) {
+      studentLoginSummary.textContent = "Not logged in. Student login is required before you can join a game.";
+    } else {
+      studentLoginSummary.textContent = "Guest join is available right now.";
+    }
+  }
+  if (studentLoginGreeting) {
+    studentLoginGreeting.classList.toggle("hidden", !loggedIn);
+  }
+  if (studentLoginGreetingTitle) {
+    studentLoginGreetingTitle.textContent = loggedIn ? `Hello, ${loggedInStudent.displayName}!` : "Hello!";
+  }
+  if (studentLoginGreetingMeta) {
+    studentLoginGreetingMeta.textContent = loggedIn
+      ? `You are logged in as ${loggedInStudent.username}. Your game name will show as ${loggedInStudent.displayName}.`
+      : "You are logged in.";
+  }
+  if (studentLogoutBtn) {
+    studentLogoutBtn.classList.toggle("hidden", !loggedIn);
+  }
+  if (studentLoginUsernameInput) {
+    if (loggedIn) {
+      studentLoginUsernameInput.value = loggedInStudent.displayName;
+    }
+  }
+  if (studentLoginPasswordInput && loggedIn) {
+    studentLoginPasswordInput.value = "";
+  }
+  if (nameInput) {
+    nameInput.readOnly = requiresStudentLogin() || loggedIn;
+    nameInput.disabled = requiresStudentLogin() && !loggedIn;
+    nameInput.placeholder = loggedIn
+      ? loggedInStudent.displayName
+      : (requiresStudentLogin() ? "Log in to use your first name" : "Your name");
+    if (loggedIn) {
+      nameInput.value = loggedInStudent.displayName;
+    } else if (requiresStudentLogin()) {
+      nameInput.value = "";
+    }
+  }
+  if (accountPanel) {
+    accountPanel.classList.toggle("hidden", requiresStudentLogin() && !loggedIn);
+  }
+  if (storeLinkBtn) {
+    storeLinkBtn.classList.toggle("hidden", !loggedIn);
+  }
+  if (storeHint) {
+    storeHint.textContent = loggedIn
+      ? "Buy new packs in the Store, then come back here to choose from the blooks you already own."
+      : "Log in first, then use the Store to buy packs for your account.";
+  }
+  if (!loggedIn && requiresStudentLogin() && pickedBlook) {
+    pickedBlook.textContent = "Log in to load your saved blooks and get ready to join.";
+  }
+  setStudentLoginBusy(studentAuthBusy);
+  updateJoinButtonState();
+}
+
+function applyStudentAuthState(payload) {
+  studentAuthEnabled = payload?.enabled !== false;
+  const nextStudent = payload?.loggedIn && payload?.student ? payload.student : null;
+  loggedInStudent = nextStudent
+    ? {
+        username: String(nextStudent.username || ""),
+        displayName: String(nextStudent.displayName || ""),
+        accountKey: String(payload?.accountKey || nextStudent.accountKey || "")
+      }
+    : null;
+  studentAuthLoaded = true;
+
+  if (loggedInStudent?.accountKey) {
+    setStoredAccountKey(loggedInStudent.accountKey);
+  } else {
+    clearStoredStudentAccountKey();
+  }
+
+  renderStudentLoginState();
+  maybeAutoJoinFromQuery();
+}
+
+async function loadStudentAuthStatus() {
+  try {
+    const response = await fetch("/api/student-auth/status");
+    const payload = await response.json();
+    if (!response.ok || !payload?.ok) {
+      throw new Error(payload?.message || "Student auth status failed");
+    }
+    applyStudentAuthState(payload);
+    if (loggedInStudent && payload.account) {
+      applyAccount(payload.account, payload.accountKey || loggedInStudent.accountKey);
+    }
+  } catch (_error) {
+    studentAuthLoaded = true;
+    studentAuthEnabled = true;
+    loggedInStudent = null;
+    clearStoredStudentAccountKey();
+    renderStudentLoginState();
+    maybeAutoJoinFromQuery();
+  }
+}
+
+async function submitStudentLogin() {
+  const username = normalizeStudentLoginUsername(studentLoginUsernameInput?.value || "");
+  const password = String(studentLoginPasswordInput?.value || "");
+  if (!username || !password) {
+    setStudentLoginNotice("Enter your first name and password.", "bad");
+    return;
+  }
+
+  setStudentLoginBusy(true);
+  setStudentLoginNotice("");
+
+  try {
+    const response = await fetch("/api/student-auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+    const payload = await response.json();
+    if (!response.ok || !payload?.ok) {
+      throw new Error(payload?.message || "Student login failed.");
+    }
+
+    applyStudentAuthState(payload);
+    if (payload.account) {
+      applyAccount(payload.account, payload.accountKey || payload.student?.accountKey || "");
+    } else {
+      await loadBlooks();
+    }
+    setStudentLoginNotice(`Logged in as ${payload.student?.displayName || username}.`, "good");
+  } catch (error) {
+    setStudentLoginNotice(error?.message || "Student login failed.", "bad");
+  } finally {
+    setStudentLoginBusy(false);
+    renderStudentLoginState();
+  }
+}
+
+async function logoutStudentAccount() {
+  setStudentLoginBusy(true);
+  setStudentLoginNotice("");
+
+  try {
+    const response = await fetch("/api/student-auth/logout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    });
+    const payload = await response.json();
+    if (!response.ok || !payload?.ok) {
+      throw new Error(payload?.message || "Could not log out.");
+    }
+
+    applyStudentAuthState(payload);
+    accountData = null;
+    await loadBlooks();
+    setStudentLoginNotice("Logged out. Log back in with your classroom account before joining.", "good");
+  } catch (error) {
+    setStudentLoginNotice(error?.message || "Could not log out.", "bad");
+  } finally {
+    setStudentLoginBusy(false);
+    renderStudentLoginState();
   }
 }
 
@@ -1078,9 +1402,6 @@ function applyRoomSettings(nextSettings = null) {
   }
 
   const allowAccounts = roomSettings.allowStudentAccounts !== false;
-  if (accountPanel) {
-    accountPanel.classList.remove("hidden");
-  }
   if (accountPolicyNotice) {
     if (!allowAccounts) {
       accountPolicyNotice.classList.remove("hidden", "bad");
@@ -1095,6 +1416,7 @@ function applyRoomSettings(nextSettings = null) {
   if (!allowAccounts && !selectedBlookId) {
     selectedBlookId = pickFirstOwnedBlookIdForPack(selectedPackId) || getInventoryRows()[0]?.id || "";
   }
+  renderStudentLoginState();
   updateFishingTimerDisplay();
   applyPlayModeTheme();
 }
@@ -1434,8 +1756,12 @@ function animateMiniSoccerKick(lastKick) {
   pitch.classList.remove("goal-flash", "save-flash");
   if (outcome === "goal") {
     pitch.classList.add("goal-flash");
+    playMiniGameSfx("goal");
   } else if (outcome === "saved") {
     pitch.classList.add("save-flash");
+    playMiniGameSfx("save");
+  } else {
+    playMiniGameSfx("miss");
   }
   setTimeout(() => {
     pitch.classList.remove("goal-flash", "save-flash");
@@ -2002,7 +2328,9 @@ async function initMiniFoosballPixi() {
 }
 
 function setMiniFoosballLane(lane, syncToServer = false) {
-  miniFoosballSelectedLane = clampMiniFoosballLane(lane);
+  const nextLane = clampMiniFoosballLane(lane);
+  const laneChanged = nextLane !== miniFoosballSelectedLane;
+  miniFoosballSelectedLane = nextLane;
   const buttons = chests.querySelectorAll("button[data-mini-action='foos_lane']");
   buttons.forEach((button) => {
     const buttonLane = clampMiniFoosballLane(button.getAttribute("data-mini-value"));
@@ -2014,12 +2342,20 @@ function setMiniFoosballLane(lane, syncToServer = false) {
   }
 
   if (!syncToServer || !roomCode) {
+    if (laneChanged) {
+      playMiniGameSfx("tap", { cooldownMs: 70 });
+    }
     return;
   }
 
   socket.emit("player:minigameAction", { code: roomCode, action: "set_lane", value: { lane: miniFoosballSelectedLane } }, (res) => {
     if (res?.ok !== true) {
       setNotice(res?.message || "Could not update lane.", "bad");
+      playMiniGameSfx("miss", { cooldownMs: 120 });
+      return;
+    }
+    if (laneChanged) {
+      playMiniGameSfx("tap", { cooldownMs: 70 });
     }
   });
 }
@@ -2113,7 +2449,10 @@ function sendMiniSnakeDirection(direction) {
   socket.emit("player:minigameAction", { code: roomCode, action: "set_direction", value: { direction } }, (res) => {
     if (res?.ok !== true) {
       setNotice(res?.message || "Could not turn the snake.", "bad");
+      playMiniGameSfx("miss", { cooldownMs: 120 });
+      return;
     }
+    playMiniGameSfx("tap", { cooldownMs: 70 });
   });
 }
 
@@ -2246,12 +2585,15 @@ function applyMiniSnakeState(payload = {}, options = {}) {
       const eventType = String(payload?.lastEvent?.type || "");
       if (payload.won === true || eventType === "board_clear") {
         summaryEl.textContent = "Perfect path. You filled the board and cleared the round.";
+        playMiniGameSfx("complete");
         setNotice("Snake board cleared. Waiting for results...", "good");
       } else if (payload.alive === false || eventType === "crash") {
         summaryEl.textContent = "Crash. Walls and your own tail both end the run.";
+        playMiniGameSfx("miss");
         setNotice("Snake crashed. Waiting for results...", "bad");
       } else if (eventType === "food") {
         summaryEl.textContent = "Snack collected. Longer snake, tighter route.";
+        playMiniGameSfx("progress", { cooldownMs: 70 });
         setNotice("Snack collected. Keep the route clean.", "good");
       } else {
         summaryEl.textContent = "Use Arrow keys or WASD to turn. Plan ahead because reverse turns are blocked.";
@@ -2824,13 +3166,16 @@ function applyMiniTowerStackerState(payload = {}, options = {}) {
       playMiniGameSfx("goal");
     } else if (String(payload?.lastEvent?.type || "") === "great_drop") {
       setNotice("Great drop. The tower looks solid.", "good");
+      playMiniGameSfx("progress", { cooldownMs: 80 });
     } else if (String(payload?.lastEvent?.type || "") === "stable_stack") {
       setNotice("Stable stack. Keep climbing.", "good");
+      playMiniGameSfx("progress", { cooldownMs: 80 });
     } else if (String(payload?.lastEvent?.type || "") === "tower_collapse") {
       setNotice("Oops! The tower wobbled apart. Restart and try again.", "bad");
       playMiniGameSfx("miss");
     } else if (String(payload?.lastEvent?.type || "") === "drop_landed" && options.forceSummaryText !== true) {
       setNotice("Nice landing. Keep stacking.", "good");
+      playMiniGameSfx("tap", { cooldownMs: 80 });
     }
   } else if (options.forceSummaryText) {
     setNotice("Tower Stacker live. Pick a theme, then press Space to drop.", "");
@@ -2964,6 +3309,7 @@ function renderMiniGame(type, data, actionLabel) {
   }
 
   if (type === "tap_rush") {
+    miniTapLastCount = Math.max(0, Number(data?.taps || 0));
     chests.innerHTML = `
       <div class="chest">
         <h4>Tap As Fast As You Can</h4>
@@ -2976,6 +3322,7 @@ function renderMiniGame(type, data, actionLabel) {
 
   if (type === "reaction_duel") {
     const goAt = Number(data?.goAt || Date.now() + 2000);
+    miniReactionGoCuePlayed = goAt <= Date.now();
     chests.innerHTML = `
       <div class="chest">
         <h4>Reaction Duel</h4>
@@ -2992,6 +3339,10 @@ function renderMiniGame(type, data, actionLabel) {
       if (msLeft <= 0) {
         if (statusEl) statusEl.textContent = "GO!";
         if (timerEl) timerEl.textContent = "0 ms";
+        if (!miniReactionGoCuePlayed) {
+          miniReactionGoCuePlayed = true;
+          playMiniGameSfx("go");
+        }
         return;
       }
       if (statusEl) statusEl.textContent = "Wait...";
@@ -3002,6 +3353,7 @@ function renderMiniGame(type, data, actionLabel) {
 
   if (type === "sequence_memory") {
     const sequence = Array.isArray(data?.sequence) ? data.sequence : [];
+    miniSequenceLastProgress = Math.max(0, Number(data?.progress || 0));
     const sequenceText = sequence.map((step) => MINI_STEP_LABELS[step] || "?").join(" -> ");
     chests.innerHTML = `
       <div class="chest">
@@ -3020,6 +3372,8 @@ function renderMiniGame(type, data, actionLabel) {
 
   if (type === "obstacle_dodge") {
     const totalTurns = Number(data?.totalTurns || 8);
+    miniObstacleLastStep = Math.max(0, Number(data?.step || 0));
+    miniObstacleLastHits = Math.max(0, Number(data?.hits || 0));
     chests.innerHTML = `
       <div class="chest">
         <h4>Obstacle Dodge</h4>
@@ -3078,6 +3432,7 @@ function renderMiniGame(type, data, actionLabel) {
   if (type === "word_scramble") {
     const scrambled = String(data?.scrambled || "");
     const maxAttempts = Number(data?.maxAttempts || 4);
+    miniScrambleLastAttempts = Math.max(0, Number(data?.attempts || 0));
     chests.innerHTML = `
       <div class="chest">
         <h4>Word Scramble</h4>
@@ -3146,22 +3501,73 @@ function getOrCreateAccountKey() {
   }
 
   const generated = `guest:${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
-  accountKey = generated;
-  try {
-    window.localStorage.setItem("quizArenaAccountKey", generated);
-  } catch (_error) {
-    // Ignore local storage failures and keep in-memory key.
-  }
+  setStoredAccountKey(generated);
   return accountKey;
 }
 
+function normalizeStudentLoginUsername(value) {
+  if (typeof value !== "string") {
+    return "";
+  }
+  const firstToken = value.trim().split(/\s+/)[0] || "";
+  return firstToken.toLowerCase().replace(/[^a-z]/g, "");
+}
+
+function isStudentAccountKeyValue(value) {
+  return String(value || "").trim().toLowerCase().startsWith("student:");
+}
+
+function setStoredAccountKey(nextKey) {
+  const safeKey = String(nextKey || "").trim();
+  accountKey = safeKey;
+  try {
+    if (safeKey) {
+      window.localStorage.setItem("quizArenaAccountKey", safeKey);
+    } else {
+      window.localStorage.removeItem("quizArenaAccountKey");
+    }
+  } catch (_error) {
+    // Ignore local storage failures and keep the in-memory key.
+  }
+}
+
+function clearStoredStudentAccountKey() {
+  if (isStudentAccountKeyValue(accountKey)) {
+    accountKey = "";
+  }
+
+  let existing = "";
+  try {
+    existing = String(window.localStorage.getItem("quizArenaAccountKey") || "");
+  } catch (_error) {
+    existing = "";
+  }
+
+  if (!isStudentAccountKeyValue(existing)) {
+    return;
+  }
+
+  try {
+    window.localStorage.removeItem("quizArenaAccountKey");
+  } catch (_error) {
+    // Ignore storage failures.
+  }
+}
+
 function accountQuery() {
-  const safeKey = encodeURIComponent(getOrCreateAccountKey());
+  const currentKey = loggedInStudent?.accountKey || getOrCreateAccountKey();
+  const safeKey = encodeURIComponent(currentKey);
   return `accountKey=${safeKey}`;
 }
 
 function joinAccountKey() {
-  return roomSettings.allowStudentAccounts === false ? "" : getOrCreateAccountKey();
+  if (roomSettings.allowStudentAccounts === false) {
+    return "";
+  }
+  if (loggedInStudent?.accountKey) {
+    return loggedInStudent.accountKey;
+  }
+  return requiresStudentLogin() ? "" : getOrCreateAccountKey();
 }
 
 function effectiveJoinBlookId() {
@@ -3221,6 +3627,22 @@ function showPackOpenAnimation(blook) {
   }, 2600);
 }
 
+function playPackRewardSfx(reward) {
+  const rarity = String(reward?.rarity || "").toLowerCase();
+  if (!reward) {
+    return;
+  }
+  if (reward.duplicate) {
+    playMiniGameSfx("reward");
+    return;
+  }
+  if (rarity === "legendary" || rarity === "epic" || rarity === "chroma") {
+    playMiniGameSfx("unlock");
+    return;
+  }
+  playMiniGameSfx("complete");
+}
+
 function getPackById(packId) {
   return blookPacks.find((pack) => pack.id === packId) || null;
 }
@@ -3253,14 +3675,16 @@ function fallbackPackRarityOdds(pack) {
 function fallbackPackCatalog() {
   return FALLBACK_BLOOKS.map((pack) => {
     const blooks = Array.isArray(pack?.blooks) ? pack.blooks : [];
+    const openCost = pack.id === "students" ? 0 : 10;
+    const sellValueEach = Math.max(1, Math.floor(openCost * 0.3));
     return {
       id: pack.id,
       name: pack.name,
       description: pack.description,
-      openCost: 0,
-      sellValueEach: 5,
+      openCost,
+      sellValueEach,
       totalCount: blooks.length,
-      ownedCount: blooks.length,
+      ownedCount: 0,
       duplicateCount: 0,
       rarityOdds: fallbackPackRarityOdds(pack),
       blooks: blooks.map((blook) => ({
@@ -3270,7 +3694,7 @@ function fallbackPackCatalog() {
         packName: pack.name,
         count: 1,
         duplicates: 0,
-        sellValueEach: 5
+        sellValueEach
       }))
     };
   });
@@ -3308,6 +3732,9 @@ function mergeCatalogPackStats(packSummaries) {
 }
 
 function fallbackInventoryRows() {
+  if (!shouldShowAllBlooks()) {
+    return [];
+  }
   return blookPacks.flatMap((pack) =>
     (Array.isArray(pack?.blooks) ? pack.blooks : []).map((blook) => ({
       ...blook,
@@ -3321,6 +3748,9 @@ function fallbackInventoryRows() {
 }
 
 function getInventoryRows() {
+  if (shouldShowAllBlooks()) {
+    return fallbackInventoryRows();
+  }
   if (Array.isArray(accountData?.inventory) && accountData.inventory.length > 0) {
     return accountData.inventory;
   }
@@ -3350,6 +3780,13 @@ function pickRandomOwnedBlookIdForPack(packId) {
 }
 
 function syncSelectedBlook() {
+  if (requiresStudentLogin() && !loggedInStudent) {
+    selectedBlookId = "";
+    if (pickedBlook) {
+      pickedBlook.textContent = "Log in to load your saved blooks and get ready to join.";
+    }
+    return;
+  }
   const owned = getOwnedBlookById(selectedBlookId) || getInventoryRows()[0] || null;
   if (owned) {
     selectedBlookId = owned.id;
@@ -3383,7 +3820,7 @@ function renderPackTabs() {
     return;
   }
 
-  const preferredPackOrder = ["students", "superheroes", "athletes", "nfl-teams", "sports", "anime", "books", "science", "space", "nature"];
+  const preferredPackOrder = ["students", "superheroes", "athletes", "nfl-teams", "sports", "anime", "cartoon-network", "books", "science", "space", "nature"];
   const orderIndex = new Map(preferredPackOrder.map((id, index) => [id, index]));
   const sortedPacks = blookPacks.slice().sort((left, right) => {
     const leftIdx = orderIndex.has(left.id) ? orderIndex.get(left.id) : preferredPackOrder.length + 1;
@@ -3397,9 +3834,9 @@ function renderPackTabs() {
   const packButtons = sortedPacks.map((pack) => {
     const selectedClass = pack.id === selectedPackId ? "pack-tab selected" : "pack-tab";
     const total = Math.max(1, Number(pack.totalCount || 1));
-    const unlocked = Math.max(0, Number(pack.ownedCount || total));
+    const unlocked = Math.max(0, Number.isFinite(Number(pack.ownedCount)) ? Number(pack.ownedCount) : total);
     const badge = pack.id === "superheroes" ? `<span class="pack-tab-badge">NEW</span>` : "";
-    const availabilityText = ALL_BLOOKS_AVAILABLE ? `${total}/${total} available` : `${unlocked}/${total} unlocked`;
+    const availabilityText = shouldShowAllBlooks() ? `${total}/${total} available` : `${unlocked}/${total} owned`;
     return `<button type="button" class="${selectedClass}" data-pack-id="${pack.id}">
       ${escapeHtml(pack.name)}<br />
       ${badge}
@@ -3410,13 +3847,17 @@ function renderPackTabs() {
   const effectBtnClass = selectedPackId === "effects" ? "pack-tab selected" : "pack-tab";
   const effectBtn = `<button type="button" class="${effectBtnClass}" data-pack-id="effects" style="background:linear-gradient(135deg,#34d7c6,#28cad7);color:#fff">
     Effects Picker<br />
-    <span class="help">Apply auras</span>
+    <span class="help">Choose your aura</span>
   </button>`;
 
   packTabs.innerHTML = packButtons + effectBtn;
 }
 
 function renderBlookGrid() {
+  if (requiresStudentLogin() && !loggedInStudent) {
+    blookGrid.innerHTML = `<span class="help">Log in first to load your saved blooks and pack progress.</span>`;
+    return;
+  }
   if (selectedPackId === "effects") {
     renderEffectGrid();
     return;
@@ -3429,6 +3870,18 @@ function renderBlookGrid() {
   }
 
   const ownedInPack = getInventoryRows().filter((entry) => entry.packId === pack.id);
+  if (!ownedInPack.length && !shouldShowAllBlooks()) {
+    blookGrid.innerHTML = `
+      <div class="blook-tile" data-locked-slot="true" aria-hidden="true">
+        <span class="blook-emoji">🛍️</span>
+        <span class="blook-name">No owned blooks yet</span>
+        <span class="blook-rarity">Buy ${escapeHtml(pack.name)} in the Store first</span>
+      </div>
+      <span class="help">Open the Store to buy ${escapeHtml(pack.name)}, then come back here to use what you unlocked.</span>
+    `;
+    return;
+  }
+
   const unlockedTiles = ownedInPack
     .map((blook) => {
       const isSelected = blook.id === selectedBlookId;
@@ -3484,43 +3937,35 @@ function updatePackOdds() {
 }
 
 function updateEconomyButtons() {
-  const pack = getPackById(selectedPackId);
   if (openPackBtn) {
-    openPackBtn.hidden = ALL_BLOOKS_AVAILABLE;
-    if (!pack) {
-      openPackBtn.disabled = true;
-      openPackBtn.textContent = "Open Pack";
-    } else {
-      const hasFreeOpen = Number(accountData?.freePackOpensRemaining || 0) > 0;
-      const cost = Math.max(1, Number(pack.openCost || 20));
-      openPackBtn.disabled = !hasFreeOpen && Number(accountData?.coins || 0) < cost;
-      openPackBtn.textContent = hasFreeOpen ? `Open ${pack.name} (Free)` : `Open ${pack.name} (${cost} coins)`;
-    }
+    openPackBtn.hidden = true;
+    openPackBtn.disabled = true;
   }
 
   if (sellDuplicateBtn) {
-    sellDuplicateBtn.hidden = ALL_BLOOKS_AVAILABLE;
-    const selected = getOwnedBlookById(selectedBlookId);
-    const duplicates = Math.max(0, Number(selected?.duplicates || 0));
-    const sellValue = Math.max(0, Number(selected?.sellValueEach || 0));
-    sellDuplicateBtn.disabled = !selected || duplicates <= 0;
-    sellDuplicateBtn.textContent =
-      duplicates > 0 ? `Sell 1 Duplicate (+${sellValue} coins)` : "Sell Duplicate";
+    sellDuplicateBtn.hidden = true;
+    sellDuplicateBtn.disabled = true;
   }
 }
 
 function renderEconomyPanel() {
   if (accountCoins) {
-    accountCoins.textContent = ALL_BLOOKS_AVAILABLE ? "ALL" : String(Math.max(0, Number(accountData?.coins || 0)));
-  }
-  if (accountFreeOpen) {
-    accountFreeOpen.textContent = ALL_BLOOKS_AVAILABLE
+    accountCoins.textContent = shouldShowAllBlooks()
       ? "ALL"
-      : String(Math.max(0, Number(accountData?.freePackOpensRemaining || 0)));
+      : (requiresStudentLogin() && !loggedInStudent ? "--" : String(Math.max(0, Number(accountData?.coins || 0))));
   }
   renderPackTabs();
   renderBlookGrid();
-  updatePackOdds();
+  if (packOdds) {
+    packOdds.textContent = "";
+  }
+  if (packResult) {
+    packResult.classList.add("hidden");
+    packResult.textContent = "";
+  }
+  if (packOpenAnimation) {
+    packOpenAnimation.classList.add("hidden");
+  }
   updateEconomyButtons();
   syncSelectedBlook();
 }
@@ -3546,12 +3991,7 @@ function applyPublicBlookCatalog(payload) {
 
 function applyAccount(account, nextKey = "") {
   if (nextKey) {
-    accountKey = nextKey;
-    try {
-      window.localStorage.setItem("quizArenaAccountKey", nextKey);
-    } catch (_error) {
-      // Ignore local storage failures.
-    }
+    setStoredAccountKey(nextKey);
   }
 
   accountData = account || null;
@@ -3596,9 +4036,16 @@ async function loadAccount() {
 }
 
 async function openSelectedPack() {
+  if (requiresStudentLogin() && !loggedInStudent) {
+    setPackResultNotice("Log in with your classroom account before opening packs.", "bad");
+    playMiniGameSfx("miss", { cooldownMs: 120 });
+    focusStudentLoginForm();
+    return;
+  }
   const pack = getPackById(selectedPackId);
   if (!pack) {
     setPackResultNotice("Select a pack first.", "bad");
+    playMiniGameSfx("miss", { cooldownMs: 120 });
     return;
   }
 
@@ -3607,7 +4054,7 @@ async function openSelectedPack() {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      accountKey: getOrCreateAccountKey(),
+      accountKey: loggedInStudent?.accountKey || getOrCreateAccountKey(),
       packId: pack.id
     })
   });
@@ -3623,6 +4070,7 @@ async function openSelectedPack() {
     renderEconomyPanel();
     const rewardDisplay = getOwnedBlookById(reward.id) || reward;
     showPackOpenAnimation(rewardDisplay);
+    playPackRewardSfx(reward);
     const duplicateText = reward.duplicate
       ? `Duplicate! You now have ${reward.count}. Sell extras for ${reward.sellValueEach} coins.`
       : "New unlock added to your collection.";
@@ -3632,9 +4080,16 @@ async function openSelectedPack() {
 }
 
 async function sellSelectedDuplicate() {
+  if (requiresStudentLogin() && !loggedInStudent) {
+    setPackResultNotice("Log in with your classroom account before selling duplicates.", "bad");
+    playMiniGameSfx("miss", { cooldownMs: 120 });
+    focusStudentLoginForm();
+    return;
+  }
   const selected = getOwnedBlookById(selectedBlookId);
   if (!selected || Number(selected.duplicates || 0) <= 0) {
     setPackResultNotice("No duplicate selected to sell.", "bad");
+    playMiniGameSfx("miss", { cooldownMs: 120 });
     return;
   }
 
@@ -3643,7 +4098,7 @@ async function sellSelectedDuplicate() {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      accountKey: getOrCreateAccountKey(),
+      accountKey: loggedInStudent?.accountKey || getOrCreateAccountKey(),
       blookId: selected.id,
       quantity: 1
     })
@@ -3655,6 +4110,7 @@ async function sellSelectedDuplicate() {
 
   applyAccount(payload.account, payload.accountKey || "");
   if (payload.sold) {
+    playMiniGameSfx("reward");
     setPackResultNotice(
       `Sold duplicate ${payload.sold.icon} ${payload.sold.name} for +${payload.sold.earned} coins.`,
       "good"
@@ -3736,11 +4192,25 @@ async function loadMiniGames() {
 }
 
 async function loadBlooks() {
+  await loadStudentAuthStatus();
+
   try {
     await loadPublicBlooks();
   } catch (_error) {
     applyFallbackBlookCatalog();
-    setJoinNotice("Could not load the full blook catalog. Starter blooks are ready so you can still join.", "bad");
+    setJoinNotice("Could not load the full blook catalog yet. Refresh and try again after logging in.", "bad");
+    return;
+  }
+
+  if (requiresStudentLogin() && !loggedInStudent) {
+    accountData = null;
+    blookPacks = clonePackRows(catalogPacks);
+    const defaultPackId = blookPacks[0]?.id || "";
+    if (!selectedPackId || !getPackById(selectedPackId)) {
+      selectedPackId = defaultPackId;
+    }
+    selectedBlookId = "";
+    renderEconomyPanel();
     return;
   }
 
@@ -3838,7 +4308,7 @@ function attemptAutoRejoin() {
         applyRoomSettings(res.settings);
       }
       if (res.account) {
-        applyAccount(res.account, getOrCreateAccountKey());
+        applyAccount(res.account, joinAccountKey() || getOrCreateAccountKey());
       }
       playerNameEl.textContent = `${activeBlook.icon || "?"} ${playerName}`;
       updateFishingHudIdentity();
@@ -3898,11 +4368,21 @@ function requestJoinRoom() {
     return;
   }
 
+  if (requiresStudentLogin() && !loggedInStudent) {
+    setJoinNotice("Log in with your first name and class password before joining.", "bad");
+    focusStudentLoginForm();
+    return;
+  }
+
+  if (loggedInStudent && nameInput) {
+    nameInput.value = loggedInStudent.displayName;
+  }
+
   const code = sanitizeRoomCode(codeInput.value);
-  const name = nameInput.value.trim();
+  const name = loggedInStudent?.displayName || nameInput.value.trim();
 
   if (!code || !name) {
-    setJoinNotice("Game code and nickname are required.", "bad");
+    setJoinNotice("Game code is required.", "bad");
     return;
   }
 
@@ -3915,9 +4395,7 @@ function requestJoinRoom() {
     selectedBlookId = "sports-soccer-star";
   }
 
-  const joinPackId = selectedPackId === "effects"
-    ? (getOwnedBlookById(selectedBlookId)?.packId || "")
-    : selectedPackId;
+  const joinPackId = "";
   const joinBlookId = effectiveJoinBlookId();
 
   setJoinBusy(true);
@@ -3948,7 +4426,7 @@ function requestJoinRoom() {
       applyRoomSettings(res.settings);
     }
     if (res.account) {
-      applyAccount(res.account, getOrCreateAccountKey());
+      applyAccount(res.account, joinAccountKey() || getOrCreateAccountKey());
     }
 
     roomCodeEl.textContent = roomCode;
@@ -3983,6 +4461,14 @@ if (joinBtn) {
   joinBtn.addEventListener("click", requestJoinRoom);
 }
 
+if (studentLoginBtn) {
+  studentLoginBtn.addEventListener("click", submitStudentLogin);
+}
+
+if (studentLogoutBtn) {
+  studentLogoutBtn.addEventListener("click", logoutStudentAccount);
+}
+
 for (const input of [codeInput, nameInput]) {
   if (!input) {
     continue;
@@ -3993,6 +4479,19 @@ for (const input of [codeInput, nameInput]) {
     }
     event.preventDefault();
     requestJoinRoom();
+  });
+}
+
+for (const input of [studentLoginUsernameInput, studentLoginPasswordInput]) {
+  if (!input) {
+    continue;
+  }
+  input.addEventListener("keydown", (event) => {
+    if (!(event instanceof KeyboardEvent) || event.key !== "Enter") {
+      return;
+    }
+    event.preventDefault();
+    submitStudentLogin();
   });
 }
 
@@ -4115,9 +4614,11 @@ answers.addEventListener("click", (event) => {
     if (!res?.ok) {
       canAnswer = true;
       setNotice(res?.message || "Answer rejected.", "bad");
+      playMiniGameSfx("miss", { cooldownMs: 120 });
       return;
     }
 
+    playMiniGameSfx("select");
     setNotice(`Answer locked. ${res.correct ? "Correct" : "Submitted"} (+${res.delta})`, res.correct ? "good" : "");
     lockAnswerButtons();
   });
@@ -4211,6 +4712,7 @@ chests.addEventListener("click", (event) => {
   socket.emit("player:minigameAction", payload, (res) => {
     if (!res?.ok) {
       setNotice(res?.message || "Event choice failed.", "bad");
+      playMiniGameSfx("miss", { cooldownMs: 120 });
       if (action === "stop") {
         button.disabled = false;
       }
@@ -4232,6 +4734,16 @@ chests.addEventListener("click", (event) => {
           dropButton.disabled = false;
         }
       }
+      return;
+    }
+
+    if (payload.action === "set_theme") {
+      playMiniGameSfx("select", { cooldownMs: 90 });
+      return;
+    }
+    if (payload.action === "set_direction" || payload.action === "set_lane") {
+      playMiniGameSfx("tap", { cooldownMs: 70 });
+      return;
     }
   });
 });
@@ -4436,6 +4948,7 @@ socket.on("question:start", (payload) => {
   ensureFishingGameTimerStarted();
   setPhase("question", `Question ${payload.questionIndex}/${payload.totalQuestions} is live.`);
   renderQuestion(payload);
+  playMiniGameSfx("start");
   setNotice(
     roomSettings.showInstructions === false
       ? `Question ${payload.questionIndex}/${payload.totalQuestions} is live.`
@@ -4469,8 +4982,10 @@ socket.on("question:result", (payload) => {
   const explanation = payload.explanation ? ` ${payload.explanation}` : "";
 
   if (!mine) {
+    playMiniGameSfx("miss");
     setNotice(`Time up. You did not submit an answer.${explanation}`, "bad");
   } else {
+    playMiniGameSfx(mine.correct ? "correct" : "miss");
     setNotice(
       `${mine.correct ? "Correct" : "Incorrect"}. ${mine.correct ? `+${mine.delta} points.` : "No points."}${explanation}`,
       mine.correct ? "good" : "bad"
@@ -4509,6 +5024,7 @@ socket.on("minigame:yourData", ({ type, endsAt, eventName, actionLabel, data }) 
   renderMiniGame(type, data, activeActionLabel);
   startTicker(chestTimer, endsAt, "Mini-game ends in");
   openMiniTutorial(type);
+  playMiniGameSfx("start");
   setNotice(roomSettings.showInstructions === false ? "Mini-game started." : "Play the mini-game for bonus points.");
 });
 
@@ -4546,8 +5062,13 @@ socket.on("minigame:state", (payload) => {
 
   if (payload.type === "tap_rush") {
     const tapCount = document.getElementById("miniTapCount");
+    const nextTaps = Math.max(0, Number(payload.taps || 0));
     if (tapCount) {
-      tapCount.textContent = String(payload.taps || 0);
+      tapCount.textContent = String(nextTaps);
+    }
+    if (nextTaps > miniTapLastCount) {
+      playMiniGameSfx("tap", { cooldownMs: 65 });
+      miniTapLastCount = nextTaps;
     }
     return;
   }
@@ -4563,10 +5084,12 @@ socket.on("minigame:state", (payload) => {
     if (payload.falseStart) {
       if (statusEl) statusEl.textContent = "False Start";
       if (timerEl) timerEl.textContent = "--";
+      playMiniGameSfx("miss");
       setNotice("False start. Waiting for others...", "bad");
     } else {
       if (statusEl) statusEl.textContent = "Reacted";
       if (timerEl) timerEl.textContent = `${Number(payload.reactionMs || 0)} ms`;
+      playMiniGameSfx("correct");
       setNotice(`Reaction time: ${Number(payload.reactionMs || 0)} ms`, "good");
     }
     return;
@@ -4574,9 +5097,16 @@ socket.on("minigame:state", (payload) => {
 
   if (payload.type === "sequence_memory") {
     const progressEl = document.getElementById("miniSequenceProgress");
+    const nextProgress = Math.max(0, Number(payload.progress || 0));
     if (progressEl) {
-      progressEl.textContent = String(payload.progress || 0);
+      progressEl.textContent = String(nextProgress);
     }
+    if (nextProgress > miniSequenceLastProgress) {
+      playMiniGameSfx(payload.completed ? "complete" : "progress", { cooldownMs: 80 });
+    } else if (nextProgress < miniSequenceLastProgress) {
+      playMiniGameSfx("miss", { cooldownMs: 80 });
+    }
+    miniSequenceLastProgress = nextProgress;
     if (payload.completed) {
       setNotice("Sequence complete. Waiting for others...", "good");
       chests.querySelectorAll("button[data-mini-action='step']").forEach((button) => {
@@ -4590,17 +5120,24 @@ socket.on("minigame:state", (payload) => {
     const turnEl = document.getElementById("miniDodgeTurn");
     const hitsEl = document.getElementById("miniDodgeHits");
     const lastEl = document.getElementById("miniDodgeLast");
+    const step = Math.max(0, Number(payload.step || 0));
+    const hits = Math.max(0, Number(payload.hits || 0));
     if (turnEl) {
-      turnEl.textContent = String(payload.step || 0);
+      turnEl.textContent = String(step);
     }
     if (hitsEl) {
-      hitsEl.textContent = String(payload.hits || 0);
+      hitsEl.textContent = String(hits);
     }
     if (lastEl) {
       const obstacleNames = ["Left", "Center", "Right"];
       const obstacle = obstacleNames[payload.obstacleLane] || "?";
       lastEl.textContent = payload.hit ? `Blocked at ${obstacle}.` : `Clear lane. Blocker was ${obstacle}.`;
     }
+    if (step > miniObstacleLastStep) {
+      playMiniGameSfx(hits > miniObstacleLastHits || payload.hit ? "miss" : payload.completed ? "complete" : "progress", { cooldownMs: 80 });
+    }
+    miniObstacleLastStep = step;
+    miniObstacleLastHits = hits;
     if (payload.completed) {
       chests.querySelectorAll("button[data-mini-action='dodge']").forEach((btn) => {
         btn.disabled = true;
@@ -4612,6 +5149,14 @@ socket.on("minigame:state", (payload) => {
 
   if (payload.type === "precision_stop" && payload.submitted) {
     stopMiniPrecisionTicker();
+    const diff = Math.abs(Math.max(0, Number(payload.value || 0)) - Math.max(0, Number(payload.target || 0)));
+    if (diff <= 4) {
+      playMiniGameSfx("reward");
+    } else if (diff <= 10) {
+      playMiniGameSfx("complete");
+    } else {
+      playMiniGameSfx("miss");
+    }
     setNotice(`Stopped at ${payload.value} vs target ${payload.target}.`, "good");
     return;
   }
@@ -4627,6 +5172,16 @@ socket.on("minigame:state", (payload) => {
     if (lastEl && payload.lastGuess) {
       lastEl.textContent = payload.solved ? `Solved: ${payload.answer}` : `Last guess: ${payload.lastGuess}`;
     }
+    if (Number(payload.attempts || 0) > miniScrambleLastAttempts) {
+      if (payload.solved) {
+        playMiniGameSfx("unlock");
+      } else if (payload.completed) {
+        playMiniGameSfx("miss");
+      } else {
+        playMiniGameSfx("select", { cooldownMs: 80 });
+      }
+    }
+    miniScrambleLastAttempts = Math.max(0, Number(payload.attempts || 0));
     if (payload.completed) {
       if (input) {
         input.disabled = true;
@@ -4645,6 +5200,7 @@ socket.on("minigame:state", (payload) => {
 
 socket.on("minigame:resolved", ({ text, leaderboard }) => {
   stopMiniTickers();
+  playMiniGameSfx("reward");
   setNotice(text, "good");
   renderLeaderboard(leaderboard);
 });
@@ -4666,6 +5222,7 @@ socket.on("round:summary", ({ questionIndex, totalQuestions, leaderboard }) => {
   setPhase("round_summary", `Round ${questionIndex}/${totalQuestions} complete.`);
   showSection(resultSection);
   resultText.textContent = `Round ${questionIndex}/${totalQuestions} complete. Next question starts shortly.`;
+  playMiniGameSfx("complete");
   setNotice("Leaderboard updated.", "good");
   renderLeaderboard(leaderboard);
 });
@@ -4675,10 +5232,10 @@ socket.on("account:coinsAwarded", ({ reward, rank, totalPlayers, account }) => {
     applyAccount(account, getOrCreateAccountKey());
   }
   if (reward?.total) {
-    setNotice(`Game rewards: +${reward.total} coins (Rank ${rank}/${totalPlayers}).`, "good");
+    playMiniGameSfx("reward");
+    setNotice(`Placement reward: +${reward.total} coins for ${ordinalPlace(rank)} place.`, "good");
     setPackResultNotice(
-      `Coins earned +${reward.total} | Participation ${reward.breakdown?.participation || 0}, Correct ${reward.breakdown?.correct || 0}, Score ${reward.breakdown?.score || 0
-      }, Rank ${reward.breakdown?.rank || 0}.`,
+      `${ordinalPlace(rank)} place out of ${totalPlayers} earned +${reward.total} coins. Top 5 places earn coins.`,
       "good"
     );
   }
@@ -4691,6 +5248,7 @@ socket.on("game:finished", ({ leaderboard, reportCode }) => {
   setPhase("finished", "Final rankings locked.");
   showSection(resultSection);
   resultText.textContent = "Game finished. Final rankings are locked. Coins are now awarded.";
+  playMiniGameSfx("complete");
   setNotice("Match complete.", "good");
   renderLeaderboard(leaderboard);
 });
@@ -4748,6 +5306,7 @@ loadMiniTutorialProgress();
 setupSfxUnlockListeners();
 applyMiniTutorialButtonVisibility("");
 applyRoomSettings(roomSettings);
+renderStudentLoginState();
 applyFallbackBlookCatalog();
 loadBlooks();
 loadMiniGames();

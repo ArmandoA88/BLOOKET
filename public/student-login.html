@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Login</title>
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/blooket-shell.css" />
+    <style>
+      .student-login-shell {
+        position: relative;
+        z-index: 1;
+      }
+
+      .student-login-page .page {
+        width: min(980px, 100%);
+        margin: 0 auto 40px;
+      }
+
+      .student-login-card .kpis {
+        margin-top: 12px;
+      }
+
+      .student-login-card .notice strong {
+        display: block;
+        margin-top: 4px;
+        font-size: 1.3rem;
+      }
+
+      .student-account-detail-grid {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        margin-top: 12px;
+      }
+
+      .student-account-detail {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .student-account-detail span {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--muted);
+        font-size: 0.84rem;
+      }
+
+      .student-room-card {
+        margin-top: 14px;
+      }
+
+      .student-room-code {
+        font-family: "Bungee", "Space Grotesk", sans-serif;
+        letter-spacing: 0.08em;
+      }
+
+      @media (max-width: 720px) {
+        .student-login-page .page {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body class="join-body student-login-page">
+    <div class="join-floating" aria-hidden="true"></div>
+
+    <header class="play-header">
+      <a class="play-logo" href="/">Blooket</a>
+      <nav class="play-header-links" aria-label="Student login header">
+        <a class="play-header-link" href="/play">Join Game</a>
+        <a class="play-header-link" href="/host.html">Host Live</a>
+      </nav>
+    </header>
+
+    <main class="join-shell student-login-shell">
+      <section class="join-stage">
+        <div class="join-main-copy">
+          <span class="section-kicker">Student Account</span>
+          <h1 class="join-title">Sign in and keep your coins.</h1>
+          <p class="join-subtitle">
+            Students can log in with their classroom first name, load their saved coins and blooks,
+            then head straight into the live join flow.
+          </p>
+          <div class="catalog-strip">
+            <span class="catalog-chip">First name login</span>
+            <span class="catalog-chip">Saved coins</span>
+            <span class="catalog-chip">Saved blooks</span>
+            <span class="catalog-chip">Live room join</span>
+          </div>
+        </div>
+
+        <aside class="join-side-card">
+          <span class="section-kicker">What gets saved</span>
+          <h3>Coins, unlocks, and progress.</h3>
+          <p class="muted-copy">
+            Student accounts already save to this classroom server, so coins, unlocked blooks, and quiz stats are still there after the server restarts.
+          </p>
+          <div class="catalog-strip">
+            <span class="catalog-chip">Accounts file</span>
+            <span class="catalog-chip">Persistent progress</span>
+            <span class="catalog-chip">Ready for game day</span>
+          </div>
+        </aside>
+      </section>
+
+      <section class="join-card-shell">
+        <main class="page">
+          <section class="topbar">
+            <div>
+              <h1 class="brand">Student Login</h1>
+              <p class="sub">Use your classroom account before you join a game.</p>
+            </div>
+            <a class="action ghost" href="/">Back</a>
+          </section>
+
+          <section class="card strong student-login-card">
+            <h2 class="title">Classroom Sign In</h2>
+            <p id="studentAuthSummary" class="help">
+              Log in with your classroom first name and password. Your coins and blooks stay saved on this server even after it restarts.
+            </p>
+            <div id="studentAuthGreeting" class="notice hidden" style="margin-top: 10px">
+              <strong id="studentAuthGreetingTitle">Hello!</strong>
+              <span id="studentAuthGreetingMeta" class="help">You are logged in.</span>
+            </div>
+
+            <div class="form-grid" style="margin-top: 12px">
+              <div>
+                <label for="studentAuthUsername">First Name</label>
+                <input id="studentAuthUsername" maxlength="24" placeholder="Lenin" />
+              </div>
+              <div>
+                <label for="studentAuthPassword">Password</label>
+                <input id="studentAuthPassword" type="password" maxlength="48" placeholder="Class password" />
+              </div>
+            </div>
+
+            <div class="button-row" style="margin-top: 12px">
+              <button id="studentAuthLoginBtn" type="button">Log In</button>
+              <button id="studentAuthLogoutBtn" class="ghost hidden" type="button">Log Out</button>
+            </div>
+
+            <div id="studentAuthNotice" class="notice hidden" style="margin-top: 10px"></div>
+
+            <div class="card student-room-card">
+              <h3 class="title">Live Room</h3>
+              <p id="studentRoomSummary" class="help">Checking for an active room...</p>
+              <div class="button-row" style="margin-top: 10px">
+                <a id="studentJoinLiveBtn" class="action secondary" href="/play">Open Join Page</a>
+                <a class="action secondary" href="/market">Open Store</a>
+                <a class="action ghost" href="/play">Open Join Screen</a>
+              </div>
+            </div>
+
+            <div id="studentAccountPanel" class="hidden" style="margin-top: 14px">
+              <h3 class="title">Saved Progress</h3>
+              <div class="kpis">
+                <div class="notice">
+                  Coins
+                  <strong id="studentCoinsValue">0</strong>
+                </div>
+                <div class="notice">
+                  Unlocked Blooks
+                  <strong id="studentUnlockedValue">0</strong>
+                </div>
+                <div class="notice">
+                  Games Played
+                  <strong id="studentGamesValue">0</strong>
+                </div>
+              </div>
+
+              <div class="student-account-detail-grid">
+                <div class="student-account-detail">
+                  <span>Selected Blook</span>
+                  <strong id="studentSelectedBlookValue">Starter</strong>
+                </div>
+                <div class="student-account-detail">
+                  <span>Packs With Unlocks</span>
+                  <strong id="studentOwnedPacksValue">0</strong>
+                </div>
+                <div class="student-account-detail">
+                  <span>Best Rank</span>
+                  <strong id="studentBestRankValue">-</strong>
+                </div>
+                <div class="student-account-detail">
+                  <span>Total Correct</span>
+                  <strong id="studentCorrectValue">0</strong>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </section>
+    </main>
+
+    <script src="/student-login.js"></script>
+  </body>
+</html>

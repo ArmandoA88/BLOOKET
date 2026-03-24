@@ -13,6 +13,7 @@ const session = require("express-session");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const { BOOK_LEGENDS_BLOOKS } = require("./data/pack-blooks");
+const { CARTOON_NETWORK_BLOOKS } = require("./data/cartoon-network-blooks");
 const { SCIENCE_BLOOKS, SPACE_BLOOKS } = require("./data/science-space-blooks");
 
 const PORT = process.env.PORT || 3000;
@@ -218,9 +219,68 @@ const STUDENT_BLOOK_NAME_OVERRIDES = {
   22: "Henry",
   23: "Eli",
   24: "Leo",
-  28: "Samantha"
+  28: "Samantha",
+  41: "Evie"
 };
 const REMOVED_STUDENT_BLOOK_NUMBERS = new Set([9, 25, 26, 27, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]);
+const STUDENT_LOGIN_PASSWORD = "Arratia1!";
+const HARD_CODED_STUDENT_LOGIN_NAMES = [
+  "LENIN J",
+  "NASH J",
+  "ANGELA M",
+  "SIERRA L",
+  "JACKSON M",
+  "CONOR R",
+  "JUAN T",
+  "ARIABELLA C",
+  "NOAH A",
+  "CHARLOTTE O",
+  "AILYN YOANA",
+  "ELI W",
+  "MATTIE J",
+  "SAMANTHA C",
+  "BRANDON",
+  "MARIO E",
+  "HENRY F",
+  "AVA L",
+  "LIAM A",
+  "LEO R",
+  "OSCAR G",
+  "EMILIA E",
+  "HOLLAND C",
+  "CALLUM",
+  "ELISA",
+  "KAYLA",
+  "EVIE KATE"
+];
+
+function normalizeStudentLoginUsername(value) {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  const firstToken = value.trim().split(/\s+/)[0] || "";
+  return firstToken.toLowerCase().replace(/[^a-z]/g, "");
+}
+
+function formatStudentDisplayName(username) {
+  if (!username) {
+    return "";
+  }
+  return username.charAt(0).toUpperCase() + username.slice(1).toLowerCase();
+}
+
+const STUDENT_LOGIN_USERS = HARD_CODED_STUDENT_LOGIN_NAMES
+  .map((name) => normalizeStudentLoginUsername(name))
+  .filter(Boolean)
+  .filter((username, index, entries) => entries.indexOf(username) === index)
+  .map((username) => ({
+    username,
+    displayName: formatStudentDisplayName(username),
+    accountKey: `student:${username}`
+  }));
+
+const STUDENT_LOGIN_LOOKUP = new Map(STUDENT_LOGIN_USERS.map((entry) => [entry.username, entry]));
 
 function loadStudentBlooks() {
   try {
@@ -258,6 +318,9 @@ function loadStudentBlooks() {
 }
 
 const STUDENT_BLOOKS = loadStudentBlooks();
+const STUDENT_BLOOK_IDS = STUDENT_BLOOKS.map((blook) => blook.id).filter(Boolean);
+const STUDENT_PACK_EXPANSION_BLOOK_IDS = new Set(["student-face-41"]);
+const STUDENT_PACK_LEGACY_COMPLETE_BLOOK_IDS = STUDENT_BLOOK_IDS.filter((blookId) => !STUDENT_PACK_EXPANSION_BLOOK_IDS.has(blookId));
 
 const NFL_TEAM_BLOOKS = [
   { id: "nfl-cardinals", name: "Arizona Cardinals", image: "/assets/sports/nfl-cardinals.png", icon: "🐦", rarity: "Common", sport: "NFL" },
@@ -457,6 +520,13 @@ const BLOOK_PACKS = [
       { id: "marvel-kingpin", name: "Kingpin", image: "/assets/superheroes/kingpin.png", icon: "M", rarity: "Common", universe: "Marvel", role: "Villain" }
     ]
   },
+  {
+    id: "cartoon-network",
+    name: "Cartoon Network Pack",
+    description: "20 fan-favorite Cartoon Network stars from Adventure Time, Gumball, Regular Show, and more.",
+    price: 0,
+    blooks: CARTOON_NETWORK_BLOOKS.map(({ art, ...blook }) => ({ ...blook }))
+  },
 
   {
     id: "science",
@@ -569,18 +639,17 @@ const DEFAULT_BLOOK = BLOOK_LOOKUP.get(BLOOK_PACKS[0].blooks[0].id);
 const ALL_BLOOKS = Array.from(BLOOK_LOOKUP.values());
 const ALL_BLOOK_IDS = BLOOK_PACKS.flatMap((pack) => pack.blooks.map((blook) => blook.id));
 
-// Unhide all blooks for every account (new + existing).
-const STARTER_COMMON_BLOOK_IDS = [...new Set(ALL_BLOOK_IDS)];
-const PACK_OPEN_COST = 20;
+const STARTER_COMMON_BLOOK_IDS = [DEFAULT_BLOOK?.id].filter(Boolean);
+const PACK_OPEN_COST = 10;
 const DUPLICATE_SELL_RATE = 0.3;
-const STARTER_COINS = 200;
+const STARTER_COINS = 10;
 const STARTER_FREE_PACK_OPENS = 0;
-const STARTER_GRANT_VERSION = 1;
+const STARTER_GRANT_VERSION = 2;
 const BLOOK_RARITY_WEIGHT = {
   Common: 60,
-  Rare: 26,
-  Epic: 11,
-  Legendary: 3
+  Rare: 20,
+  Epic: 6,
+  Legendary: 1
 };
 const ACCOUNT_DATA_DIR = path.join(__dirname, "data");
 const ACCOUNT_DATA_FILE = path.join(ACCOUNT_DATA_DIR, "accounts.json");
@@ -678,6 +747,59 @@ function duplicateSellValueForPack(packId) {
   return Math.max(1, Math.floor(packOpenCost(packId) * DUPLICATE_SELL_RATE));
 }
 
+function buildStarterInventory() {
+  const inventory = {};
+  for (const blookId of STARTER_COMMON_BLOOK_IDS) {
+    if (BLOOK_LOOKUP.has(blookId)) {
+      inventory[blookId] = 1;
+    }
+  }
+  return inventory;
+}
+
+function countUnlockedInventorySlots(account) {
+  if (!account || typeof account.inventory !== "object") {
+    return 0;
+  }
+
+  let count = 0;
+  for (const countValue of Object.values(account.inventory)) {
+    if (Math.max(0, Math.floor(parseStoredNumber(countValue, 0))) > 0) {
+      count += 1;
+    }
+  }
+  return count;
+}
+
+function countDuplicateInventoryItems(account) {
+  if (!account || typeof account.inventory !== "object") {
+    return 0;
+  }
+
+  let duplicates = 0;
+  for (const countValue of Object.values(account.inventory)) {
+    duplicates += Math.max(0, Math.floor(parseStoredNumber(countValue, 0)) - 1);
+  }
+  return duplicates;
+}
+
+function shouldResetLegacyFullUnlockInventory(account) {
+  if (!account || account.starterGrantVersion >= STARTER_GRANT_VERSION) {
+    return false;
+  }
+
+  const unlockedCount = countUnlockedInventorySlots(account);
+  if (unlockedCount < ALL_BLOOK_IDS.length) {
+    return false;
+  }
+
+  const duplicates = countDuplicateInventoryItems(account);
+  const gamesPlayed = Math.max(0, Math.floor(parseStoredNumber(account.gamesPlayed, 0)));
+  const totalCorrect = Math.max(0, Math.floor(parseStoredNumber(account.totalCorrect, 0)));
+  const totalScore = Math.max(0, Math.floor(parseStoredNumber(account.totalScore, 0)));
+  return duplicates === 0 && gamesPlayed === 0 && totalCorrect === 0 && totalScore === 0;
+}
+
 function ensureStarterCommonBlooks(account) {
   if (!account) {
     return false;
@@ -688,9 +810,17 @@ function ensureStarterCommonBlooks(account) {
   }
 
   let changed = migrateLegacyAccountBlooks(account);
-  account.coins = Math.max(0, Math.floor(parseStoredNumber(account.coins, 0)));
+  account.coins = Math.max(0, Math.floor(parseStoredNumber(account.coins, STARTER_COINS)));
   account.freePackOpensRemaining = Math.max(0, Math.floor(parseStoredNumber(account.freePackOpensRemaining, STARTER_FREE_PACK_OPENS)));
   account.starterGrantVersion = Math.max(0, Math.floor(parseStoredNumber(account.starterGrantVersion, 0)));
+
+  if (shouldResetLegacyFullUnlockInventory(account)) {
+    account.inventory = buildStarterInventory();
+    account.selectedBlookId = "";
+    account.coins = STARTER_COINS;
+    account.freePackOpensRemaining = STARTER_FREE_PACK_OPENS;
+    changed = true;
+  }
 
   if (account.starterGrantVersion < STARTER_GRANT_VERSION) {
     account.coins = Math.max(account.coins, STARTER_COINS);
@@ -705,6 +835,10 @@ function ensureStarterCommonBlooks(account) {
       account.inventory[blookId] = 1;
       changed = true;
     }
+  }
+
+  if (ensureExpandedStudentPackUnlocks(account)) {
+    changed = true;
   }
 
   if (!accountOwnsBlook(account, account.selectedBlookId)) {
@@ -879,6 +1013,31 @@ function accountOwnedCount(account, blookId) {
 
 function accountOwnsBlook(account, blookId) {
   return accountOwnedCount(account, blookId) > 0;
+}
+
+function ensureExpandedStudentPackUnlocks(account) {
+  if (!account || !account.inventory || STUDENT_PACK_EXPANSION_BLOOK_IDS.size === 0) {
+    return false;
+  }
+
+  const ownedLegacyStudentPack = STUDENT_PACK_LEGACY_COMPLETE_BLOOK_IDS.every((blookId) => accountOwnsBlook(account, blookId));
+  if (!ownedLegacyStudentPack) {
+    return false;
+  }
+
+  let changed = false;
+  for (const blookId of STUDENT_PACK_EXPANSION_BLOOK_IDS) {
+    if (!BLOOK_LOOKUP.has(blookId) || accountOwnsBlook(account, blookId)) {
+      continue;
+    }
+    account.inventory[blookId] = 1;
+    changed = true;
+  }
+
+  if (changed) {
+    account.updatedAt = nowIso();
+  }
+  return changed;
 }
 
 function accountMiniGameBucket(account, miniGameType) {
@@ -1166,22 +1325,22 @@ function resolveRequestAccountKey(req, payloadAccountKey = "") {
     return `google:${req.user.id}`;
   }
 
-  const payloadKey = normalizeAccountKey(payloadAccountKey);
+  const payloadKey = allowAccountKeyForSession(req?.session, payloadAccountKey);
   if (payloadKey) {
     return payloadKey;
   }
 
-  const queryKey = normalizeAccountKey(req?.query?.accountKey || "");
+  const queryKey = allowAccountKeyForSession(req?.session, req?.query?.accountKey || "");
   if (queryKey) {
     return queryKey;
   }
 
-  const headerKey = normalizeAccountKey(req?.get?.("x-account-key") || "");
+  const headerKey = allowAccountKeyForSession(req?.session, req?.get?.("x-account-key") || "");
   if (headerKey) {
     return headerKey;
   }
 
-  const sessionKey = normalizeAccountKey(req?.session?.accountKey || "");
+  const sessionKey = allowAccountKeyForSession(req?.session, req?.session?.accountKey || "");
   if (sessionKey) {
     return sessionKey;
   }
@@ -1189,28 +1348,20 @@ function resolveRequestAccountKey(req, payloadAccountKey = "") {
   return "";
 }
 
-function rankBonusByPlace(rank, totalPlayers) {
-  if (rank <= 1) return Math.max(18, 28 + Math.min(12, totalPlayers));
-  if (rank === 2) return Math.max(14, 20 + Math.min(8, totalPlayers));
-  if (rank === 3) return Math.max(10, 14 + Math.min(6, totalPlayers));
-  if (rank <= 5) return 10;
-  if (rank <= 10) return 6;
-  return 3;
+function placementCoinsByRank(rank) {
+  const safeRank = Math.max(0, Math.floor(Number(rank) || 0));
+  if (safeRank < 1 || safeRank > 5) {
+    return 0;
+  }
+  return Math.max(0, 12 - (safeRank * 2));
 }
 
-function calculateCoinReward(player, rank, totalPlayers) {
-  const correctCoins = Math.max(0, Number(player?.correctCount || 0)) * 5;
-  const scoreCoins = Math.max(0, Math.floor(Number(player?.score || 0) / 350));
-  const participationCoins = 8;
-  const rankCoins = rankBonusByPlace(rank, totalPlayers);
-  const total = Math.max(10, participationCoins + correctCoins + scoreCoins + rankCoins);
+function calculateCoinReward(_player, rank, _totalPlayers) {
+  const placementCoins = placementCoinsByRank(rank);
   return {
-    total,
+    total: placementCoins,
     breakdown: {
-      participation: participationCoins,
-      correct: correctCoins,
-      score: scoreCoins,
-      rank: rankCoins
+      placement: placementCoins
     }
   };
 }
@@ -1223,7 +1374,7 @@ function publicBlookPacks() {
     openCost: packOpenCost(pack.id),
     sellValueEach: duplicateSellValueForPack(pack.id),
     totalCount: pack.blooks.length,
-    ownedCount: pack.blooks.length,
+    ownedCount: 0,
     duplicateCount: 0,
     rarityOdds: rarityOddsForPack(pack),
     blooks: pack.blooks.map((blook) => ({
@@ -1626,6 +1777,61 @@ function authStatusForRequest(req) {
   };
 }
 
+function studentProfileForUsername(username) {
+  return STUDENT_LOGIN_LOOKUP.get(normalizeStudentLoginUsername(username)) || null;
+}
+
+function studentProfileForAccountKey(accountKey) {
+  const safeKey = normalizeAccountKey(accountKey);
+  if (!safeKey.startsWith("student:")) {
+    return null;
+  }
+
+  const username = safeKey.slice("student:".length);
+  const profile = studentProfileForUsername(username);
+  if (!profile || profile.accountKey !== safeKey) {
+    return null;
+  }
+  return profile;
+}
+
+function studentProfileFromSession(sessionValue) {
+  return studentProfileForUsername(sessionValue?.studentAuth?.username || "");
+}
+
+function allowAccountKeyForSession(sessionValue, accountKey) {
+  const safeKey = normalizeAccountKey(accountKey);
+  if (!safeKey) {
+    return "";
+  }
+
+  if (!safeKey.startsWith("student:")) {
+    return safeKey;
+  }
+
+  const student = studentProfileFromSession(sessionValue);
+  if (!student || student.accountKey !== safeKey) {
+    return "";
+  }
+
+  return safeKey;
+}
+
+function studentAuthStatusForRequest(req) {
+  const student = studentProfileFromSession(req?.session);
+  return {
+    enabled: STUDENT_LOGIN_USERS.length > 0,
+    loggedIn: Boolean(student),
+    student: student
+      ? {
+        username: student.username,
+        displayName: student.displayName,
+        accountKey: student.accountKey
+      }
+      : null
+  };
+}
+
 function resolveGoogleCallbackUrl(req) {
   if (typeof process.env.GOOGLE_CALLBACK_URL === "string" && process.env.GOOGLE_CALLBACK_URL.length > 0) {
     return process.env.GOOGLE_CALLBACK_URL;
@@ -1728,6 +1934,7 @@ const DASHBOARD_ALIAS_PATHS = [
 ];
 
 const PLAYER_ALIAS_PATHS = ["/play"];
+const STUDENT_LOGIN_ALIAS_PATHS = ["/student-login"];
 
 function pathRequiresLogin(pathname) {
   if (!GOOGLE_AUTH_ENABLED) {
@@ -1840,6 +2047,87 @@ app.get("/api/auth/status", (req, res) => {
   res.json(authStatusForRequest(req));
 });
 
+app.get("/api/student-auth/status", (req, res) => {
+  const status = studentAuthStatusForRequest(req);
+  if (!status.loggedIn || !status.student) {
+    if (req.session && studentProfileForAccountKey(req.session.accountKey)) {
+      delete req.session.accountKey;
+    }
+    res.json({
+      ok: true,
+      ...status,
+      accountKey: "",
+      account: null
+    });
+    return;
+  }
+
+  const account = ensureAccount(status.student.accountKey);
+  if (req.session) {
+    req.session.accountKey = account?.id || status.student.accountKey;
+  }
+
+  res.json({
+    ok: true,
+    ...status,
+    accountKey: account?.id || status.student.accountKey,
+    account: account ? publicAccountSummary(account) : null
+  });
+});
+
+app.post("/api/student-auth/login", (req, res) => {
+  const username = normalizeStudentLoginUsername(req.body?.username || "");
+  const password = String(req.body?.password || "");
+  const student = studentProfileForUsername(username);
+  if (!student || password !== STUDENT_LOGIN_PASSWORD) {
+    res.status(401).json({ ok: false, message: "Incorrect first name or password." });
+    return;
+  }
+
+  const account = ensureAccount(student.accountKey);
+  if (!account) {
+    res.status(500).json({ ok: false, message: "Could not load this student account." });
+    return;
+  }
+
+  if (req.session) {
+    req.session.studentAuth = {
+      username: student.username
+    };
+    req.session.accountKey = account.id;
+  }
+
+  res.json({
+    ok: true,
+    loggedIn: true,
+    student: {
+      username: student.username,
+      displayName: student.displayName,
+      accountKey: student.accountKey
+    },
+    accountKey: account.id,
+    account: publicAccountSummary(account)
+  });
+});
+
+app.post("/api/student-auth/logout", (req, res) => {
+  const student = studentProfileFromSession(req?.session);
+  if (req.session) {
+    delete req.session.studentAuth;
+    if (student && req.session.accountKey === student.accountKey) {
+      delete req.session.accountKey;
+    }
+  }
+
+  res.json({
+    ok: true,
+    loggedIn: false,
+    student: null,
+    accountKey: "",
+    account: null
+  });
+});
+
 app.get("/auth/google", (req, res, next) => {
   if (!GOOGLE_AUTH_ENABLED) {
     res.status(503).json({ ok: false, message: "Google auth is not configured on this server." });
@@ -1873,6 +2161,10 @@ app.get("/auth/google/callback", (req, res, next) => {
 
 app.get("/auth/logout", (req, res) => {
   const done = () => {
+    if (req.session) {
+      delete req.session.studentAuth;
+      delete req.session.accountKey;
+    }
     req.session?.destroy(() => {
       res.redirect("/");
     });
@@ -1923,6 +2215,12 @@ for (const route of DASHBOARD_ALIAS_PATHS) {
 for (const route of PLAYER_ALIAS_PATHS) {
   app.get(route, (_req, res) => {
     res.sendFile(path.join(__dirname, "public", "play.html"));
+  });
+}
+
+for (const route of STUDENT_LOGIN_ALIAS_PATHS) {
+  app.get(route, (_req, res) => {
+    res.sendFile(path.join(__dirname, "public", "student-login.html"));
   });
 }
 
@@ -7322,12 +7620,15 @@ io.on("connection", (socket) => {
     const allowLateJoin = normalizeBooleanFlag(game?.settings?.allowLateJoin, true);
     const useRandomNames = normalizeBooleanFlag(game?.settings?.useRandomNames, false);
     const allowStudentAccounts = normalizeBooleanFlag(game?.settings?.allowStudentAccounts, true);
+    const sessionStudent = studentProfileFromSession(socket?.request?.session);
     const googleSocketKey = GOOGLE_AUTH_ENABLED && socketGoogleUser(socket)?.id ? `google:${socketGoogleUser(socket).id}` : "";
-    const providedAccountKey = normalizeAccountKey(payload?.accountKey || "");
-    const accountKey = allowStudentAccounts ? normalizeAccountKey(googleSocketKey || providedAccountKey) : "";
+    const studentSocketKey = sessionStudent?.accountKey || "";
+    const providedAccountKey = allowAccountKeyForSession(socket?.request?.session, payload?.accountKey || "");
+    const accountKey = allowStudentAccounts ? normalizeAccountKey(studentSocketKey || googleSocketKey || providedAccountKey) : "";
     const hasAccount = allowStudentAccounts && accountKey.length > 0;
     const account = hasAccount ? ensureAccount(accountKey) : null;
-    let playerName = useRandomNames ? randomPlayerName(game) : requestedName;
+    const studentProfile = studentProfileForAccountKey(accountKey);
+    let playerName = useRandomNames ? randomPlayerName(game) : (sessionStudent?.displayName || studentProfile?.displayName || requestedName);
     let selectedBlook = null;
 
     if (!game) {
@@ -7347,6 +7648,13 @@ io.on("connection", (socket) => {
     if (game.phase !== "lobby" && !allowLateJoin) {
       if (typeof ack === "function") {
         ack({ ok: false, message: "Late joining is disabled by the host." });
+      }
+      return;
+    }
+
+    if (STUDENT_LOGIN_USERS.length > 0 && !sessionStudent) {
+      if (typeof ack === "function") {
+        ack({ ok: false, message: "Student login required. Use your first name and class password before joining." });
       }
       return;
     }

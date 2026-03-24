@@ -1,10 +1,15 @@
 const { spawn } = require("child_process");
 const path = require("path");
+const http = require("http");
+const https = require("https");
+const { URL } = require("url");
 const { io } = require("socket.io-client");
 
 const ROOT = path.resolve(__dirname, "..");
 const PORT = Number(process.env.SMOKE_PORT || 3100);
 const BASE_URL = `http://127.0.0.1:${PORT}`;
+const STUDENT_LOGIN_PASSWORD = "Arratia1!";
+const SMOKE_STUDENT_USERNAMES = ["lenin", "nash"];
 const MINI_GAME_TYPES = [
   "foosball_frenzy",
   "soccer_shootout",
@@ -91,11 +96,85 @@ function emitAck(socket, eventName, payload, timeoutMs = 10000) {
   });
 }
 
-async function connectSocket(label) {
+function requestJson(urlString, options = {}) {
+  return new Promise((resolve, reject) => {
+    const target = new URL(urlString);
+    const transport = target.protocol === "https:" ? https : http;
+    const body = options.body ? String(options.body) : "";
+    const headers = {
+      Accept: "application/json",
+      ...(options.headers || {})
+    };
+
+    if (body && !headers["Content-Length"]) {
+      headers["Content-Length"] = Buffer.byteLength(body);
+    }
+
+    const request = transport.request(
+      target,
+      {
+        method: options.method || "GET",
+        headers
+      },
+      (response) => {
+        let raw = "";
+        response.setEncoding("utf8");
+        response.on("data", (chunk) => {
+          raw += chunk;
+        });
+        response.on("end", () => {
+          let payload = {};
+          try {
+            payload = raw ? JSON.parse(raw) : {};
+          } catch (_error) {
+            payload = {};
+          }
+
+          const setCookie = Array.isArray(response.headers["set-cookie"]) ? response.headers["set-cookie"] : [];
+          const cookieHeader = setCookie.map((value) => String(value).split(";")[0]).join("; ");
+          resolve({
+            ok: response.statusCode >= 200 && response.statusCode < 300,
+            statusCode: response.statusCode,
+            payload,
+            cookieHeader
+          });
+        });
+      }
+    );
+
+    request.on("error", reject);
+    if (body) {
+      request.write(body);
+    }
+    request.end();
+  });
+}
+
+async function loginStudentSession(username) {
+  const response = await requestJson(`${BASE_URL}/api/student-auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      username,
+      password: STUDENT_LOGIN_PASSWORD
+    })
+  });
+
+  if (!response.ok || !response.payload?.ok || !response.cookieHeader) {
+    throw new Error(response.payload?.message || `Student login failed for ${username}`);
+  }
+
+  return response.cookieHeader;
+}
+
+async function connectSocket(label, cookieHeader = "") {
   const socket = io(BASE_URL, {
     transports: ["websocket"],
     reconnection: false,
-    timeout: 8000
+    timeout: 8000,
+    extraHeaders: cookieHeader ? { Cookie: cookieHeader } : undefined
   });
 
   await new Promise((resolve, reject) => {
@@ -357,9 +436,14 @@ async function run() {
   try {
     await waitForHealth();
 
+    const [studentACookie, studentBCookie] = await Promise.all([
+      loginStudentSession(SMOKE_STUDENT_USERNAMES[0]),
+      loginStudentSession(SMOKE_STUDENT_USERNAMES[1])
+    ]);
+
     host = await connectSocket("host");
-    studentA = await connectSocket("studentA");
-    studentB = await connectSocket("studentB");
+    studentA = await connectSocket("studentA", studentACookie);
+    studentB = await connectSocket("studentB", studentBCookie);
 
     const created = await emitAck(host, "host:create", {
       hostName: "SmokeHost",

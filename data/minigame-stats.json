@@ -1,23 +1,23 @@
 {
-  "savedAt": "2026-03-23T15:57:30.294Z",
+  "savedAt": "2026-03-24T15:43:31.261Z",
   "stats": {
     "foosball_frenzy": {
-      "sessions": 49,
-      "playerEntries": 95,
-      "completions": 47,
-      "totalBonus": 84241
+      "sessions": 61,
+      "playerEntries": 119,
+      "completions": 59,
+      "totalBonus": 102511
     },
     "soccer_shootout": {
-      "sessions": 44,
-      "playerEntries": 86,
-      "completions": 68,
-      "totalBonus": 26246
+      "sessions": 50,
+      "playerEntries": 98,
+      "completions": 80,
+      "totalBonus": 30884
     },
     "space_invaders": {
-      "sessions": 24,
-      "playerEntries": 47,
-      "completions": 47,
-      "totalBonus": 24205
+      "sessions": 30,
+      "playerEntries": 59,
+      "completions": 59,
+      "totalBonus": 30385
     },
     "snake": {
       "sessions": 0,
@@ -26,10 +26,10 @@
       "totalBonus": 0
     },
     "tower_stacker": {
-      "sessions": 5,
-      "playerEntries": 8,
-      "completions": 7,
-      "totalBonus": 2471
+      "sessions": 11,
+      "playerEntries": 20,
+      "completions": 19,
+      "totalBonus": 6779
     },
     "tap_rush": {
       "sessions": 8,

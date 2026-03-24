@@ -32,13 +32,13 @@
       <section class="join-stage">
         <div class="join-main-copy">
           <span class="section-kicker">Join a Game</span>
-          <h1 class="join-title">Enter a game ID and jump in.</h1>
+          <h1 class="join-title">Log in, enter a game ID, and jump in.</h1>
           <p class="join-subtitle">
-            This page keeps the repo's existing join, blook, and live play logic, but now follows the same public join-page structure as Blooket.
+            Students now start by signing in with their classroom account, then this page keeps the repo's existing join, blook, and live play logic.
           </p>
           <div class="catalog-strip">
+            <span class="catalog-chip">Student login</span>
             <span class="catalog-chip">Room code</span>
-            <span class="catalog-chip">Nickname</span>
             <span class="catalog-chip">Blook pack</span>
             <span class="catalog-chip">Live lobby</span>
           </div>
@@ -46,8 +46,8 @@
 
         <aside class="join-side-card">
           <span class="section-kicker">How the flow works</span>
-          <h3>Join, answer, and unlock.</h3>
-          <p class="muted-copy">Students use a room code, pick a nickname, choose from unlocked blooks, then stay on this same page for questions, mini-games, and the leaderboard.</p>
+          <h3>Sign in, answer, and unlock.</h3>
+          <p class="muted-copy">Students log in with their first name, load their saved blooks, enter the room code, then stay on this same page for questions, mini-games, and the leaderboard.</p>
           <div class="catalog-strip">
             <span class="catalog-chip">Question rounds</span>
             <span class="catalog-chip">Mini-games</span>
@@ -61,13 +61,38 @@
           <section id="landingTopbar" class="topbar">
             <div>
               <h1 class="brand">Student Join</h1>
-              <p id="landingSub" class="sub">Enter game code and nickname to play.</p>
+              <p id="landingSub" class="sub">Log in with your class account, then enter the game code to play.</p>
             </div>
             <a class="action ghost" href="/">Back</a>
           </section>
 
           <section id="joinCard" class="card strong fade-in">
             <h2 id="joinCardTitle" class="title">Join Room</h2>
+            <div class="card" style="margin-bottom: 12px">
+              <h3 class="title" style="margin-bottom: 8px">Student Login</h3>
+              <p class="help" style="margin-bottom: 10px">Use your first name only and the class password. Students must log in before they can join a game.</p>
+              <div class="form-grid">
+                <div>
+                  <label for="studentLoginUsername">First Name</label>
+                  <input id="studentLoginUsername" maxlength="24" placeholder="Lenin" />
+                </div>
+                <div>
+                  <label for="studentLoginPassword">Password</label>
+                  <input id="studentLoginPassword" type="password" maxlength="48" placeholder="Password" />
+                </div>
+              </div>
+              <div class="button-row" style="margin-top: 10px">
+                <button id="studentLoginBtn" type="button">Log In</button>
+                <button id="studentLogoutBtn" class="ghost hidden" type="button">Log Out</button>
+                <a class="action ghost" href="/student-login">Open Full Login</a>
+              </div>
+              <div id="studentLoginSummary" class="help" style="margin-top: 8px">Not logged in. Student login is required to join.</div>
+              <div id="studentLoginGreeting" class="notice hidden" style="margin-top: 8px">
+                <strong id="studentLoginGreetingTitle" style="display:block;font-size:1.1rem">Hello!</strong>
+                <span id="studentLoginGreetingMeta" class="help">You are logged in.</span>
+              </div>
+              <div id="studentLoginNotice" class="notice hidden" style="margin-top: 8px"></div>
+            </div>
             <div class="form-grid">
               <div>
                 <label for="code">Game Code</label>
@@ -75,34 +100,28 @@
               </div>
               <div>
                 <label for="name">Nickname</label>
-                <input id="name" maxlength="24" placeholder="Your name" />
+                <input id="name" maxlength="24" placeholder="Log in to use your first name" />
               </div>
             </div>
             <div id="accountPanel" style="margin-top: 12px">
               <div>
-                <label>Blook Packs</label>
+                <label>Your Blook Collection</label>
                 <div class="button-row" style="margin-bottom: 8px">
                   <div class="notice">Coins: <strong id="accountCoins">0</strong></div>
-                  <div class="notice">Free Opens: <strong id="accountFreeOpen">0</strong></div>
+                  <a id="storeLinkBtn" class="action secondary" href="/market">Open Store</a>
                 </div>
                 <div id="packTabs" class="pack-tabs">
-                  <span class="help">Pick a pack before joining. Avatar is randomized from that pack.</span>
+                  <span class="help">Choose a pack to view only the blooks you already own there.</span>
                 </div>
-                <div class="button-row" style="margin-top: 10px">
-                  <button id="openPackBtn" class="secondary" type="button">Open Pack</button>
-                  <button id="sellDuplicateBtn" class="ghost" type="button">Sell Duplicate</button>
-                </div>
-                <div id="packOdds" class="help" style="margin-top: 8px"></div>
-                <div id="packResult" class="notice hidden" style="margin-top: 8px"></div>
-                <div id="packOpenAnimation" class="pack-open-animation hidden" aria-live="polite"></div>
+                <div id="storeHint" class="help" style="margin-top: 10px">Buy new packs in the Store, then come back here to pick from the blooks you already own.</div>
               </div>
               <div style="margin-top: 10px">
-                <label>Available Blooks</label>
+                <label>Owned Blooks</label>
                 <div id="blookGrid" class="blook-grid"></div>
               </div>
             </div>
             <div id="accountPolicyNotice" class="notice hidden" style="margin-top: 10px"></div>
-            <div id="pickedBlook" class="notice" style="margin-top: 10px">Your join avatar is randomized from your selected pack.</div>
+            <div id="pickedBlook" class="notice" style="margin-top: 10px">Your join avatar uses the owned blook you choose here.</div>
             <div class="button-row" style="margin-top: 12px">
               <button id="joinBtn">Join Game</button>
               <span id="joinNotice" class="notice hidden"></span>

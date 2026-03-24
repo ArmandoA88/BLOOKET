@@ -13,6 +13,7 @@
       <header class="site-nav">
         <a class="site-logo" href="/">Blooket</a>
         <nav class="site-nav-links" aria-label="Primary">
+          <a class="site-nav-link" href="/student-login">Student Login</a>
           <a id="homeJoinLink" class="site-nav-link" href="/play">Join a game</a>
           <a id="homeDashboardLink" class="site-nav-link" href="/my-sets">Dashboard</a>
           <a class="site-nav-link" href="/host.html">Host now</a>
@@ -26,13 +27,14 @@
             <h1 class="hero-title">Fun, free, educational games for everyone!</h1>
             <p class="hero-text">
               This project now follows the same public-home to dashboard to join flow as Blooket,
-              while keeping the quiz engine, blook packs, reports, and mini-games already in this repository.
+              while keeping the quiz engine, persistent student coins and blooks, reports, and mini-games already in this repository.
             </p>
             <div class="hero-actions">
               <a id="homePrimaryAction" class="site-button" href="/my-sets">
                 <span id="homePrimaryActionLabel">Open Dashboard</span>
               </a>
-              <a id="homeSecondaryAction" class="site-button secondary" href="/play">Join a game</a>
+              <a class="site-button secondary" href="/student-login">Student Login</a>
+              <a id="homeSecondaryAction" class="site-button ghost" href="/play">Join a game</a>
             </div>
             <p id="homeAuthSummary" class="dashboard-status-note">Loading local server status...</p>
             <div id="homeActiveRoom" class="active-room-pill" hidden>
@@ -131,7 +133,7 @@
             <article class="process-card">
               <div class="process-step">3</div>
               <h3>Play, learn, and analyze</h3>
-              <p class="muted-copy">Students join from <strong>/play</strong>, answer questions, run mini-games, unlock blooks, and finish with the existing report flow.</p>
+              <p class="muted-copy">Students sign in from <strong>/student-login</strong>, continue to <strong>/play</strong>, then answer questions, earn coins, unlock blooks, and finish with the existing report flow.</p>
             </article>
           </div>
         </section>
@@ -142,6 +144,7 @@
             <div id="footerRoomCopy" class="muted-copy">No live room open yet</div>
           </div>
           <div class="quick-actions">
+            <a class="site-button secondary" href="/student-login">Student Login</a>
             <a class="site-button" href="/host.html">Host Workspace</a>
             <a id="footerRoomLink" class="site-button ghost" href="/play">Student Join</a>
           </div>

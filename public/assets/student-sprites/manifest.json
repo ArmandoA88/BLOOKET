@@ -638,5 +638,21 @@
       "right": 936,
       "bottom": 449
     }
+  },
+  {
+    "file": "EvieKate.png",
+    "source": "EvieKate.png",
+    "box": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0
+    },
+    "crop": {
+      "left": 0,
+      "top": 0,
+      "right": 0,
+      "bottom": 0
+    }
   }
 ]

@@ -41,6 +41,7 @@ const keyToDir = {
 let currentId = "";
 let currentGame = null;
 let currentState = null;
+let suiteAudioContext = null;
 
 function loadSprite(src) {
   const image = new Image();
@@ -132,6 +133,112 @@ function drawLabel(text, x, y, size, color, align = "left") {
   ctx.font = `800 ${size}px Orbitron, monospace`;
   ctx.textAlign = align;
   ctx.fillText(text, x, y);
+}
+
+function ensureSuiteAudioContext() {
+  const ContextCtor = window.AudioContext || window.webkitAudioContext;
+  if (!ContextCtor) {
+    return null;
+  }
+
+  if (!suiteAudioContext) {
+    try {
+      suiteAudioContext = new ContextCtor();
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  if (suiteAudioContext.state === "suspended") {
+    suiteAudioContext.resume().catch(() => {
+      // Ignore resume failures until the next user interaction.
+    });
+  }
+
+  return suiteAudioContext;
+}
+
+function warmSuiteAudio() {
+  ensureSuiteAudioContext();
+}
+
+function playSuiteTone(ctx, frequency, durationMs, gain = 0.03, waveform = "sine", delayMs = 0, endFrequency = frequency) {
+  if (!ctx || ctx.state !== "running") {
+    return;
+  }
+
+  const start = ctx.currentTime + Math.max(0, Number(delayMs) || 0) / 1000;
+  const end = start + Math.max(24, Number(durationMs) || 100) / 1000;
+  const oscillator = ctx.createOscillator();
+  const volume = ctx.createGain();
+  const safeStartFrequency = Math.max(40, Number(frequency) || 440);
+  const safeEndFrequency = Math.max(40, Number(endFrequency) || safeStartFrequency);
+
+  oscillator.type = waveform;
+  oscillator.frequency.setValueAtTime(safeStartFrequency, start);
+  if (Math.abs(safeEndFrequency - safeStartFrequency) > 0.5) {
+    oscillator.frequency.exponentialRampToValueAtTime(safeEndFrequency, end);
+  }
+
+  volume.gain.setValueAtTime(0.0001, start);
+  volume.gain.exponentialRampToValueAtTime(Math.max(0.0002, gain), Math.min(end, start + 0.018));
+  volume.gain.exponentialRampToValueAtTime(0.0001, end);
+
+  oscillator.connect(volume);
+  volume.connect(ctx.destination);
+  oscillator.start(start);
+  oscillator.stop(end + 0.02);
+}
+
+function playCrossingSfx(kind, detail = "") {
+  const ctx = ensureSuiteAudioContext();
+  if (!ctx || ctx.state !== "running") {
+    return;
+  }
+
+  if (kind === "frog") {
+    playSuiteTone(ctx, 360, 60, 0.024, "square");
+    playSuiteTone(ctx, 240, 120, 0.02, "triangle", 24, 180);
+    return;
+  }
+
+  if (kind === "car") {
+    if (detail === "siren") {
+      playSuiteTone(ctx, 720, 85, 0.014, "square");
+      playSuiteTone(ctx, 540, 85, 0.014, "square", 90);
+      return;
+    }
+    if (detail === "heavy") {
+      playSuiteTone(ctx, 120, 160, 0.018, "sawtooth", 0, 90);
+      playSuiteTone(ctx, 84, 210, 0.012, "triangle", 22, 72);
+      return;
+    }
+    playSuiteTone(ctx, 180, 110, 0.015, "sawtooth", 0, 140);
+    playSuiteTone(ctx, 132, 140, 0.01, "triangle", 26, 110);
+    return;
+  }
+
+  if (kind === "ship") {
+    if (detail === "speedboat") {
+      playSuiteTone(ctx, 320, 90, 0.014, "sawtooth", 0, 260);
+      playSuiteTone(ctx, 220, 120, 0.011, "triangle", 30, 180);
+      return;
+    }
+    playSuiteTone(ctx, 220, 170, 0.018, "triangle", 0, 170);
+    playSuiteTone(ctx, 150, 230, 0.014, "sine", 38, 120);
+    return;
+  }
+
+  if (kind === "splash") {
+    playSuiteTone(ctx, 190, 90, 0.018, "sawtooth", 0, 110);
+    playSuiteTone(ctx, 120, 180, 0.014, "triangle", 48, 74);
+    return;
+  }
+
+  if (kind === "goal") {
+    playSuiteTone(ctx, 420, 85, 0.02, "triangle");
+    playSuiteTone(ctx, 620, 100, 0.024, "triangle", 70);
+  }
 }
 
 function formatTime(seconds) {
@@ -1527,7 +1634,72 @@ const crossingGame = (() => {
     state.facing = "up";
   }
 
+  function crossingCanPlaySfx(state, key, cooldownSeconds) {
+    if (!state?.sfx) {
+      return false;
+    }
+    const now = Math.max(0, Number(state.soundClock || 0));
+    const nextAllowedAt = Math.max(0, Number(state.sfx[key] || 0));
+    if (nextAllowedAt > now) {
+      return false;
+    }
+    state.sfx[key] = now + Math.max(0, Number(cooldownSeconds) || 0);
+    return true;
+  }
+
+  function crossingTrafficSoundDetail(vehicle) {
+    const typeId = String(vehicle?.typeId || "");
+    if (typeId === "police" || typeId === "ambulance") {
+      return "siren";
+    }
+    if (typeId === "citybus" || typeId === "schoolbus" || typeId === "truck") {
+      return "heavy";
+    }
+    return "car";
+  }
+
+  function maybePlayRoadTrafficSfx(state, lane) {
+    let nearestVehicle = null;
+    let nearestDistance = Infinity;
+    for (const traffic of lane.items) {
+      const profile = traffic.vehicle?.profile;
+      if (!profile) {
+        continue;
+      }
+      const metrics = getVehicleMetrics(profile);
+      const centerX = traffic.x + (lane.size - metrics.displayWidth) / 2 + metrics.displayWidth / 2;
+      const distanceToFrog = Math.abs(centerX - state.x);
+      if (distanceToFrog < nearestDistance) {
+        nearestDistance = distanceToFrog;
+        nearestVehicle = traffic.vehicle;
+      }
+    }
+
+    if (!nearestVehicle) {
+      return;
+    }
+
+    const detail = crossingTrafficSoundDetail(nearestVehicle);
+    const threshold = detail === "heavy" ? 170 : detail === "siren" ? 150 : 118;
+    const cooldown = detail === "siren" ? 0.7 : detail === "heavy" ? 0.55 : 0.4;
+    if (nearestDistance <= threshold && crossingCanPlaySfx(state, "roadAt", cooldown)) {
+      playCrossingSfx("car", detail);
+    }
+  }
+
+  function maybePlayRiverTrafficSfx(state, vessel) {
+    const typeId = String(vessel?.typeId || "");
+    const detail = typeId === "speedboat" ? "speedboat" : "ship";
+    const cooldown = detail === "speedboat" ? 0.38 : 0.6;
+    if (crossingCanPlaySfx(state, "riverAt", cooldown)) {
+      playCrossingSfx("ship", detail);
+    }
+  }
+
   function loseLife(state, reason) {
+    if (crossingCanPlaySfx(state, "lossAt", 0.16)) {
+      playCrossingSfx(String(reason || "").toLowerCase().includes("traffic") ? "car" : "splash", "heavy");
+    }
     state.lives -= 1;
     state.status = reason;
     state.hopTimer = 0;
@@ -1572,6 +1744,9 @@ const crossingGame = (() => {
     state.hopTimer = hopDuration;
     state.facing = dir;
     state.status = nextRow === 0 ? "Stick the landing" : "Hop clean";
+    if (crossingCanPlaySfx(state, "frogAt", 0.09)) {
+      playCrossingSfx("frog");
+    }
     return true;
   }
 
@@ -1590,13 +1765,21 @@ const crossingGame = (() => {
         lives: 4,
         status: "Hop to the top",
         gameOver: false,
+        soundClock: 0,
         hopTimer: 0,
         hopFromX: boardW / 2,
         hopToX: boardW / 2,
         hopFromRow: startRow,
         hopToRow: startRow,
         queuedDir: null,
-        facing: "up"
+        facing: "up",
+        sfx: {
+          frogAt: 0,
+          roadAt: 0,
+          riverAt: 0,
+          lossAt: 0,
+          goalAt: 0
+        }
       };
       resetFrog(state);
       return state;
@@ -1624,6 +1807,8 @@ const crossingGame = (() => {
       if (state.gameOver) {
         return;
       }
+
+      state.soundClock += dt;
 
       for (const lane of state.lanes) {
         if (!lane.speed) {
@@ -1691,10 +1876,12 @@ const crossingGame = (() => {
             return;
           }
         }
+        maybePlayRoadTrafficSfx(state, lane);
       }
 
       if (lane.type === "river") {
         let onLog = false;
+        let ridingVessel = null;
         for (const log of lane.items) {
           const vessel = log.vessel?.profile;
           const rideInset = vessel?.rideInset ?? 8;
@@ -1703,6 +1890,7 @@ const crossingGame = (() => {
           const rideRight = rideLeft + rideWidth;
           if (state.x > rideLeft && state.x < rideRight) {
             onLog = true;
+            ridingVessel = log.vessel;
             state.x += lane.speed * dt;
             state.hopFromX += lane.speed * dt;
             state.hopToX += lane.speed * dt;
@@ -1713,6 +1901,7 @@ const crossingGame = (() => {
           loseLife(state, "Splash. Find a log.");
           return;
         }
+        maybePlayRiverTrafficSfx(state, ridingVessel);
       }
 
       if (state.x < tile / 2 || state.x > boardW - tile / 2) {
@@ -1729,6 +1918,9 @@ const crossingGame = (() => {
       if (state.row === 0 && state.hopTimer === 0) {
         state.score += 1;
         state.status = "Goal reached";
+        if (crossingCanPlaySfx(state, "goalAt", 0.2)) {
+          playCrossingSfx("goal");
+        }
         resetFrog(state);
       }
     },
@@ -3408,22 +3600,34 @@ const racerGame = (() => {
     pickup: loadSprite(`${spriteRoot}/traffic-pickup.png`)
   };
 
+  // These square sheets include transparent padding around the car art.
+  // Cropping to the painted vehicle keeps the on-road footprint looking normal.
+  const spriteBounds = {
+    viper: { x: 67, y: 16, w: 103, h: 216 },
+    audiRed: { x: 77, y: 25, w: 98, h: 214 },
+    police: { x: 77, y: 25, w: 98, h: 214 },
+    taxi: { x: 67, y: 13, w: 114, h: 223 },
+    hatchback: { x: 80, y: 16, w: 92, h: 216 },
+    minivan: { x: 74, y: 25, w: 93, h: 196 },
+    pickup: { x: 63, y: 35, w: 111, h: 204 }
+  };
+
   const supercarOptions = [
     { id: "audi-r8", key: "1", label: "1. Audi R8", name: "Audi R8", sprite: sprites.audiR8, drawW: 92, drawH: 168, fallback: "#f8fafc", highlight: "#bfdbfe" },
     { id: "audi-r8-black", key: "2", label: "2. Audi R8 Night", name: "Audi R8 Night", sprite: sprites.audiR8Black, drawW: 92, drawH: 166, fallback: "#2563eb", highlight: "#93c5fd" },
     { id: "gallardo", key: "3", label: "3. Lamborghini Gallardo", name: "Lamborghini Gallardo", sprite: sprites.gallardo, drawW: 92, drawH: 166, fallback: "#38bdf8", highlight: "#7dd3fc" },
-    { id: "viper", key: "4", label: "4. Dodge Viper", name: "Dodge Viper", sprite: sprites.viper, drawW: 114, drawH: 170, fallback: "#fb923c", highlight: "#fdba74" }
+    { id: "viper", key: "4", label: "4. Dodge Viper", name: "Dodge Viper", sprite: sprites.viper, crop: spriteBounds.viper, drawW: 82, drawH: 172, fallback: "#fb923c", highlight: "#fdba74" }
   ];
 
   const trafficOptions = [
-    { id: "traffic-audi-red", name: "Audi Coupe", sprite: sprites.audiRed, drawW: 102, drawH: 166, fallback: "#ef4444", highlight: "#fca5a5" },
-    { id: "traffic-police", name: "Police Interceptor", sprite: sprites.police, drawW: 102, drawH: 166, fallback: "#60a5fa", highlight: "#bfdbfe" },
-    { id: "traffic-taxi", name: "Taxi", sprite: sprites.taxi, drawW: 102, drawH: 166, fallback: "#facc15", highlight: "#fde68a" },
-    { id: "traffic-hatchback", name: "Hatchback", sprite: sprites.hatchback, drawW: 98, drawH: 162, fallback: "#22c55e", highlight: "#86efac" },
-    { id: "traffic-minivan", name: "Minivan", sprite: sprites.minivan, drawW: 104, drawH: 168, fallback: "#c084fc", highlight: "#d8b4fe" },
-    { id: "traffic-pickup", name: "Pickup", sprite: sprites.pickup, drawW: 106, drawH: 172, fallback: "#f97316", highlight: "#fdba74" },
+    { id: "traffic-audi-red", name: "Audi Coupe", sprite: sprites.audiRed, crop: spriteBounds.audiRed, drawW: 78, drawH: 170, fallback: "#ef4444", highlight: "#fca5a5" },
+    { id: "traffic-police", name: "Police Interceptor", sprite: sprites.police, crop: spriteBounds.police, drawW: 78, drawH: 170, fallback: "#60a5fa", highlight: "#bfdbfe" },
+    { id: "traffic-taxi", name: "Taxi", sprite: sprites.taxi, crop: spriteBounds.taxi, drawW: 84, drawH: 164, fallback: "#facc15", highlight: "#fde68a" },
+    { id: "traffic-hatchback", name: "Hatchback", sprite: sprites.hatchback, crop: spriteBounds.hatchback, drawW: 74, drawH: 174, fallback: "#22c55e", highlight: "#86efac" },
+    { id: "traffic-minivan", name: "Minivan", sprite: sprites.minivan, crop: spriteBounds.minivan, drawW: 80, drawH: 168, fallback: "#c084fc", highlight: "#d8b4fe" },
+    { id: "traffic-pickup", name: "Pickup", sprite: sprites.pickup, crop: spriteBounds.pickup, drawW: 90, drawH: 166, fallback: "#f97316", highlight: "#fdba74" },
     { id: "traffic-gallardo", name: "Gallardo", sprite: sprites.gallardo, drawW: 92, drawH: 166, fallback: "#38bdf8", highlight: "#7dd3fc" },
-    { id: "traffic-viper", name: "Viper", sprite: sprites.viper, drawW: 114, drawH: 170, fallback: "#fb923c", highlight: "#fdba74" }
+    { id: "traffic-viper", name: "Viper", sprite: sprites.viper, crop: spriteBounds.viper, drawW: 82, drawH: 172, fallback: "#fb923c", highlight: "#fdba74" }
   ];
 
   let selectedCarIndex = 0;
@@ -3490,7 +3694,10 @@ const racerGame = (() => {
       ctx.save();
       ctx.shadowBlur = 18;
       ctx.shadowColor = "rgba(15,23,42,0.45)";
-      drawSprite(car.sprite, x, y, car.drawW, car.drawH, { alpha });
+      const crop = car.crop;
+      drawSprite(car.sprite, x, y, car.drawW, car.drawH, crop
+        ? { alpha, sx: crop.x, sy: crop.y, sw: crop.w, sh: crop.h }
+        : { alpha });
       ctx.restore();
       return;
     }
@@ -4227,16 +4434,19 @@ function switchGame(id) {
 }
 
 restartBtn.addEventListener("click", () => {
+  warmSuiteAudio();
   resetCurrentGame();
   updateHud();
 });
 
 randomBtn.addEventListener("click", () => {
+  warmSuiteAudio();
   const choices = gameOrder.filter((id) => id !== currentId);
   switchGame(pick(choices));
 });
 
 window.addEventListener("keydown", (event) => {
+  warmSuiteAudio();
   const key = event.key.length === 1 ? event.key.toLowerCase() : event.key.toLowerCase();
   if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key) || ["w", "a", "s", "d"].includes(key)) {
     event.preventDefault();
@@ -4269,6 +4479,7 @@ canvas.addEventListener("pointermove", (event) => {
 });
 
 canvas.addEventListener("pointerdown", (event) => {
+  warmSuiteAudio();
   const point = mouseToCanvas(event);
   input.pointer.x = point.x;
   input.pointer.y = point.y;

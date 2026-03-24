@@ -29,8 +29,9 @@
   }
 
   try {
-    const [auth, quizzes, blooks, minigames, serverInfo] = await Promise.all([
+    const [auth, studentAuth, quizzes, blooks, minigames, serverInfo] = await Promise.all([
       fetchJson("/api/auth/status"),
+      fetchJson("/api/student-auth/status").catch(() => null),
       fetchJson("/api/quizzes"),
       fetchJson("/api/blooks"),
       fetchJson("/api/minigames"),
@@ -74,12 +75,16 @@
     setHref("homeDashboardLink", dashboardTarget);
     setText("homePrimaryActionLabel", dashboardLabel);
 
-    if (auth?.authenticated && auth?.user?.name) {
+    if (studentAuth?.loggedIn && studentAuth?.student) {
+      const studentName = studentAuth.student.displayName || studentAuth.student.username || "Student";
+      const studentCoins = Math.max(0, Number(studentAuth?.account?.coins || 0));
+      setText("homeAuthSummary", `Student account ready: ${studentName} with ${studentCoins} saved coins.`);
+    } else if (auth?.authenticated && auth?.user?.name) {
       setText("homeAuthSummary", `Signed in as ${auth.user.name}`);
     } else if (auth?.authEnabled) {
       setText("homeAuthSummary", "Google sign-in is enabled for host access.");
     } else {
-      setText("homeAuthSummary", "Host access is open locally. Students can join as guests.");
+      setText("homeAuthSummary", "Host access is open locally. Students can use Student Login to load saved coins and blooks.");
     }
   } catch (_error) {
     setText("homeAuthSummary", "Local game flow is ready even if dashboard stats could not load.");

@@ -67,14 +67,14 @@
       nav: "blooks",
       pane: "pane-blooks",
       title: "Blooks",
-      copy: "All local blook packs bundled in this repository, with preview rosters and pack details.",
+      copy: "All local blook packs bundled in this repository, with hidden pack contents and live unlock totals.",
       pill: "Blooks"
     },
     "/market": {
       nav: "market",
       pane: "pane-market",
       title: "Market",
-      copy: "Open packs with the repo's local economy and inventory data while keeping the Blooket-like route flow.",
+      copy: "Open hidden blook packs with the classroom coin economy and live inventory data from this repo.",
       pill: "Market"
     }
   };
@@ -153,6 +153,17 @@
       "rgba(255, 154, 61, 0.16)"
     ];
     return accents[index % accents.length];
+  }
+
+  function renderHiddenPackPreview(pack, ownedCount = 0) {
+    const totalCount = Math.max(0, Number(pack?.totalCount || 0));
+    const unlockedCount = Math.max(0, Number(ownedCount || 0));
+    return `
+      <div class="blook-preview-row">
+        <span class="blook-pill">Hidden until opened</span>
+        <span class="blook-pill">${escapeHtml(`${unlockedCount}/${totalCount} unlocked`)}</span>
+      </div>
+    `;
   }
 
   function fetchJson(url, options = {}) {
@@ -622,11 +633,7 @@
               <span class="pack-chip">${escapeHtml(`${pack.openCost} coins`)}</span>
             </div>
             <p class="pack-card-copy">${escapeHtml(clip(pack.description, 120))}</p>
-            <div class="blook-preview-row">
-              ${(Array.isArray(pack.blooks) ? pack.blooks.slice(0, 5) : [])
-                .map((blook) => `<span class="blook-pill">${escapeHtml(blook.name)}</span>`)
-                .join("")}
-            </div>
+            ${renderHiddenPackPreview(pack, 0)}
             <div class="pack-card-actions">
               <a class="dashboard-action" href="/market">Open in Market</a>
               <a class="dashboard-action ghost" href="/play?catalog=1#accountPanel">View Catalog</a>
@@ -685,11 +692,7 @@
                   <span class="status-chip">${escapeHtml(`${duplicateCount} duplicates`)}</span>
                   <span class="status-chip">${escapeHtml(`${pack.sellValueEach} sell value`)}</span>
                 </div>
-                <div class="blook-preview-row">
-                  ${(Array.isArray(pack.blooks) ? pack.blooks.slice(0, 5) : [])
-                    .map((blook) => `<span class="blook-pill">${escapeHtml(blook.name)}</span>`)
-                    .join("")}
-                </div>
+                ${renderHiddenPackPreview(pack, ownedCount)}
                 <div class="market-card-actions">
                   <button class="dashboard-action" type="button" data-open-pack="${escapeHtml(pack.id)}">Open Pack</button>
                   <a class="dashboard-action ghost" href="/blooks">Preview Pack</a>

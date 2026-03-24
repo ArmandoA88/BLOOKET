@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arcade Solo Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Baloo+2:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #07111d;
+      --panel: rgba(255, 255, 255, 0.08);
+      --line: rgba(151, 214, 255, 0.18);
+      --text: #f4fbff;
+      --muted: rgba(244, 251, 255, 0.72);
+      --gold: #ffd447;
+      --cyan: #5cc7ff;
+      --green: #7dedb0;
+      --danger: #ff8f8f;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Baloo 2", system-ui, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 16% 12%, rgba(92, 199, 255, 0.18), transparent 28%),
+        radial-gradient(circle at 84% 16%, rgba(255, 212, 71, 0.12), transparent 24%),
+        linear-gradient(180deg, #05101b 0%, #12233a 100%);
+      padding: 18px;
+    }
+
+    .page {
+      width: min(1440px, 100%);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 24px 80px rgba(4, 11, 23, 0.42);
+    }
+
+    .sidebar {
+      padding: 20px;
+      display: grid;
+      gap: 16px;
+      position: sticky;
+      top: 18px;
+    }
+
+    .eyebrow {
+      color: rgba(255, 255, 255, 0.55);
+      font-family: "Orbitron", monospace;
+      font-size: 0.74rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      font-family: "Orbitron", monospace;
+    }
+
+    h1 {
+      font-size: clamp(1.9rem, 4vw, 2.8rem);
+      line-height: 0.98;
+    }
+
+    .sub {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .stat-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .stat-card,
+    .info-box {
+      padding: 14px 16px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .stat-label {
+      color: rgba(255, 255, 255, 0.56);
+      font-family: "Orbitron", monospace;
+      font-size: 0.76rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      margin-top: 6px;
+      font-family: "Orbitron", monospace;
+      font-size: 1.18rem;
+      color: var(--gold);
+    }
+
+    .info-box strong {
+      display: block;
+      margin-bottom: 6px;
+      font-family: "Orbitron", monospace;
+      font-size: 0.86rem;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    button,
+    a.action {
+      border: none;
+      border-radius: 18px;
+      padding: 12px 14px;
+      font-family: "Orbitron", monospace;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-decoration: none;
+      cursor: pointer;
+      text-align: center;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    button:hover,
+    a.action:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, #145bc8, #3b82f6);
+      color: #eef7ff;
+    }
+
+    .secondary-btn,
+    a.action.secondary-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text);
+    }
+
+    .stage {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .stage-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+      padding: 4px 8px 0;
+    }
+
+    .stage-title {
+      font-size: 1.15rem;
+    }
+
+    .stage-help {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .status-pill {
+      min-width: 230px;
+      padding: 12px 16px;
+      border-radius: 18px;
+      text-align: center;
+      font-family: "Orbitron", monospace;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--gold);
+    }
+
+    .canvas-wrap,
+    .board-wrap {
+      width: 100%;
+      border-radius: 26px;
+      border: 1px solid rgba(151, 214, 255, 0.24);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+      background: #09131d;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #09131d;
+    }
+
+    .board-wrap {
+      padding: 18px;
+      min-height: 620px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 0 8px 4px;
+    }
+
+    .action-btn {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      min-width: 110px;
+    }
+
+    .action-btn.good {
+      border-color: rgba(125, 237, 176, 0.34);
+      background: rgba(125, 237, 176, 0.14);
+      color: #ecfff4;
+    }
+
+    .action-btn.bad {
+      border-color: rgba(255, 143, 143, 0.34);
+      background: rgba(255, 143, 143, 0.14);
+      color: #fff4f4;
+    }
+
+    .credit {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.84rem;
+      line-height: 1.45;
+    }
+
+    .solo-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .solo-board-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .solo-pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-family: "Orbitron", monospace;
+      font-size: 0.76rem;
+    }
+
+    .dig-grid,
+    .match-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .dig-grid {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .match-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .dig-card,
+    .match-card {
+      border-radius: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      background: rgba(255, 255, 255, 0.06);
+      min-height: 138px;
+      padding: 10px;
+      display: grid;
+      place-items: center;
+      gap: 8px;
+      color: var(--text);
+      text-align: center;
+    }
+
+    .dig-card img,
+    .match-card img,
+    .sprite-inline {
+      max-width: 72px;
+      max-height: 72px;
+      object-fit: contain;
+      image-rendering: auto;
+      filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.22));
+    }
+
+    .dig-card.hidden-card,
+    .match-card.hidden-card {
+      background: linear-gradient(180deg, rgba(119, 76, 39, 0.92), rgba(88, 52, 28, 0.98));
+      border-color: rgba(255, 214, 121, 0.18);
+    }
+
+    .dig-card.hidden-card::before,
+    .match-card.hidden-card::before {
+      content: "?";
+      font-family: "Orbitron", monospace;
+      font-size: 2rem;
+      color: rgba(255, 239, 214, 0.8);
+    }
+
+    .match-card.matched {
+      background: rgba(125, 237, 176, 0.12);
+      border-color: rgba(125, 237, 176, 0.3);
+    }
+
+    .match-card.flipped {
+      background: rgba(92, 199, 255, 0.12);
+      border-color: rgba(92, 199, 255, 0.3);
+    }
+
+    .cleanup-stage,
+    .battle-stage {
+      display: grid;
+      gap: 16px;
+    }
+
+    .cleanup-arena {
+      position: relative;
+      height: 360px;
+      border-radius: 24px;
+      background:
+        linear-gradient(180deg, rgba(163, 217, 255, 0.14), rgba(8, 18, 34, 0.2)),
+        linear-gradient(180deg, #0e2238 0%, #142941 62%, #1a3248 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .cleanup-item {
+      position: absolute;
+      left: 50%;
+      top: 18px;
+      width: 100px;
+      margin-left: -50px;
+      padding: 10px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      text-align: center;
+    }
+
+    .cleanup-item img {
+      max-width: 56px;
+      max-height: 56px;
+      object-fit: contain;
+    }
+
+    .cleanup-cleaner {
+      position: absolute;
+      bottom: 112px;
+      width: 90px;
+      margin-left: -45px;
+      transition: left 0.16s ease;
+      text-align: center;
+    }
+
+    .cleanup-cleaner img {
+      max-width: 90px;
+      max-height: 90px;
+      object-fit: contain;
+    }
+
+    .cleanup-bins {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 18px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      padding: 0 18px;
+    }
+
+    .cleanup-bin {
+      padding: 12px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: grid;
+      place-items: center;
+      gap: 6px;
+      color: var(--text);
+    }
+
+    .cleanup-bin img {
+      max-width: 40px;
+      max-height: 40px;
+      object-fit: contain;
+    }
+
+    .fighter-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .fighter-card {
+      padding: 16px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: grid;
+      gap: 10px;
+      place-items: center;
+      text-align: center;
+    }
+
+    .fighter-card img {
+      max-width: 120px;
+      max-height: 120px;
+      object-fit: contain;
+    }
+
+    .hp-bar {
+      width: 100%;
+      height: 14px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .hp-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6ce0b1, #ffd447);
+      transition: width 0.2s ease;
+    }
+
+    .battle-log {
+      padding: 14px 16px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      min-height: 120px;
+      color: var(--muted);
+    }
+
+    .battle-log strong {
+      color: var(--text);
+    }
+
+    @media (max-width: 1080px) {
+      .page {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+      }
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 12px;
+      }
+
+      .button-row {
+        grid-template-columns: 1fr;
+      }
+
+      .stage-head {
+        flex-direction: column;
+      }
+
+      .status-pill {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .dig-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .fighter-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .dig-grid,
+      .match-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    body.embed-mode {
+      padding: 0;
+      background: #07111d;
+    }
+
+    body.embed-mode .page {
+      width: 100%;
+      min-height: 100vh;
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+
+    body.embed-mode .sidebar {
+      display: none;
+    }
+
+    body.embed-mode .panel,
+    body.embed-mode .stage,
+    body.embed-mode .canvas-wrap,
+    body.embed-mode .board-wrap {
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    body.embed-mode .panel {
+      border: none;
+      background: transparent;
+      backdrop-filter: none;
+    }
+
+    body.embed-mode .stage {
+      min-height: 100vh;
+      padding: 12px;
+    }
+
+    body.embed-mode .stage-head {
+      padding: 2px 4px 0;
+    }
+
+    body.embed-mode .board-wrap {
+      min-height: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <aside class="panel sidebar">
+      <div>
+        <div class="eyebrow">Standalone Solo Mode</div>
+        <h1 id="gameTitle">Loading Game</h1>
+        <p id="gameDescription" class="sub">Preparing a local solo version with no login and no other players required.</p>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div id="primaryStatLabel" class="stat-label">Score</div>
+          <div id="primaryStatValue" class="stat-value">0</div>
+        </div>
+        <div class="stat-card">
+          <div id="secondaryStatLabel" class="stat-label">Round</div>
+          <div id="secondaryStatValue" class="stat-value">Ready</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Best</div>
+          <div id="bestStatValue" class="stat-value">0</div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <strong>Controls</strong>
+        <div id="gameControls" class="sub">Loading controls...</div>
+      </div>
+
+      <div class="info-box">
+        <strong>How It Works</strong>
+        <div id="gameNote" class="sub">This version runs locally in the browser, so you can play instantly without student login or a second player.</div>
+      </div>
+
+      <div class="button-row">
+        <button id="restartBtn" class="primary-btn" type="button">Restart</button>
+        <a id="backToSuiteLink" class="action secondary-btn" href="/arcade-suite.html">Back To Suite</a>
+      </div>
+
+      <div class="credit">
+        Solo pages use free online sprites saved locally in this repo, including Kenney CC0 packs for sports and top-down characters.
+      </div>
+    </aside>
+
+    <main class="panel stage">
+      <div class="stage-head">
+        <div>
+          <h2 id="stageTitle" class="stage-title">Solo Stage</h2>
+          <p id="stageHelp" class="stage-help">Click inside the stage and use the controls shown for the current game.</p>
+        </div>
+        <div id="statusPill" class="status-pill">Loading...</div>
+      </div>
+
+      <div id="canvasWrap" class="canvas-wrap">
+        <canvas id="gameCanvas" width="960" height="540"></canvas>
+      </div>
+
+      <div id="boardWrap" class="board-wrap hidden">
+        <div id="boardStage"></div>
+      </div>
+
+      <div id="gameActions" class="actions"></div>
+    </main>
+  </div>
+
+  <script src="/solo-game.js"></script>
+</body>
+</html>

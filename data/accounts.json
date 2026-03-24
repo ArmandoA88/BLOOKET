@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-03-24T19:45:28.919Z",
+  "savedAt": "2026-03-24T19:55:52.298Z",
   "accounts": [
     {
       "id": "guest:mmbcb9q8er3q7dmw",
@@ -16250,7 +16250,110 @@
       "inventory": {
         "ath-mahomes": 1
       },
-      "miniGameStats": {},
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "space_invaders": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "snake": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tower_stacker": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tap_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "reaction_duel": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "sequence_memory": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "obstacle_dodge": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "precision_stop": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        }
+      },
       "gamesPlayed": 0,
       "totalCorrect": 0,
       "totalScore": 0,

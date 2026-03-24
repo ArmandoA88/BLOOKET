@@ -4481,6 +4481,7 @@ function createEmbeddedGame(config) {
     stageTitle: config.stageTitle,
     stageHelp: config.stageHelp,
     embedUrl: config.embedUrl,
+    openUrl: config.openUrl || config.embedUrl,
     createState() {
       return {
         status: `Loading ${config.name}...`
@@ -4502,7 +4503,7 @@ function createEmbeddedGame(config) {
         return;
       }
       if (id === "open") {
-        window.open(config.embedUrl, "_blank", "noopener");
+        window.open(config.openUrl || config.embedUrl, "_blank", "noopener");
         state.status = `${config.name} opened in new tab`;
       }
     },
@@ -4880,11 +4881,16 @@ const arcadeSpotlightGames = {
   })
 };
 
-function arcadeSuitePreviewUrl(gameId) {
-  return `/arcade-preview.html?game=${encodeURIComponent(gameId)}`;
+function soloGameUrl(gameId, embedded = false) {
+  const url = new URL("/solo-game.html", window.location.origin);
+  url.searchParams.set("game", gameId);
+  if (embedded) {
+    url.searchParams.set("embed", "1");
+  }
+  return `${url.pathname}${url.search}`;
 }
 
-function createArcadePreviewEmbeddedGame(config) {
+function createArcadeStandaloneEmbeddedGame(config) {
   return createEmbeddedGame({
     name: config.name,
     description: config.description,
@@ -4892,65 +4898,66 @@ function createArcadePreviewEmbeddedGame(config) {
     stageTitle: config.stageTitle || config.name,
     stageHelp:
       config.stageHelp ||
-      "This loads a temporary playable classroom preview inside the arcade suite. Click inside the player frame first so keyboard controls go to the game.",
-    embedUrl: arcadeSuitePreviewUrl(config.id),
-    hudCopy: config.hudCopy || `Embedded playable preview for ${config.name}.`,
+      "This loads the standalone solo version directly inside the arcade suite. Click inside the stage first if the game uses keyboard controls.",
+    embedUrl: soloGameUrl(config.id, true),
+    openUrl: soloGameUrl(config.id, false),
+    hudCopy: config.hudCopy || `Standalone playable solo version for ${config.name}.`,
     footer:
       config.footer ||
-      "Use Reload Stage to start a fresh preview room, or Open Full Page if you want the preview in its own tab."
+      "Use Reload Stage to restart the standalone run, or Open Full Page if you want the solo version in its own tab."
   });
 }
 
-const arcadeLaunchablePreviewGames = {
-  asteroids: createArcadePreviewEmbeddedGame({
+const arcadeStandaloneGames = {
+  asteroids: createArcadeStandaloneEmbeddedGame({
     id: "asteroids",
     name: "Asteroids",
     description: "Answer fast to blast asteroid waves, with streaks giving bonus coins.",
-    controls: "Click inside the stage, then answer questions directly in the player frame to blast more asteroids.",
-    stageHelp: "This launches a real Asteroids mode preview room and auto-joins a guest player inside the suite.",
-    hudCopy: "Embedded playable Asteroids preview with a temporary guest room."
+    controls: "Click inside the stage, then press 1, 2, or 3 to fire at the right asteroid answer.",
+    stageHelp: "This now launches a fully local Asteroids solo page inside the suite with no login, room, or other players.",
+    hudCopy: "Standalone Asteroids solo run loaded directly in the suite."
   }),
-  goalie_rush: createArcadePreviewEmbeddedGame({
+  goalie_rush: createArcadeStandaloneEmbeddedGame({
     id: "goalie_rush",
     name: "Goalie Rush",
     description: "Block soccer shots that get faster each round, with boss rounds for extra coins.",
-    controls: "Click inside the stage, then use Left and Right to move between goal lanes and block shots.",
-    hudCopy: "Embedded playable Goalie Rush preview with an auto-starting guest room."
+    controls: "Click inside the stage, then use Left and Right to move between goal lanes and block the shot.",
+    hudCopy: "Standalone Goalie Rush solo run with no room setup."
   }),
-  hallway_dash: createArcadePreviewEmbeddedGame({
+  hallway_dash: createArcadeStandaloneEmbeddedGame({
     id: "hallway_dash",
     name: "Hallway Dash",
     description: "A school-themed endless runner with cones, backpacks, puddles, and coin pickups.",
     controls: "Click inside the stage, then use Left and Right or A and D to swap lanes and Space to jump.",
-    hudCopy: "Embedded playable Hallway Dash preview with direct guest auto-join."
+    hudCopy: "Standalone Hallway Dash run loaded straight into the suite."
   }),
-  dino_dig: createArcadePreviewEmbeddedGame({
+  dino_dig: createArcadeStandaloneEmbeddedGame({
     id: "dino_dig",
     name: "Dino Dig",
     description: "Dig tiles to uncover fossils, bones, coins, and rare dinosaur blooks.",
-    controls: "Click inside the stage, then dig tiles directly from the player board.",
-    hudCopy: "Embedded playable Dino Dig preview with a temporary guest room."
+    controls: "Click inside the stage, then dig tiles directly from the standalone board.",
+    hudCopy: "Standalone Dino Dig board with local-only progress."
   }),
-  shadow_match: createArcadePreviewEmbeddedGame({
+  shadow_match: createArcadeStandaloneEmbeddedGame({
     id: "shadow_match",
     name: "Shadow Match",
     description: "Match hidden blooks and build streaks to unlock rarer rewards.",
     controls: "Click inside the stage, then flip cards and match pairs before time runs out.",
-    hudCopy: "Embedded playable Shadow Match preview with direct suite launch."
+    hudCopy: "Standalone Shadow Match memory run with no login."
   }),
-  classroom_cleanup: createArcadePreviewEmbeddedGame({
+  classroom_cleanup: createArcadeStandaloneEmbeddedGame({
     id: "classroom_cleanup",
     name: "Classroom Cleanup",
     description: "Sort books, pencils, and trash before time runs out.",
-    controls: "Click inside the stage, move across rows, and use the cleanup controls shown on the player screen.",
-    hudCopy: "Embedded playable Classroom Cleanup preview with guest auto-join."
+    controls: "Click inside the stage, then use Left and Right or tap the bin buttons to sort items.",
+    hudCopy: "Standalone Classroom Cleanup solo sorter."
   }),
-  battle_royale: createArcadePreviewEmbeddedGame({
+  battle_royale: createArcadeStandaloneEmbeddedGame({
     id: "battle_royale",
     name: "Battle Royale",
     description: "Simple 1v1 turn-based battles where each owned blook has a small power.",
-    controls: "Click inside the stage, then choose battle actions from the player controls during the duel.",
-    hudCopy: "Embedded playable Battle Royale preview with an instant duel room."
+    controls: "Click inside the stage, then pick battle actions against the CPU challenger.",
+    hudCopy: "Standalone Battle Royale gauntlet with local CPU rivals."
   })
 };
 
@@ -4966,7 +4973,7 @@ const games = {
   fishing: fishingGame,
   foosball: foosballSuiteGame,
   invaders: spaceInvadersSuiteGame,
-  ...arcadeLaunchablePreviewGames
+  ...arcadeStandaloneGames
 };
 
 const gameOrder = Object.keys(games);

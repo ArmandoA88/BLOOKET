@@ -1,0 +1,10 @@
+Battle Royale standalone sprite set
+
+Files
+
+- `arena-stadium.svg`
+
+License
+
+- Created locally for this project.
+- Intended for project use alongside the CC0 topdown, sports, and dinosaur sprites already stored in this repo.

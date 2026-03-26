@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Retro stadium battle backdrop</title>
+  <desc id="desc">A colorful indoor battle stadium with lights, crowd bands, a scoreboard, and a central battle field.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#15264b"/>
+      <stop offset="58%" stop-color="#0d1831"/>
+      <stop offset="100%" stop-color="#08111f"/>
+    </linearGradient>
+    <radialGradient id="lightLeft" cx="0.16" cy="0.12" r="0.34">
+      <stop offset="0%" stop-color="#7df0ff" stop-opacity="0.56"/>
+      <stop offset="100%" stop-color="#7df0ff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="lightRight" cx="0.84" cy="0.14" r="0.34">
+      <stop offset="0%" stop-color="#ffd65f" stop-opacity="0.48"/>
+      <stop offset="100%" stop-color="#ffd65f" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="crowd" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#314c7a"/>
+      <stop offset="100%" stop-color="#1a2842"/>
+    </linearGradient>
+    <linearGradient id="field" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#56c5e8"/>
+      <stop offset="100%" stop-color="#2e8cc0"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#17253f"/>
+      <stop offset="100%" stop-color="#0f182b"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <rect width="1600" height="900" fill="url(#lightLeft)"/>
+  <rect width="1600" height="900" fill="url(#lightRight)"/>
+
+  <g opacity="0.5">
+    <circle cx="176" cy="142" r="16" fill="#9ff9ff"/>
+    <circle cx="1422" cy="148" r="15" fill="#ffe992"/>
+    <circle cx="266" cy="96" r="8" fill="#ffffff"/>
+    <circle cx="1334" cy="104" r="8" fill="#ffffff"/>
+  </g>
+
+  <g>
+    <rect x="602" y="72" width="396" height="114" rx="26" fill="url(#screen)" stroke="#7ad7ff" stroke-opacity="0.28" stroke-width="4"/>
+    <rect x="632" y="96" width="336" height="66" rx="18" fill="#0b1324" stroke="#ffffff" stroke-opacity="0.08" stroke-width="2"/>
+    <text x="800" y="128" fill="#d7e8ff" font-family="Orbitron, Arial, sans-serif" font-size="30" font-weight="700" text-anchor="middle">POKEMON STADIUM</text>
+    <text x="800" y="158" fill="#ffd65f" font-family="Orbitron, Arial, sans-serif" font-size="22" font-weight="700" text-anchor="middle">3v3 CUP BATTLE</text>
+  </g>
+
+  <g opacity="0.95">
+    <path d="M120 306 Q800 180 1480 306 L1480 430 Q800 352 120 430 Z" fill="url(#crowd)"/>
+    <path d="M70 384 Q800 256 1530 384 L1530 520 Q800 450 70 520 Z" fill="#213453"/>
+    <path d="M20 474 Q800 338 1580 474 L1580 612 Q800 560 20 612 Z" fill="#18253d"/>
+  </g>
+
+  <g opacity="0.62">
+    <path d="M120 314 Q800 194 1480 314" fill="none" stroke="#97d6ff" stroke-width="4" stroke-linecap="round"/>
+    <path d="M74 392 Q800 270 1526 392" fill="none" stroke="#ffd65f" stroke-opacity="0.56" stroke-width="3" stroke-linecap="round"/>
+    <path d="M24 484 Q800 352 1576 484" fill="none" stroke="#7df0ff" stroke-opacity="0.46" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <g opacity="0.34">
+    <g fill="#eef9ff">
+      <circle cx="178" cy="368" r="4"/>
+      <circle cx="242" cy="354" r="4"/>
+      <circle cx="304" cy="346" r="4"/>
+      <circle cx="368" cy="336" r="4"/>
+      <circle cx="1232" cy="352" r="4"/>
+      <circle cx="1294" cy="360" r="4"/>
+      <circle cx="1360" cy="374" r="4"/>
+      <circle cx="1422" cy="386" r="4"/>
+    </g>
+  </g>
+
+  <g>
+    <ellipse cx="800" cy="720" rx="544" ry="124" fill="#15263f"/>
+    <ellipse cx="800" cy="698" rx="474" ry="102" fill="#0f1a2f"/>
+    <ellipse cx="800" cy="678" rx="408" ry="78" fill="url(#field)"/>
+    <ellipse cx="800" cy="678" rx="296" ry="54" fill="#6fe5f5" fill-opacity="0.24" stroke="#d5fdff" stroke-opacity="0.52" stroke-width="5"/>
+    <ellipse cx="800" cy="678" rx="134" ry="24" fill="none" stroke="#ecffff" stroke-opacity="0.68" stroke-width="5"/>
+    <path d="M534 678 H1066" stroke="#ecffff" stroke-opacity="0.6" stroke-width="5" stroke-linecap="round"/>
+  </g>
+
+  <g opacity="0.48">
+    <path d="M420 594 C538 512 642 478 800 462 C960 478 1064 512 1180 594" fill="none" stroke="#ffffff" stroke-opacity="0.2" stroke-width="10" stroke-linecap="round"/>
+    <path d="M494 634 C586 568 666 536 800 522 C936 536 1012 568 1106 634" fill="none" stroke="#ffffff" stroke-opacity="0.14" stroke-width="8" stroke-linecap="round"/>
+  </g>
+
+  <g opacity="0.72">
+    <rect x="186" y="174" width="42" height="168" rx="18" fill="#caf7ff"/>
+    <rect x="1372" y="174" width="42" height="168" rx="18" fill="#ffe37a"/>
+    <rect x="214" y="194" width="10" height="200" rx="5" fill="#caf7ff"/>
+    <rect x="1382" y="194" width="10" height="200" rx="5" fill="#ffe37a"/>
+  </g>
+</svg>

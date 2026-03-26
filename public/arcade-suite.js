@@ -4744,20 +4744,20 @@ const arcadeSpotlightGames = {
   goalie_rush: createSpotlightGame({
     name: "Goalie Rush",
     badge: "Classroom Mini-Game",
-    description: "Block soccer shots that get faster every round, with boss saves paying extra coins.",
+    description: "A brighter stadium save mode with curved shots, combo streaks, boss rounds, and multiple goalie power-ups.",
     icon: "/assets/minigames/goalie_rush/goalie-rush.svg",
     launchLabel: "Open Host Test",
     launchCopy: "Goalie Rush host test opened in a new tab.",
     primaryLink: miniGameHostLaunchUrl("goalie_rush"),
     stats: [
       { label: "Type", value: "Mini-game" },
-      { label: "Rewards", value: "Boss coins" },
-      { label: "Focus", value: "Lane timing" }
+      { label: "Rewards", value: "Power pickups" },
+      { label: "Focus", value: "Lane reads" }
     ],
     launchSteps:
       "Open the host test panel, create a room, and Goalie Rush will already be selected so you can launch a preview or run it for the class.",
     hudValue: "Saves",
-    hudCopy: "Arcade suite spotlight for the Goalie Rush classroom mini-game.",
+    hudCopy: "Arcade suite spotlight for the upgraded Goalie Rush stadium mini-game.",
     topColor: "#0f2034",
     bottomColor: "#08131f",
     accentColor: "rgba(94, 235, 183, 0.24)",
@@ -4767,20 +4767,20 @@ const arcadeSpotlightGames = {
   hallway_dash: createSpotlightGame({
     name: "Hallway Dash",
     badge: "Classroom Mini-Game",
-    description: "Race through a school hallway, dodge clutter, jump hazards, and scoop up coins.",
+    description: "A fuller school-hall runner with lockers, bulletin boards, classroom clutter, and better hallway sprites.",
     icon: "/assets/minigames/hallway_dash/hallway.svg",
     launchLabel: "Open Host Test",
     launchCopy: "Hallway Dash host test opened in a new tab.",
     primaryLink: miniGameHostLaunchUrl("hallway_dash"),
     stats: [
       { label: "Type", value: "Endless runner" },
-      { label: "Rewards", value: "Hallway coins" },
+      { label: "Rewards", value: "Hall passes" },
       { label: "Focus", value: "Jump timing" }
     ],
     launchSteps:
       "Open the host test panel, create a room, and Hallway Dash will already be picked for a quick hallway-run preview.",
     hudValue: "Dash",
-    hudCopy: "Arcade suite spotlight for Hallway Dash.",
+    hudCopy: "Arcade suite spotlight for the upgraded Hallway Dash school runner.",
     topColor: "#10233b",
     bottomColor: "#08111a",
     accentColor: "rgba(93, 162, 255, 0.28)",
@@ -4790,7 +4790,7 @@ const arcadeSpotlightGames = {
   dino_dig: createSpotlightGame({
     name: "Dino Dig",
     badge: "Classroom Mini-Game",
-    description: "Dig tiles to uncover fossils, bones, coin caches, and a rare dinosaur blook jackpot.",
+    description: "A scenic badlands dig board with layered soil tiles, richer fossil art, and rare dinosaur jackpot finds.",
     icon: "/assets/dinos/dino-tyrannosaurus.png",
     launchLabel: "Open Host Test",
     launchCopy: "Dino Dig host test opened in a new tab.",
@@ -4803,7 +4803,7 @@ const arcadeSpotlightGames = {
     launchSteps:
       "Open the host test panel, create a room, and Dino Dig will be preselected so you can start a fossil-hunt preview right away.",
     hudValue: "Dig",
-    hudCopy: "Arcade suite spotlight for Dino Dig.",
+    hudCopy: "Arcade suite spotlight for the upgraded Dino Dig excavation board.",
     topColor: "#22180f",
     bottomColor: "#0d0a08",
     accentColor: "rgba(255, 184, 84, 0.26)",
@@ -4859,7 +4859,7 @@ const arcadeSpotlightGames = {
   battle_royale: createSpotlightGame({
     name: "Battle Royale",
     badge: "Classroom Mini-Game",
-    description: "Simple 1v1 turn-based blook battles where every chosen blook gets a small power.",
+    description: "A stadium-style 1v1 gauntlet with fighter picks, richer sprites, and local CPU rivals.",
     icon: "/assets/minigames/battle_royale/battle-royale.svg",
     launchLabel: "Open Host Test",
     launchCopy: "Battle Royale host test opened in a new tab.",
@@ -4872,7 +4872,7 @@ const arcadeSpotlightGames = {
     launchSteps:
       "Open the host test panel, create a room, and Battle Royale will already be chosen so you can start a duel preview quickly.",
     hudValue: "Duel",
-    hudCopy: "Arcade suite spotlight for Battle Royale.",
+    hudCopy: "Arcade suite spotlight for the upgraded Battle Royale stadium duel mode.",
     topColor: "#221023",
     bottomColor: "#0a0811",
     accentColor: "rgba(255, 107, 129, 0.24)",
@@ -4912,31 +4912,34 @@ const arcadeStandaloneGames = {
   asteroids: createArcadeStandaloneEmbeddedGame({
     id: "asteroids",
     name: "Asteroids",
-    description: "Answer fast to blast asteroid waves, with streaks giving bonus coins.",
-    controls: "Click inside the stage, then press 1, 2, or 3 to fire at the right asteroid answer.",
-    stageHelp: "This now launches a fully local Asteroids solo page inside the suite with no login, room, or other players.",
-    hudCopy: "Standalone Asteroids solo run loaded directly in the suite."
+    description: "A classic free-flight asteroid shooter with wraparound movement, split rocks, boosters, and ship upgrades.",
+    controls: "Click inside the stage, then use Left and Right or A and D to rotate, Up or W to thrust, Space or J to fire, and Shift or X to burst boost.",
+    stageHelp: "This launches a fully local Asteroids solo page inside the suite with classic wraparound movement, upgrade pickups, and no login, room, or other players.",
+    hudCopy: "Standalone Asteroids redux run loaded directly in the suite."
   }),
   goalie_rush: createArcadeStandaloneEmbeddedGame({
     id: "goalie_rush",
     name: "Goalie Rush",
-    description: "Block soccer shots that get faster each round, with boss rounds for extra coins.",
-    controls: "Click inside the stage, then use Left and Right to move between goal lanes and block the shot.",
-    hudCopy: "Standalone Goalie Rush solo run with no room setup."
+    description: "A brighter penalty showdown with curved shots, Kenney sports sprites, combo saves, and five goalie power-ups.",
+    controls: "Click inside the stage, then use Left and Right or A and D to slide the keeper. Press 1, 2, or 3 for instant lane picks.",
+    stageHelp: "This launches a fully local Goalie Rush solo page inside the suite with boss rounds, golden balls, and collectible goalie boosts.",
+    hudCopy: "Standalone Goalie Rush stadium run loaded directly in the suite."
   }),
   hallway_dash: createArcadeStandaloneEmbeddedGame({
     id: "hallway_dash",
     name: "Hallway Dash",
-    description: "A school-themed endless runner with cones, backpacks, puddles, and coin pickups.",
-    controls: "Click inside the stage, then use Left and Right or A and D to swap lanes and Space to jump.",
-    hudCopy: "Standalone Hallway Dash run loaded straight into the suite."
+    description: "A detailed school-corridor runner with lockers, bulletin boards, hall passes, and better classroom clutter sprites.",
+    controls: "Click inside the stage, then use Left and Right or A and D to swap lanes and Space, Up, or W to jump.",
+    stageHelp: "This launches a fully local Hallway Dash solo page inside the suite with school corridor sprites, hall-pass pickups, and classroom clutter obstacles.",
+    hudCopy: "Standalone Hallway Dash school hallway run loaded straight into the suite."
   }),
   dino_dig: createArcadeStandaloneEmbeddedGame({
     id: "dino_dig",
     name: "Dino Dig",
-    description: "Dig tiles to uncover fossils, bones, coins, and rare dinosaur blooks.",
+    description: "A scenic excavation board with sky, dirt layers, fossil sprites, coin caches, and rare dinosaur finds.",
     controls: "Click inside the stage, then dig tiles directly from the standalone board.",
-    hudCopy: "Standalone Dino Dig board with local-only progress."
+    stageHelp: "This launches a fully local Dino Dig solo page inside the suite with a sky-and-ground dig site scene and richer fossil reveal art.",
+    hudCopy: "Standalone Dino Dig excavation board with local-only progress."
   }),
   shadow_match: createArcadeStandaloneEmbeddedGame({
     id: "shadow_match",
@@ -4955,9 +4958,18 @@ const arcadeStandaloneGames = {
   battle_royale: createArcadeStandaloneEmbeddedGame({
     id: "battle_royale",
     name: "Battle Royale",
-    description: "Simple 1v1 turn-based battles where each owned blook has a small power.",
+    description: "A stadium-style 1v1 gauntlet with a larger fighter roster, chosen player sprites, and local CPU rivals.",
     controls: "Click inside the stage, then pick battle actions against the CPU challenger.",
-    hudCopy: "Standalone Battle Royale gauntlet with local CPU rivals."
+    stageHelp: "This launches a fully local Battle Royale solo page inside the suite with a fighter roster, chosen player sprite, and a stadium arena backdrop.",
+    hudCopy: "Standalone Battle Royale stadium gauntlet with local CPU rivals."
+  }),
+  pokemon_stadium: createArcadeStandaloneEmbeddedGame({
+    id: "pokemon_stadium",
+    name: "Pokemon Stadium",
+    description: "A bright 3v3 turn-based stadium cup with Pokemon sprites, bench switching, potions, and type-based attacks.",
+    controls: "Click inside the stage, use the move buttons below the board, and tap your bench Pokemon during your turn if you want to switch.",
+    stageHelp: "This launches a fully local Pokemon Stadium solo page inside the suite with team picks, sprite-based battles, and a retro stadium backdrop.",
+    hudCopy: "Standalone Pokemon Stadium 3v3 cup loaded directly in the suite."
   })
 };
 

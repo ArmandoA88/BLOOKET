@@ -15,6 +15,7 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const { BOOK_LEGENDS_BLOOKS } = require("./data/pack-blooks");
 const { CARTOON_NETWORK_BLOOKS } = require("./data/cartoon-network-blooks");
 const { DINOSAUR_BLOOKS } = require("./data/dinosaur-blooks");
+const { POKEMON_BLOOKS } = require("./data/pokemon-blooks");
 const { SCIENCE_BLOOKS, SPACE_BLOOKS } = require("./data/science-space-blooks");
 
 const PORT = process.env.PORT || 3000;
@@ -462,6 +463,13 @@ const BLOOK_PACKS = [
       { id: "anime-gogeta", name: "Gogeta", image: "/assets/anime/gogeta.jpg", icon: "💫", rarity: "Legendary", series: "Dragon Ball Super: Broly" },
       { id: "anime-broly", name: "Broly", image: "/assets/anime/broly.jpg", icon: "💥", rarity: "Epic", series: "Dragon Ball Super: Broly" }
     ]
+  },
+  {
+    id: "pokemon",
+    name: "Pokemon Pack",
+    description: "20 of the most famous Pokemon with classic sprite art, from Pikachu and Charizard to Mewtwo and Rayquaza.",
+    price: 0,
+    blooks: POKEMON_BLOOKS
   },
 
   {

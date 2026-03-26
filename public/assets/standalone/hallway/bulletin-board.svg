@@ -1,0 +1,13 @@
+<svg width="210" height="148" viewBox="0 0 210 148" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="8" width="194" height="132" rx="18" fill="#8A5A24" stroke="#F2C98B" stroke-width="4"/>
+  <rect x="20" y="20" width="170" height="108" rx="12" fill="#C88F52"/>
+  <rect x="34" y="30" width="52" height="36" rx="8" transform="rotate(-6 34 30)" fill="#F8FBFF"/>
+  <rect x="98" y="28" width="44" height="52" rx="8" transform="rotate(5 98 28)" fill="#E5F3FF"/>
+  <rect x="146" y="42" width="30" height="42" rx="8" transform="rotate(-8 146 42)" fill="#FFF2C4"/>
+  <rect x="56" y="78" width="62" height="34" rx="8" transform="rotate(2 56 78)" fill="#DDF9E8"/>
+  <circle cx="42" cy="36" r="4" fill="#EF4444"/>
+  <circle cx="106" cy="34" r="4" fill="#3B82F6"/>
+  <circle cx="154" cy="48" r="4" fill="#F59E0B"/>
+  <circle cx="66" cy="84" r="4" fill="#22C55E"/>
+  <text x="105" y="122" text-anchor="middle" fill="#2A1A0E" font-family="Arial, sans-serif" font-size="18" font-weight="700">School News</text>
+</svg>

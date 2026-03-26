@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" fill="none">
+  <defs>
+    <linearGradient id="goal-post" x1="40" y1="18" x2="320" y2="210" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f8fbff"/>
+      <stop offset="1" stop-color="#d7e7f7"/>
+    </linearGradient>
+  </defs>
+  <path d="M46 30H314V186" stroke="url(#goal-post)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M72 48H288V186" stroke="#d7e1ea" stroke-width="5" stroke-opacity=".92"/>
+  <path d="M46 64H314" stroke="#d7e1ea" stroke-width="4" stroke-opacity=".42"/>
+  <path d="M46 96H314" stroke="#d7e1ea" stroke-width="4" stroke-opacity=".35"/>
+  <path d="M46 128H314" stroke="#d7e1ea" stroke-width="4" stroke-opacity=".26"/>
+  <path d="M82 32V186" stroke="#a7bfd6" stroke-width="4" stroke-opacity=".55"/>
+  <path d="M126 32V186" stroke="#a7bfd6" stroke-width="4" stroke-opacity=".55"/>
+  <path d="M180 32V186" stroke="#a7bfd6" stroke-width="4" stroke-opacity=".55"/>
+  <path d="M234 32V186" stroke="#a7bfd6" stroke-width="4" stroke-opacity=".55"/>
+  <path d="M278 32V186" stroke="#a7bfd6" stroke-width="4" stroke-opacity=".55"/>
+  <path d="M32 188H326" stroke="#0e1726" stroke-width="10" stroke-linecap="round" opacity=".22"/>
+</svg>

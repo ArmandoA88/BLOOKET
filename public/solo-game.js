@@ -100,19 +100,89 @@ const sprites = {
   robot: loadSprite("/assets/standalone/topdown/robot.png"),
   survivor: loadSprite("/assets/standalone/topdown/survivor.png"),
   playerBlue: loadSprite("/assets/standalone/sports/player-blue.png"),
+  playerGreen: loadSprite("/assets/standalone/sports/player-green.png"),
   playerRed: loadSprite("/assets/standalone/sports/player-red.png"),
   soccerBall: loadSprite("/assets/standalone/sports/ball-soccer.png"),
+  soccerBall2: loadSprite("/assets/standalone/sports/ball-soccer-2.png"),
+  soccerBall3: loadSprite("/assets/standalone/sports/ball-soccer-3.png"),
+  soccerBall4: loadSprite("/assets/standalone/sports/ball-soccer-4.png"),
   football: loadSprite("/assets/standalone/sports/ball-football.png"),
   genericBall: loadSprite("/assets/standalone/sports/ball-generic.png"),
+  boxingGlove: loadSprite("/assets/standalone/sports/boxing-glove.png"),
   cardRed: loadSprite("/assets/standalone/sports/card-red.png"),
   cardWhite: loadSprite("/assets/standalone/sports/card-white.png"),
   cardYellow: loadSprite("/assets/standalone/sports/card-yellow.png"),
   batHandle: loadSprite("/assets/standalone/sports/bat-handle.png"),
   flagGreen: loadSprite("/assets/standalone/sports/flag-green.png"),
+  grassMownWide: loadSprite("/assets/standalone/sports/ground-grass-mown-wide.png"),
   trex: loadSprite("/assets/standalone/dinos/tyrannosaurus.png"),
   triceratops: loadSprite("/assets/standalone/dinos/triceratops.png"),
   stegosaurus: loadSprite("/assets/standalone/dinos/stegosaurus.png"),
-  velociraptor: loadSprite("/assets/standalone/dinos/velociraptor.png")
+  velociraptor: loadSprite("/assets/standalone/dinos/velociraptor.png"),
+  shipScout: loadSprite("/assets/standalone/space/playerShip1_blue.png"),
+  shipComet: loadSprite("/assets/standalone/space/playerShip2_green.png"),
+  shipRanger: loadSprite("/assets/standalone/space/playerShip2_orange.png"),
+  shipSentinel: loadSprite("/assets/standalone/space/playerShip3_red.png"),
+  laserBlue: loadSprite("/assets/standalone/space/laserBlue01.png"),
+  laserGreen: loadSprite("/assets/standalone/space/laserGreen01.png"),
+  laserRed: loadSprite("/assets/standalone/space/laserRed01.png"),
+  powerBoost: loadSprite("/assets/standalone/space/powerupBlue_bolt.png"),
+  powerShield: loadSprite("/assets/standalone/space/powerupGreen_shield.png"),
+  powerTech: loadSprite("/assets/standalone/space/powerupYellow_star.png"),
+  meteorBrownBig1: loadSprite("/assets/standalone/space/meteorBrown_big1.png"),
+  meteorBrownBig4: loadSprite("/assets/standalone/space/meteorBrown_big4.png"),
+  meteorGreyBig2: loadSprite("/assets/standalone/space/meteorGrey_big2.png"),
+  meteorBrownMed1: loadSprite("/assets/standalone/space/meteorBrown_med1.png"),
+  meteorBrownMed3: loadSprite("/assets/standalone/space/meteorBrown_med3.png"),
+  meteorGreyMed2: loadSprite("/assets/standalone/space/meteorGrey_med2.png"),
+  meteorBrownSmall1: loadSprite("/assets/standalone/space/meteorBrown_small1.png"),
+  meteorBrownTiny1: loadSprite("/assets/standalone/space/meteorBrown_tiny1.png"),
+  meteorGreySmall2: loadSprite("/assets/standalone/space/meteorGrey_small2.png"),
+  goalieGoal: loadSprite("/assets/standalone/goalie-rush/goal-frame.svg"),
+  goalieGloves: loadSprite("/assets/standalone/goalie-rush/keeper-gloves.svg"),
+  goaliePowerMagnet: loadSprite("/assets/standalone/goalie-rush/powerup-magnet.svg"),
+  goaliePowerSlow: loadSprite("/assets/standalone/goalie-rush/powerup-slow.svg"),
+  goaliePowerShield: loadSprite("/assets/standalone/goalie-rush/powerup-shield.svg"),
+  hallwayLockers: loadSprite("/assets/standalone/hallway/locker-bank.svg"),
+  hallwayDoor: loadSprite("/assets/standalone/hallway/classroom-door.svg"),
+  hallwayBoard: loadSprite("/assets/standalone/hallway/bulletin-board.svg"),
+  hallwayPass: loadSprite("/assets/standalone/hallway/hall-pass.svg"),
+  hallwayBackpack: loadSprite("/assets/standalone/hallway/backpack.svg"),
+  hallwayWetFloor: loadSprite("/assets/standalone/hallway/wet-floor-sign.svg"),
+  hallwayBookStack: loadSprite("/assets/standalone/hallway/book-stack.svg"),
+  hallwayScienceBoard: loadSprite("/assets/standalone/hallway/science-board.svg"),
+  studentFaceA: loadSprite("/assets/student-sprites/students1_face_12.png"),
+  studentFaceB: loadSprite("/assets/student-sprites/students1_face_20.png"),
+  studentFaceC: loadSprite("/assets/student-sprites/students2_face_04.png"),
+  digSiteScene: loadSprite("/assets/standalone/dino-dig/dig-site-scene.svg"),
+  digFossilSkull: loadSprite("/assets/standalone/dino-dig/fossil-skull.svg"),
+  digFossilRibs: loadSprite("/assets/standalone/dino-dig/fossil-ribs.svg"),
+  digBoneBundle: loadSprite("/assets/standalone/dino-dig/bone-bundle.svg"),
+  digCoinCache: loadSprite("/assets/standalone/dino-dig/coin-cache.svg"),
+  digDust: loadSprite("/assets/standalone/dino-dig/dust-cloud.svg"),
+  digMarker: loadSprite("/assets/standalone/dino-dig/dig-marker.svg"),
+  battleArenaStadium: loadSprite("/assets/standalone/battle-royale/arena-stadium.svg"),
+  pokemonBulbasaur: loadSprite("/assets/pokemon/pokemon-bulbasaur.png"),
+  pokemonCharmander: loadSprite("/assets/pokemon/pokemon-charmander.png"),
+  pokemonSquirtle: loadSprite("/assets/pokemon/pokemon-squirtle.png"),
+  pokemonPikachu: loadSprite("/assets/pokemon/pokemon-pikachu.png"),
+  pokemonJigglypuff: loadSprite("/assets/pokemon/pokemon-jigglypuff.png"),
+  pokemonMeowth: loadSprite("/assets/pokemon/pokemon-meowth.png"),
+  pokemonPsyduck: loadSprite("/assets/pokemon/pokemon-psyduck.png"),
+  pokemonEevee: loadSprite("/assets/pokemon/pokemon-eevee.png"),
+  pokemonGengar: loadSprite("/assets/pokemon/pokemon-gengar.png"),
+  pokemonGyarados: loadSprite("/assets/pokemon/pokemon-gyarados.png"),
+  pokemonLapras: loadSprite("/assets/pokemon/pokemon-lapras.png"),
+  pokemonSnorlax: loadSprite("/assets/pokemon/pokemon-snorlax.png"),
+  pokemonDragonite: loadSprite("/assets/pokemon/pokemon-dragonite.png"),
+  pokemonUmbreon: loadSprite("/assets/pokemon/pokemon-umbreon.png"),
+  pokemonCharizard: loadSprite("/assets/pokemon/pokemon-charizard.png"),
+  pokemonMew: loadSprite("/assets/pokemon/pokemon-mew.png"),
+  pokemonLucario: loadSprite("/assets/pokemon/pokemon-lucario.png"),
+  pokemonGreninja: loadSprite("/assets/pokemon/pokemon-greninja.png"),
+  pokemonMewtwo: loadSprite("/assets/pokemon/pokemon-mewtwo.png"),
+  pokemonRayquaza: loadSprite("/assets/pokemon/pokemon-rayquaza.png"),
+  pokemonStadiumBowl: loadSprite("/assets/standalone/pokemon-stadium/stadium-bowl.svg")
 };
 
 function getBestScore(id) {
@@ -321,190 +391,786 @@ function markDirty() {
 }
 
 function createAsteroidsGame() {
-  const lanes = [laneCenter(0, 3), laneCenter(1, 3), laneCenter(2, 3)];
+  const shipSkins = [
+    { name: "Rocket Buddy", sprite: sprites.shipScout, accent: "#68d1ff" },
+    { name: "Comet Striker", sprite: sprites.shipComet, accent: "#7dedb0" },
+    { name: "Eclipse Ranger", sprite: sprites.shipRanger, accent: "#ffd447" },
+    { name: "Supernova Sentinel", sprite: sprites.shipSentinel, accent: "#ff8f8f" }
+  ];
+  const asteroidStats = {
+    large: { radius: 48, minSpeed: 34, maxSpeed: 62, points: 45, next: "medium", debris: 24 },
+    medium: { radius: 30, minSpeed: 58, maxSpeed: 92, points: 85, next: "small", debris: 18 },
+    small: { radius: 18, minSpeed: 92, maxSpeed: 136, points: 130, next: null, debris: 12 }
+  };
+  const asteroidSprites = {
+    large: [sprites.meteorBrownBig1, sprites.meteorGreyBig2, sprites.meteorBrownBig4],
+    medium: [sprites.meteorBrownMed1, sprites.meteorGreyMed2, sprites.meteorBrownMed3],
+    small: [sprites.meteorBrownSmall1, sprites.meteorGreySmall2, sprites.meteorBrownTiny1]
+  };
+  const pickupTypes = {
+    boost: { id: "boost", label: "Booster", sprite: sprites.powerBoost, color: "#68d1ff" },
+    shield: { id: "shield", label: "Shield Cell", sprite: sprites.powerShield, color: "#7dedb0" },
+    tech: { id: "tech", label: "Laser Core", sprite: sprites.powerTech, color: "#ffd447" }
+  };
+  const laserSprites = [sprites.laserBlue, sprites.laserGreen, sprites.laserRed];
+  const upgradeThresholds = [0, 8, 18, 34];
+  const safeRadius = 160;
 
-  function makeQuestion(level) {
-    const range = Math.min(12 + level * 2, 40);
-    const a = randInt(3, range);
-    const b = randInt(2, Math.max(4, Math.floor(range * 0.7)));
-    const mode = level > 5 ? pick(["+", "-", "+"]) : pick(["+", "-"]);
-    const correct = mode === "+" ? a + b : a - b;
-    const offsetA = randInt(2, 9);
-    const offsetB = randInt(3, 11);
+  function wrapValue(value, max, padding = 0) {
+    if (value < -padding) {
+      return max + padding;
+    }
+    if (value > max + padding) {
+      return -padding;
+    }
+    return value;
+  }
+
+  function wrappedDistanceSq(a, b) {
+    let dx = Math.abs(a.x - b.x);
+    let dy = Math.abs(a.y - b.y);
+    dx = Math.min(dx, W - dx);
+    dy = Math.min(dy, H - dy);
+    return dx * dx + dy * dy;
+  }
+
+  function forwardVector(angle) {
+    return { x: Math.cos(angle), y: Math.sin(angle) };
+  }
+
+  function sideVector(angle) {
+    return { x: Math.cos(angle + Math.PI / 2), y: Math.sin(angle + Math.PI / 2) };
+  }
+
+  function getUpgradeTier(tech) {
+    let tier = 0;
+    while (tier + 1 < upgradeThresholds.length && tech >= upgradeThresholds[tier + 1]) {
+      tier += 1;
+    }
+    return tier;
+  }
+
+  function currentSkin(state) {
+    return shipSkins[Math.min(state.shipSkin, state.unlockedSkinCount - 1)];
+  }
+
+  function createShip() {
     return {
-      prompt: `${a} ${mode} ${b} = ?`,
-      options: shuffle([correct, correct + offsetA, correct - offsetB]),
-      correct
+      x: W / 2,
+      y: H / 2,
+      vx: 0,
+      vy: 0,
+      angle: -Math.PI / 2,
+      radius: 24,
+      fireCooldown: 0,
+      invuln: 2.2,
+      boostCharge: 100,
+      burst: 0,
+      engineGlow: 0
     };
   }
 
-  function spawnWave(state) {
-    const question = makeQuestion(state.level);
-    state.question = question.prompt;
-    state.options = question.options;
-    state.correct = question.correct;
-    state.asteroids = question.options.map((value, index) => ({
-      lane: index,
-      x: lanes[index],
-      y: rand(-220, -40),
-      speed: 88 + state.level * 16 + index * 8,
-      value,
-      angle: rand(0, Math.PI * 2)
-    }));
+  function applyUpgradeTier(state, quiet = false) {
+    const previousTier = typeof state.upgradeTier === "number" ? state.upgradeTier : -1;
+    const nextTier = getUpgradeTier(state.tech);
+    state.upgradeTier = nextTier;
+    state.unlockedSkinCount = Math.min(shipSkins.length, nextTier + 1);
+    state.enginePower = 210 + nextTier * 28;
+    state.turnSpeed = 3.5 + nextTier * 0.18;
+    state.topSpeed = 255 + nextTier * 24;
+    state.boostPower = 170 + nextTier * 32;
+    state.reloadTime = Math.max(0.12, 0.26 - nextTier * 0.04);
+    state.maxBoostCharge = 100 + nextTier * 18;
+    state.maxShields = 3 + (nextTier >= 3 ? 1 : 0);
+    state.laserTier = nextTier >= 3 ? 3 : nextTier >= 2 ? 2 : 1;
+    state.shields = Math.min(state.shields, state.maxShields);
+    state.ship.boostCharge = clamp(state.ship.boostCharge, 0, state.maxBoostCharge);
+    if (state.shipSkin >= state.unlockedSkinCount) {
+      state.shipSkin = state.unlockedSkinCount - 1;
+    }
+    if (!quiet && previousTier >= 0 && nextTier > previousTier) {
+      state.shields = Math.min(state.maxShields, state.shields + 1);
+      state.ship.boostCharge = Math.min(state.maxBoostCharge, state.ship.boostCharge + 28);
+      state.ship.invuln = Math.max(state.ship.invuln, 1.2);
+      state.feedback = `${shipSkins[nextTier].name} unlocked with better boosters and laser guns.`;
+    }
   }
 
-  function loseShield(state, reason) {
+  function createAsteroid(state, size, overrides = {}) {
+    const stats = asteroidStats[size];
+    let x = typeof overrides.x === "number" ? overrides.x : rand(0, W);
+    let y = typeof overrides.y === "number" ? overrides.y : rand(0, H);
+    if (!overrides.allowNearShip) {
+      let attempts = 0;
+      while (attempts < 24 && wrappedDistanceSq({ x, y }, state.ship) < (safeRadius + stats.radius) ** 2) {
+        x = rand(0, W);
+        y = rand(0, H);
+        attempts += 1;
+      }
+    }
+
+    let vx;
+    let vy;
+    if (typeof overrides.vx === "number" && typeof overrides.vy === "number") {
+      vx = overrides.vx;
+      vy = overrides.vy;
+    } else {
+      const angle = typeof overrides.angle === "number" ? overrides.angle : rand(0, Math.PI * 2);
+      const speed = rand(stats.minSpeed, stats.maxSpeed) + state.wave * 5;
+      vx = Math.cos(angle) * speed + (overrides.inheritVx || 0);
+      vy = Math.sin(angle) * speed + (overrides.inheritVy || 0);
+    }
+
+    return {
+      size,
+      x,
+      y,
+      vx,
+      vy,
+      angle: typeof overrides.rotation === "number" ? overrides.rotation : rand(0, Math.PI * 2),
+      spin: typeof overrides.spin === "number" ? overrides.spin : rand(-1.5, 1.5),
+      radius: stats.radius,
+      sprite: overrides.sprite || pick(asteroidSprites[size])
+    };
+  }
+
+  function spawnWave(state, initial = false) {
+    const largeCount = Math.min(3 + Math.floor(state.wave / 2), 7);
+    state.asteroids = [];
+    for (let i = 0; i < largeCount; i += 1) {
+      state.asteroids.push(createAsteroid(state, "large"));
+    }
+    state.nextWaveTimer = 0;
+    state.feedback = initial ? "Thrusters hot. Clear the sector." : `Wave ${state.wave} dropped in from the rim.`;
+  }
+
+  function maybeDropPickup(state, asteroid) {
+    if (Math.random() > 0.38) {
+      return;
+    }
+    const roll = Math.random();
+    let config = pickupTypes.boost;
+    if (roll > 0.72) {
+      config = pickupTypes.shield;
+    } else if (roll > 0.42) {
+      config = pickupTypes.tech;
+    }
+
+    state.pickups.push({
+      kind: config.id,
+      label: config.label,
+      x: asteroid.x,
+      y: asteroid.y,
+      vx: rand(-24, 24),
+      vy: rand(-24, 24),
+      radius: 18,
+      sprite: config.sprite,
+      color: config.color,
+      life: 10,
+      angle: rand(0, Math.PI * 2),
+      spin: rand(-2.6, 2.6)
+    });
+  }
+
+  function shatterAsteroid(state, asteroid) {
+    const stats = asteroidStats[asteroid.size];
+    const previousTier = state.upgradeTier;
+    let feedback = `Asteroid cracked for ${stats.points} points.`;
+
+    state.score += stats.points + state.wave * 5;
+    state.streak += 1;
+    if (asteroid.size === "medium") {
+      state.tech += 1;
+    }
+    if (asteroid.size === "small") {
+      state.tech += 2;
+    }
+    applyUpgradeTier(state);
+    state.particles.push(...createParticles(stats.debris, asteroid.x, asteroid.y, asteroid.size === "small" ? "#ffd447" : "#d7f2ff"));
+
+    if (stats.next) {
+      const nextStats = asteroidStats[stats.next];
+      const heading = Math.atan2(asteroid.vy, asteroid.vx) || rand(0, Math.PI * 2);
+      for (const dir of [-1, 1]) {
+        state.asteroids.push(createAsteroid(state, stats.next, {
+          x: asteroid.x + dir * nextStats.radius * 0.28,
+          y: asteroid.y + rand(-8, 8),
+          angle: heading + dir * rand(0.55, 1.05),
+          inheritVx: asteroid.vx * 0.24,
+          inheritVy: asteroid.vy * 0.24,
+          rotation: asteroid.angle + dir * 0.14,
+          spin: rand(-2.2, 2.2)
+        }));
+      }
+      feedback = `${stats.points} points. Rock split apart.`;
+    }
+
+    maybeDropPickup(state, asteroid);
+    if (state.upgradeTier === previousTier) {
+      state.feedback = feedback;
+    }
+  }
+
+  function cycleShip(state, direction = 1) {
+    state.shipSkin = (state.shipSkin + direction + state.unlockedSkinCount) % state.unlockedSkinCount;
+    state.feedback = `Ship skin switched to ${currentSkin(state).name}.`;
+  }
+
+  function burstBoost(state) {
+    if (state.over || state.ship.boostCharge < 18) {
+      return;
+    }
+    const forward = forwardVector(state.ship.angle);
+    state.ship.vx += forward.x * 120;
+    state.ship.vy += forward.y * 120;
+    state.ship.boostCharge = Math.max(0, state.ship.boostCharge - 18);
+    state.ship.burst = Math.max(state.ship.burst, 0.34);
+    state.feedback = "Booster burst engaged.";
+  }
+
+  function fireWeapons(state) {
+    const ship = state.ship;
+    const side = sideVector(ship.angle);
+    const bulletSpeed = 480 + state.upgradeTier * 34;
+    const bulletSprite = laserSprites[state.laserTier - 1];
+    const patterns = state.laserTier === 3 ? [-0.26, 0, 0.26] : state.laserTier === 2 ? [-0.1, 0.1] : [0];
+
+    for (const spread of patterns) {
+      const shotAngle = ship.angle + spread;
+      const shotForward = forwardVector(shotAngle);
+      const lateral = patterns.length === 1 ? 0 : spread * 80;
+      state.bullets.push({
+        x: ship.x + shotForward.x * 30 + side.x * lateral,
+        y: ship.y + shotForward.y * 30 + side.y * lateral,
+        vx: shotForward.x * bulletSpeed + ship.vx * 0.15,
+        vy: shotForward.y * bulletSpeed + ship.vy * 0.15,
+        angle: shotAngle,
+        life: 1.15,
+        radius: 10,
+        sprite: bulletSprite,
+        glow: currentSkin(state).accent
+      });
+    }
+
+    ship.fireCooldown = state.reloadTime;
+    ship.engineGlow = Math.min(1, ship.engineGlow + 0.2);
+    const nose = forwardVector(ship.angle);
+    state.particles.push(...createParticles(6, ship.x + nose.x * 18, ship.y + nose.y * 18, currentSkin(state).accent));
+  }
+
+  function collectPickup(state, pickup) {
+    const previousTier = state.upgradeTier;
+    state.score += 20;
+    state.particles.push(...createParticles(14, pickup.x, pickup.y, pickup.color));
+
+    if (pickup.kind === "boost") {
+      state.ship.boostCharge = Math.min(state.maxBoostCharge, state.ship.boostCharge + 42);
+      state.ship.burst = Math.max(state.ship.burst, 0.16);
+      state.feedback = "Booster canister loaded.";
+      return;
+    }
+    if (pickup.kind === "shield") {
+      state.shields = Math.min(state.maxShields, state.shields + 1);
+      state.ship.invuln = Math.max(state.ship.invuln, 1.4);
+      state.feedback = "Shield cell restored your hull.";
+      return;
+    }
+
+    state.tech += 4;
+    applyUpgradeTier(state);
+    if (state.upgradeTier === previousTier) {
+      state.feedback = "Laser core recovered from the field.";
+    }
+  }
+
+  function damageShip(state) {
+    if (state.ship.invuln > 0 || state.over) {
+      return;
+    }
+
     state.shields -= 1;
     state.streak = 0;
-    state.feedback = reason;
-    state.particles.push(...createParticles(16, W / 2, H - 92, "#ff8f8f"));
+    state.particles.push(...createParticles(28, state.ship.x, state.ship.y, "#ff8f8f"));
     if (state.shields <= 0) {
       state.over = true;
-    } else {
-      spawnWave(state);
+      state.feedback = "Your ship broke apart in the debris field.";
+      return;
+    }
+
+    state.ship.x = W / 2;
+    state.ship.y = H / 2;
+    state.ship.vx = 0;
+    state.ship.vy = 0;
+    state.ship.angle = -Math.PI / 2;
+    state.ship.invuln = 2.4;
+    state.ship.burst = 0;
+    state.ship.boostCharge = Math.max(22, state.ship.boostCharge * 0.45);
+    state.feedback = "Hull clipped. Emergency jump reset the ship.";
+
+    for (const asteroid of state.asteroids) {
+      const dx = asteroid.x - state.ship.x;
+      const dy = asteroid.y - state.ship.y;
+      const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+      if (length < 190) {
+        asteroid.vx += (dx / length) * 90;
+        asteroid.vy += (dy / length) * 90;
+      }
     }
   }
 
-  function answer(state, index) {
-    if (state.over || index < 0 || index >= state.options.length) {
-      return;
+  function drawWrappedCopies(x, y, padding, renderer) {
+    const offsets = [{ x: 0, y: 0 }];
+    if (x < padding) {
+      offsets.push({ x: W, y: 0 });
     }
-    const selected = state.options[index];
-    if (selected === state.correct) {
-      const points = 110 + state.streak * 30 + state.level * 10;
-      const asteroid = state.asteroids[index];
-      state.score += points;
-      state.streak += 1;
-      state.level += 1;
-      state.feedback = `Direct hit! +${points}`;
-      state.particles.push(...createParticles(22, asteroid.x, asteroid.y + 28, "#ffd447"));
-      spawnWave(state);
-      return;
+    if (x > W - padding) {
+      offsets.push({ x: -W, y: 0 });
     }
-    loseShield(state, "Wrong answer. Shield lost.");
+    if (y < padding) {
+      offsets.push({ x: 0, y: H });
+    }
+    if (y > H - padding) {
+      offsets.push({ x: 0, y: -H });
+    }
+
+    const base = offsets.slice();
+    for (const offsetX of base) {
+      for (const offsetY of base) {
+        if (offsetX === offsetY) {
+          continue;
+        }
+        if (offsetX.x !== 0 && offsetY.y !== 0) {
+          offsets.push({ x: offsetX.x, y: offsetY.y });
+        }
+      }
+    }
+
+    const seen = new Set();
+    for (const offset of offsets) {
+      const key = `${offset.x}:${offset.y}`;
+      if (seen.has(key)) {
+        continue;
+      }
+      seen.add(key);
+      renderer(x + offset.x, y + offset.y);
+    }
+  }
+
+  function renderShipDock(state) {
+    const dockWidth = 314;
+    const dockX = W - dockWidth - 24;
+    const dockY = H - 92;
+
+    drawRoundedRect(dockX, dockY, dockWidth, 64, 20, "rgba(4,11,23,0.76)", "rgba(151,214,255,0.16)");
+    drawText("Ship Hangar", dockX + 70, dockY + 16, 11, "rgba(244,251,255,0.72)", "left", "Baloo 2");
+
+    for (let i = 0; i < shipSkins.length; i += 1) {
+      const unlocked = i < state.unlockedSkinCount;
+      const active = i === state.shipSkin;
+      const cardX = dockX + 18 + i * 72;
+      const cardY = dockY + 18;
+      drawRoundedRect(
+        cardX,
+        cardY,
+        54,
+        38,
+        14,
+        active ? "rgba(255,212,71,0.18)" : unlocked ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)",
+        active ? "rgba(255,212,71,0.46)" : unlocked ? "rgba(151,214,255,0.2)" : "rgba(255,255,255,0.08)"
+      );
+      drawSprite(shipSkins[i].sprite, cardX + 9, cardY + 2, 36, 36, { alpha: unlocked ? 1 : 0.18 });
+      if (!unlocked) {
+        drawText(`T${i + 1}`, cardX + 27, cardY + 30, 10, "rgba(244,251,255,0.72)", "center", "Baloo 2");
+      }
+    }
   }
 
   return {
     id: "asteroids",
     type: "canvas",
     name: "Asteroids",
-    description: "Answer fast to blast asteroid waves and keep your streak climbing.",
-    controls: "Press 1, 2, or 3 to choose an answer. You can also tap the answer buttons.",
-    note: "This solo version keeps the fast-answer feel locally, so there is no login, room, or extra players needed.",
-    stageTitle: "Math Blaster",
-    stageHelp: "Solve each prompt before the falling asteroid answers crash into your ship.",
+    description: "Pilot a real wraparound starfighter, blast rock clusters apart, and upgrade into stronger ships.",
+    controls: "Click inside the stage. Use Left and Right or A and D to rotate, Up or W to thrust, Space or J to fire, Shift or X to burst boost, and Q or E to swap unlocked ships.",
+    note: "This solo build now plays like classic Asteroids with locally saved online ship sprites, laser pickups, booster canisters, and upgradeable loadouts.",
+    stageTitle: "Asteroids Redux",
+    stageHelp: "Fly anywhere in the arena, wrap off one edge to appear on the other, crack large rocks into smaller pieces, and collect boosts, shields, and laser cores.",
     createState() {
       const state = {
         score: 0,
-        level: 1,
+        wave: 1,
+        tech: 0,
+        upgradeTier: 0,
+        laserTier: 1,
+        maxShields: 3,
+        unlockedSkinCount: 1,
+        shipSkin: 0,
         streak: 0,
         shields: 3,
-        question: "",
-        correct: 0,
-        options: [],
         asteroids: [],
-        feedback: "Blasters online.",
+        bullets: [],
+        pickups: [],
+        feedback: "Thrusters hot. Clear the sector.",
         particles: [],
-        over: false
+        over: false,
+        nextWaveTimer: 0,
+        enginePower: 0,
+        turnSpeed: 0,
+        topSpeed: 0,
+        boostPower: 0,
+        reloadTime: 0,
+        maxBoostCharge: 100,
+        ship: createShip(),
+        time: 0
       };
-      spawnWave(state);
+      applyUpgradeTier(state, true);
+      spawnWave(state, true);
       return state;
     },
     getActions(state) {
+      const actions = [];
       if (state.over) {
-        return [{ id: "restart", label: "Play Again", className: "good" }];
+        actions.push({ id: "restart", label: "Fly Again", className: "good" });
       }
-      return state.options.map((option, index) => ({
-        id: `answer:${index}`,
-        label: `${index + 1}. ${option}`,
-        className: "good"
-      }));
+      actions.push({ id: "swap-skin", label: `Ship: ${currentSkin(state).name}` });
+      actions.push({
+        id: "boost-burst",
+        label: "Boost Burst",
+        className: "good",
+        disabled: state.ship.boostCharge < 18 || state.over
+      });
+      return actions;
     },
     act(state, id) {
       if (id === "restart") {
         startGame(currentId);
         return;
       }
-      if (id.startsWith("answer:")) {
-        answer(state, Number(id.split(":")[1]));
+      if (id === "swap-skin") {
+        cycleShip(state, 1);
+        return;
+      }
+      if (id === "boost-burst") {
+        burstBoost(state);
       }
     },
-    keydown(state, key) {
-      if (["1", "2", "3"].includes(key)) {
-        answer(state, Number(key) - 1);
+    keydown(state, key, event) {
+      if ((key === "q" || key === "e") && !event.repeat) {
+        cycleShip(state, key === "q" ? -1 : 1);
+      }
+      if ((key === "shift" || key === "x") && !event.repeat) {
+        burstBoost(state);
+      }
+      if (key === "r" && !event.repeat) {
+        startGame(currentId);
       }
     },
     update(state, dt, now) {
+      const ship = state.ship;
+      state.time = now;
       updateParticles(state, dt);
+
       if (state.over) {
         return;
       }
 
-      for (const asteroid of state.asteroids) {
-        asteroid.y += asteroid.speed * dt;
-        asteroid.angle += dt * 0.8;
-        if (asteroid.y > H - 120) {
-          loseShield(state, "An asteroid slipped through.");
-          break;
+      ship.fireCooldown = Math.max(0, ship.fireCooldown - dt);
+      ship.invuln = Math.max(0, ship.invuln - dt);
+      ship.burst = Math.max(0, ship.burst - dt);
+
+      const turnLeft = input.keys.has("arrowleft") || input.keys.has("a");
+      const turnRight = input.keys.has("arrowright") || input.keys.has("d");
+      const thrustHeld = input.keys.has("arrowup") || input.keys.has("w");
+      const fireHeld = input.keys.has(" ") || input.keys.has("j") || input.keys.has("k");
+      const boostHeld = input.keys.has("shift");
+      const turnInput = (turnRight ? 1 : 0) - (turnLeft ? 1 : 0);
+
+      ship.angle += turnInput * state.turnSpeed * dt;
+
+      const boosting = (thrustHeld && boostHeld && ship.boostCharge > 0) || ship.burst > 0;
+      const thrusting = thrustHeld || ship.burst > 0;
+      if (thrusting) {
+        const thrustVector = forwardVector(ship.angle);
+        let accel = state.enginePower;
+        if (boosting) {
+          accel += state.boostPower;
+          ship.boostCharge = Math.max(0, ship.boostCharge - dt * 30);
+        } else {
+          ship.boostCharge = Math.min(state.maxBoostCharge, ship.boostCharge + dt * (13 + state.upgradeTier));
+        }
+        ship.vx += thrustVector.x * accel * dt;
+        ship.vy += thrustVector.y * accel * dt;
+        ship.engineGlow = Math.min(1, ship.engineGlow + dt * 7);
+      } else {
+        ship.boostCharge = Math.min(state.maxBoostCharge, ship.boostCharge + dt * (12 + state.upgradeTier * 1.5));
+        ship.engineGlow = Math.max(0, ship.engineGlow - dt * 4.8);
+      }
+
+      const drag = Math.pow(thrustHeld ? 0.9935 : 0.988, dt * 60);
+      ship.vx *= drag;
+      ship.vy *= drag;
+
+      const speed = Math.sqrt(ship.vx * ship.vx + ship.vy * ship.vy);
+      const maxSpeed = state.topSpeed + (boosting ? 140 : 0);
+      if (speed > maxSpeed) {
+        const scale = maxSpeed / speed;
+        ship.vx *= scale;
+        ship.vy *= scale;
+      }
+
+      ship.x = wrapValue(ship.x + ship.vx * dt, W, ship.radius);
+      ship.y = wrapValue(ship.y + ship.vy * dt, H, ship.radius);
+
+      if (fireHeld && ship.fireCooldown <= 0) {
+        fireWeapons(state);
+      }
+
+      for (let i = state.bullets.length - 1; i >= 0; i -= 1) {
+        const bullet = state.bullets[i];
+        bullet.life -= dt;
+        bullet.x = wrapValue(bullet.x + bullet.vx * dt, W, 16);
+        bullet.y = wrapValue(bullet.y + bullet.vy * dt, H, 16);
+        if (bullet.life <= 0) {
+          state.bullets.splice(i, 1);
         }
       }
 
-      state.status = `Wave ${state.level}`;
-      state.time = now;
+      for (const asteroid of state.asteroids) {
+        asteroid.x = wrapValue(asteroid.x + asteroid.vx * dt, W, asteroid.radius);
+        asteroid.y = wrapValue(asteroid.y + asteroid.vy * dt, H, asteroid.radius);
+        asteroid.angle += asteroid.spin * dt;
+      }
+
+      for (let i = state.pickups.length - 1; i >= 0; i -= 1) {
+        const pickup = state.pickups[i];
+        pickup.life -= dt;
+        pickup.x = wrapValue(pickup.x + pickup.vx * dt, W, 24);
+        pickup.y = wrapValue(pickup.y + pickup.vy * dt, H, 24);
+        pickup.angle += pickup.spin * dt;
+        if (pickup.life <= 0) {
+          state.pickups.splice(i, 1);
+        }
+      }
+
+      for (let i = state.bullets.length - 1; i >= 0; i -= 1) {
+        const bullet = state.bullets[i];
+        for (let j = state.asteroids.length - 1; j >= 0; j -= 1) {
+          const asteroid = state.asteroids[j];
+          const hitRadius = bullet.radius + asteroid.radius;
+          if (wrappedDistanceSq(bullet, asteroid) <= hitRadius * hitRadius) {
+            state.bullets.splice(i, 1);
+            state.asteroids.splice(j, 1);
+            shatterAsteroid(state, asteroid);
+            break;
+          }
+        }
+      }
+
+      if (ship.invuln <= 0) {
+        for (const asteroid of state.asteroids) {
+          const hitRadius = ship.radius + asteroid.radius * 0.72;
+          if (wrappedDistanceSq(ship, asteroid) <= hitRadius * hitRadius) {
+            damageShip(state);
+            break;
+          }
+        }
+      }
+
+      for (let i = state.pickups.length - 1; i >= 0; i -= 1) {
+        const pickup = state.pickups[i];
+        if (wrappedDistanceSq(ship, pickup) <= (ship.radius + pickup.radius) ** 2) {
+          state.pickups.splice(i, 1);
+          collectPickup(state, pickup);
+        }
+      }
+
+      if (state.asteroids.length === 0) {
+        if (state.nextWaveTimer <= 0) {
+          state.nextWaveTimer = 1.6;
+          state.feedback = `Sector clear. Wave ${state.wave + 1} warping in.`;
+        } else {
+          state.nextWaveTimer = Math.max(0, state.nextWaveTimer - dt);
+          if (state.nextWaveTimer <= 0) {
+            state.wave += 1;
+            spawnWave(state);
+          }
+        }
+      } else {
+        state.nextWaveTimer = 0;
+      }
     },
     render(state) {
-      clearCanvas("#08111c");
-      drawStarField(state.time || 0, 46);
+      const ship = state.ship;
+      const skin = currentSkin(state);
+      clearCanvas("#040914");
 
-      const gradient = ctx.createLinearGradient(0, 0, 0, H);
-      gradient.addColorStop(0, "rgba(35, 71, 105, 0.18)");
-      gradient.addColorStop(1, "rgba(7, 17, 29, 0.65)");
-      ctx.fillStyle = gradient;
+      const backdrop = ctx.createLinearGradient(0, 0, 0, H);
+      backdrop.addColorStop(0, "#061120");
+      backdrop.addColorStop(0.55, "#0a1830");
+      backdrop.addColorStop(1, "#050b14");
+      ctx.fillStyle = backdrop;
       ctx.fillRect(0, 0, W, H);
 
-      drawRoundedRect(140, 34, W - 280, 78, 24, "rgba(255,255,255,0.08)", "rgba(255,255,255,0.14)");
-      drawText(state.question, W / 2, 72, 28, "#f4fbff");
+      const nebulaLeft = ctx.createRadialGradient(W * 0.18, H * 0.24, 10, W * 0.18, H * 0.24, 260);
+      nebulaLeft.addColorStop(0, "rgba(92,199,255,0.28)");
+      nebulaLeft.addColorStop(1, "rgba(92,199,255,0)");
+      ctx.fillStyle = nebulaLeft;
+      ctx.fillRect(0, 0, W, H);
 
-      for (let i = 0; i < lanes.length; i += 1) {
-        ctx.save();
-        ctx.strokeStyle = "rgba(151, 214, 255, 0.12)";
-        ctx.setLineDash([10, 14]);
+      const nebulaRight = ctx.createRadialGradient(W * 0.82, H * 0.18, 10, W * 0.82, H * 0.18, 220);
+      nebulaRight.addColorStop(0, "rgba(255,110,159,0.22)");
+      nebulaRight.addColorStop(1, "rgba(255,110,159,0)");
+      ctx.fillStyle = nebulaRight;
+      ctx.fillRect(0, 0, W, H);
+
+      drawStarField((state.time || 0) * 1.8, 74);
+
+      ctx.save();
+      ctx.strokeStyle = "rgba(151,214,255,0.08)";
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 5; i += 1) {
         ctx.beginPath();
-        ctx.moveTo(lanes[i], 122);
-        ctx.lineTo(lanes[i], H - 126);
+        ctx.arc(W / 2, H / 2, 110 + i * 70 + Math.sin((state.time || 0) * 0.5 + i) * 6, 0, Math.PI * 2);
         ctx.stroke();
-        ctx.restore();
+      }
+      ctx.restore();
+
+      for (const pickup of state.pickups) {
+        drawWrappedCopies(pickup.x, pickup.y, pickup.radius + 10, (drawX, drawY) => {
+          ctx.save();
+          ctx.globalAlpha = 0.22 + Math.sin((state.time || 0) * 7 + pickup.angle) * 0.08;
+          ctx.fillStyle = pickup.color;
+          ctx.beginPath();
+          ctx.arc(drawX, drawY, pickup.radius + 8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+          drawSprite(pickup.sprite, drawX - 18, drawY - 18, 36, 36, { angle: pickup.angle });
+        });
+      }
+
+      for (const bullet of state.bullets) {
+        drawWrappedCopies(bullet.x, bullet.y, bullet.radius + 10, (drawX, drawY) => {
+          ctx.save();
+          ctx.globalAlpha = 0.24;
+          ctx.fillStyle = bullet.glow;
+          ctx.beginPath();
+          ctx.arc(drawX, drawY, 14, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+          drawSprite(bullet.sprite, drawX - 10, drawY - 22, 20, 44, { angle: bullet.angle + Math.PI / 2 });
+        });
       }
 
       for (const asteroid of state.asteroids) {
-        drawSprite(sprites.genericBall, asteroid.x - 38, asteroid.y - 38, 76, 76, { angle: asteroid.angle });
-        drawText(String(asteroid.value), asteroid.x, asteroid.y + 2, 24, "#07111d");
+        drawWrappedCopies(asteroid.x, asteroid.y, asteroid.radius + 12, (drawX, drawY) => {
+          const size = asteroid.radius * 2;
+          drawSprite(asteroid.sprite, drawX - asteroid.radius, drawY - asteroid.radius, size, size, { angle: asteroid.angle });
+        });
       }
 
-      drawSprite(sprites.robot, W / 2 - 50, H - 124, 100, 100);
-
-      for (let i = 0; i < state.shields; i += 1) {
-        drawRoundedRect(36 + i * 42, 34, 30, 30, 10, "rgba(125,237,176,0.16)", "rgba(125,237,176,0.4)");
+      if (!state.over) {
+        const flameLength = ship.engineGlow * (ship.burst > 0 ? 72 : input.keys.has("arrowup") || input.keys.has("w") ? 46 : 0);
+        if (flameLength > 6) {
+          drawWrappedCopies(ship.x, ship.y, 70, (drawX, drawY) => {
+            ctx.save();
+            ctx.translate(drawX, drawY);
+            ctx.rotate(ship.angle + Math.PI / 2);
+            ctx.beginPath();
+            ctx.moveTo(0, 26);
+            ctx.lineTo(-11, 16);
+            ctx.lineTo(0, 16 + flameLength);
+            ctx.lineTo(11, 16);
+            ctx.closePath();
+            ctx.fillStyle = ship.burst > 0 ? "rgba(255,116,116,0.72)" : "rgba(255,212,71,0.72)";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(0, 24);
+            ctx.lineTo(-6, 17);
+            ctx.lineTo(0, 17 + flameLength * 0.68);
+            ctx.lineTo(6, 17);
+            ctx.closePath();
+            ctx.fillStyle = "rgba(214,245,255,0.86)";
+            ctx.fill();
+            ctx.restore();
+          });
+        }
       }
 
-      drawRoundedRect(170, H - 102, W - 340, 58, 18, "rgba(255,255,255,0.08)", "rgba(255,255,255,0.12)");
-      drawText(state.feedback, W / 2, H - 74, 18, state.over ? "#ffb0b0" : "#ffd447", "center", "Baloo 2");
+      drawWrappedCopies(ship.x, ship.y, 74, (drawX, drawY) => {
+        if (ship.invuln > 0) {
+          ctx.save();
+          ctx.strokeStyle = `rgba(125,237,176,${0.2 + Math.sin((state.time || 0) * 8) * 0.08})`;
+          ctx.lineWidth = 2;
+          ctx.setLineDash([8, 8]);
+          ctx.beginPath();
+          ctx.arc(drawX, drawY, 34, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+        drawSprite(skin.sprite, drawX - 42, drawY - 42, 84, 84, {
+          angle: ship.angle + Math.PI / 2,
+          alpha: ship.invuln > 0 ? 0.66 + Math.sin((state.time || 0) * 11) * 0.16 : 1
+        });
+      });
+
+      drawRoundedRect(24, 22, 244, 88, 24, "rgba(4,11,23,0.74)", "rgba(151,214,255,0.16)");
+      drawText(`Wave ${state.wave}`, 46, 44, 18, "#f4fbff", "left");
+      drawText(`${Math.round(state.score)} score`, 46, 74, 24, "#ffd447", "left");
+
+      drawRoundedRect(W - 278, 22, 254, 96, 24, "rgba(4,11,23,0.74)", "rgba(151,214,255,0.16)");
+      drawText(skin.name, W - 254, 44, 16, skin.accent, "left");
+      drawText(`Laser Tier ${state.laserTier}`, W - 254, 68, 13, "#f4fbff", "left", "Baloo 2");
+      drawText(`Tech ${state.tech}`, W - 254, 88, 13, "rgba(244,251,255,0.74)", "left", "Baloo 2");
+
+      drawRoundedRect(W - 256, 98, 214, 10, 999, "rgba(255,255,255,0.07)");
+      const boostWidth = 214 * (ship.boostCharge / state.maxBoostCharge);
+      const boostBar = ctx.createLinearGradient(W - 256, 0, W - 42, 0);
+      boostBar.addColorStop(0, "#5cc7ff");
+      boostBar.addColorStop(1, skin.accent);
+      drawRoundedRect(W - 256, 98, boostWidth, 10, 999, boostBar);
+
+      for (let i = 0; i < state.maxShields; i += 1) {
+        drawRoundedRect(
+          30 + i * 34,
+          124,
+          24,
+          24,
+          9,
+          i < state.shields ? "rgba(125,237,176,0.18)" : "rgba(255,255,255,0.06)",
+          i < state.shields ? "rgba(125,237,176,0.46)" : "rgba(255,255,255,0.1)"
+        );
+      }
+
+      if (state.nextWaveTimer > 0 && !state.over) {
+        drawRoundedRect(W / 2 - 156, 26, 312, 44, 18, "rgba(4,11,23,0.74)", "rgba(255,212,71,0.18)");
+        drawText(`Wave ${state.wave + 1} in ${state.nextWaveTimer.toFixed(1)}s`, W / 2, 48, 15, "#ffd447");
+      }
+
+      drawRoundedRect(170, H - 92, W - 520, 50, 18, "rgba(4,11,23,0.74)", "rgba(151,214,255,0.14)");
+      drawText(state.feedback, W / 2, H - 66, 17, state.over ? "#ffb0b0" : "#f4fbff", "center", "Baloo 2");
+
+      drawRoundedRect(W - 310, H - 152, 286, 42, 18, "rgba(4,11,23,0.74)", "rgba(151,214,255,0.14)");
+      drawText("Q/E ship  Shift boost  Space fire", W - 167, H - 131, 13, "rgba(244,251,255,0.72)", "center", "Baloo 2");
+
+      renderShipDock(state);
       drawParticles(state);
 
       if (state.over) {
-        drawRoundedRect(240, 178, W - 480, 160, 26, "rgba(7,17,29,0.84)", "rgba(255,212,71,0.22)");
-        drawText("Ship Down", W / 2, 226, 34, "#ffd447");
-        drawText(`Final Score ${state.score}`, W / 2, 272, 24, "#f4fbff");
-        drawText("Tap restart to blast another run.", W / 2, 312, 18, "rgba(244,251,255,0.72)", "center", "Baloo 2");
+        drawRoundedRect(224, 152, W - 448, 204, 30, "rgba(4,11,23,0.88)", "rgba(255,143,143,0.24)");
+        drawText("Ship Down", W / 2, 204, 36, "#ffd447");
+        drawText(`Final score ${Math.round(state.score)}`, W / 2, 252, 26, "#f4fbff");
+        drawText(`You reached wave ${state.wave} with ${state.tech} tech.`, W / 2, 292, 18, "rgba(244,251,255,0.72)", "center", "Baloo 2");
+        drawText("Restart to launch another asteroid run.", W / 2, 330, 18, "rgba(244,251,255,0.72)", "center", "Baloo 2");
       }
     },
     getStats(state) {
       return {
         primaryLabel: "Score",
         primaryValue: Math.round(state.score),
-        secondaryLabel: "Streak",
-        secondaryValue: state.over ? "Ended" : `${state.streak}x`,
-        status: state.over ? `Final wave ${Math.max(1, state.level - 1)}` : `Shields ${state.shields} | Wave ${state.level}`
+        secondaryLabel: "Ship",
+        secondaryValue: currentSkin(state).name,
+        status: state.over
+          ? `Final wave ${state.wave} | Tech ${state.tech}`
+          : `Shields ${state.shields}/${state.maxShields} | Boost ${Math.round(state.ship.boostCharge)} | Wave ${state.wave}`
       };
     },
     getBestValue(state) {
@@ -515,62 +1181,217 @@ function createAsteroidsGame() {
 
 function createGoalieRushGame() {
   const lanes = [laneCenter(0, 3, 280), laneCenter(1, 3, 280), laneCenter(2, 3, 280)];
-
-  function spawnShot(state) {
-    state.shot = {
-      lane: randInt(0, 2),
-      y: -40,
-      boss: state.round % 5 === 0,
-      speed: 170 + state.round * 14
-    };
-    if (state.shot.boss) {
-      state.shot.speed += 60;
+  const soccerBallSprites = [sprites.soccerBall, sprites.soccerBall2, sprites.soccerBall3, sprites.soccerBall4];
+  const pickupTypes = {
+    glove: {
+      id: "glove",
+      label: "Mega Gloves",
+      sprite: sprites.boxingGlove,
+      color: "#68d1ff"
+    },
+    magnet: {
+      id: "magnet",
+      label: "Ball Magnet",
+      sprite: sprites.goaliePowerMagnet,
+      color: "#94d9ff"
+    },
+    slow: {
+      id: "slow",
+      label: "Time Freeze",
+      sprite: sprites.goaliePowerSlow,
+      color: "#7dedb0"
+    },
+    shield: {
+      id: "shield",
+      label: "Wall Shield",
+      sprite: sprites.goaliePowerShield,
+      color: "#ffd447"
+    },
+    bonus: {
+      id: "bonus",
+      label: "Gold Card",
+      sprite: sprites.cardYellow,
+      color: "#ffdf67"
     }
+  };
+
+  function spawnPickup(state, forcedLane = randInt(0, 2), forcedKind = "") {
+    const type = pickupTypes[forcedKind] || pick(Object.values(pickupTypes));
+    state.pickups.push({
+      lane: forcedLane,
+      kind: type.id,
+      label: type.label,
+      sprite: type.sprite,
+      color: type.color,
+      x: lanes[forcedLane],
+      y: 144,
+      vy: 168,
+      angle: rand(0, Math.PI * 2),
+      spin: rand(-2, 2)
+    });
   }
 
-  function resolveShot(state, saved) {
+  function applyPickup(state, pickup) {
+    if (pickup.kind === "glove") {
+      state.wideShots += 3;
+      state.feedback = "Mega Gloves: wider saves for the next 3 shots.";
+    } else if (pickup.kind === "magnet") {
+      state.magnetShots += 3;
+      state.feedback = "Ball Magnet: the next 3 shots bend closer to you.";
+    } else if (pickup.kind === "slow") {
+      state.slowShots += 3;
+      state.feedback = "Time Freeze: the next 3 shots come in slower.";
+    } else if (pickup.kind === "shield") {
+      state.shieldCharges += 1;
+      state.feedback = "Wall Shield: one miss will be erased.";
+    } else {
+      state.bonusShots += 3;
+      state.feedback = "Gold Card: the next 3 saves pay bonus score.";
+    }
+    state.score += pickup.kind === "bonus" ? 35 : 25;
+    state.particles.push(...createParticles(16, pickup.x, pickup.y, pickup.color));
+  }
+
+  function spawnShot(state) {
+    const boss = state.round % 5 === 0;
+    const golden = !boss && (state.round % 4 === 0 || Math.random() < 0.18);
+    const lane = randInt(0, 2);
+    state.shot = {
+      lane,
+      boss,
+      golden,
+      y: -42,
+      x: lanes[lane],
+      curve: rand(-82, 82),
+      speed: 192 + state.round * 12,
+      angle: rand(0, Math.PI * 2),
+      spin: rand(-5.5, 5.5),
+      sprite: boss ? sprites.football : pick(soccerBallSprites),
+      slowed: false,
+      wideSave: false,
+      magnetized: false,
+      bonus: false
+    };
+    if (boss) {
+      state.shot.speed += 58;
+      state.shot.curve *= 1.18;
+    }
+    if (state.slowShots > 0) {
+      state.slowShots -= 1;
+      state.shot.slowed = true;
+      state.shot.speed *= 0.74;
+    }
+    if (state.wideShots > 0) {
+      state.wideShots -= 1;
+      state.shot.wideSave = true;
+    }
+    if (state.magnetShots > 0) {
+      state.magnetShots -= 1;
+      state.shot.magnetized = true;
+      state.shot.curve *= 0.82;
+    }
+    if (state.bonusShots > 0) {
+      state.bonusShots -= 1;
+      state.shot.bonus = true;
+    }
+    state.strikerLane = lane;
+  }
+
+  function resolveShot(state) {
+    const shot = state.shot;
+    const reach = shot.wideSave ? 104 : 58;
+    const delta = Math.abs(state.keeperX - shot.x);
+    const saved = delta <= reach;
+    const perfect = delta <= 24;
+
     if (saved) {
-      const gain = state.shot.boss ? 180 : 70;
+      const gain =
+        (shot.boss ? 190 : 92) +
+        (shot.golden ? 60 : 0) +
+        (shot.bonus ? 45 : 0) +
+        state.streak * 12 +
+        (perfect ? 28 : 0);
       state.score += gain;
       state.saves += 1;
-      if (state.shot.boss) {
+      state.streak += 1;
+      if (shot.boss) {
         state.bossSaves += 1;
       }
-      state.feedback = state.shot.boss ? `Boss save! +${gain}` : `Save! +${gain}`;
-      state.particles.push(...createParticles(16, lanes[state.lane], H - 140, "#7dedb0"));
+      state.crowdPulse = Math.min(1, state.crowdPulse + 0.18);
+      state.feedback = shot.boss
+        ? `Boss save! +${gain}`
+        : shot.golden
+          ? `Golden save! +${gain}`
+          : shot.bonus
+            ? `Crowd bonus save! +${gain}`
+          : perfect
+            ? `Perfect save! +${gain}`
+            : `Huge save! +${gain}`;
+      state.particles.push(
+        ...createParticles(18, shot.x, H - 148, shot.golden || shot.bonus ? "#ffd447" : shot.magnetized ? "#68d1ff" : "#7dedb0")
+      );
+
+      if (shot.boss) {
+        spawnPickup(state, shot.lane, "shield");
+      } else if (shot.golden) {
+        spawnPickup(state, shot.lane, Math.random() < 0.5 ? "bonus" : "glove");
+      } else if (shot.bonus && Math.random() < 0.6) {
+        spawnPickup(state, shot.lane, pick(["glove", "magnet", "slow"]));
+      } else if (state.streak % 3 === 0 || Math.random() < 0.34) {
+        spawnPickup(state, shot.lane);
+      }
+    } else if (state.shieldCharges > 0) {
+      state.shieldCharges -= 1;
+      state.streak = 0;
+      state.score += 15;
+      state.feedback = "Wall Shield saved the play.";
+      state.particles.push(...createParticles(18, shot.x, H - 156, "#ffd447"));
     } else {
       state.misses += 1;
-      state.feedback = state.shot.boss ? "Boss shot got through." : "Goal against you.";
-      state.particles.push(...createParticles(16, lanes[state.shot.lane], H - 126, "#ff8f8f"));
+      state.streak = 0;
+      state.crowdPulse = Math.max(0, state.crowdPulse - 0.24);
+      state.feedback = shot.boss ? "Boss shot got through." : "Goal against you.";
+      state.particles.push(...createParticles(18, shot.x, H - 140, "#ff8f8f"));
       if (state.misses >= 3) {
         state.over = true;
       }
     }
+
     state.round += 1;
     state.shot = null;
-    state.cooldown = 0.4;
+    state.cooldown = rand(0.34, 0.58);
   }
 
   return {
     id: "goalie_rush",
     type: "canvas",
     name: "Goalie Rush",
-    description: "Block faster and faster soccer shots, with boss rounds paying extra.",
-    controls: "Use Left and Right or A and D to move between lanes before the shot reaches the goal.",
-    note: "This solo build runs instantly in the browser and lets you practice saves without a room or class lobby.",
-    stageTitle: "Penalty Wall",
-    stageHelp: "Every fifth shot is a boss shot. Get into the right lane before it reaches the goal line.",
+    description: "A brighter penalty showdown with Kenney CC0 player and ball sprites, curved shots, combo saves, and five arcade power-ups.",
+    controls: "Use Left and Right or A and D to slide across the goal. Press 1, 2, or 3 for direct lane picks if you want faster reactions.",
+    note: "This solo version keeps everything local and now leans on the free Kenney sports pack for the keeper, striker, turf, and ball variants, plus extra power-ups and streak rewards.",
+    stageTitle: "Stadium Save Rush",
+    stageHelp: "Read the lane, catch Mega Gloves, Ball Magnet, Time Freeze, Wall Shield, and Gold Card pickups, then survive each fifth-round boss shot.",
     createState() {
       return {
         lane: 1,
+        keeperX: lanes[1],
+        strikerLane: 1,
         round: 1,
         score: 0,
         saves: 0,
         bossSaves: 0,
+        streak: 0,
         misses: 0,
-        cooldown: 0.25,
+        wideShots: 0,
+        magnetShots: 0,
+        slowShots: 0,
+        shieldCharges: 0,
+        bonusShots: 0,
+        crowdPulse: 0.2,
+        cooldown: 0.45,
         shot: null,
-        feedback: "Protect the net.",
+        pickups: [],
+        feedback: "Stadium lights on. Protect the goal.",
         particles: [],
         over: false,
         time: 0
@@ -602,13 +1423,33 @@ function createGoalieRushGame() {
       if (key === "arrowright" || key === "d") {
         state.lane = clamp(state.lane + 1, 0, 2);
       }
+      if (["1", "2", "3"].includes(key)) {
+        state.lane = Number(key) - 1;
+      }
     },
     update(state, dt, now) {
       state.time = now;
       updateParticles(state, dt);
+      state.crowdPulse = Math.max(0, state.crowdPulse - dt * 0.35);
+      state.keeperX += (lanes[state.lane] - state.keeperX) * Math.min(1, dt * (12 + (state.magnetShots > 0 ? 1.5 : 0)));
       if (state.over) {
         return;
       }
+
+      for (let i = state.pickups.length - 1; i >= 0; i -= 1) {
+        const pickup = state.pickups[i];
+        pickup.y += pickup.vy * dt;
+        pickup.angle += pickup.spin * dt;
+        if (Math.abs(state.keeperX - pickup.x) < 58 && Math.abs(pickup.y - (H - 160)) < 32) {
+          state.pickups.splice(i, 1);
+          applyPickup(state, pickup);
+          continue;
+        }
+        if (pickup.y > H + 50) {
+          state.pickups.splice(i, 1);
+        }
+      }
+
       if (!state.shot) {
         state.cooldown -= dt;
         if (state.cooldown <= 0) {
@@ -616,68 +1457,234 @@ function createGoalieRushGame() {
         }
         return;
       }
+
       state.shot.y += state.shot.speed * dt;
+      state.shot.angle += state.shot.spin * dt;
+      const progress = clamp((state.shot.y + 42) / (H - 180), 0, 1);
+      state.shot.x = lanes[state.shot.lane] + Math.sin(progress * Math.PI) * state.shot.curve;
+      if (state.shot.magnetized) {
+        state.shot.x += (state.keeperX - state.shot.x) * progress * (state.shot.boss ? 0.12 : 0.2);
+      }
       if (state.shot.y >= H - 170) {
-        resolveShot(state, state.shot.lane === state.lane);
+        resolveShot(state);
       }
     },
     render(state) {
-      clearCanvas("#0a1a22");
+      clearCanvas("#06111d");
+
       const sky = ctx.createLinearGradient(0, 0, 0, H);
-      sky.addColorStop(0, "#142a40");
-      sky.addColorStop(1, "#0b1624");
+      sky.addColorStop(0, "#13243f");
+      sky.addColorStop(0.5, "#132b4a");
+      sky.addColorStop(1, "#0b1727");
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, W, H);
 
-      ctx.fillStyle = "#13394d";
-      ctx.fillRect(0, H - 160, W, 160);
-      ctx.fillStyle = "#2c7b57";
-      ctx.fillRect(0, H - 120, W, 120);
+      const crowd = ctx.createLinearGradient(0, 0, 0, 138);
+      crowd.addColorStop(0, "#0b1322");
+      crowd.addColorStop(1, "#17273f");
+      ctx.fillStyle = crowd;
+      ctx.fillRect(0, 0, W, 138);
 
-      drawRoundedRect(180, 88, W - 360, 280, 28, "rgba(255,255,255,0.02)", "rgba(255,255,255,0.2)", 4);
+      for (let i = 0; i < 42; i += 1) {
+        const x = 18 + i * 23;
+        const h = 18 + ((i * 7) % 24);
+        const hue = i % 4 === 0 ? "#ffd447" : i % 3 === 0 ? "#68d1ff" : i % 2 === 0 ? "#ff8f8f" : "#f4fbff";
+        ctx.save();
+        ctx.globalAlpha = 0.16 + state.crowdPulse * 0.12;
+        ctx.fillStyle = hue;
+        ctx.fillRect(x, 98 - h, 12, h);
+        ctx.restore();
+      }
+
+      ctx.save();
+      ctx.globalAlpha = 0.14 + state.crowdPulse * 0.18;
+      ctx.fillStyle = "#f8fbff";
+      ctx.fillRect(0, 132, W, 6);
+      ctx.restore();
+
+      const grass = ctx.createLinearGradient(0, H - 220, 0, H);
+      grass.addColorStop(0, "#2f9f64");
+      grass.addColorStop(1, "#14603d");
+      ctx.fillStyle = grass;
+      ctx.fillRect(0, H - 210, W, 210);
+      if (sprites.grassMownWide.complete && sprites.grassMownWide.naturalWidth) {
+        ctx.save();
+        ctx.globalAlpha = 0.2;
+        for (let x = -8; x < W; x += 156) {
+          ctx.drawImage(sprites.grassMownWide, x, H - 214, 164, 214);
+        }
+        ctx.restore();
+      }
+
+      for (let i = 0; i < 6; i += 1) {
+        ctx.fillStyle = i % 2 === 0 ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0)";
+        ctx.fillRect(0, H - 210 + i * 35, W, 35);
+      }
+
+      drawSprite(sprites.goalieGoal, 160, 90, W - 320, 230);
+      drawRoundedRect(194, 104, W - 388, 246, 26, "rgba(255,255,255,0.02)", "rgba(255,255,255,0.16)", 2);
+
       for (const x of lanes) {
         ctx.save();
-        ctx.strokeStyle = "rgba(255,255,255,0.1)";
-        ctx.setLineDash([12, 14]);
+        ctx.strokeStyle = "rgba(255,255,255,0.11)";
+        ctx.setLineDash([10, 12]);
         ctx.beginPath();
-        ctx.moveTo(x, 92);
-        ctx.lineTo(x, H - 120);
+        ctx.moveTo(x, 130);
+        ctx.lineTo(x, H - 122);
         ctx.stroke();
         ctx.restore();
       }
 
-      drawSprite(sprites.playerBlue, lanes[state.lane] - 54, H - 160, 108, 108);
+      ctx.save();
+      ctx.strokeStyle = "rgba(255,255,255,0.35)";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(W / 2, H - 110, 110, Math.PI, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
+      const strikerX = state.shot ? state.shot.x : lanes[state.strikerLane];
+      ctx.save();
+      ctx.globalAlpha = 0.16;
+      ctx.fillStyle = "#08111d";
+      ctx.beginPath();
+      ctx.ellipse(strikerX, 176, 38, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      drawSprite(sprites.playerRed, strikerX - 44, 96, 88, 88);
+
+      for (const pickup of state.pickups) {
+        ctx.save();
+        ctx.globalAlpha = 0.22;
+        ctx.fillStyle = pickup.color;
+        ctx.beginPath();
+        ctx.arc(pickup.x, pickup.y, 26, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        drawSprite(pickup.sprite, pickup.x - 22, pickup.y - 22, 44, 44, { angle: pickup.angle });
+      }
 
       if (state.shot) {
-        const ballSprite = state.shot.boss ? sprites.football : sprites.soccerBall;
-        const size = state.shot.boss ? 66 : 54;
-        drawSprite(ballSprite, lanes[state.shot.lane] - size / 2, state.shot.y - size / 2, size, size, {
-          angle: state.time * (state.shot.boss ? 4 : 2)
+        const ballSprite = state.shot.sprite || (state.shot.boss ? sprites.football : sprites.soccerBall);
+        const size = state.shot.boss ? 72 : state.shot.golden || state.shot.bonus ? 62 : 56;
+        const glow = state.shot.boss
+          ? "#ff8f8f"
+          : state.shot.golden || state.shot.bonus
+            ? "#ffd447"
+            : state.shot.slowed
+              ? "#7dedb0"
+              : state.shot.magnetized
+                ? "#68d1ff"
+                : "#dce9ff";
+        ctx.save();
+        ctx.strokeStyle = `${glow}66`;
+        ctx.lineWidth = 5;
+        ctx.setLineDash([10, 12]);
+        ctx.beginPath();
+        ctx.moveTo(strikerX, 182);
+        ctx.lineTo(state.shot.x, state.shot.y + 16);
+        ctx.stroke();
+        ctx.restore();
+        ctx.save();
+        ctx.globalAlpha = 0.18;
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(state.shot.x, state.shot.y, size * 0.72, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        if (state.shot.magnetized) {
+          ctx.save();
+          ctx.globalAlpha = 0.4;
+          ctx.strokeStyle = "#68d1ff";
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(state.shot.x, state.shot.y, size * 0.58, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+        drawSprite(ballSprite, state.shot.x - size / 2, state.shot.y - size / 2, size, size, {
+          angle: state.shot.angle
         });
       }
 
-      drawRoundedRect(22, 22, 210, 54, 16, "rgba(255,255,255,0.08)", "rgba(255,255,255,0.12)");
-      drawText(`Round ${state.round}`, 127, 50, 20, "#f4fbff");
-      drawRoundedRect(W - 238, 22, 216, 54, 16, "rgba(255,255,255,0.08)", "rgba(255,255,255,0.12)");
-      drawText(`Boss Saves ${state.bossSaves}`, W - 130, 50, 20, "#ffd447");
-      drawRoundedRect(240, H - 92, W - 480, 54, 18, "rgba(255,255,255,0.08)", "rgba(255,255,255,0.12)");
-      drawText(state.feedback, W / 2, H - 65, 18, state.over ? "#ffb0b0" : "#f4fbff", "center", "Baloo 2");
+      ctx.save();
+      ctx.globalAlpha = 0.16;
+      ctx.fillStyle = "#08111d";
+      ctx.beginPath();
+      ctx.ellipse(state.keeperX, H - 116, 46, 14, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      if (state.wideShots > 0) {
+        ctx.save();
+        ctx.globalAlpha = 0.12;
+        ctx.fillStyle = "#68d1ff";
+        ctx.beginPath();
+        ctx.arc(state.keeperX, H - 150, 78, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+      if (state.shieldCharges > 0) {
+        ctx.save();
+        ctx.globalAlpha = 0.18;
+        ctx.strokeStyle = "#ffd447";
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.arc(state.keeperX, H - 148, 64, Math.PI * 1.06, Math.PI * 1.94);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      drawSprite(sprites.playerGreen, state.keeperX - 58, H - 188, 116, 116);
+      drawSprite(sprites.goalieGloves, state.keeperX - 68, H - 170, 136, 82);
+
+      drawRoundedRect(22, 22, 220, 60, 18, "rgba(4,11,23,0.78)", "rgba(151,214,255,0.16)");
+      drawText(`Round ${state.round}`, 88, 44, 14, "#f4fbff", "left");
+      drawText(`${state.score} score`, 88, 64, 22, "#ffd447", "left");
+
+      drawRoundedRect(252, 22, 214, 60, 18, "rgba(4,11,23,0.78)", "rgba(151,214,255,0.16)");
+      drawText(`Streak ${state.streak}x`, 359, 44, 20, state.streak > 0 ? "#7dedb0" : "#f4fbff");
+      drawText(`Saves ${state.saves}`, 359, 64, 13, "rgba(244,251,255,0.72)", "center", "Baloo 2");
+
+      drawRoundedRect(W - 246, 22, 224, 60, 18, "rgba(4,11,23,0.78)", "rgba(151,214,255,0.16)");
+      drawText(`Boss Saves ${state.bossSaves}`, W - 134, 44, 18, "#ffd447");
+      drawText(`Misses ${state.misses}/3`, W - 134, 64, 13, "rgba(244,251,255,0.72)", "center", "Baloo 2");
+
+      drawRoundedRect(22, H - 122, 432, 74, 22, "rgba(4,11,23,0.78)", "rgba(151,214,255,0.16)");
+      drawText("Power-Ups", 76, H - 99, 14, "#f4fbff", "left");
+      drawSprite(sprites.boxingGlove, 42, H - 86, 28, 28);
+      drawText(`${state.wideShots}`, 78, H - 72, 16, "#68d1ff", "left");
+      drawSprite(sprites.goaliePowerMagnet, 118, H - 86, 28, 28);
+      drawText(`${state.magnetShots}`, 154, H - 72, 16, "#94d9ff", "left");
+      drawSprite(sprites.goaliePowerSlow, 194, H - 86, 28, 28);
+      drawText(`${state.slowShots}`, 230, H - 72, 16, "#7dedb0", "left");
+      drawSprite(sprites.goaliePowerShield, 270, H - 86, 28, 28);
+      drawText(`${state.shieldCharges}`, 306, H - 72, 16, "#ffd447", "left");
+      drawSprite(sprites.cardYellow, 346, H - 86, 28, 28);
+      drawText(`${state.bonusShots}`, 382, H - 72, 16, "#ffdf67", "left");
+
+      const feedbackX = 470;
+      const feedbackW = W - feedbackX - 22;
+      drawRoundedRect(feedbackX, H - 102, feedbackW, 54, 18, "rgba(4,11,23,0.78)", "rgba(151,214,255,0.16)");
+      drawText(state.feedback, feedbackX + feedbackW / 2, H - 75, 18, state.over ? "#ffb0b0" : "#f4fbff", "center", "Baloo 2");
       drawParticles(state);
 
       if (state.over) {
-        drawRoundedRect(252, 176, W - 504, 160, 24, "rgba(6,12,18,0.84)", "rgba(255,143,143,0.26)");
+        drawRoundedRect(232, 160, W - 464, 174, 28, "rgba(6,12,18,0.88)", "rgba(255,143,143,0.28)");
         drawText("Final Whistle", W / 2, 224, 34, "#ffd447");
-        drawText(`You saved ${state.saves} shots`, W / 2, 272, 24, "#f4fbff");
-        drawText("Restart to defend another streak.", W / 2, 312, 18, "rgba(244,251,255,0.72)", "center", "Baloo 2");
+        drawText(`You saved ${state.saves} shots and hit ${state.streak > 0 ? `${state.streak}x` : "0x"} streak pace.`, W / 2, 272, 22, "#f4fbff");
+        drawText("Restart to defend another stadium run.", W / 2, 312, 18, "rgba(244,251,255,0.72)", "center", "Baloo 2");
       }
     },
     getStats(state) {
       return {
         primaryLabel: "Saves",
         primaryValue: state.saves,
-        secondaryLabel: "Boss Saves",
-        secondaryValue: state.bossSaves,
-        status: state.over ? `Misses ${state.misses}` : `Misses ${state.misses}/3 | Round ${state.round}`
+        secondaryLabel: "Streak",
+        secondaryValue: state.over ? "Ended" : `${state.streak}x`,
+        status: state.over
+          ? `Misses ${state.misses} | Boss saves ${state.bossSaves}`
+          : `Misses ${state.misses}/3 | Boss ${state.bossSaves} | Power ${state.wideShots + state.magnetShots + state.slowShots + state.shieldCharges + state.bonusShots}`
       };
     },
     getBestValue(state) {
@@ -689,27 +1696,47 @@ function createGoalieRushGame() {
 function createHallwayDashGame() {
   const lanes = [laneCenter(0, 3, 300), laneCenter(1, 3, 300), laneCenter(2, 3, 300)];
   const obstacleTypes = [
-    { id: "bag", label: "Backpack", sprite: sprites.football, color: "#ffcf6e" },
-    { id: "sign", label: "Wet Floor", sprite: sprites.flagGreen, color: "#8ef0bd" },
-    { id: "book", label: "Book Stack", sprite: sprites.cardWhite, color: "#dce9ff" }
+    { id: "bag", label: "Backpack", sprite: sprites.hallwayBackpack, color: "#ffcf6e", w: 76, h: 76, collision: 60 },
+    { id: "sign", label: "Wet Floor Sign", sprite: sprites.hallwayWetFloor, color: "#ffe08a", w: 70, h: 84, collision: 58 },
+    { id: "book", label: "Book Stack", sprite: sprites.hallwayBookStack, color: "#dce9ff", w: 82, h: 68, collision: 60 },
+    { id: "project", label: "Science Board", sprite: sprites.hallwayScienceBoard, color: "#d8b4fe", w: 94, h: 74, collision: 64 }
   ];
+  const wallPanels = [
+    { left: "lockers", right: "door" },
+    { left: "board", right: "lockers" },
+    { left: "door", right: "board" },
+    { left: "lockers", right: "board" }
+  ];
+  const wallSprites = {
+    lockers: { sprite: sprites.hallwayLockers, w: 146, h: 108 },
+    door: { sprite: sprites.hallwayDoor, w: 112, h: 150 },
+    board: { sprite: sprites.hallwayBoard, w: 142, h: 100 }
+  };
+  const bulletinFaces = [sprites.studentFaceA, sprites.studentFaceB, sprites.studentFaceC];
+  const bannerCopy = ["Science Fair", "Book Drive", "Robotics Club"];
 
   function spawnTrackItem(state) {
     const lane = randInt(0, 2);
-    if (Math.random() < 0.28) {
+    if (Math.random() < 0.3) {
       state.pickups.push({
         lane,
-        y: -50,
-        sprite: sprites.cardYellow,
-        label: "Hall Pass"
+        y: -58,
+        sprite: sprites.hallwayPass,
+        label: "Hall Pass",
+        angle: rand(-0.18, 0.18),
+        spin: rand(-2.2, 2.2),
+        bob: rand(0, Math.PI * 2),
+        value: 1
       });
       return;
     }
     const type = pick(obstacleTypes);
     state.obstacles.push({
       lane,
-      y: -68,
-      type
+      y: -86,
+      type,
+      tilt: rand(-0.12, 0.12),
+      sway: rand(0, Math.PI * 2)
     });
   }
 
@@ -717,10 +1744,29 @@ function createHallwayDashGame() {
     return H - 170 - state.jump;
   }
 
+  function drawBulletinBoardDetails(x, y, scale, seed) {
+    const faceA = bulletinFaces[seed % bulletinFaces.length];
+    const faceB = bulletinFaces[(seed + 1) % bulletinFaces.length];
+    drawSprite(faceA, x + 20 * scale, y + 22 * scale, 32 * scale, 32 * scale, { angle: -0.08 });
+    drawSprite(faceB, x + 96 * scale, y + 24 * scale, 28 * scale, 28 * scale, { angle: 0.1 });
+    drawSprite(sprites.hallwayPass, x + 56 * scale, y + 14 * scale, 30 * scale, 40 * scale, { angle: 0.06 });
+  }
+
+  function drawWallPanel(kind, x, y, scale, seed) {
+    const panel = wallSprites[kind];
+    const w = panel.w * scale;
+    const h = panel.h * scale;
+    drawSprite(panel.sprite, x, y, w, h);
+    if (kind === "board") {
+      drawBulletinBoardDetails(x, y, scale, seed);
+    }
+  }
+
   function hitPlayer(state, obstacle) {
     state.hearts -= 1;
+    state.stumbleTimer = 0.75;
     state.obstacles = state.obstacles.filter((entry) => entry !== obstacle);
-    state.feedback = `${obstacle.type.label} slowed you down.`;
+    state.feedback = `${obstacle.type.label} slowed your hallway run.`;
     state.particles.push(...createParticles(18, lanes[obstacle.lane], H - 132, "#ff8f8f"));
     if (state.hearts <= 0) {
       state.over = true;
@@ -731,11 +1777,11 @@ function createHallwayDashGame() {
     id: "hallway_dash",
     type: "canvas",
     name: "Hallway Dash",
-    description: "Run the hall, dodge clutter, jump hazards, and grab hall-pass pickups.",
-    controls: "Use Left and Right or A and D to change lanes. Press Space to jump.",
-    note: "This solo hallway version runs immediately in the browser, so students can practice without signing in or waiting on other players.",
+    description: "A fuller school-hall runner with lockers, bulletin boards, classroom clutter, and better hallway sprites.",
+    controls: "Use Left and Right or A and D to change lanes. Press Space, Up, or W to jump.",
+    note: "This solo hallway version now looks more like a real school corridor, with local hallway sprites for lockers, doors, bulletin boards, hall passes, backpacks, and book clutter.",
     stageTitle: "Hallway Sprint",
-    stageHelp: "Stay in front of the clutter rush, jump at the right time, and scoop up yellow hall-pass cards for bonus points.",
+    stageHelp: "Sprint through a school hallway, dodge backpacks, wet-floor signs, science boards, and book stacks, and grab hall passes for bonus score.",
     createState() {
       return {
         lane: 1,
@@ -747,6 +1793,8 @@ function createHallwayDashGame() {
         hearts: 3,
         speed: 270,
         spawnTimer: 0.7,
+        stumbleTimer: 0,
+        boostTimer: 0,
         obstacles: [],
         pickups: [],
         particles: [],
@@ -787,7 +1835,7 @@ function createHallwayDashGame() {
       if (key === "arrowright" || key === "d") {
         state.lane = clamp(state.lane + 1, 0, 2);
       }
-      if (key === " " && state.jump === 0) {
+      if ((key === " " || key === "arrowup" || key === "w") && state.jump === 0) {
         state.vy = 560;
       }
     },
@@ -798,7 +1846,10 @@ function createHallwayDashGame() {
         return;
       }
 
-      state.speed = 270 + state.distance * 0.2;
+      state.stumbleTimer = Math.max(0, state.stumbleTimer - dt);
+      state.boostTimer = Math.max(0, state.boostTimer - dt);
+      const baseSpeed = 270 + state.distance * 0.2;
+      state.speed = baseSpeed * (state.stumbleTimer > 0 ? 0.72 : state.boostTimer > 0 ? 1.06 : 1);
       state.distance += dt * state.speed * 0.1;
       state.score = Math.floor(state.distance * 8 + state.coins * 75);
 
@@ -821,6 +1872,8 @@ function createHallwayDashGame() {
       }
       for (const pickup of state.pickups) {
         pickup.y += state.speed * dt * 0.94;
+        pickup.angle += pickup.spin * dt;
+        pickup.bob += dt * 5;
       }
 
       const player = { x: lanes[state.lane], y: playerY(state) + 52 };
@@ -830,9 +1883,9 @@ function createHallwayDashGame() {
           state.obstacles = state.obstacles.filter((entry) => entry !== obstacle);
           continue;
         }
-        const obstaclePoint = { x: lanes[obstacle.lane], y: obstacle.y + 34 };
+        const obstaclePoint = { x: lanes[obstacle.lane], y: obstacle.y + obstacle.type.h * 0.16 };
         const grounded = state.jump < 36;
-        if (grounded && obstacle.lane === state.lane && distance(player, obstaclePoint) < 62) {
+        if (grounded && obstacle.lane === state.lane && distance(player, obstaclePoint) < obstacle.type.collision) {
           hitPlayer(state, obstacle);
         }
       }
@@ -842,10 +1895,11 @@ function createHallwayDashGame() {
           state.pickups = state.pickups.filter((entry) => entry !== pickup);
           continue;
         }
-        const pickupPoint = { x: lanes[pickup.lane], y: pickup.y + 28 };
+        const pickupPoint = { x: lanes[pickup.lane], y: pickup.y + 12 };
         if (pickup.lane === state.lane && distance(player, pickupPoint) < 58) {
-          state.coins += 1;
-          state.feedback = "Hall pass collected.";
+          state.coins += pickup.value;
+          state.boostTimer = 0.45;
+          state.feedback = "Hall pass stamped.";
           state.particles.push(...createParticles(14, pickupPoint.x, pickupPoint.y, "#ffd447"));
           state.pickups = state.pickups.filter((entry) => entry !== pickup);
         }
@@ -855,27 +1909,66 @@ function createHallwayDashGame() {
       clearCanvas("#0a1726");
 
       const wall = ctx.createLinearGradient(0, 0, 0, H);
-      wall.addColorStop(0, "#203149");
-      wall.addColorStop(0.48, "#14263b");
-      wall.addColorStop(1, "#0c1826");
+      wall.addColorStop(0, "#20344a");
+      wall.addColorStop(0.48, "#17304a");
+      wall.addColorStop(1, "#101c2a");
       ctx.fillStyle = wall;
       ctx.fillRect(0, 0, W, H);
 
-      for (let i = 0; i < 8; i += 1) {
-        const stripeY = (i * 84 + state.distance * 18) % (H + 80) - 40;
-        drawRoundedRect(78, stripeY, 110, 44, 12, "rgba(255,255,255,0.06)");
-        drawRoundedRect(W - 188, stripeY, 110, 44, 12, "rgba(255,255,255,0.06)");
+      ctx.fillStyle = "rgba(255,255,255,0.06)";
+      ctx.fillRect(0, 0, W, 92);
+      for (let i = 0; i < 5; i += 1) {
+        const x = 70 + i * 182;
+        drawRoundedRect(x, 22, 118, 18, 9, "rgba(248,251,255,0.18)", "rgba(248,251,255,0.12)");
       }
 
-      ctx.fillStyle = "#20384a";
-      ctx.fillRect(0, H - 152, W, 152);
-      ctx.fillStyle = "#121f2c";
-      ctx.fillRect(0, H - 118, W, 118);
+      drawRoundedRect(34, 52, 86, 24, 12, "rgba(14,26,41,0.78)", "rgba(255,255,255,0.1)");
+      drawText("EXIT", 77, 65, 13, "#7dedb0");
+      drawRoundedRect(W - 138, 52, 104, 24, 12, "rgba(14,26,41,0.78)", "rgba(255,255,255,0.1)");
+      drawText("Library", W - 86, 65, 13, "#ffd447");
+
+      for (let i = 0; i < 7; i += 1) {
+        const template = wallPanels[i % wallPanels.length];
+        const panelY = (i * 122 + state.distance * 18) % (H + 220) - 150;
+        const depth = clamp((panelY + 150) / (H + 130), 0, 1);
+        const scale = 0.78 + depth * 0.4;
+        drawWallPanel(template.left, 20, panelY, scale, i);
+        const rightPanel = wallSprites[template.right];
+        drawWallPanel(template.right, W - 20 - rightPanel.w * scale, panelY, scale, i + 8);
+      }
+
+      for (let i = 0; i < bannerCopy.length; i += 1) {
+        const x = 216 + i * 190;
+        drawRoundedRect(x, 30, 156, 22, 11, "rgba(10,21,34,0.7)", "rgba(255,255,255,0.08)");
+        drawText(bannerCopy[i], x + 78, 42, 11, i === 1 ? "#ffd447" : "#dff5ff");
+      }
+
+      ctx.fillStyle = "#dae4ee";
+      ctx.fillRect(0, H - 220, W, 220);
+      ctx.fillStyle = "#274256";
+      ctx.fillRect(0, H - 186, W, 34);
+      ctx.fillStyle = "#112030";
+      ctx.fillRect(W / 2 - 154, H - 220, 308, 220);
+
+      for (let i = 0; i < 6; i += 1) {
+        ctx.fillStyle = i % 2 === 0 ? "rgba(17,32,48,0.11)" : "rgba(255,255,255,0.03)";
+        ctx.fillRect(W / 2 - 154, H - 220 + i * 36, 308, 18);
+      }
+
+      for (let i = 0; i < 12; i += 1) {
+        const tileY = H - 220 + ((i * 42 + state.distance * 10) % 42);
+        ctx.strokeStyle = "rgba(17,32,48,0.12)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, tileY);
+        ctx.lineTo(W, tileY);
+        ctx.stroke();
+      }
 
       for (let i = 0; i < lanes.length; i += 1) {
         ctx.save();
-        ctx.strokeStyle = "rgba(255,255,255,0.13)";
-        ctx.setLineDash([16, 16]);
+        ctx.strokeStyle = i === 1 ? "rgba(255,255,255,0.14)" : "rgba(17,32,48,0.18)";
+        ctx.setLineDash([16, 14]);
         ctx.beginPath();
         ctx.moveTo(lanes[i], 0);
         ctx.lineTo(lanes[i], H);
@@ -883,17 +1976,58 @@ function createHallwayDashGame() {
         ctx.restore();
       }
 
+      ctx.fillStyle = "rgba(0,0,0,0.18)";
+      ctx.fillRect(0, H - 154, W, 6);
+
       for (const obstacle of state.obstacles) {
-        drawSprite(obstacle.type.sprite, lanes[obstacle.lane] - 36, obstacle.y - 36, 72, 72);
+        const wobble = obstacle.tilt + Math.sin(state.time * 2.4 + obstacle.sway) * 0.05;
+        const x = lanes[obstacle.lane];
+        ctx.save();
+        ctx.globalAlpha = 0.14;
+        ctx.fillStyle = obstacle.type.color;
+        ctx.beginPath();
+        ctx.ellipse(x, obstacle.y + 18, obstacle.type.w * 0.34, 14, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        drawSprite(obstacle.type.sprite, x - obstacle.type.w / 2, obstacle.y - obstacle.type.h / 2, obstacle.type.w, obstacle.type.h, {
+          angle: wobble
+        });
       }
       for (const pickup of state.pickups) {
-        drawSprite(pickup.sprite, lanes[pickup.lane] - 26, pickup.y - 26, 52, 52);
+        const x = lanes[pickup.lane];
+        const bobY = Math.sin(pickup.bob) * 7;
+        ctx.save();
+        ctx.globalAlpha = 0.16;
+        ctx.fillStyle = "#ffd447";
+        ctx.beginPath();
+        ctx.arc(x, pickup.y + bobY, 30, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        drawSprite(pickup.sprite, x - 26, pickup.y - 34 + bobY, 52, 68, { angle: pickup.angle });
       }
 
-      drawSprite(sprites.heroBlue, lanes[state.lane] - 54, playerY(state), 108, 108);
+      const runnerX = lanes[state.lane];
+      ctx.save();
+      ctx.globalAlpha = 0.16;
+      ctx.fillStyle = "#08111d";
+      ctx.beginPath();
+      ctx.ellipse(runnerX, H - 104, 44, 18, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      if (state.boostTimer > 0) {
+        ctx.save();
+        ctx.globalAlpha = 0.14;
+        ctx.fillStyle = "#68d1ff";
+        ctx.beginPath();
+        ctx.arc(runnerX, playerY(state) + 58, 68, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+      drawSprite(sprites.hallwayBackpack, runnerX - 34, playerY(state) + 26, 68, 68);
+      drawSprite(sprites.heroBlue, runnerX - 54, playerY(state), 108, 108);
 
       for (let i = 0; i < state.hearts; i += 1) {
-        drawRoundedRect(30 + i * 42, 28, 30, 30, 10, "rgba(255,212,71,0.18)", "rgba(255,212,71,0.42)");
+        drawSprite(sprites.hallwayBackpack, 24 + i * 38, 20, 34, 34);
       }
 
       drawRoundedRect(180, 24, W - 360, 56, 18, "rgba(255,255,255,0.08)", "rgba(255,255,255,0.12)");
@@ -902,9 +2036,9 @@ function createHallwayDashGame() {
 
       if (state.over) {
         drawRoundedRect(232, 174, W - 464, 166, 24, "rgba(7,17,29,0.84)", "rgba(255,143,143,0.24)");
-        drawText("Hall Closed", W / 2, 224, 34, "#ffd447");
+        drawText("Bell Rang", W / 2, 224, 34, "#ffd447");
         drawText(`Distance ${Math.floor(state.distance)} m`, W / 2, 272, 24, "#f4fbff");
-        drawText("Restart for another hallway run.", W / 2, 316, 18, "rgba(244,251,255,0.72)", "center", "Baloo 2");
+        drawText("Restart for another school hallway run.", W / 2, 316, 18, "rgba(244,251,255,0.72)", "center", "Baloo 2");
       }
     },
     getStats(state) {
@@ -923,27 +2057,34 @@ function createHallwayDashGame() {
 }
 
 function createDinoDigGame() {
-  const digFinds = [
-    { kind: "coins", label: "Coin Cache", points: 40, sprite: sprites.cardYellow, tint: "#ffd447" },
-    { kind: "coins", label: "Coin Cache", points: 40, sprite: sprites.cardYellow, tint: "#ffd447" },
-    { kind: "coins", label: "Coin Cache", points: 40, sprite: sprites.cardYellow, tint: "#ffd447" },
-    { kind: "fossil", label: "Fossil", points: 55, sprite: sprites.cardWhite, tint: "#dce7ff" },
-    { kind: "fossil", label: "Fossil", points: 55, sprite: sprites.cardWhite, tint: "#dce7ff" },
-    { kind: "fossil", label: "Fossil", points: 55, sprite: sprites.cardWhite, tint: "#dce7ff" },
-    { kind: "bones", label: "Bones", points: 30, sprite: sprites.batHandle, tint: "#ffb474" },
-    { kind: "bones", label: "Bones", points: 30, sprite: sprites.batHandle, tint: "#ffb474" },
-    { kind: "bones", label: "Bones", points: 30, sprite: sprites.batHandle, tint: "#ffb474" },
-    { kind: "empty", label: "Dust", points: 8, sprite: sprites.flagGreen, tint: "#8ef0bd" },
-    { kind: "empty", label: "Dust", points: 8, sprite: sprites.flagGreen, tint: "#8ef0bd" },
-    { kind: "empty", label: "Dust", points: 8, sprite: sprites.flagGreen, tint: "#8ef0bd" },
+  const fossilPool = [
+    { kind: "fossil", label: "Skull Fossil", points: 55, sprite: sprites.digFossilSkull, tint: "#e8dec1" },
+    { kind: "fossil", label: "Rib Fossil", points: 55, sprite: sprites.digFossilRibs, tint: "#e8dec1" },
+    { kind: "fossil", label: "Skull Fossil", points: 55, sprite: sprites.digFossilSkull, tint: "#e8dec1" },
+    { kind: "fossil", label: "Rib Fossil", points: 55, sprite: sprites.digFossilRibs, tint: "#e8dec1" }
+  ];
+  const dinoPool = [
     { kind: "dino", label: "T. rex", points: 180, sprite: sprites.trex, tint: "#ffd447" },
     { kind: "dino", label: "Triceratops", points: 180, sprite: sprites.triceratops, tint: "#ffd447" },
     { kind: "dino", label: "Stegosaurus", points: 180, sprite: sprites.stegosaurus, tint: "#ffd447" },
-    { kind: "dino", label: "Velociraptor", points: 180, sprite: sprites.velociraptor, tint: "#ffd447" },
-    { kind: "coins", label: "Coin Cache", points: 40, sprite: sprites.cardYellow, tint: "#ffd447" },
-    { kind: "fossil", label: "Fossil", points: 55, sprite: sprites.cardWhite, tint: "#dce7ff" },
-    { kind: "bones", label: "Bones", points: 30, sprite: sprites.batHandle, tint: "#ffb474" },
-    { kind: "empty", label: "Dust", points: 8, sprite: sprites.flagGreen, tint: "#8ef0bd" }
+    { kind: "dino", label: "Velociraptor", points: 180, sprite: sprites.velociraptor, tint: "#ffd447" }
+  ];
+  const digFinds = [
+    { kind: "coins", label: "Coin Cache", points: 40, sprite: sprites.digCoinCache, tint: "#ffd447" },
+    { kind: "coins", label: "Coin Cache", points: 40, sprite: sprites.digCoinCache, tint: "#ffd447" },
+    { kind: "coins", label: "Coin Cache", points: 40, sprite: sprites.digCoinCache, tint: "#ffd447" },
+    ...fossilPool,
+    { kind: "bones", label: "Bone Bundle", points: 30, sprite: sprites.digBoneBundle, tint: "#ffcf92" },
+    { kind: "bones", label: "Bone Bundle", points: 30, sprite: sprites.digBoneBundle, tint: "#ffcf92" },
+    { kind: "bones", label: "Bone Bundle", points: 30, sprite: sprites.digBoneBundle, tint: "#ffcf92" },
+    { kind: "empty", label: "Dust Cloud", points: 8, sprite: sprites.digDust, tint: "#dec398" },
+    { kind: "empty", label: "Dust Cloud", points: 8, sprite: sprites.digDust, tint: "#dec398" },
+    { kind: "empty", label: "Dust Cloud", points: 8, sprite: sprites.digDust, tint: "#dec398" },
+    ...dinoPool,
+    { kind: "coins", label: "Coin Cache", points: 40, sprite: sprites.digCoinCache, tint: "#ffd447" },
+    { kind: "fossil", label: "Rib Fossil", points: 55, sprite: sprites.digFossilRibs, tint: "#e8dec1" },
+    { kind: "bones", label: "Bone Bundle", points: 30, sprite: sprites.digBoneBundle, tint: "#ffcf92" },
+    { kind: "empty", label: "Dust Cloud", points: 8, sprite: sprites.digDust, tint: "#dec398" }
   ];
 
   function digTile(state, index) {
@@ -963,7 +2104,12 @@ function createDinoDigGame() {
     if (tile.kind === "dino") {
       state.rareFinds += 1;
     }
-    state.message = `${tile.label} found for +${tile.points}.`;
+    state.message =
+      tile.kind === "dino"
+        ? `Rare dino pull: ${tile.label} for +${tile.points}.`
+        : tile.kind === "empty"
+          ? `Only drifting dust this time. +${tile.points}.`
+          : `${tile.label} found for +${tile.points}.`;
     if (state.digsLeft === 0 || state.tiles.every((entry) => entry.dug)) {
       state.done = true;
     }
@@ -974,11 +2120,11 @@ function createDinoDigGame() {
     id: "dino_dig",
     type: "board",
     name: "Dino Dig",
-    description: "Dig through the site for fossils, bones, coins, and rare dinosaur finds.",
+    description: "A scenic badlands dig board with sky, layered ground tiles, richer fossil sprites, and rare dinosaur finds.",
     controls: "Click a hidden tile to dig. Each run gives you twelve digs, so choose carefully.",
-    note: "This solo version is a local dig site with no lobby or teammates. Your best score is saved only on this browser.",
+    note: "This solo version now uses a real dig-site scene with a sky backdrop, layered soil tiles, fossil art, and local dinosaur finds, with progress saved only on this browser.",
     stageTitle: "Dig Site",
-    stageHelp: "Each tile hides a reward. Rare dinosaur pulls are worth the most points before the dig budget runs out.",
+    stageHelp: "Each dirt tile hides a reward. Rare dinosaur pulls are worth the most points before the dig budget runs out.",
     createState() {
       return {
         score: 0,
@@ -1005,27 +2151,45 @@ function createDinoDigGame() {
     render(state, container) {
       const tiles = state.tiles.map((tile) => {
         if (!tile.dug) {
-          return `<button class="dig-card hidden-card" type="button" data-dig-index="${tile.id}" aria-label="Dig tile ${tile.id + 1}"></button>`;
+          return `
+            <button class="dig-card dig-site-card hidden-card" type="button" data-dig-index="${tile.id}" aria-label="Dig tile ${tile.id + 1}">
+              <img class="dig-marker-art" src="${sprites.digMarker.src}" alt="" />
+              <span class="dig-tile-label">Dig Here</span>
+              <span class="dig-tile-index">${String(tile.id + 1).padStart(2, "0")}</span>
+            </button>
+          `;
         }
         return `
-          <div class="dig-card">
+          <div class="dig-card dig-site-card dig-found-${tile.kind}">
             <img src="${tile.sprite.src}" alt="${escapeHtml(tile.label)}" />
             <strong>${escapeHtml(tile.label)}</strong>
-            <div style="color:${tile.tint}; font-family:Orbitron,monospace;">+${tile.points}</div>
+            <div class="dig-points" style="color:${tile.tint};">+${tile.points}</div>
           </div>
         `;
       }).join("");
 
       container.innerHTML = `
-        <div class="solo-grid">
-          <div class="solo-board-head">
+        <div class="solo-grid dig-site-stage">
+          <div class="dig-site-hero">
+            <img class="dig-site-scene" src="${sprites.digSiteScene.src}" alt="Badlands dig site" />
+            <div class="dig-site-copy">
+              <div class="eyebrow">Badlands Camp</div>
+              <h3>Dust Trail Dig</h3>
+              <p>Break through the soil layers, pull fossils, and chase the rare dinosaur jackpot before the crew runs out of digs.</p>
+            </div>
+            <div class="dig-site-scout-panel">
+              <div class="solo-pill">Scout: <img class="sprite-inline" src="${sprites.survivor.src}" alt="Explorer" /></div>
+              <div class="solo-pill">Tools: <img class="sprite-inline" src="${sprites.digMarker.src}" alt="Dig tools" /></div>
+            </div>
+          </div>
+          <div class="solo-board-head dig-site-head">
             <div class="solo-pill">Digs Left: ${state.digsLeft}</div>
             <div class="solo-pill">Fossils: ${state.fossils}</div>
             <div class="solo-pill">Rare Finds: ${state.rareFinds}</div>
-            <div class="solo-pill">Scout: <img class="sprite-inline" src="${sprites.survivor.src}" alt="Explorer" /></div>
+            <div class="solo-pill">Best Pull: ${state.rareFinds > 0 ? "Dino" : state.fossils > 0 ? "Fossil" : "Digging"}</div>
           </div>
-          <div class="dig-grid">${tiles}</div>
-          <div class="battle-log"><strong>Site Notes</strong><br />${escapeHtml(state.message)}</div>
+          <div class="dig-grid dig-grid-site">${tiles}</div>
+          <div class="battle-log dig-site-log"><strong>Site Notes</strong><br />${escapeHtml(state.message)}</div>
         </div>
       `;
 
@@ -1413,23 +2577,100 @@ function createClassroomCleanupGame() {
 }
 
 function createBattleRoyaleGame() {
+  const PLAYER_FIGHTER_KEY = "solo-arcade-battle-fighter";
+  const fighterRoster = [
+    { id: "blue-captain", name: "Blue Captain", title: "Captain Tactician", sprite: sprites.heroBlue, special: "Photon Burst", accent: "#68d1ff", hp: 120 },
+    { id: "dust-ranger", name: "Dust Ranger", title: "Badlands Scout", sprite: sprites.heroBrown, special: "Sand Breaker", accent: "#ffb474", hp: 122 },
+    { id: "trail-scout", name: "Trail Scout", title: "Arena Explorer", sprite: sprites.survivor, special: "Trail Shot", accent: "#7dedb0", hp: 118 },
+    { id: "arena-bot", name: "Arena Bot", title: "Steel Duelist", sprite: sprites.robot, special: "Steel Slam", accent: "#cfd8ff", hp: 124 },
+    { id: "blue-striker", name: "Blue Striker", title: "Pitch Runner", sprite: sprites.playerBlue, special: "Sky Cross", accent: "#8dd7ff", hp: 116 },
+    { id: "green-keeper", name: "Green Keeper", title: "Goal Guardian", sprite: sprites.playerGreen, special: "Wall Save", accent: "#8ef0bd", hp: 122 },
+    { id: "red-striker", name: "Red Striker", title: "Rival Forward", sprite: sprites.playerRed, special: "Rocket Volley", accent: "#ff9b92", hp: 118 },
+    { id: "triceratops", name: "Triceratops", title: "Horn Charger", sprite: sprites.triceratops, special: "Horn Charge", accent: "#ffd447", hp: 128 }
+  ];
   const enemyPool = [
-    { name: "Red Striker", sprite: sprites.playerRed, special: "Rocket Volley" },
-    { name: "Arena Bot", sprite: sprites.robot, special: "Steel Slam" },
-    { name: "Triceratops", sprite: sprites.triceratops, special: "Horn Charge" },
-    { name: "Velociraptor", sprite: sprites.velociraptor, special: "Pounce Rush" }
+    ...fighterRoster,
+    { id: "velociraptor", name: "Velociraptor", title: "Speed Hunter", sprite: sprites.velociraptor, special: "Pounce Rush", accent: "#ff8f8f", hp: 116 },
+    { id: "stegosaurus", name: "Stegosaurus", title: "Plate Crusher", sprite: sprites.stegosaurus, special: "Tail Slam", accent: "#ffe08a", hp: 126 },
+    { id: "tyrannosaurus", name: "T. rex", title: "Arena Titan", sprite: sprites.trex, special: "Prime Roar", accent: "#ffd447", hp: 132 }
   ];
 
-  function spawnEnemy(round) {
-    const template = enemyPool[(round - 1) % enemyPool.length];
+  function getStoredFighterId() {
+    try {
+      return window.localStorage.getItem(PLAYER_FIGHTER_KEY) || fighterRoster[0].id;
+    } catch {
+      return fighterRoster[0].id;
+    }
+  }
+
+  function setStoredFighterId(id) {
+    try {
+      window.localStorage.setItem(PLAYER_FIGHTER_KEY, id);
+    } catch {
+      // Ignore storage failures in embedded or private contexts.
+    }
+  }
+
+  function getFighterTemplate(id, pool = fighterRoster) {
+    return pool.find((entry) => entry.id === id) || pool[0];
+  }
+
+  function createFighter(template) {
     return {
+      id: template.id,
       name: template.name,
+      title: template.title,
       sprite: template.sprite,
       special: template.special,
-      hp: 86 + round * 18,
-      maxHp: 86 + round * 18,
+      accent: template.accent,
+      hp: template.hp,
+      maxHp: template.hp,
       guard: 0
     };
+  }
+
+  function spawnEnemy(round, selectedFighterId) {
+    let template = enemyPool[(round - 1) % enemyPool.length];
+    if (enemyPool.length > 1 && template.id === selectedFighterId) {
+      template = enemyPool[round % enemyPool.length];
+    }
+    const baseHp = Math.max(94, template.hp - 12);
+    const maxHp = baseHp + (round - 1) * 16;
+    return {
+      id: template.id,
+      name: template.name,
+      title: template.title,
+      sprite: template.sprite,
+      special: template.special,
+      accent: template.accent,
+      hp: maxHp,
+      maxHp,
+      guard: 0
+    };
+  }
+
+  function createBattleState(fighterId = getStoredFighterId()) {
+    const template = getFighterTemplate(fighterId);
+    setStoredFighterId(template.id);
+    return {
+      selectedFighterId: template.id,
+      player: createFighter(template),
+      enemy: spawnEnemy(1, template.id),
+      round: 1,
+      score: 0,
+      healUses: 3,
+      specialCharge: 0,
+      turn: "player",
+      pendingCpuAt: 0,
+      message: "Choose your opening move.",
+      log: ["Choose your opening move.", `${template.name} entered the arena.`],
+      done: false,
+      dirty: true
+    };
+  }
+
+  function resetBattleState(state, fighterId = state.selectedFighterId) {
+    Object.assign(state, createBattleState(fighterId));
   }
 
   function pushLog(state, line) {
@@ -1454,7 +2695,7 @@ function createBattleRoyaleGame() {
     state.round += 1;
     state.player.hp = Math.min(state.player.maxHp, state.player.hp + 24);
     state.specialCharge = Math.min(100, state.specialCharge + 25);
-    state.enemy = spawnEnemy(state.round);
+    state.enemy = spawnEnemy(state.round, state.selectedFighterId);
     state.turn = "player";
     pushLog(state, `New challenger: ${state.enemy.name}.`);
   }
@@ -1499,36 +2740,17 @@ function createBattleRoyaleGame() {
     state.turn = "player";
   }
 
-  return {
+    return {
     id: "battle_royale",
     type: "board",
     name: "Battle Royale",
-    description: "Fight CPU challengers one by one with attacks, guards, healing, and specials.",
+    description: "Pick a fighter sprite, enter a lit stadium arena, and battle CPU challengers with guards, heals, and specials.",
     controls: "Pick an action each turn. Build special charge by surviving and attacking, then spend it on a heavy move.",
-    note: "This solo arena replaces the old room-based duel with a local gauntlet, so it is playable instantly with no login and no second player.",
+    note: "This solo arena now lets you pick from a fuller fighter roster so your character matches the look you want, then throws that pick into a local stadium gauntlet with no login and no second player.",
     stageTitle: "Solo Battle Arena",
-    stageHelp: "Beat one challenger after another. Each win heals you a bit and spawns a tougher rival.",
+    stageHelp: "Pick your fighter, then beat one challenger after another. Each win heals you a bit and spawns a tougher rival in the stadium.",
     createState() {
-      return {
-        player: {
-          name: "Blue Captain",
-          sprite: sprites.heroBlue,
-          hp: 120,
-          maxHp: 120,
-          guard: 0
-        },
-        enemy: spawnEnemy(1),
-        round: 1,
-        score: 0,
-        healUses: 3,
-        specialCharge: 0,
-        turn: "player",
-        pendingCpuAt: 0,
-        message: "Choose your opening move.",
-        log: ["Choose your opening move."],
-        done: false,
-        dirty: true
-      };
+      return createBattleState();
     },
     getActions(state) {
       if (state.done) {
@@ -1552,14 +2774,14 @@ function createBattleRoyaleGame() {
       if (id === "attack") {
         const dealt = applyDamage(state.enemy, randInt(14, 24) + state.round);
         state.specialCharge = Math.min(100, state.specialCharge + 22);
-        pushLog(state, `You attacked for ${dealt}.`);
+        pushLog(state, `${state.player.name} attacked for ${dealt}.`);
         finishPlayerTurn(state);
         return;
       }
       if (id === "guard") {
         state.player.guard = 0.58;
         state.specialCharge = Math.min(100, state.specialCharge + 10);
-        pushLog(state, "You braced for the next hit.");
+        pushLog(state, `${state.player.name} braced for the next hit.`);
         finishPlayerTurn(state);
         return;
       }
@@ -1568,7 +2790,7 @@ function createBattleRoyaleGame() {
         state.healUses -= 1;
         state.player.hp = Math.min(state.player.maxHp, state.player.hp + heal);
         state.specialCharge = Math.min(100, state.specialCharge + 8);
-        pushLog(state, `You recovered ${heal} HP.`);
+        pushLog(state, `${state.player.name} recovered ${heal} HP.`);
         finishPlayerTurn(state);
         return;
       }
@@ -1579,7 +2801,7 @@ function createBattleRoyaleGame() {
         }
         state.specialCharge = 0;
         const dealt = applyDamage(state.enemy, randInt(28, 42) + state.round * 2);
-        pushLog(state, `Photon Burst landed for ${dealt}.`);
+        pushLog(state, `${state.player.special} landed for ${dealt}.`);
         finishPlayerTurn(state);
       }
     },
@@ -1591,34 +2813,75 @@ function createBattleRoyaleGame() {
     render(state, container) {
       const enemyHpWidth = `${clamp((state.enemy.hp / state.enemy.maxHp) * 100, 0, 100)}%`;
       const playerHpWidth = `${clamp((state.player.hp / state.player.maxHp) * 100, 0, 100)}%`;
+      const rosterButtons = fighterRoster.map((fighter) => `
+        <button
+          class="arena-roster-btn ${fighter.id === state.selectedFighterId ? "active" : ""}"
+          type="button"
+          data-fighter-pick="${fighter.id}"
+          style="--fighter-accent:${fighter.accent};"
+        >
+          <img src="${fighter.sprite.src}" alt="${escapeHtml(fighter.name)}" />
+          <span>${escapeHtml(fighter.name)}</span>
+        </button>
+      `).join("");
+      const renderFighterCard = (fighter, hpWidth, side) => `
+        <div class="fighter-card arena-fighter-card arena-fighter-${side}" style="--fighter-accent:${fighter.accent};">
+          <div class="arena-fighter-scene">
+            <div class="arena-crowd-band"></div>
+            <div class="arena-spotlight"></div>
+            <div class="arena-fighter-platform"></div>
+            <img class="arena-fighter-sprite" src="${fighter.sprite.src}" alt="${escapeHtml(fighter.name)}" />
+            ${fighter.guard > 0 ? '<div class="arena-guard-badge">Guard Up</div>' : ""}
+          </div>
+          <div class="arena-fighter-copy">
+            <div class="arena-fighter-role">${escapeHtml(fighter.title || "Arena Challenger")}</div>
+            <h3>${escapeHtml(fighter.name)}</h3>
+            <div class="arena-special-label">${escapeHtml(fighter.special)}</div>
+            <div class="hp-bar"><div class="hp-fill" style="width:${hpWidth};"></div></div>
+            <div>${fighter.hp} / ${fighter.maxHp} HP</div>
+          </div>
+        </div>
+      `;
       container.innerHTML = `
-        <div class="battle-stage">
+        <div class="battle-stage battle-arena-stage">
+          <div class="battle-arena-hero">
+            <img class="battle-arena-image" src="${sprites.battleArenaStadium.src}" alt="Stadium arena" />
+            <div class="battle-arena-copy">
+              <div class="eyebrow">Pick Your Fighter</div>
+              <h3>Stadium Showdown</h3>
+              <p>Tap any roster tile to restart the gauntlet as that fighter. Your selected sprite becomes the duelist for the run.</p>
+            </div>
+            <div class="battle-arena-pill-stack">
+              <div class="solo-pill">Your Pick: ${escapeHtml(state.player.name)}</div>
+              <div class="solo-pill">${state.specialCharge >= 100 ? "Special Ready" : `${escapeHtml(state.player.special)} charging`}</div>
+            </div>
+          </div>
+          <div class="arena-roster">${rosterButtons}</div>
           <div class="solo-board-head">
             <div class="solo-pill">Wins: ${state.score}</div>
             <div class="solo-pill">Round: ${state.round}</div>
             <div class="solo-pill">Special: ${state.specialCharge}%</div>
             <div class="solo-pill">Turn: ${state.turn === "cpu" ? "Enemy" : state.done ? "Ended" : "Player"}</div>
           </div>
-          <div class="fighter-grid">
-            <div class="fighter-card">
-              <img src="${state.player.sprite.src}" alt="${escapeHtml(state.player.name)}" />
-              <h3>${escapeHtml(state.player.name)}</h3>
-              <div class="hp-bar"><div class="hp-fill" style="width:${playerHpWidth};"></div></div>
-              <div>${state.player.hp} / ${state.player.maxHp} HP</div>
-            </div>
-            <div class="fighter-card">
-              <img src="${state.enemy.sprite.src}" alt="${escapeHtml(state.enemy.name)}" />
-              <h3>${escapeHtml(state.enemy.name)}</h3>
-              <div class="hp-bar"><div class="hp-fill" style="width:${enemyHpWidth};"></div></div>
-              <div>${state.enemy.hp} / ${state.enemy.maxHp} HP</div>
-            </div>
+          <div class="fighter-grid arena-fighter-grid">
+            ${renderFighterCard(state.player, playerHpWidth, "player")}
+            ${renderFighterCard(state.enemy, enemyHpWidth, "enemy")}
           </div>
-          <div class="battle-log">
+          <div class="battle-log arena-battle-log">
             <strong>Battle Log</strong><br />
             ${state.log.map((line) => escapeHtml(line)).join("<br />")}
           </div>
         </div>
       `;
+
+      container.querySelectorAll("[data-fighter-pick]").forEach((button) => {
+        button.addEventListener("click", () => {
+          resetBattleState(state, button.getAttribute("data-fighter-pick"));
+          renderStats();
+          renderActions();
+          renderBoard(true);
+        });
+      });
     },
     getStats(state) {
       return {
@@ -1644,6 +2907,23 @@ const games = {
   classroom_cleanup: createClassroomCleanupGame(),
   battle_royale: createBattleRoyaleGame()
 };
+
+if (typeof window.createPokemonStadiumGameModule === "function") {
+  const pokemonStadiumGame = window.createPokemonStadiumGameModule({
+    sprites,
+    clamp,
+    randInt,
+    pick,
+    escapeHtml,
+    startGame,
+    renderStats,
+    renderActions,
+    renderBoard
+  });
+  if (pokemonStadiumGame && pokemonStadiumGame.id) {
+    games[pokemonStadiumGame.id] = pokemonStadiumGame;
+  }
+}
 
 function startGame(id) {
   currentId = games[id] ? id : "asteroids";

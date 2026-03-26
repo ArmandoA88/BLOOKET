@@ -3977,6 +3977,12 @@ body.play-fishing-mode #playCard.fishing-final-active .fishing-hud-right {
   background: transparent;
 }
 
+.blook-image[src*="/assets/pokemon/"] {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  padding: 0;
+}
+
 .blook-emoji {
   font-size: 2rem;
   z-index: 2;

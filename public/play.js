@@ -5132,7 +5132,7 @@ function renderPackTabs() {
     return;
   }
 
-  const preferredPackOrder = ["students", "superheroes", "athletes", "nfl-teams", "sports", "anime", "cartoon-network", "science", "space", "nature", "dinosaurs", "books"];
+  const preferredPackOrder = ["students", "superheroes", "athletes", "nfl-teams", "sports", "anime", "pokemon", "cartoon-network", "science", "space", "nature", "dinosaurs", "books"];
   const orderIndex = new Map(preferredPackOrder.map((id, index) => [id, index]));
   const sortedPacks = blookPacks.slice().sort((left, right) => {
     const leftIdx = orderIndex.has(left.id) ? orderIndex.get(left.id) : preferredPackOrder.length + 1;

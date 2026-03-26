@@ -1,0 +1,18 @@
+Space Shooter Pack
+
+Creator
+
+- Kenney Vleugels (Kenney.nl)
+
+Source
+
+- Ship, laser, meteor, and power-up sprites in this folder were saved locally from the Kenney shooter asset set mirrored at `https://cdn.jsdelivr.net/gh/kefik/kenney@master/Shooter/`.
+
+License
+
+- Creative Commons Zero, CC0
+- https://creativecommons.org/publicdomain/zero/1.0/
+
+Notes
+
+- These files are used by the standalone Asteroids solo mode.

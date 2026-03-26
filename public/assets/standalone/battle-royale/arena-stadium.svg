@@ -1,0 +1,61 @@
+<svg width="1400" height="520" viewBox="0 0 1400 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1400" height="520" rx="32" fill="#07111C"/>
+  <rect y="260" width="1400" height="260" fill="#0B1724"/>
+  <ellipse cx="700" cy="446" rx="364" ry="54" fill="#0B0F18"/>
+  <ellipse cx="700" cy="420" rx="336" ry="44" fill="#1A2636"/>
+  <ellipse cx="700" cy="404" rx="302" ry="34" fill="#223449"/>
+  <ellipse cx="700" cy="396" rx="264" ry="26" fill="#2D4156"/>
+  <rect x="92" y="74" width="1216" height="138" rx="30" fill="#111C29"/>
+  <rect x="120" y="96" width="1160" height="94" rx="24" fill="#172536"/>
+  <g opacity="0.8">
+    <circle cx="170" cy="124" r="12" fill="#FACC15"/>
+    <circle cx="208" cy="132" r="10" fill="#60A5FA"/>
+    <circle cx="244" cy="122" r="9" fill="#34D399"/>
+    <circle cx="280" cy="136" r="11" fill="#F87171"/>
+    <circle cx="1160" cy="124" r="12" fill="#FACC15"/>
+    <circle cx="1198" cy="132" r="10" fill="#60A5FA"/>
+    <circle cx="1234" cy="122" r="9" fill="#34D399"/>
+    <circle cx="1270" cy="136" r="11" fill="#F87171"/>
+  </g>
+  <g opacity="0.42">
+    <rect x="164" y="150" width="16" height="22" rx="8" fill="#E5E7EB"/>
+    <rect x="198" y="148" width="16" height="24" rx="8" fill="#FDE68A"/>
+    <rect x="230" y="152" width="16" height="20" rx="8" fill="#BFDBFE"/>
+    <rect x="264" y="146" width="16" height="26" rx="8" fill="#86EFAC"/>
+    <rect x="1122" y="150" width="16" height="22" rx="8" fill="#E5E7EB"/>
+    <rect x="1156" y="148" width="16" height="24" rx="8" fill="#FDE68A"/>
+    <rect x="1188" y="152" width="16" height="20" rx="8" fill="#BFDBFE"/>
+    <rect x="1222" y="146" width="16" height="26" rx="8" fill="#86EFAC"/>
+  </g>
+  <rect x="548" y="92" width="304" height="82" rx="22" fill="#0C1622" stroke="#2B3E54" stroke-width="4"/>
+  <text x="700" y="126" text-anchor="middle" fill="#F4FBFF" font-family="Arial, sans-serif" font-size="22" font-weight="700">STADIUM GAUNTLET</text>
+  <text x="700" y="152" text-anchor="middle" fill="#FFD447" font-family="Arial, sans-serif" font-size="18" font-weight="700">Lights On • Crowd Ready</text>
+  <path d="M0 314C112 266 208 248 330 256C470 266 594 330 706 336C830 342 942 282 1062 270C1180 258 1282 284 1400 248V520H0V314Z" fill="#111B28"/>
+  <path d="M0 344C116 314 224 320 338 350C462 382 566 410 692 408C814 406 914 368 1030 348C1158 326 1266 334 1400 368V520H0V344Z" fill="#152233"/>
+  <path d="M98 0L220 296" stroke="url(#beamA)" stroke-width="120" stroke-linecap="round" opacity="0.34"/>
+  <path d="M1302 0L1180 296" stroke="url(#beamB)" stroke-width="120" stroke-linecap="round" opacity="0.34"/>
+  <path d="M344 12L460 290" stroke="url(#beamC)" stroke-width="86" stroke-linecap="round" opacity="0.22"/>
+  <path d="M1056 12L940 290" stroke="url(#beamD)" stroke-width="86" stroke-linecap="round" opacity="0.22"/>
+  <rect x="250" y="382" width="192" height="18" rx="9" fill="#FFD447" opacity="0.24"/>
+  <rect x="958" y="382" width="192" height="18" rx="9" fill="#68D1FF" opacity="0.24"/>
+  <circle cx="252" cy="382" r="12" fill="#FFD447" opacity="0.42"/>
+  <circle cx="1148" cy="382" r="12" fill="#68D1FF" opacity="0.42"/>
+  <defs>
+    <linearGradient id="beamA" x1="98" y1="0" x2="220" y2="296" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE391"/>
+      <stop offset="1" stop-color="#FFE391" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="beamB" x1="1302" y1="0" x2="1180" y2="296" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#84D9FF"/>
+      <stop offset="1" stop-color="#84D9FF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="beamC" x1="344" y1="12" x2="460" y2="290" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="beamD" x1="1056" y1="12" x2="940" y2="290" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+</svg>

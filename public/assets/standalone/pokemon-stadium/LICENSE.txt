@@ -1,0 +1,10 @@
+Pokemon Stadium standalone art
+
+Files
+
+- `stadium-bowl.svg`
+
+License
+
+- Created locally for this project.
+- Intended for project use alongside the local Pokemon sprite files already stored in `public/assets/pokemon/`.

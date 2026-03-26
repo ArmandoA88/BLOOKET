@@ -1,0 +1,17 @@
+Hallway standalone sprite set
+
+Files
+
+- `locker-bank.svg`
+- `classroom-door.svg`
+- `bulletin-board.svg`
+- `hall-pass.svg`
+- `backpack.svg`
+- `wet-floor-sign.svg`
+- `book-stack.svg`
+- `science-board.svg`
+
+License
+
+- Created locally for this project.
+- Intended for project use alongside the Kenney CC0 character and sports packs already stored in this repo.

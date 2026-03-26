@@ -1,0 +1,10 @@
+<svg width="110" height="144" viewBox="0 0 110 144" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M55 10C40 10 30 22 30 36V48" stroke="#60A5FA" stroke-width="8" stroke-linecap="round"/>
+  <path d="M55 10C70 10 80 22 80 36V48" stroke="#60A5FA" stroke-width="8" stroke-linecap="round"/>
+  <rect x="16" y="46" width="78" height="88" rx="18" fill="#F8FBFF" stroke="#94A3B8" stroke-width="4"/>
+  <rect x="28" y="60" width="54" height="18" rx="9" fill="#1D4ED8"/>
+  <text x="55" y="73" text-anchor="middle" fill="#F8FBFF" font-family="Arial, sans-serif" font-size="11" font-weight="700">HALL PASS</text>
+  <rect x="28" y="88" width="54" height="10" rx="5" fill="#CBD5E1"/>
+  <rect x="28" y="104" width="40" height="10" rx="5" fill="#CBD5E1"/>
+  <circle cx="80" cy="108" r="10" fill="#FACC15" stroke="#D97706" stroke-width="4"/>
+</svg>

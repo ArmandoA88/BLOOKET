@@ -1,0 +1,16 @@
+Dino Dig standalone sprite set
+
+Files
+
+- `dig-site-scene.svg`
+- `fossil-skull.svg`
+- `fossil-ribs.svg`
+- `bone-bundle.svg`
+- `coin-cache.svg`
+- `dust-cloud.svg`
+- `dig-marker.svg`
+
+License
+
+- Created locally for this project.
+- Intended for project use alongside the dinosaur art already stored in `public/assets/standalone/dinos/`.

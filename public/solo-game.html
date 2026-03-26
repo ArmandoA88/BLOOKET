@@ -329,6 +329,217 @@
       color: rgba(255, 239, 214, 0.8);
     }
 
+    .dig-site-stage {
+      position: relative;
+      padding: 12px;
+      border-radius: 30px;
+      background:
+        radial-gradient(circle at 16% 8%, rgba(255, 231, 162, 0.22), transparent 18%),
+        linear-gradient(180deg, rgba(186, 229, 255, 0.16), rgba(43, 25, 12, 0.08) 38%, rgba(85, 48, 24, 0.32) 100%);
+      border: 1px solid rgba(255, 221, 161, 0.14);
+      overflow: hidden;
+    }
+
+    .dig-site-hero {
+      position: relative;
+      min-height: 208px;
+      border-radius: 26px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 231, 178, 0.18);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(59, 35, 18, 0.2));
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-end;
+      padding: 18px;
+    }
+
+    .dig-site-hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(5, 13, 22, 0.04), rgba(5, 13, 22, 0.44));
+      pointer-events: none;
+    }
+
+    .dig-site-scene {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .dig-site-copy,
+    .dig-site-scout-panel,
+    .dig-site-head,
+    .dig-grid-site,
+    .dig-site-log {
+      position: relative;
+      z-index: 1;
+    }
+
+    .dig-site-copy {
+      max-width: 560px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .dig-site-copy h3 {
+      font-size: clamp(1.4rem, 3vw, 2.1rem);
+      line-height: 0.96;
+    }
+
+    .dig-site-copy p {
+      margin: 0;
+      color: rgba(244, 251, 255, 0.86);
+      line-height: 1.45;
+    }
+
+    .dig-site-scout-panel {
+      display: grid;
+      gap: 10px;
+      justify-items: end;
+    }
+
+    .dig-site-head {
+      margin: 6px 0 2px;
+      padding: 0 4px;
+    }
+
+    .dig-grid-site {
+      padding: 18px;
+      border-radius: 28px;
+      background:
+        linear-gradient(180deg, rgba(182, 120, 62, 0.16), rgba(96, 55, 28, 0.2)),
+        linear-gradient(180deg, rgba(117, 70, 35, 0.78), rgba(86, 49, 25, 0.94));
+      border: 1px solid rgba(255, 219, 163, 0.14);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 236, 200, 0.08),
+        inset 0 -16px 24px rgba(40, 20, 8, 0.22);
+    }
+
+    .dig-site-card {
+      position: relative;
+      overflow: hidden;
+      min-height: 156px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .dig-grid-site .dig-card img {
+      max-width: 108px;
+      max-height: 94px;
+    }
+
+    .dig-grid-site .dig-card strong {
+      font-family: "Orbitron", monospace;
+      font-size: 0.92rem;
+      line-height: 1.2;
+    }
+
+    .dig-grid-site .dig-card.hidden-card {
+      border-color: rgba(255, 220, 163, 0.16);
+      background:
+        radial-gradient(circle at 18% 22%, rgba(255, 234, 198, 0.12) 0 8px, transparent 9px),
+        radial-gradient(circle at 78% 34%, rgba(255, 234, 198, 0.1) 0 7px, transparent 8px),
+        radial-gradient(circle at 32% 76%, rgba(62, 31, 14, 0.24) 0 12px, transparent 13px),
+        linear-gradient(180deg, #b3773d 0%, #8b552c 58%, #6b3f20 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 233, 190, 0.18),
+        inset 0 -18px 28px rgba(59, 31, 13, 0.28);
+      gap: 6px;
+      align-content: center;
+      justify-items: center;
+    }
+
+    .dig-grid-site .dig-card.hidden-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(255, 239, 210, 0.08), transparent 24%),
+        repeating-linear-gradient(180deg, rgba(255, 222, 172, 0.04) 0 14px, rgba(0, 0, 0, 0) 14px 28px);
+      opacity: 1;
+    }
+
+    .dig-grid-site .dig-card.hidden-card::after {
+      content: none;
+    }
+
+    .dig-marker-art,
+    .dig-tile-label,
+    .dig-tile-index {
+      position: relative;
+      z-index: 1;
+    }
+
+    .dig-marker-art {
+      width: 66px;
+      height: 66px;
+      object-fit: contain;
+      margin-top: 8px;
+    }
+
+    .dig-tile-label {
+      font-family: "Orbitron", monospace;
+      font-size: 0.82rem;
+      color: rgba(255, 242, 221, 0.9);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .dig-tile-index {
+      position: absolute;
+      right: 14px;
+      bottom: 12px;
+      font-family: "Orbitron", monospace;
+      font-size: 0.74rem;
+      color: rgba(255, 233, 190, 0.82);
+    }
+
+    .dig-found-coins {
+      background: linear-gradient(180deg, rgba(255, 215, 92, 0.18), rgba(94, 59, 18, 0.78));
+      border-color: rgba(255, 215, 92, 0.26);
+    }
+
+    .dig-found-fossil {
+      background: linear-gradient(180deg, rgba(235, 226, 197, 0.16), rgba(84, 60, 39, 0.82));
+      border-color: rgba(235, 226, 197, 0.22);
+    }
+
+    .dig-found-bones {
+      background: linear-gradient(180deg, rgba(255, 208, 146, 0.14), rgba(92, 55, 30, 0.82));
+      border-color: rgba(255, 208, 146, 0.22);
+    }
+
+    .dig-found-empty {
+      background: linear-gradient(180deg, rgba(221, 184, 128, 0.12), rgba(78, 48, 29, 0.8));
+      border-color: rgba(221, 184, 128, 0.18);
+    }
+
+    .dig-found-dino {
+      background:
+        radial-gradient(circle at 50% 16%, rgba(255, 218, 84, 0.18), transparent 26%),
+        linear-gradient(180deg, rgba(255, 218, 84, 0.14), rgba(80, 48, 20, 0.86));
+      border-color: rgba(255, 218, 84, 0.28);
+    }
+
+    .dig-points {
+      font-family: "Orbitron", monospace;
+      letter-spacing: 0.04em;
+    }
+
+    .dig-site-log {
+      background: rgba(77, 48, 24, 0.42);
+      border-color: rgba(255, 219, 161, 0.16);
+      color: rgba(255, 242, 220, 0.84);
+    }
+
+    .dig-site-log strong {
+      color: #fff1cf;
+    }
+
     .match-card.matched {
       background: rgba(125, 237, 176, 0.12);
       border-color: rgba(125, 237, 176, 0.3);
@@ -441,6 +652,232 @@
       object-fit: contain;
     }
 
+    .battle-arena-stage {
+      padding: 12px;
+      border-radius: 30px;
+      background:
+        radial-gradient(circle at 18% 8%, rgba(255, 212, 71, 0.16), transparent 18%),
+        radial-gradient(circle at 86% 10%, rgba(104, 209, 255, 0.14), transparent 20%),
+        linear-gradient(180deg, rgba(16, 12, 24, 0.92), rgba(7, 11, 19, 0.98));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .battle-arena-hero {
+      position: relative;
+      min-height: 220px;
+      border-radius: 28px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-end;
+      padding: 20px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.18));
+    }
+
+    .battle-arena-hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(5, 13, 22, 0.04), rgba(5, 13, 22, 0.52));
+      pointer-events: none;
+    }
+
+    .battle-arena-image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .battle-arena-copy,
+    .battle-arena-pill-stack,
+    .arena-roster,
+    .arena-fighter-grid,
+    .arena-battle-log {
+      position: relative;
+      z-index: 1;
+    }
+
+    .battle-arena-copy {
+      max-width: 580px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .battle-arena-copy h3 {
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      line-height: 0.96;
+    }
+
+    .battle-arena-copy p {
+      margin: 0;
+      color: rgba(244, 251, 255, 0.86);
+      line-height: 1.45;
+    }
+
+    .battle-arena-pill-stack {
+      display: grid;
+      gap: 10px;
+      justify-items: end;
+    }
+
+    .arena-roster {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .arena-roster-btn {
+      padding: 10px 10px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      font-family: "Orbitron", monospace;
+      font-size: 0.76rem;
+      line-height: 1.1;
+    }
+
+    .arena-roster-btn img {
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.28));
+    }
+
+    .arena-roster-btn.active {
+      border-color: var(--fighter-accent);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(12, 18, 28, 0.78));
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.04);
+    }
+
+    .arena-fighter-grid {
+      align-items: stretch;
+    }
+
+    .arena-fighter-card {
+      gap: 14px;
+      padding: 18px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(7, 11, 19, 0.44)),
+        linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.12));
+    }
+
+    .arena-fighter-scene {
+      position: relative;
+      width: 100%;
+      min-height: 220px;
+      border-radius: 24px;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(19, 28, 40, 0.96), rgba(10, 14, 22, 0.98));
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .arena-fighter-scene::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 18%, var(--fighter-accent) 0%, transparent 42%);
+      opacity: 0.16;
+    }
+
+    .arena-crowd-band {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 62px;
+      background:
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.12) 0 14px, rgba(255, 255, 255, 0) 14px 28px),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.24));
+      opacity: 0.42;
+    }
+
+    .arena-spotlight {
+      position: absolute;
+      left: 50%;
+      top: 6px;
+      width: 220px;
+      height: 220px;
+      transform: translateX(-50%);
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0) 70%);
+      filter: blur(10px);
+      opacity: 0.52;
+    }
+
+    .arena-fighter-platform {
+      position: absolute;
+      left: 50%;
+      bottom: 20px;
+      width: 68%;
+      height: 18px;
+      transform: translateX(-50%);
+      border-radius: 999px;
+      background: var(--fighter-accent);
+      opacity: 0.24;
+      box-shadow: 0 0 30px var(--fighter-accent);
+    }
+
+    .arena-fighter-sprite {
+      position: relative;
+      z-index: 1;
+      width: min(78%, 210px);
+      height: 188px;
+      object-fit: contain;
+      margin: 24px auto 0;
+      filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.34));
+    }
+
+    .arena-guard-badge {
+      position: absolute;
+      right: 14px;
+      top: 14px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(7, 11, 19, 0.8);
+      border: 1px solid var(--fighter-accent);
+      color: #f4fbff;
+      font-family: "Orbitron", monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.04em;
+      z-index: 1;
+    }
+
+    .arena-fighter-copy {
+      width: 100%;
+      display: grid;
+      gap: 8px;
+    }
+
+    .arena-fighter-role {
+      color: var(--fighter-accent);
+      font-family: "Orbitron", monospace;
+      font-size: 0.74rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .arena-special-label {
+      color: rgba(244, 251, 255, 0.72);
+      font-family: "Orbitron", monospace;
+      font-size: 0.76rem;
+      letter-spacing: 0.04em;
+    }
+
+    .arena-battle-log {
+      min-height: 148px;
+      background: rgba(12, 17, 27, 0.78);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
     .hp-bar {
       width: 100%;
       height: 14px;
@@ -502,6 +939,32 @@
 
       .fighter-grid {
         grid-template-columns: 1fr;
+      }
+
+      .dig-site-hero {
+        min-height: 240px;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .dig-site-scout-panel {
+        width: 100%;
+        justify-items: stretch;
+      }
+
+      .battle-arena-hero {
+        min-height: 250px;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .battle-arena-pill-stack {
+        width: 100%;
+        justify-items: stretch;
+      }
+
+      .arena-roster {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
 
@@ -596,7 +1059,7 @@
       </div>
 
       <div class="credit">
-        Solo pages use free online sprites saved locally in this repo, including Kenney CC0 packs for sports and top-down characters.
+        Solo pages use free online sprites saved locally in this repo, including Kenney CC0 packs for sports, top-down characters, and the Asteroids ship and meteor art.
       </div>
     </aside>
 
@@ -621,6 +1084,7 @@
     </main>
   </div>
 
+  <script src="/pokemon-stadium-game.js"></script>
   <script src="/solo-game.js"></script>
 </body>
 </html>

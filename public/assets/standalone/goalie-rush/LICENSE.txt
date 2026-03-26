@@ -1,0 +1,14 @@
+Goalie Rush local SVG set
+
+Files
+
+- `goal-frame.svg`
+- `keeper-gloves.svg`
+- `powerup-magnet.svg`
+- `powerup-slow.svg`
+- `powerup-shield.svg`
+
+License
+
+- Created locally for this project.
+- Released for project use alongside the CC0 Kenney sports sprites already stored in `public/assets/standalone/sports/`.

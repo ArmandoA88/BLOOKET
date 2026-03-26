@@ -1,0 +1,11 @@
+Pokemon sprite source note
+
+Source
+
+- Local copies in this folder were downloaded from the PokeAPI sprite repository:
+  https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/
+
+Rights
+
+- Pokemon character names, designs, and original sprite artwork are associated with Nintendo, Game Freak, and Creatures.
+- This file records the source used for this local project. No separate license is granted by this note.

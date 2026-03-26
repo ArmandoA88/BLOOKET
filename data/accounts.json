@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-03-24T19:55:52.298Z",
+  "savedAt": "2026-03-25T00:55:27.268Z",
   "accounts": [
     {
       "id": "guest:mmbcb9q8er3q7dmw",
@@ -16360,6 +16360,144 @@
       "bestRank": 0,
       "createdAt": "2026-03-24T19:45:28.918Z",
       "updatedAt": "2026-03-24T19:45:28.918Z"
+    },
+    {
+      "id": "guest:f0d12b03-110d-4bee-ae5d-7b807effc1a5",
+      "coins": 0,
+      "freePackOpensRemaining": 0,
+      "starterGrantVersion": 2,
+      "selectedBlookId": "ath-judge",
+      "inventory": {
+        "ath-mahomes": 1,
+        "ath-judge": 1
+      },
+      "miniGameStats": {
+        "foosball_frenzy": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "soccer_shootout": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "goalie_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "space_invaders": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "snake": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tower_stacker": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "tap_rush": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "reaction_duel": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "sequence_memory": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "obstacle_dodge": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "precision_stop": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "word_scramble": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "hallway_dash": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "dino_dig": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "shadow_match": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "classroom_cleanup": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        },
+        "battle_royale": {
+          "plays": 0,
+          "wins": 0,
+          "bestBonus": 0,
+          "totalBonus": 0
+        }
+      },
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-24T23:19:09.452Z",
+      "updatedAt": "2026-03-24T23:20:03.751Z"
+    },
+    {
+      "id": "guest:1cdc6ca8-eb8c-483d-a68e-c1858bba9658",
+      "coins": 10,
+      "freePackOpensRemaining": 0,
+      "starterGrantVersion": 2,
+      "selectedBlookId": "ath-mahomes",
+      "inventory": {
+        "ath-mahomes": 1
+      },
+      "miniGameStats": {},
+      "gamesPlayed": 0,
+      "totalCorrect": 0,
+      "totalScore": 0,
+      "bestRank": 0,
+      "createdAt": "2026-03-25T00:55:27.267Z",
+      "updatedAt": "2026-03-25T00:55:27.267Z"
     }
   ]
 }

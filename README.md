@@ -31,7 +31,7 @@ A localhost-first realtime classroom quiz game with host controls and student jo
 - Timed multiple-choice questions
 - Speed + streak scoring engine
 - Blooket-style modes: `Classic Quiz`, `Gold Quest`, `Crypto Hack`, `Fishing Frenzy`, `Monster Brawl`
-- Interactive mini-games after every question for all students: Soccer Shootout, Tap Rush, Reaction Duel, Sequence Memory, Obstacle Dodge, Precision Stop, Word Scramble
+- Interactive mini-games after every question for students who answered correctly, while the rest wait for the next checkpoint: Soccer Shootout, Tap Rush, Reaction Duel, Sequence Memory, Obstacle Dodge, Precision Stop, Word Scramble
 - Soccer mini-game includes animated fussball-style visuals and interactive striker cards
 - Host can trigger mini-game test runs directly from lobby (no question required) for fast classroom checks
 - Host can choose mini-game rotation (`Fixed`, `Random`, `Most Played First`, `Soccer Only`, `Disable`) and mini-game duration
@@ -132,7 +132,7 @@ set DEMO_CODE=ABC123 && npm run demo
 1. Teacher opens host page and creates a room.
 2. Students open play page and join with the room code.
 3. Teacher starts game and controls rounds.
-4. Students answer questions, then all students play a mini-game each round.
+4. Students answer questions, then students who answered correctly continue into the mini-game until the next checkpoint question.
 5. Teacher can use **Mini-Game Test** to run mini-games without questions.
 6. Final leaderboard appears at game end.
 

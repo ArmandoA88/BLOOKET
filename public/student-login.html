@@ -3,197 +3,1490 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Student Login</title>
+    <title>Student Dashboard</title>
     <link rel="stylesheet" href="/style.css" />
     <link rel="stylesheet" href="/blooket-shell.css" />
     <style>
-      .student-login-shell {
+      :root {
+        --student-sidebar: #9d42bf;
+        --student-sidebar-deep: #8030a3;
+        --student-panel: rgba(79, 18, 111, 0.92);
+        --student-panel-soft: rgba(171, 87, 196, 0.24);
+        --student-panel-line: rgba(255, 255, 255, 0.16);
+        --student-gold: #ffba2d;
+        --student-gold-deep: #ff9515;
+        --student-text-dark: #3d224b;
+        --student-shadow: 0 18px 36px rgba(54, 6, 85, 0.24);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body.student-dashboard-body {
+        min-height: 100vh;
+        margin: 0;
+        color: #fff;
+        font-family: "Nunito", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 24%),
+          radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.12), transparent 18%),
+          linear-gradient(135deg, #1dcfe0 0%, #18c3d6 45%, #0cb1c8 100%);
+        overflow-x: hidden;
+      }
+
+      body.student-dashboard-body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.13;
+        background-image:
+          linear-gradient(45deg, rgba(255, 255, 255, 0.8) 25%, transparent 25%),
+          linear-gradient(-45deg, rgba(255, 255, 255, 0.8) 25%, transparent 25%);
+        background-size: 92px 92px;
+        background-position: 0 0, 46px 46px;
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.88), rgba(0, 0, 0, 0.5));
+      }
+
+      body.student-dashboard-body::after {
+        content: "";
+        position: fixed;
+        inset: auto -120px -140px auto;
+        width: 420px;
+        height: 420px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        filter: blur(10px);
+        pointer-events: none;
+      }
+
+      .student-dashboard-shell {
         position: relative;
         z-index: 1;
+        display: grid;
+        grid-template-columns: 136px minmax(0, 1fr);
+        min-height: 100vh;
       }
 
-      .student-login-page .page {
-        width: min(980px, 100%);
-        margin: 0 auto 40px;
+      .student-sidebar {
+        position: sticky;
+        top: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        height: 100vh;
+        padding: 14px 12px 16px;
+        background: linear-gradient(180deg, var(--student-sidebar) 0%, var(--student-sidebar-deep) 100%);
+        box-shadow: 16px 0 34px rgba(72, 18, 95, 0.22);
       }
 
-      .student-login-card .kpis {
-        margin-top: 12px;
+      .student-brand {
+        display: inline-block;
+        color: #fff;
+        text-decoration: none;
+        font-family: "Baloo 2", "Nunito", sans-serif;
+        font-size: 2.6rem;
+        line-height: 0.92;
+        letter-spacing: 0.02em;
       }
 
-      .student-login-card .notice strong {
-        display: block;
-        margin-top: 4px;
-        font-size: 1.3rem;
+      .student-play-cta {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 38px;
+        border-radius: 8px;
+        background: linear-gradient(180deg, #1ad0df 0%, #10b7d2 100%);
+        box-shadow: 0 5px 0 rgba(4, 131, 161, 0.72);
+        color: #fff;
+        text-decoration: none;
+        font-weight: 900;
+        font-size: 1.1rem;
       }
 
-      .student-account-detail-grid {
+      .student-sidebar-nav {
+        display: grid;
+        gap: 6px;
+      }
+
+      .student-nav-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 38px;
+        padding: 0 12px;
+        border-radius: 8px;
+        color: rgba(255, 255, 255, 0.96);
+        text-decoration: none;
+        font-weight: 800;
+        transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
+      }
+
+      .student-nav-link:hover,
+      .student-nav-link.is-active {
+        background: rgba(255, 255, 255, 0.94);
+        color: #9a42bc;
+        transform: translateX(2px);
+      }
+
+      .student-nav-icon {
+        width: 12px;
+        height: 12px;
+        flex: 0 0 12px;
+        border-radius: 3px;
+        background: currentColor;
+        opacity: 0.95;
+      }
+
+      .student-sidebar-footer {
+        margin-top: auto;
         display: grid;
         gap: 10px;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      }
+
+      .student-room-pill,
+      .student-sidebar-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+        border-radius: 999px;
+        padding: 0 12px;
+        text-align: center;
+        text-decoration: none;
+        font-weight: 800;
+      }
+
+      .student-room-pill {
+        background: rgba(255, 255, 255, 0.14);
+        color: #fff;
+      }
+
+      .student-sidebar-link {
+        background: rgba(0, 0, 0, 0.14);
+        color: #fff;
+      }
+
+      .student-main {
+        padding: 16px 28px 28px;
+      }
+
+      .student-main-inner {
+        max-width: 1024px;
+        margin: 0 auto;
+      }
+
+      .student-topbar {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 14px;
+      }
+
+      .student-top-coins {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 88px;
+        min-height: 42px;
+        padding: 0 14px;
+        border-radius: 12px;
+        background: linear-gradient(180deg, #9b49bd 0%, #8632aa 100%);
+        box-shadow: 0 5px 0 rgba(92, 30, 121, 0.62);
+        color: #fff6b6;
+        font-family: "Baloo 2", "Nunito", sans-serif;
+        font-size: 1.15rem;
+        font-weight: 800;
+      }
+
+      .student-mini-account {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 10px 6px 6px;
+        min-width: 180px;
+        border-radius: 10px;
+        background: linear-gradient(180deg, #9e4cc2 0%, #8532aa 100%);
+        box-shadow: 0 5px 0 rgba(94, 31, 121, 0.62);
+      }
+
+      .student-mini-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        overflow: hidden;
+        flex: 0 0 34px;
+        background: linear-gradient(180deg, #7feea4 0%, #51bc72 100%);
+        border: 2px solid rgba(255, 255, 255, 0.28);
+      }
+
+      .student-mini-avatar img,
+      .student-avatar-card img,
+      .student-pass-thumb img,
+      .student-collection-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .student-avatar-fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        color: #fff;
+        font-family: "Baloo 2", "Nunito", sans-serif;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .student-mini-copy {
+        min-width: 0;
+      }
+
+      .student-mini-copy strong,
+      .student-mini-copy span {
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .student-mini-copy strong {
+        font-size: 1.05rem;
+        line-height: 1.1;
+      }
+
+      .student-mini-copy span {
+        color: rgba(232, 243, 255, 0.84);
+        font-size: 0.76rem;
+        font-weight: 800;
+      }
+
+      .student-hero-panel {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(300px, 324px);
+        gap: 18px;
+        align-items: start;
+      }
+
+      .student-hero-profile {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+      }
+
+      .student-avatar-card {
+        width: 88px;
+        height: 88px;
+        flex: 0 0 88px;
+        border-radius: 18px;
+        overflow: hidden;
+        background: linear-gradient(180deg, #79eb9d 0%, #4ab86d 100%);
+        border: 3px solid rgba(255, 255, 255, 0.28);
+        box-shadow: 0 8px 20px rgba(34, 112, 70, 0.24);
+      }
+
+      .student-avatar-card .student-avatar-fallback {
+        font-size: 2.2rem;
+      }
+
+      .student-mini-avatar .student-avatar-fallback {
+        font-size: 1rem;
+      }
+
+      .student-hero-copy {
+        min-width: 0;
+      }
+
+      .student-nameplate {
+        min-width: min(420px, 100%);
+        padding: 10px 18px 12px;
+        border-radius: 10px;
+        background: linear-gradient(180deg, #6c59df 0%, #5948ce 100%);
+        box-shadow: 0 6px 0 rgba(61, 49, 146, 0.72);
+      }
+
+      .student-nameplate strong,
+      .student-nameplate span {
+        display: block;
+      }
+
+      .student-nameplate strong {
+        font-family: "Baloo 2", "Nunito", sans-serif;
+        font-size: clamp(1.6rem, 3vw, 2.15rem);
+        line-height: 0.95;
+        letter-spacing: 0.01em;
+      }
+
+      .student-nameplate span {
+        margin-top: 3px;
+        color: rgba(221, 236, 255, 0.88);
+        font-size: 0.88rem;
+        font-weight: 800;
+      }
+
+      .student-level-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
         margin-top: 12px;
       }
 
-      .student-account-detail {
-        border: 1px solid var(--line);
-        border-radius: 14px;
-        padding: 12px;
-        background: rgba(255, 255, 255, 0.04);
+      .student-level-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 38px;
+        min-height: 22px;
+        padding: 0 8px;
+        border-radius: 999px;
+        background: linear-gradient(180deg, #4b85ff 0%, #2a67f3 100%);
+        box-shadow: 0 3px 0 rgba(24, 67, 172, 0.64);
+        font-weight: 900;
+        font-size: 0.9rem;
       }
 
-      .student-account-detail span {
-        display: block;
-        margin-bottom: 4px;
-        color: var(--muted);
-        font-size: 0.84rem;
+      .student-level-rail {
+        position: relative;
+        flex: 1;
+        height: 14px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: rgba(43, 66, 132, 0.56);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.18);
       }
 
-      .student-room-card {
+      .student-level-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #5de4ff 0%, #8fa7ff 100%);
+        transition: width 0.25s ease;
+      }
+
+      .student-hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .student-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px;
+        padding: 0 14px;
+        border-radius: 8px;
+        color: #fff;
+        text-decoration: none;
+        font-weight: 900;
+        font-size: 0.85rem;
+        border: 0;
+        cursor: pointer;
+      }
+
+      .student-action.primary {
+        background: linear-gradient(180deg, #b14bd0 0%, #9130b2 100%);
+        box-shadow: 0 4px 0 rgba(93, 29, 122, 0.7);
+      }
+
+      .student-action.gold {
+        background: linear-gradient(180deg, #ffbb31 0%, #ff991c 100%);
+        box-shadow: 0 4px 0 rgba(203, 113, 12, 0.72);
+      }
+
+      .student-action.sky {
+        background: linear-gradient(180deg, #5c8cff 0%, #3870f8 100%);
+        box-shadow: 0 4px 0 rgba(38, 79, 180, 0.74);
+      }
+
+      .student-hero-status {
+        margin: 12px 0 0;
+        color: rgba(255, 255, 255, 0.92);
+        font-weight: 800;
+        max-width: 640px;
+      }
+
+      .student-session-panel,
+      .student-stage-panel {
+        position: relative;
+        border-radius: 18px;
+        border: 1px solid var(--student-panel-line);
+        box-shadow: var(--student-shadow);
+      }
+
+      .student-session-panel {
+        padding: 18px;
+        background: rgba(67, 11, 100, 0.9);
+      }
+
+      .student-panel-kicker,
+      .student-panel-tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+        padding: 4px 14px;
+        border-radius: 10px;
+        background: linear-gradient(180deg, var(--student-gold) 0%, var(--student-gold-deep) 100%);
+        color: #fff;
+        font-family: "Baloo 2", "Nunito", sans-serif;
+        font-size: 1.2rem;
+        font-weight: 800;
+        line-height: 1;
+        text-shadow: 0 2px 0 rgba(173, 89, 0, 0.5);
+        box-shadow: 0 4px 0 rgba(175, 96, 8, 0.82);
+      }
+
+      .student-session-panel .student-panel-kicker {
+        margin-bottom: 12px;
+      }
+
+      .student-panel-tag {
+        position: absolute;
+        top: -14px;
+        left: 18px;
+      }
+
+      .student-auth-summary {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 700;
+      }
+
+      .student-auth-form {
+        display: grid;
+        gap: 10px;
         margin-top: 14px;
       }
 
-      .student-room-code {
-        font-family: "Bungee", "Space Grotesk", sans-serif;
-        letter-spacing: 0.08em;
+      .student-auth-field label {
+        display: block;
+        margin-bottom: 4px;
+        color: rgba(255, 255, 255, 0.84);
+        font-size: 0.78rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .student-auth-field input {
+        width: 100%;
+        min-height: 42px;
+        border: 0;
+        border-radius: 12px;
+        padding: 0 14px;
+        background: rgba(255, 255, 255, 0.96);
+        color: var(--student-text-dark);
+        font: inherit;
+        font-weight: 800;
+      }
+
+      .student-auth-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .student-auth-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 38px;
+        padding: 0 16px;
+        border: 0;
+        border-radius: 10px;
+        background: linear-gradient(180deg, #1ad0df 0%, #0cb2cc 100%);
+        box-shadow: 0 4px 0 rgba(4, 118, 143, 0.7);
+        color: #fff;
+        font: inherit;
+        font-weight: 900;
+        cursor: pointer;
+      }
+
+      .student-auth-button.secondary {
+        background: rgba(255, 255, 255, 0.14);
+        box-shadow: none;
+      }
+
+      .student-inline-notice {
+        margin-top: 12px;
+        border-radius: 12px;
+        padding: 10px 12px;
+        background: rgba(255, 255, 255, 0.12);
+        font-weight: 800;
+      }
+
+      .student-inline-notice.good {
+        background: rgba(47, 190, 110, 0.24);
+      }
+
+      .student-inline-notice.bad {
+        background: rgba(255, 94, 110, 0.24);
+      }
+
+      .student-session-summary {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .student-session-stat {
+        padding: 12px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .student-session-stat span,
+      .student-session-stat strong {
+        display: block;
+      }
+
+      .student-session-stat span {
+        color: rgba(226, 238, 255, 0.74);
+        font-size: 0.76rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .student-session-stat strong {
+        margin-top: 2px;
+        font-size: 1.2rem;
+      }
+
+      .student-room-summary {
+        margin: 12px 0 0;
+        color: rgba(235, 243, 255, 0.92);
+        font-weight: 700;
+      }
+
+      .student-stage-panel {
+        padding: 22px 18px 18px;
+        background: var(--student-panel);
+      }
+
+      .student-class-pass {
+        margin-top: 18px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0)),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.05) 50%, transparent 50%),
+          linear-gradient(0deg, rgba(255, 255, 255, 0.05) 50%, transparent 50%),
+          var(--student-panel);
+        background-size: auto, 28px 28px, 28px 28px, auto;
+      }
+
+      .student-blooks-shell {
+        margin-top: 18px;
+      }
+
+      .student-blooks-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 12px;
+      }
+
+      .student-blooks-title {
+        margin: 0;
+        color: #fff;
+        font-family: "Baloo 2", "Nunito", sans-serif;
+        font-size: clamp(2rem, 4vw, 3rem);
+        line-height: 0.95;
+        text-shadow: 0 4px 0 rgba(33, 93, 120, 0.24);
+      }
+
+      .student-blooks-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .student-blooks-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 34px;
+        padding: 0 12px;
+        border-radius: 8px;
+        background: linear-gradient(180deg, #9c4cc0 0%, #8532aa 100%);
+        box-shadow: 0 4px 0 rgba(91, 30, 121, 0.58);
+        color: #fff;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .student-blooks-toggle input {
+        accent-color: #d598ff;
+        width: 14px;
+        height: 14px;
+        margin: 0;
+      }
+
+      .student-blooks-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 202px;
+        gap: 18px;
+        align-items: start;
+      }
+
+      .student-blooks-panel,
+      .student-blooks-scorecard {
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(159, 76, 189, 0.92);
+        box-shadow: var(--student-shadow);
+      }
+
+      .student-blooks-panel {
+        position: relative;
+        min-height: 520px;
+        max-height: 800px;
+        overflow: auto;
+        padding: 12px 16px 14px;
+      }
+
+      .student-blooks-panel::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      .student-blooks-panel::-webkit-scrollbar-thumb {
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.48);
+      }
+
+      .student-blooks-empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 260px;
+        color: rgba(245, 240, 255, 0.82);
+        font-weight: 800;
+        text-align: center;
+      }
+
+      .student-blook-pack {
+        position: relative;
+        padding: 8px 0 18px;
+        border-bottom: 3px solid rgba(255, 255, 255, 0.78);
+      }
+
+      .student-blook-pack:last-child {
+        border-bottom: 0;
+      }
+
+      .student-blook-pack::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: 0.14;
+        background:
+          radial-gradient(circle at 18px 18px, rgba(255, 255, 255, 0.85) 0 3px, transparent 3px),
+          radial-gradient(circle at 52px 36px, rgba(255, 255, 255, 0.55) 0 2px, transparent 2px);
+        background-size: 64px 64px;
+        pointer-events: none;
+      }
+
+      .student-blook-pack-head,
+      .student-blook-flat-head {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .student-blook-pack-head h3,
+      .student-blook-flat-head h3 {
+        margin: 0;
+        color: #fff;
+        font-family: "Baloo 2", "Nunito", sans-serif;
+        font-size: clamp(1.45rem, 2.4vw, 2rem);
+        line-height: 1;
+      }
+
+      .student-blook-pack-meta {
+        color: rgba(246, 240, 255, 0.88);
+        font-size: 0.82rem;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+
+      .student-blook-pack-grid {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .student-blook-tile {
+        position: relative;
+        width: 38px;
+        height: 38px;
+        border-radius: 6px;
+        overflow: hidden;
+        background: rgba(30, 10, 44, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: inset 0 -2px 0 rgba(255, 255, 255, 0.06);
+      }
+
+      .student-blook-tile img,
+      .student-blook-silhouette {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .student-blook-tile img {
+        object-fit: contain;
+        padding: 4px;
+      }
+
+      .student-blook-tile.is-locked {
+        background: rgba(11, 6, 18, 0.96);
+      }
+
+      .student-blook-tile.is-locked img {
+        filter: brightness(0);
+        opacity: 0.28;
+      }
+
+      .student-blook-silhouette {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.2);
+        font-size: 1rem;
+        font-weight: 900;
+      }
+
+      .student-blook-tile.is-unlocked {
+        background: rgba(50, 12, 73, 0.92);
+      }
+
+      .student-blook-tile.is-selected {
+        outline: 3px solid #ffe56f;
+        outline-offset: 1px;
+      }
+
+      .student-blook-lock,
+      .student-blook-count {
+        position: absolute;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        font-size: 0.62rem;
+        font-weight: 900;
+      }
+
+      .student-blook-lock {
+        right: 4px;
+        bottom: 4px;
+        background: rgba(0, 0, 0, 0.7);
+        color: #fff;
+      }
+
+      .student-blook-count {
+        right: 2px;
+        top: 2px;
+        padding: 0 4px;
+        background: rgba(255, 197, 70, 0.96);
+        color: #612800;
+      }
+
+      .student-blooks-scorecard {
+        position: sticky;
+        top: 16px;
+        padding: 14px 12px 16px;
+      }
+
+      .student-blooks-score-badge {
+        display: grid;
+        place-items: center;
+        width: 112px;
+        height: 112px;
+        margin: 0 auto 14px;
+        clip-path: polygon(50% 0%, 87% 18%, 100% 50%, 87% 82%, 50% 100%, 13% 82%, 0% 50%, 13% 18%);
+        background: linear-gradient(180deg, #ffb45e 0%, #e16a1d 100%);
+        box-shadow: 0 8px 0 rgba(126, 55, 12, 0.6);
+      }
+
+      .student-blooks-score-core {
+        display: grid;
+        place-items: center;
+        width: 72px;
+        height: 72px;
+        clip-path: inherit;
+        background: rgba(255, 255, 255, 0.92);
+        color: #7b3c0f;
+        text-align: center;
+      }
+
+      .student-blooks-score-core strong,
+      .student-blooks-score-core span {
+        display: block;
+      }
+
+      .student-blooks-score-core strong {
+        font-family: "Baloo 2", "Nunito", sans-serif;
+        font-size: 1.4rem;
+        line-height: 1;
+      }
+
+      .student-blooks-score-core span {
+        font-size: 0.7rem;
+        font-weight: 900;
+        line-height: 1;
+      }
+
+      .student-blooks-rarity-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 12px;
+        margin-top: 8px;
+      }
+
+      .student-blooks-rarity-card {
+        display: grid;
+        justify-items: center;
+        gap: 4px;
+        padding: 10px 4px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.07);
+      }
+
+      .student-blooks-rarity-gem {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        transform: rotate(45deg);
+        border-radius: 4px;
+      }
+
+      .student-blooks-rarity-gem span {
+        transform: rotate(-45deg);
+        font-size: 0.65rem;
+        font-weight: 900;
+        color: #fff;
+      }
+
+      .student-blooks-rarity-card strong,
+      .student-blooks-rarity-card span {
+        display: block;
+        text-align: center;
+      }
+
+      .student-blooks-rarity-card strong {
+        font-size: 1.28rem;
+        line-height: 1;
+      }
+
+      .student-blooks-rarity-card span {
+        color: rgba(233, 240, 255, 0.86);
+        font-size: 0.74rem;
+        font-weight: 800;
+      }
+
+      .student-blooks-footer-stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 2px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .student-blooks-footer-stats strong,
+      .student-blooks-footer-stats span {
+        display: block;
+        text-align: center;
+      }
+
+      .student-blooks-footer-stats strong {
+        font-size: 1.95rem;
+        line-height: 1;
+      }
+
+      .student-blooks-footer-stats span {
+        color: rgba(238, 242, 255, 0.9);
+        font-size: 0.8rem;
+        font-weight: 800;
+      }
+
+      .student-panel-topline {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+
+      .student-xp-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+        min-width: 96px;
+        padding: 0 14px;
+        border-radius: 10px;
+        background: linear-gradient(180deg, #ffb72e 0%, #ff9918 100%);
+        box-shadow: 0 4px 0 rgba(173, 96, 9, 0.78);
+        color: #fff;
+        font-family: "Baloo 2", "Nunito", sans-serif;
+        font-size: 1.15rem;
+        font-weight: 800;
+      }
+
+      .student-pass-track {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(78px, 1fr);
+        gap: 12px;
+        overflow-x: auto;
+        padding: 4px 2px 6px;
+      }
+
+      .student-pass-track::-webkit-scrollbar {
+        height: 8px;
+      }
+
+      .student-pass-track::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.16);
+        border-radius: 999px;
+      }
+
+      .student-pass-card {
+        display: grid;
+        gap: 8px;
+        justify-items: center;
+        min-height: 126px;
+        padding: 10px 8px 12px;
+        border-radius: 14px;
+        background: rgba(41, 17, 66, 0.82);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        text-align: center;
+      }
+
+      .student-pass-thumb {
+        width: 48px;
+        height: 58px;
+        border-radius: 10px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .student-pass-thumb .student-avatar-fallback {
+        font-size: 1.15rem;
+      }
+
+      .student-pass-card strong,
+      .student-pass-card small,
+      .student-pass-index {
+        display: block;
+      }
+
+      .student-pass-card strong {
+        font-size: 0.72rem;
+        line-height: 1.1;
+      }
+
+      .student-pass-card small {
+        color: rgba(228, 239, 255, 0.64);
+        font-size: 0.64rem;
+        font-weight: 800;
+      }
+
+      .student-pass-index {
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.18);
+        color: #fff;
+        font-weight: 900;
+        line-height: 28px;
+      }
+
+      .student-content-grid {
+        display: grid;
+        grid-template-columns: 220px minmax(0, 1fr);
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .student-history-copy {
+        margin: 12px 0 0;
+        font-size: 1.15rem;
+        font-weight: 900;
+        line-height: 1.2;
+      }
+
+      .student-history-meta {
+        margin: 8px 0 0;
+        color: rgba(228, 239, 255, 0.8);
+        font-weight: 700;
+      }
+
+      .student-history-actions {
+        display: grid;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .student-text-link {
+        color: #fff4c6;
+        font-weight: 800;
+        text-decoration: underline;
+      }
+
+      .student-collection-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 12px;
+      }
+
+      .student-collection-card {
+        display: grid;
+        gap: 10px;
+        justify-items: center;
+        min-height: 126px;
+        padding: 16px 10px 14px;
+        border-radius: 14px;
+        background: var(--student-panel-soft);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        text-align: center;
+      }
+
+      .student-collection-thumb {
+        width: 54px;
+        height: 54px;
+        border-radius: 14px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .student-collection-thumb .student-avatar-fallback {
+        font-size: 1.5rem;
+      }
+
+      .student-collection-name {
+        font-weight: 900;
+        line-height: 1.12;
+      }
+
+      .student-collection-meta {
+        color: rgba(224, 237, 255, 0.76);
+        font-size: 0.78rem;
+        font-weight: 800;
+      }
+
+      .student-stats-panel {
+        margin-top: 18px;
+      }
+
+      .student-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 12px;
+      }
+
+      .student-stat-card {
+        position: relative;
+        min-height: 82px;
+        padding: 14px 14px 12px 58px;
+        border-radius: 12px;
+        background: rgba(198, 120, 214, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .student-stat-icon {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        width: 34px;
+        height: 34px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-family: "Baloo 2", "Nunito", sans-serif;
+        font-size: 1rem;
+        font-weight: 800;
+      }
+
+      .student-stat-card[data-tone="gold"] .student-stat-icon {
+        background: linear-gradient(180deg, #ffc546 0%, #ff9a1a 100%);
+      }
+
+      .student-stat-card[data-tone="cyan"] .student-stat-icon {
+        background: linear-gradient(180deg, #48e4ff 0%, #13b8ef 100%);
+      }
+
+      .student-stat-card[data-tone="pink"] .student-stat-icon {
+        background: linear-gradient(180deg, #ff89d7 0%, #ea4db5 100%);
+      }
+
+      .student-stat-card[data-tone="green"] .student-stat-icon {
+        background: linear-gradient(180deg, #5af69f 0%, #27c96f 100%);
+      }
+
+      .student-stat-card[data-tone="blue"] .student-stat-icon {
+        background: linear-gradient(180deg, #8cb7ff 0%, #4d7cf6 100%);
+      }
+
+      .student-stat-card[data-tone="orange"] .student-stat-icon {
+        background: linear-gradient(180deg, #ffb25b 0%, #ef7c23 100%);
+      }
+
+      .student-stat-card[data-tone="purple"] .student-stat-icon {
+        background: linear-gradient(180deg, #be85ff 0%, #8e4cff 100%);
+      }
+
+      .student-stat-card[data-tone="red"] .student-stat-icon {
+        background: linear-gradient(180deg, #ff8f94 0%, #ef4f61 100%);
+      }
+
+      .student-stat-card[data-tone="silver"] .student-stat-icon {
+        background: linear-gradient(180deg, #d5e4ff 0%, #9fb4d6 100%);
+      }
+
+      .student-stat-card[data-tone="teal"] .student-stat-icon {
+        background: linear-gradient(180deg, #6cf5ee 0%, #1abdbb 100%);
+      }
+
+      .student-stat-label,
+      .student-stat-value {
+        display: block;
+      }
+
+      .student-stat-label {
+        color: rgba(230, 239, 255, 0.82);
+        font-size: 0.8rem;
+        font-weight: 800;
+      }
+
+      .student-stat-value {
+        margin-top: 2px;
+        font-size: 1.35rem;
+        line-height: 1.05;
+        font-weight: 900;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @media (max-width: 1120px) {
+        .student-blooks-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .student-blooks-scorecard {
+          position: relative;
+          top: auto;
+        }
+
+        .student-content-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .student-collection-grid {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .student-stats-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 980px) {
+        .student-dashboard-shell {
+          grid-template-columns: 1fr;
+        }
+
+        .student-sidebar {
+          position: relative;
+          height: auto;
+          gap: 12px;
+          box-shadow: 0 10px 28px rgba(72, 18, 95, 0.18);
+        }
+
+        .student-sidebar-nav {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .student-sidebar-footer {
+          margin-top: 0;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .student-main {
+          padding-top: 20px;
+        }
+
+        .student-hero-panel {
+          grid-template-columns: 1fr;
+        }
+
+        .student-nameplate {
+          min-width: 0;
+        }
       }
 
       @media (max-width: 720px) {
-        .student-login-page .page {
+        .student-main {
+          padding: 16px 14px 24px;
+        }
+
+        .student-hero-profile {
+          flex-direction: column;
+        }
+
+        .student-topbar {
+          justify-content: stretch;
+        }
+
+        .student-mini-account {
           width: 100%;
+        }
+
+        .student-topbar {
+          flex-wrap: wrap;
+        }
+
+        .student-pass-track {
+          grid-auto-columns: 96px;
+        }
+
+        .student-blooks-header {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .student-collection-grid,
+        .student-stats-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .student-sidebar-nav,
+        .student-sidebar-footer,
+        .student-session-summary {
+          grid-template-columns: 1fr;
+        }
+
+        .student-blooks-rarity-grid,
+        .student-blooks-footer-stats {
+          grid-template-columns: 1fr;
+        }
+
+        .student-auth-actions,
+        .student-hero-actions {
+          display: grid;
         }
       }
     </style>
   </head>
-  <body class="join-body student-login-page">
-    <div class="join-floating" aria-hidden="true"></div>
+  <body class="student-dashboard-body">
+    <div class="student-dashboard-shell">
+      <aside class="student-sidebar">
+        <a class="student-brand" href="/">Blooket</a>
+        <a class="student-play-cta" href="/play">Play</a>
 
-    <header class="play-header">
-      <a class="play-logo" href="/">Blooket</a>
-      <nav class="play-header-links" aria-label="Student login header">
-        <a class="play-header-link" href="/play">Join Game</a>
-        <a class="play-header-link" href="/host.html">Host Live</a>
-      </nav>
-    </header>
+        <nav class="student-sidebar-nav" aria-label="Student dashboard sections">
+          <a class="student-nav-link" href="#studentStatsBoard"><span class="student-nav-icon" aria-hidden="true"></span><span>Stats</span></a>
+          <a class="student-nav-link is-active" href="#studentBlooksBoard"><span class="student-nav-icon" aria-hidden="true"></span><span>Blooks</span></a>
+          <a class="student-nav-link" href="/student-market"><span class="student-nav-icon" aria-hidden="true"></span><span>Market</span></a>
+          <a class="student-nav-link" href="/student-discover"><span class="student-nav-icon" aria-hidden="true"></span><span>Discover</span></a>
+          <a class="student-nav-link" href="/student-set-creator"><span class="student-nav-icon" aria-hidden="true"></span><span>Set Creator</span></a>
+          <a class="student-nav-link" href="/student-my-sets"><span class="student-nav-icon" aria-hidden="true"></span><span>My Sets</span></a>
+          <a class="student-nav-link" href="/student-favorites"><span class="student-nav-icon" aria-hidden="true"></span><span>Favorites</span></a>
+        </nav>
 
-    <main class="join-shell student-login-shell">
-      <section class="join-stage">
-        <div class="join-main-copy">
-          <span class="section-kicker">Student Account</span>
-          <h1 class="join-title">Sign in and keep your coins.</h1>
-          <p class="join-subtitle">
-            Students can log in with their classroom first name, load their saved coins and blooks,
-            then head straight into the live join flow.
-          </p>
-          <div class="catalog-strip">
-            <span class="catalog-chip">First name login</span>
-            <span class="catalog-chip">Saved coins</span>
-            <span class="catalog-chip">Saved blooks</span>
-            <span class="catalog-chip">Live room join</span>
-          </div>
+        <div class="student-sidebar-footer">
+          <div id="studentSidebarRoomCode" class="student-room-pill">No Room</div>
+          <a class="student-sidebar-link" href="/student-settings">Settings</a>
+          <a class="student-sidebar-link" href="/student-login">Student Login</a>
         </div>
+      </aside>
 
-        <aside class="join-side-card">
-          <span class="section-kicker">What gets saved</span>
-          <h3>Coins, unlocks, and progress.</h3>
-          <p class="muted-copy">
-            Student accounts already save to this classroom server, so coins, unlocked blooks, and quiz stats are still there after the server restarts.
-          </p>
-          <div class="catalog-strip">
-            <span class="catalog-chip">Accounts file</span>
-            <span class="catalog-chip">Persistent progress</span>
-            <span class="catalog-chip">Ready for game day</span>
+      <main class="student-main">
+        <div class="student-main-inner">
+          <div class="student-topbar">
+            <div id="studentTopCoins" class="student-top-coins">0</div>
+            <div id="studentMiniAccount" class="student-mini-account">
+              <div id="studentMiniAvatar" class="student-mini-avatar" aria-hidden="true"></div>
+              <div class="student-mini-copy">
+                <strong id="studentMiniName">guest</strong>
+                <span id="studentMiniStatus">Student dashboard</span>
+              </div>
+            </div>
           </div>
-        </aside>
-      </section>
 
-      <section class="join-card-shell">
-        <main class="page">
-          <section class="topbar">
-            <div>
-              <h1 class="brand">Student Login</h1>
-              <p class="sub">Use your classroom account before you join a game.</p>
+          <section class="student-hero-panel">
+            <div class="student-hero-profile">
+              <div id="studentHeroAvatar" class="student-avatar-card" aria-hidden="true"></div>
+
+              <div class="student-hero-copy">
+                <div class="student-nameplate">
+                  <strong id="studentHeroName">Student Dashboard</strong>
+                  <span id="studentHeroTier">Log in to load your saved account.</span>
+                </div>
+
+                <div class="student-level-row">
+                  <span id="studentHeroLevelValue" class="student-level-badge">0</span>
+                  <div class="student-level-rail" aria-hidden="true">
+                    <div id="studentHeroLevelFill" class="student-level-fill"></div>
+                  </div>
+                </div>
+
+                <div class="student-hero-actions">
+                  <a id="studentJoinLiveBtn" class="student-action primary" href="/play">Play Now!</a>
+                  <a class="student-action gold" href="/student-market">Unlock Blooks</a>
+                  <a class="student-action sky" href="#studentBlooksBoard">Manage Blooks</a>
+                </div>
+
+                <p id="studentHeroStatus" class="student-hero-status">Sign in with your classroom first name to load saved coins, blooks, and stats.</p>
+              </div>
             </div>
-            <a class="action ghost" href="/">Back</a>
+
+            <aside id="studentAuthPanel" class="student-session-panel">
+              <span class="student-panel-kicker">Class Login</span>
+              <p id="studentAuthSummary" class="student-auth-summary">Log in with your classroom first name and password. Your progress stays saved on this server.</p>
+
+              <div id="studentLoginForm" class="student-auth-form">
+                <div class="student-auth-field">
+                  <label for="studentAuthUsername">First Name</label>
+                  <input id="studentAuthUsername" maxlength="24" placeholder="Lenin" />
+                </div>
+
+                <div class="student-auth-field">
+                  <label for="studentAuthPassword">Password</label>
+                  <input id="studentAuthPassword" type="password" maxlength="48" placeholder="Class password" />
+                </div>
+              </div>
+
+              <div class="student-auth-actions">
+                <button id="studentAuthLoginBtn" class="student-auth-button" type="button">Log In</button>
+                <button id="studentAuthLogoutBtn" class="student-auth-button secondary hidden" type="button">Log Out</button>
+              </div>
+
+              <div id="studentAuthNotice" class="student-inline-notice hidden"></div>
+
+              <div id="studentSessionSummary" class="student-session-summary hidden">
+                <div class="student-session-stat">
+                  <span>Coins</span>
+                  <strong id="studentPanelCoins">0</strong>
+                </div>
+                <div class="student-session-stat">
+                  <span>Unlocked</span>
+                  <strong id="studentPanelUnlocked">0</strong>
+                </div>
+              </div>
+
+              <p id="studentRoomSummary" class="student-room-summary">Checking for an active room...</p>
+            </aside>
           </section>
 
-          <section class="card strong student-login-card">
-            <h2 class="title">Classroom Sign In</h2>
-            <p id="studentAuthSummary" class="help">
-              Log in with your classroom first name and password. Your coins and blooks stay saved on this server even after it restarts.
-            </p>
-            <div id="studentAuthGreeting" class="notice hidden" style="margin-top: 10px">
-              <strong id="studentAuthGreetingTitle">Hello!</strong>
-              <span id="studentAuthGreetingMeta" class="help">You are logged in.</span>
-            </div>
+          <section id="studentBlooksBoard" class="student-blooks-shell">
+            <div class="student-blooks-header">
+              <h2 class="student-blooks-title">My Blooks</h2>
 
-            <div class="form-grid" style="margin-top: 12px">
-              <div>
-                <label for="studentAuthUsername">First Name</label>
-                <input id="studentAuthUsername" maxlength="24" placeholder="Lenin" />
-              </div>
-              <div>
-                <label for="studentAuthPassword">Password</label>
-                <input id="studentAuthPassword" type="password" maxlength="48" placeholder="Class password" />
+              <div class="student-blooks-controls">
+                <label class="student-blooks-toggle">
+                  <input id="studentShowFreeBlooks" type="checkbox" checked />
+                  <span>Show Free Blooks</span>
+                </label>
+
+                <label class="student-blooks-toggle">
+                  <input id="studentShowPackGroups" type="checkbox" checked />
+                  <span>Show Packs</span>
+                </label>
               </div>
             </div>
 
-            <div class="button-row" style="margin-top: 12px">
-              <button id="studentAuthLoginBtn" type="button">Log In</button>
-              <button id="studentAuthLogoutBtn" class="ghost hidden" type="button">Log Out</button>
-            </div>
+            <div class="student-blooks-layout">
+              <section class="student-blooks-panel">
+                <div id="studentBlooksPackList" class="student-blooks-pack-list"></div>
+              </section>
 
-            <div id="studentAuthNotice" class="notice hidden" style="margin-top: 10px"></div>
+              <aside class="student-blooks-scorecard">
+                <div class="student-blooks-score-badge">
+                  <div class="student-blooks-score-core">
+                    <strong id="studentBlooksScoreValue">0</strong>
+                    <span>Blook Score</span>
+                  </div>
+                </div>
 
-            <div class="card student-room-card">
-              <h3 class="title">Live Room</h3>
-              <p id="studentRoomSummary" class="help">Checking for an active room...</p>
-              <div class="button-row" style="margin-top: 10px">
-                <a id="studentJoinLiveBtn" class="action secondary" href="/play">Open Join Page</a>
-                <a class="action secondary" href="/market">Open Store</a>
-                <a class="action ghost" href="/play">Open Join Screen</a>
-              </div>
-            </div>
+                <div id="studentBlooksRarityGrid" class="student-blooks-rarity-grid"></div>
 
-            <div id="studentAccountPanel" class="hidden" style="margin-top: 14px">
-              <h3 class="title">Saved Progress</h3>
-              <div class="kpis">
-                <div class="notice">
-                  Coins
-                  <strong id="studentCoinsValue">0</strong>
+                <div class="student-blooks-footer-stats">
+                  <div>
+                    <strong id="studentBlooksTotalValue">0</strong>
+                    <span>Value</span>
+                  </div>
+                  <div>
+                    <strong id="studentBlooksUnlockedTotal">0</strong>
+                    <span>Blooks</span>
+                  </div>
                 </div>
-                <div class="notice">
-                  Unlocked Blooks
-                  <strong id="studentUnlockedValue">0</strong>
-                </div>
-                <div class="notice">
-                  Games Played
-                  <strong id="studentGamesValue">0</strong>
-                </div>
-              </div>
-
-              <div class="student-account-detail-grid">
-                <div class="student-account-detail">
-                  <span>Selected Blook</span>
-                  <strong id="studentSelectedBlookValue">Starter</strong>
-                </div>
-                <div class="student-account-detail">
-                  <span>Packs With Unlocks</span>
-                  <strong id="studentOwnedPacksValue">0</strong>
-                </div>
-                <div class="student-account-detail">
-                  <span>Best Rank</span>
-                  <strong id="studentBestRankValue">-</strong>
-                </div>
-                <div class="student-account-detail">
-                  <span>Total Correct</span>
-                  <strong id="studentCorrectValue">0</strong>
-                </div>
-              </div>
+              </aside>
             </div>
           </section>
-        </main>
-      </section>
-    </main>
+
+          <section id="studentClassPassCard" class="student-stage-panel student-class-pass">
+            <span class="student-panel-tag">Class Pass</span>
+            <div class="student-panel-topline">
+              <div id="studentClassPassXp" class="student-xp-pill">0 / 5 XP</div>
+            </div>
+            <div id="studentClassPassTrack" class="student-pass-track"></div>
+          </section>
+
+          <div class="student-content-grid">
+            <section id="studentHistoryCard" class="student-stage-panel">
+              <span class="student-panel-tag">History</span>
+              <p id="studentHistoryCopy" class="student-history-copy">No Games Played Yet</p>
+              <p id="studentHistoryMeta" class="student-history-meta">Sign in to see saved progress, best rank, and your top mini-game.</p>
+              <div class="student-history-actions">
+                <a class="student-text-link" href="/student-history">View History</a>
+                <a class="student-text-link" href="/student-homework">Homework</a>
+                <a id="studentHistoryJoinLink" class="student-text-link" href="/play">Open Join Page</a>
+                <a class="student-text-link" href="/student-market">Open Store</a>
+              </div>
+            </section>
+
+            <section id="studentCustomBlooksCard" class="student-stage-panel">
+              <span class="student-panel-tag">Custom Blooks</span>
+              <div id="studentCollectionGrid" class="student-collection-grid"></div>
+            </section>
+          </div>
+
+          <section id="studentStatsBoard" class="student-stage-panel student-stats-panel">
+            <span class="student-panel-tag">Stats</span>
+            <div id="studentStatsGrid" class="student-stats-grid"></div>
+          </section>
+        </div>
+      </main>
+    </div>
 
     <script src="/student-login.js"></script>
   </body>

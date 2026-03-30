@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Market</title>
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/blooket-shell.css" />
+    <style>
+      :root {
+        --student-sidebar: #9d42bf;
+        --student-sidebar-deep: #8030a3;
+        --student-shadow: 0 18px 36px rgba(54, 6, 85, 0.24);
+        --student-panel: rgba(255, 255, 255, 0.94);
+        --student-purple-card: rgba(164, 87, 193, 0.96);
+        --student-teal: #18c3d6;
+        --student-teal-deep: #119ab2;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body.student-market-body {
+        min-height: 100vh;
+        margin: 0;
+        color: #fff;
+        font-family: "Nunito", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 24%),
+          radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.12), transparent 18%),
+          linear-gradient(135deg, #1dcfe0 0%, #18c3d6 45%, #0cb1c8 100%);
+        overflow-x: hidden;
+      }
+
+      body.student-market-body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.13;
+        background-image:
+          linear-gradient(45deg, rgba(255, 255, 255, 0.8) 25%, transparent 25%),
+          linear-gradient(-45deg, rgba(255, 255, 255, 0.8) 25%, transparent 25%);
+        background-size: 92px 92px;
+        background-position: 0 0, 46px 46px;
+      }
+
+      .student-market-shell {
+        display: grid;
+        grid-template-columns: 136px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+
+      .student-sidebar {
+        position: sticky;
+        top: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        height: 100vh;
+        padding: 14px 12px 16px;
+        background: linear-gradient(180deg, var(--student-sidebar) 0%, var(--student-sidebar-deep) 100%);
+        box-shadow: 16px 0 34px rgba(72, 18, 95, 0.22);
+        z-index: 2;
+      }
+
+      .student-brand {
+        display: inline-block;
+        color: #fff;
+        text-decoration: none;
+        font-family: "Baloo 2", "Nunito", sans-serif;
+        font-size: 2.6rem;
+        line-height: 0.92;
+        letter-spacing: 0.02em;
+      }
+
+      .student-play-cta {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 38px;
+        border-radius: 8px;
+        background: linear-gradient(180deg, #1ad0df 0%, #10b7d2 100%);
+        box-shadow: 0 5px 0 rgba(4, 131, 161, 0.72);
+        color: #fff;
+        text-decoration: none;
+        font-weight: 900;
+        font-size: 1.1rem;
+      }
+
+      .student-sidebar-nav {
+        display: grid;
+        gap: 6px;
+      }
+
+      .student-nav-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 38px;
+        padding: 0 12px;
+        border-radius: 8px;
+        color: rgba(255, 255, 255, 0.96);
+        text-decoration: none;
+        font-weight: 800;
+        transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
+      }
+
+      .student-nav-link:hover,
+      .student-nav-link.is-active {
+        background: rgba(255, 255, 255, 0.94);
+        color: #9a42bc;
+        transform: translateX(2px);
+      }
+
+      .student-nav-icon {
+        width: 12px;
+        height: 12px;
+        flex: 0 0 12px;
+        border-radius: 3px;
+        background: currentColor;
+        opacity: 0.95;
+      }
+
+      .student-sidebar-footer {
+        margin-top: auto;
+        display: grid;
+        gap: 10px;
+      }
+
+      .student-room-pill,
+      .student-sidebar-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+        border-radius: 999px;
+        padding: 0 12px;
+        text-align: center;
+        text-decoration: none;
+        font-weight: 800;
+      }
+
+      .student-room-pill {
+        background: rgba(255, 255, 255, 0.14);
+        color: #fff;
+      }
+
+      .student-sidebar-link {
+        background: rgba(0, 0, 0, 0.14);
+        color: #fff;
+      }
+
+      .student-market-main {
+        padding: 12px 18px 28px;
+      }
+
+      .student-market-topbar {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .student-market-coins {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 84px;
+        min-height: 40px;
+        padding: 0 14px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.98);
+        color: #cc9500;
+        font-family: "Baloo 2", "Nunito", sans-serif;
+        font-size: 1.1rem;
+        font-weight: 800;
+        box-shadow: 0 5px 0 rgba(184, 197, 214, 0.6);
+      }
+
+      .student-mini-account {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 10px 6px 6px;
+        min-width: 180px;
+        border-radius: 10px;
+        background: linear-gradient(180deg, #9e4cc2 0%, #8532aa 100%);
+        box-shadow: 0 5px 0 rgba(94, 31, 121, 0.62);
+      }
+
+      .student-mini-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        overflow: hidden;
+        flex: 0 0 34px;
+        background: linear-gradient(180deg, #7feea4 0%, #51bc72 100%);
+        border: 2px solid rgba(255, 255, 255, 0.28);
+      }
+
+      .student-mini-avatar img,
+      .student-stall-avatar img,
+      .student-pack-image {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .student-pack-image {
+        object-fit: contain;
+      }
+
+      .student-avatar-fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        color: #fff;
+        font-family: "Baloo 2", "Nunito", sans-serif;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .student-mini-copy strong,
+      .student-mini-copy span {
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .student-mini-copy strong {
+        font-size: 1.05rem;
+        line-height: 1.1;
+      }
+
+      .student-mini-copy span {
+        color: rgba(232, 243, 255, 0.84);
+        font-size: 0.76rem;
+        font-weight: 800;
+      }
+
+      .student-market-page {
+        width: min(1450px, 100%);
+        margin: 0 auto;
+      }
+
+      .student-market-title {
+        margin: 10px 0 18px;
+        color: #253a5d;
+        font-family: "Baloo 2", "Nunito", sans-serif;
+        font-size: clamp(2.2rem, 4vw, 3.2rem);
+        line-height: 0.95;
+      }
+
+      .student-market-notice {
+        margin-bottom: 16px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.94);
+        color: #304058;
+        font-weight: 800;
+        box-shadow: var(--student-shadow);
+      }
+
+      .student-market-notice.good {
+        color: #166b38;
+      }
+
+      .student-market-notice.bad {
+        color: #92273d;
+      }
+
+      .student-market-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 228px;
+        gap: 24px;
+      }
+
+      .student-pack-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(144px, 1fr));
+        gap: 16px;
+      }
+
+      .student-pack-card {
+        position: relative;
+        min-height: 140px;
+        border: 0;
+        border-radius: 12px;
+        padding: 10px;
+        color: #fff;
+        text-align: left;
+        cursor: pointer;
+        box-shadow: 0 8px 0 rgba(35, 66, 111, 0.2);
+        transition: transform 0.18s ease, filter 0.18s ease;
+      }
+
+      .student-pack-card:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.02);
+      }
+
+      .student-pack-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 35%),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 60%);
+        pointer-events: none;
+      }
+
+      .student-pack-wrapper {
+        position: relative;
+        height: 100%;
+        border-radius: 10px;
+        overflow: hidden;
+        padding: 10px 10px 8px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .student-pack-wrapper::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 12px;
+        background: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.9) 0 4px, transparent 4px 8px);
+        opacity: 0.5;
+      }
+
+      .student-pack-name {
+        position: relative;
+        z-index: 1;
+        min-height: 38px;
+        margin: 0;
+        font-family: "Baloo 2", "Nunito", sans-serif;
+        font-size: 1.08rem;
+        line-height: 1.05;
+        text-shadow: 0 2px 0 rgba(0, 0, 0, 0.18);
+      }
+
+      .student-pack-art {
+        position: relative;
+        z-index: 1;
+        height: 72px;
+        margin: 8px 0 6px;
+      }
+
+      .student-pack-art-main,
+      .student-pack-art-accent {
+        position: absolute;
+        border-radius: 12px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.14);
+      }
+
+      .student-pack-art-main {
+        left: 12px;
+        right: 28px;
+        top: 4px;
+        bottom: 0;
+        padding: 6px;
+      }
+
+      .student-pack-art-accent {
+        width: 38px;
+        height: 38px;
+        right: 6px;
+        bottom: 6px;
+        padding: 4px;
+      }
+
+      .student-pack-art-fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        color: rgba(255, 255, 255, 0.92);
+        font-family: "Baloo 2", "Nunito", sans-serif;
+        font-size: 1rem;
+        font-weight: 800;
+      }
+
+      .student-pack-footer {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .student-pack-price,
+      .student-pack-owned {
+        display: inline-flex;
+        align-items: center;
+        min-height: 20px;
+        padding: 0 8px;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.2);
+        font-size: 0.72rem;
+        font-weight: 900;
+      }
+
+      .student-pack-price {
+        color: #ffe772;
+      }
+
+      .student-pack-owned {
+        color: rgba(255, 255, 255, 0.92);
+      }
+
+      .student-weekly-shop {
+        margin-top: 20px;
+      }
+
+      .student-weekly-title {
+        margin: 0 0 12px;
+        color: #2f405d;
+        font-family: "Baloo 2", "Nunito", sans-serif;
+        font-size: 2rem;
+        line-height: 1;
+      }
+
+      .student-weekly-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+      }
+
+      .student-weekly-card {
+        min-height: 126px;
+        border-radius: 12px;
+        padding: 12px;
+        color: #fff;
+        box-shadow: 0 8px 0 rgba(35, 66, 111, 0.18);
+      }
+
+      .student-weekly-card h3 {
+        margin: 0 0 10px;
+        font-family: "Baloo 2", "Nunito", sans-serif;
+        font-size: 1.2rem;
+        line-height: 1;
+      }
+
+      .student-weekly-art {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 52px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.14);
+        font-weight: 900;
+        font-size: 1.2rem;
+      }
+
+      .student-weekly-art.theme-garden {
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04)),
+          repeating-linear-gradient(90deg, rgba(255, 189, 132, 0.7) 0 4px, transparent 4px 34px),
+          repeating-linear-gradient(180deg, rgba(255, 189, 132, 0.7) 0 4px, transparent 4px 22px);
+      }
+
+      .student-weekly-art.theme-sushi {
+        font-size: 1.8rem;
+      }
+
+      .student-weekly-art.theme-title {
+        font-size: 0.95rem;
+        text-align: center;
+        line-height: 1.1;
+      }
+
+      .student-weekly-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .student-weekly-price,
+      .student-weekly-rarity {
+        display: inline-flex;
+        align-items: center;
+        min-height: 20px;
+        padding: 0 8px;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: 900;
+      }
+
+      .student-weekly-price {
+        background: rgba(0, 0, 0, 0.2);
+        color: #ffe772;
+      }
+
+      .student-weekly-rarity {
+        background: rgba(111, 228, 78, 0.92);
+      }
+
+      .student-weekly-rarity.rare {
+        background: rgba(49, 80, 255, 0.92);
+      }
+
+      .student-market-side {
+        position: sticky;
+        top: 16px;
+      }
+
+      .student-market-stall {
+        border-radius: 18px;
+        background: linear-gradient(180deg, #b25cca 0%, #8f43b2 100%);
+        box-shadow: var(--student-shadow);
+        padding: 12px 12px 14px;
+      }
+
+      .student-stall-sign {
+        width: 136px;
+        margin: 0 auto 10px;
+        padding: 8px 0;
+        border-radius: 10px;
+        background: linear-gradient(180deg, #fff 0%, #e9ecf4 100%);
+        color: #14b6c9;
+        font-family: "Baloo 2", "Nunito", sans-serif;
+        font-size: 1.55rem;
+        font-weight: 800;
+        line-height: 1;
+        text-align: center;
+        box-shadow: 0 4px 0 rgba(91, 30, 121, 0.3);
+      }
+
+      .student-stall-roof {
+        height: 20px;
+        margin: 0 auto;
+        border-radius: 6px 6px 0 0;
+        background: repeating-linear-gradient(90deg, #6e4b00 0 18px, #987108 18px 36px);
+      }
+
+      .student-stall-window {
+        position: relative;
+        min-height: 146px;
+        padding: 10px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(246, 242, 238, 0.98) 100%);
+        border-left: 8px solid #7b4213;
+        border-right: 8px solid #7b4213;
+      }
+
+      .student-stall-window::before,
+      .student-stall-window::after {
+        content: "";
+        position: absolute;
+        top: -10px;
+        width: 18px;
+        height: 10px;
+        border-bottom: 2px solid rgba(91, 63, 16, 0.35);
+        background: linear-gradient(180deg, #fff6c9, #f0d580);
+      }
+
+      .student-stall-window::before {
+        left: 18px;
+      }
+
+      .student-stall-window::after {
+        right: 18px;
+      }
+
+      .student-stall-counter {
+        height: 16px;
+        border-radius: 0 0 6px 6px;
+        background: linear-gradient(180deg, #a58414 0%, #715505 100%);
+      }
+
+      .student-stall-avatar {
+        width: 82px;
+        height: 82px;
+        margin: 12px auto 0;
+        border-radius: 16px;
+        overflow: hidden;
+        background: linear-gradient(180deg, #ffd34a 0%, #f5a51d 100%);
+        box-shadow: 0 8px 18px rgba(152, 90, 0, 0.2);
+      }
+
+      .student-stall-mini-box {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        width: 26px;
+        height: 28px;
+        border-radius: 4px;
+        background: linear-gradient(180deg, #c9c0ae 0%, #9f8d67 100%);
+      }
+
+      .student-stall-mini-box::after {
+        content: "";
+        position: absolute;
+        top: -4px;
+        left: 4px;
+        width: 18px;
+        height: 4px;
+        border-radius: 4px 4px 0 0;
+        background: #947d49;
+      }
+
+      .student-stall-caption {
+        margin-top: 10px;
+        color: rgba(255, 255, 255, 0.88);
+        font-size: 0.78rem;
+        font-weight: 800;
+        text-align: center;
+      }
+
+      .student-stall-rarity-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .student-stall-rarity-card {
+        display: grid;
+        justify-items: center;
+        gap: 4px;
+        padding: 10px 6px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .student-stall-rarity-card strong {
+        font-size: 1.1rem;
+        line-height: 1;
+      }
+
+      .student-stall-rarity-card span {
+        color: rgba(232, 242, 255, 0.86);
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-align: center;
+      }
+
+      .student-stall-foot {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 2px solid rgba(255, 255, 255, 0.18);
+      }
+
+      .student-stall-foot strong,
+      .student-stall-foot span {
+        display: block;
+        text-align: center;
+      }
+
+      .student-stall-foot strong {
+        font-size: 1.6rem;
+        line-height: 1;
+      }
+
+      .student-stall-foot span {
+        color: rgba(233, 242, 255, 0.9);
+        font-size: 0.78rem;
+        font-weight: 800;
+      }
+
+      .student-market-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 12px;
+        padding: 8px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.94);
+        color: #556476;
+        font-size: 0.72rem;
+        font-weight: 800;
+      }
+
+      .student-market-toggle input {
+        margin: 0;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @media (max-width: 1120px) {
+        .student-market-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .student-market-side {
+          position: relative;
+          top: auto;
+        }
+      }
+
+      @media (max-width: 980px) {
+        .student-market-shell {
+          grid-template-columns: 1fr;
+        }
+
+        .student-sidebar {
+          position: relative;
+          height: auto;
+          gap: 12px;
+          box-shadow: 0 10px 28px rgba(72, 18, 95, 0.18);
+        }
+
+        .student-sidebar-nav {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .student-sidebar-footer {
+          margin-top: 0;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 720px) {
+        .student-market-main {
+          padding: 12px 14px 24px;
+        }
+
+        .student-market-topbar {
+          flex-wrap: wrap;
+        }
+
+        .student-market-coins,
+        .student-mini-account {
+          width: 100%;
+        }
+
+        .student-pack-grid,
+        .student-weekly-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 560px) {
+        .student-sidebar-nav,
+        .student-sidebar-footer,
+        .student-stall-rarity-grid,
+        .student-stall-foot,
+        .student-pack-grid,
+        .student-weekly-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body class="student-market-body">
+    <div class="student-market-shell">
+      <aside class="student-sidebar">
+        <a class="student-brand" href="/">Blooket</a>
+        <a class="student-play-cta" href="/play">Play</a>
+
+        <nav class="student-sidebar-nav" aria-label="Student market navigation">
+          <a class="student-nav-link" href="/student-login#studentStatsBoard"><span class="student-nav-icon" aria-hidden="true"></span><span>Stats</span></a>
+          <a class="student-nav-link" href="/student-login#studentBlooksBoard"><span class="student-nav-icon" aria-hidden="true"></span><span>Blooks</span></a>
+          <a class="student-nav-link is-active" href="/student-market"><span class="student-nav-icon" aria-hidden="true"></span><span>Market</span></a>
+          <a class="student-nav-link" href="/student-discover"><span class="student-nav-icon" aria-hidden="true"></span><span>Discover</span></a>
+          <a class="student-nav-link" href="/student-set-creator"><span class="student-nav-icon" aria-hidden="true"></span><span>Set Creator</span></a>
+          <a class="student-nav-link" href="/student-my-sets"><span class="student-nav-icon" aria-hidden="true"></span><span>My Sets</span></a>
+          <a class="student-nav-link" href="/student-favorites"><span class="student-nav-icon" aria-hidden="true"></span><span>Favorites</span></a>
+        </nav>
+
+        <div class="student-sidebar-footer">
+          <div id="studentMarketRoomCode" class="student-room-pill">No Room</div>
+          <a class="student-sidebar-link" href="/student-settings">Settings</a>
+          <a class="student-sidebar-link" href="/student-login">Student Login</a>
+        </div>
+      </aside>
+
+      <main class="student-market-main">
+        <div class="student-market-page">
+          <div class="student-market-topbar">
+            <div id="studentMarketCoins" class="student-market-coins">0</div>
+            <div class="student-mini-account">
+              <div id="studentMarketAvatar" class="student-mini-avatar" aria-hidden="true"></div>
+              <div class="student-mini-copy">
+                <strong id="studentMarketName">guest</strong>
+                <span id="studentMarketStatus">Student market</span>
+              </div>
+            </div>
+          </div>
+
+          <h1 class="student-market-title">Market</h1>
+          <div id="studentMarketNotice" class="student-market-notice hidden"></div>
+
+          <div class="student-market-layout">
+            <section>
+              <div id="studentMarketPackGrid" class="student-pack-grid"></div>
+
+              <section class="student-weekly-shop">
+                <h2 class="student-weekly-title">Weekly Shop</h2>
+                <div id="studentWeeklyShopGrid" class="student-weekly-grid"></div>
+              </section>
+            </section>
+
+            <aside class="student-market-side">
+              <div class="student-market-stall">
+                <div class="student-stall-sign">MARKET</div>
+                <div class="student-stall-roof"></div>
+                <div class="student-stall-window">
+                  <div class="student-stall-mini-box" aria-hidden="true"></div>
+                  <div id="studentMarketMascot" class="student-stall-avatar" aria-hidden="true"></div>
+                </div>
+                <div class="student-stall-counter"></div>
+                <div class="student-stall-caption">Fresh packs, weekly cosmetics, and blooks ready to unlock.</div>
+
+                <div id="studentMarketRarityGrid" class="student-stall-rarity-grid"></div>
+
+                <div class="student-stall-foot">
+                  <div>
+                    <strong id="studentMarketBlooksTotal">0</strong>
+                    <span>Blooks</span>
+                  </div>
+                  <div>
+                    <strong id="studentMarketValueTotal">0</strong>
+                    <span>Value</span>
+                  </div>
+                </div>
+
+                <label class="student-market-toggle">
+                  <input id="studentMarketInstantOpen" type="checkbox" />
+                  <span>Instant Open: Off</span>
+                </label>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div id="marketRevealOverlay" class="market-reveal-overlay" hidden aria-hidden="true">
+      <div class="market-reveal-scene">
+        <div id="marketRevealFireworks" class="market-reveal-fireworks" aria-hidden="true"></div>
+        <article id="marketRevealCard" class="market-reveal-card" role="dialog" aria-modal="true" aria-labelledby="marketRevealTitle">
+          <button class="market-reveal-close" type="button" aria-label="Close unlock reveal" data-close-market-reveal>Close</button>
+          <div id="marketRevealBody"></div>
+        </article>
+      </div>
+    </div>
+
+    <script src="/student-market.js"></script>
+  </body>
+</html>

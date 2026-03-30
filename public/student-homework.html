@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Homework</title>
+    <link rel="stylesheet" href="/style.css" />
+    <style>
+      :root{--side:#9d42bf;--side-deep:#8030a3;--copy:#2b3958;--copy-soft:#657590;--line:#d9e1ef}
+      *{box-sizing:border-box}
+      body{margin:0;min-height:100vh;font-family:"Nunito","Segoe UI",sans-serif;background:linear-gradient(135deg,#21cfe3 0%,#18c3d6 52%,#12b3ca 100%)}
+      .shell{display:grid;grid-template-columns:136px minmax(0,1fr);min-height:100vh}
+      .sidebar{position:sticky;top:0;display:flex;flex-direction:column;gap:16px;height:100vh;padding:14px 12px 16px;background:linear-gradient(180deg,var(--side) 0%,var(--side-deep) 100%);box-shadow:16px 0 34px rgba(72,18,95,.22)}
+      .brand{display:inline-block;color:#fff;text-decoration:none;font-family:"Baloo 2","Nunito",sans-serif;font-size:2.6rem;line-height:.92}
+      .play-cta{display:flex;align-items:center;justify-content:center;min-height:38px;border-radius:8px;background:linear-gradient(180deg,#1ad0df 0%,#10b7d2 100%);box-shadow:0 5px 0 rgba(4,131,161,.72);color:#fff;text-decoration:none;font-weight:900;font-size:1.1rem}
+      .nav{display:grid;gap:6px}
+      .nav-link{display:flex;align-items:center;gap:10px;min-height:38px;padding:0 12px;border-radius:8px;color:rgba(255,255,255,.96);text-decoration:none;font-weight:800;transition:transform .18s ease,background .18s ease,color .18s ease}
+      .nav-link:hover{background:rgba(255,255,255,.94);color:#9a42bc;transform:translateX(2px)}
+      .nav-icon{width:12px;height:12px;flex:0 0 12px;border-radius:3px;background:currentColor}
+      .side-footer{margin-top:auto;display:grid;gap:10px}
+      .side-pill,.side-link{display:flex;align-items:center;justify-content:center;min-height:34px;padding:0 12px;border-radius:999px;text-decoration:none;font-weight:800}
+      .side-pill{background:rgba(255,255,255,.14);color:#fff}
+      .side-link{background:rgba(0,0,0,.14);color:#fff}
+      .main{min-width:0;min-height:100vh;padding:12px 18px 28px;background:rgba(255,255,255,.97);color:var(--copy)}
+      .page{width:min(1460px,100%);margin:0 auto}
+      .topbar{display:flex;justify-content:flex-end;align-items:center;gap:12px}
+      .coins{display:inline-flex;align-items:center;justify-content:center;min-width:84px;min-height:40px;padding:0 14px;border-radius:12px;background:#fff;color:#cc9500;font-family:"Baloo 2","Nunito",sans-serif;font-size:1.1rem;font-weight:800;box-shadow:0 5px 0 rgba(184,197,214,.6)}
+      .account{display:inline-flex;align-items:center;gap:10px;padding:6px 10px 6px 6px;min-width:180px;border-radius:10px;background:linear-gradient(180deg,#9e4cc2 0%,#8532aa 100%);box-shadow:0 5px 0 rgba(94,31,121,.62);color:#fff}
+      .avatar{width:34px;height:34px;overflow:hidden;flex:0 0 34px;border-radius:9px;background:linear-gradient(180deg,#7feea4 0%,#51bc72 100%);border:2px solid rgba(255,255,255,.28)}
+      .avatar img{width:100%;height:100%;display:block;object-fit:cover}
+      .avatar-fallback{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#fff;font-family:"Baloo 2","Nunito",sans-serif;font-weight:800;text-transform:uppercase}
+      .account strong,.account span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .account strong{font-size:1.05rem;line-height:1.1}
+      .account span{color:rgba(232,243,255,.84);font-size:.76rem;font-weight:800}
+      .head{padding-bottom:16px;border-bottom:1px solid rgba(129,149,185,.28)}
+      .head-title{display:flex;align-items:center;gap:10px}
+      h1{margin:10px 0 0;font-family:"Baloo 2","Nunito",sans-serif;font-size:clamp(2.4rem,4vw,3.4rem);line-height:.95}
+      .help-badge{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-top:14px;border-radius:999px;border:2px solid #7b86a0;color:#50607e;font-size:.82rem;font-weight:900}
+      .empty-shell{display:grid;place-items:center;min-height:calc(100vh - 190px)}
+      .empty-card{display:grid;justify-items:center;text-align:center}
+      .empty-graphic{position:relative;width:320px;height:178px}
+      .desk{position:absolute;left:108px;right:18px;bottom:28px;height:10px;border-radius:999px;background:#4dad25}
+      .laptop-base{position:absolute;left:32px;bottom:28px;width:78px;height:14px;border-radius:0 0 12px 12px;background:linear-gradient(180deg,#c4c7cc 0%,#9d9fa3 100%);transform:skewX(16deg)}
+      .laptop-screen{position:absolute;left:46px;bottom:43px;width:74px;height:44px;border:4px solid #a8abb0;border-bottom-width:3px;border-radius:8px;background:#eceef2;transform:skewX(16deg)}
+      .laptop-dot{position:absolute;left:76px;bottom:58px;width:14px;height:14px;border-radius:999px;border:3px solid #62656a;background:#f8f9fb}
+      .book-stack{position:absolute;right:18px;bottom:36px;width:82px}
+      .book{height:18px;border-radius:3px 3px 2px 2px;box-shadow:0 3px 0 rgba(0,0,0,.1)}
+      .book + .book{margin-top:4px}
+      .book.purple{background:#7d4fc4}
+      .book.cream{background:#f3e6bd}
+      .book.teal{background:#1dc8d6}
+      .mascot{position:absolute;left:122px;bottom:28px;width:116px;height:108px;border-radius:42px 42px 32px 32px;background:linear-gradient(180deg,#ca7a3b 0%,#9d5825 100%);box-shadow:0 8px 18px rgba(120,77,39,.18)}
+      .mascot:before,.mascot:after{content:"";position:absolute;top:2px;width:22px;height:20px;border-radius:999px;background:#9d5825}
+      .mascot:before{left:10px}
+      .mascot:after{right:10px}
+      .hair{position:absolute;left:50%;top:6px;width:28px;height:18px;border-radius:0 0 18px 18px;background:#8c4f1f;transform:translateX(-50%)}
+      .eye{position:absolute;top:44px;width:26px;height:30px;border-radius:50%;background:#fff}
+      .eye.left{left:16px}
+      .eye.right{right:16px}
+      .eye:before{content:"";position:absolute;left:6px;top:6px;width:12px;height:12px;border-radius:999px;background:#3f4b6b}
+      .eye:after{content:"";position:absolute;left:16px;top:14px;width:5px;height:5px;border-radius:999px;background:#fff}
+      .snout{position:absolute;left:50%;top:48px;width:34px;height:28px;border-radius:14px;background:#f1c59b;transform:translateX(-50%)}
+      .nose{position:absolute;left:50%;top:51px;width:18px;height:14px;border-radius:999px;background:#4e3424;transform:translateX(-50%)}
+      .mouth{position:absolute;left:50%;top:67px;width:24px;height:12px;border-bottom:4px solid #fff;border-radius:0 0 16px 16px;transform:translateX(-50%)}
+      .freckle{position:absolute;top:62px;width:4px;height:4px;border-radius:999px;background:#7a431f}
+      .freckle.a{left:12px}.freckle.b{left:18px;top:68px}.freckle.c{right:12px}.freckle.d{right:18px;top:68px}
+      .paw{position:absolute;bottom:0;width:34px;height:18px;border-radius:14px 14px 8px 8px;background:#5b341f}
+      .paw.left{left:16px}
+      .paw.right{right:16px}
+      .pencil{position:absolute;left:190px;top:24px;width:44px;height:10px;border-radius:999px;background:linear-gradient(90deg,#ffd53b 0%,#ffd53b 72%,#f6b4b4 72%,#f6b4b4 88%,#c58e4c 88%,#c58e4c 100%);transform:rotate(14deg)}
+      .copy{margin:14px 0 0;max-width:410px;font-size:1.16rem;line-height:1.35}
+      .tutorial{display:inline-block;margin-top:10px;color:#b767d0;font-size:.95rem;font-weight:800;text-decoration:none}
+      @media (max-width:900px){.shell{grid-template-columns:1fr}.sidebar{position:static;height:auto}}
+      @media (max-width:640px){.main{padding:12px 12px 24px}.topbar{flex-wrap:wrap;justify-content:flex-start}.empty-graphic{transform:scale(.84)}}
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <a class="brand" href="/student-login">Blooket</a>
+        <a class="play-cta" href="/play">Play</a>
+        <nav class="nav" aria-label="Student navigation">
+          <a class="nav-link" href="/student-login#studentStatsBoard"><span class="nav-icon" aria-hidden="true"></span><span>Stats</span></a>
+          <a class="nav-link" href="/student-login#studentBlooksBoard"><span class="nav-icon" aria-hidden="true"></span><span>Blooks</span></a>
+          <a class="nav-link" href="/student-market"><span class="nav-icon" aria-hidden="true"></span><span>Market</span></a>
+          <a class="nav-link" href="/student-discover"><span class="nav-icon" aria-hidden="true"></span><span>Discover</span></a>
+          <a class="nav-link" href="/student-set-creator"><span class="nav-icon" aria-hidden="true"></span><span>Set Creator</span></a>
+          <a class="nav-link" href="/student-my-sets"><span class="nav-icon" aria-hidden="true"></span><span>My Sets</span></a>
+          <a class="nav-link" href="/student-favorites"><span class="nav-icon" aria-hidden="true"></span><span>Favorites</span></a>
+        </nav>
+        <div class="side-footer">
+          <div id="studentHomeworkRoomCode" class="side-pill">Room: none</div>
+          <a class="side-link" href="/student-settings">Settings</a>
+          <a class="side-link" href="/student-login">Back to Dashboard</a>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="page">
+          <div class="topbar">
+            <div id="studentHomeworkCoins" class="coins">0</div>
+            <div class="account">
+              <div id="studentHomeworkAvatar" class="avatar"></div>
+              <div>
+                <strong id="studentHomeworkName">Student</strong>
+                <span id="studentHomeworkStatus">Homework</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="head">
+            <div class="head-title">
+              <h1>Homework</h1>
+              <span class="help-badge" aria-hidden="true">?</span>
+            </div>
+          </div>
+
+          <div id="studentHomeworkContent" class="empty-shell"></div>
+        </div>
+      </main>
+    </div>
+
+    <script src="/student-homework.js"></script>
+  </body>
+</html>

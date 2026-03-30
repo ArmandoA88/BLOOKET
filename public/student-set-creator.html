@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Set Creator</title>
+    <link rel="stylesheet" href="/style.css" />
+    <style>
+      :root{--side:#9d42bf;--side-deep:#8030a3;--teal:#18c3d6;--teal-deep:#0fb3ca;--copy:#2b3958;--copy-soft:#64738f;--line:#d8e0ef;--panel:#fff}
+      *{box-sizing:border-box}
+      body{margin:0;min-height:100vh;font-family:"Nunito","Segoe UI",sans-serif;background:linear-gradient(135deg,#21cfe3 0%,#18c3d6 52%,#12b3ca 100%)}
+      .shell{display:grid;grid-template-columns:136px minmax(0,1fr);min-height:100vh}
+      .sidebar{position:sticky;top:0;display:flex;flex-direction:column;gap:16px;height:100vh;padding:14px 12px 16px;background:linear-gradient(180deg,var(--side) 0%,var(--side-deep) 100%);box-shadow:16px 0 34px rgba(72,18,95,.22)}
+      .brand{display:inline-block;color:#fff;text-decoration:none;font-family:"Baloo 2","Nunito",sans-serif;font-size:2.6rem;line-height:.92}
+      .play-cta{display:flex;align-items:center;justify-content:center;min-height:38px;border-radius:8px;background:linear-gradient(180deg,#1ad0df 0%,#10b7d2 100%);box-shadow:0 5px 0 rgba(4,131,161,.72);color:#fff;text-decoration:none;font-weight:900;font-size:1.1rem}
+      .nav{display:grid;gap:6px}
+      .nav-link{display:flex;align-items:center;gap:10px;min-height:38px;padding:0 12px;border-radius:8px;color:rgba(255,255,255,.96);text-decoration:none;font-weight:800;transition:transform .18s ease,background .18s ease,color .18s ease}
+      .nav-link:hover,.nav-link.is-active{background:rgba(255,255,255,.94);color:#9a42bc;transform:translateX(2px)}
+      .nav-icon{width:12px;height:12px;flex:0 0 12px;border-radius:3px;background:currentColor}
+      .side-footer{margin-top:auto;display:grid;gap:10px}
+      .side-pill,.side-link{display:flex;align-items:center;justify-content:center;min-height:34px;padding:0 12px;border-radius:999px;text-decoration:none;font-weight:800}
+      .side-pill{background:rgba(255,255,255,.14);color:#fff}
+      .side-link{background:rgba(0,0,0,.14);color:#fff}
+      .main{min-width:0;min-height:100vh;padding:12px 18px 28px;background:rgba(255,255,255,.97);color:var(--copy)}
+      .page{width:min(1460px,100%);margin:0 auto}
+      .topbar{display:flex;justify-content:flex-end;align-items:center;gap:12px}
+      .coins{display:inline-flex;align-items:center;justify-content:center;min-width:84px;min-height:40px;padding:0 14px;border-radius:12px;background:#fff;color:#cc9500;font-family:"Baloo 2","Nunito",sans-serif;font-size:1.1rem;font-weight:800;box-shadow:0 5px 0 rgba(184,197,214,.6)}
+      .account{display:inline-flex;align-items:center;gap:10px;padding:6px 10px 6px 6px;min-width:180px;border-radius:10px;background:linear-gradient(180deg,#9e4cc2 0%,#8532aa 100%);box-shadow:0 5px 0 rgba(94,31,121,.62);color:#fff}
+      .avatar{width:34px;height:34px;overflow:hidden;flex:0 0 34px;border-radius:9px;background:linear-gradient(180deg,#7feea4 0%,#51bc72 100%);border:2px solid rgba(255,255,255,.28)}
+      .avatar img{width:100%;height:100%;display:block;object-fit:cover}
+      .avatar-fallback{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#fff;font-family:"Baloo 2","Nunito",sans-serif;font-weight:800;text-transform:uppercase}
+      .account strong,.account span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .account strong{font-size:1.05rem;line-height:1.1}
+      .account span{color:rgba(232,243,255,.84);font-size:.76rem;font-weight:800}
+      .title-row{padding:8px 0 18px;border-bottom:1px solid rgba(129,149,185,.3)}
+      h1{margin:0;font-family:"Baloo 2","Nunito",sans-serif;font-size:clamp(2.4rem,4vw,3.5rem);line-height:.95}
+      .title-row p{margin:8px 0 0;color:var(--copy-soft);font-weight:700}
+      .creator-wrap{padding-top:18px}
+      .intro{margin-bottom:10px}
+      .intro strong{display:block;font-size:1.2rem}
+      .intro span{color:var(--copy-soft);font-weight:700}
+      .method-row{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 16px}
+      .method-btn{display:inline-flex;align-items:center;gap:10px;min-height:34px;padding:0 14px;border:1px solid #d5dceb;border-radius:9px;background:#fff;color:var(--copy);font:inherit;font-weight:800;cursor:pointer;box-shadow:0 2px 0 rgba(167,177,194,.28)}
+      .method-btn.is-active{border-color:var(--teal);background:rgba(24,195,214,.1);box-shadow:0 2px 0 rgba(24,195,214,.24)}
+      .method-icon{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;color:#fff;font-size:.9rem;font-weight:900}
+      .method-icon.manual{background:#3d4fbb}.method-icon.quizlet{background:#4a5ec7}.method-icon.csv{background:#1ba323}
+      .stage{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr);gap:18px;align-items:start}
+      .field{margin-bottom:14px}
+      .field label{display:block;margin-bottom:6px;font-size:1.18rem;font-weight:900}
+      .field .sub{display:block;margin-top:-2px;margin-bottom:6px;color:var(--copy-soft);font-size:.95rem;font-weight:700}
+      .input,.textarea,.select,.builder-select{width:100%;border:1px solid #d4dceb;border-radius:10px;background:#fff;color:var(--copy);font:inherit;box-shadow:0 2px 0 rgba(170,180,197,.18)}
+      .input,.select,.builder-select{min-height:44px;padding:0 14px}
+      .textarea{min-height:118px;padding:12px 14px;resize:vertical}
+      .toggle-row{display:flex;align-items:center;gap:12px;margin-top:10px}
+      .toggle{position:relative;width:40px;height:22px;appearance:none;border:0;border-radius:999px;background:#ccd6e6;cursor:pointer;transition:background .18s ease}
+      .toggle:checked{background:var(--teal)}
+      .toggle:before{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .18s ease}
+      .toggle:checked:before{transform:translateX(18px)}
+      .toggle-copy{font-weight:800}
+      .mode-panel{margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#f9fbff}
+      .mode-panel.hidden,.builder-section.hidden,.gallery.hidden,.notice.hidden,.cover-url-row.hidden,.csv-upload-row.hidden{display:none}
+      .mode-panel strong{display:block;margin-bottom:4px}
+      .mode-panel p{margin:0;color:var(--copy-soft);font-weight:700}
+      .quizlet-area{margin-top:12px}
+      .quizlet-area textarea{min-height:132px}
+      .csv-upload-row{margin-top:12px}
+      .cover-card{padding:12px;border:1px dashed #bbc4d5;border-radius:12px;background:#fff;text-align:center}
+      .cover-stage{display:grid;place-items:center;min-height:238px;border:2px dashed #c9d1df;border-radius:12px;background:#fcfdff;overflow:hidden}
+      .cover-stage.has-image{padding:0;border-style:solid}
+      .cover-stage img{width:100%;height:100%;display:block;object-fit:cover}
+      .cover-copy strong{display:block;margin-bottom:8px;font-size:2rem;font-family:"Baloo 2","Nunito",sans-serif;line-height:.95}
+      .cover-copy span{display:block;color:var(--copy-soft);font-weight:700}
+      .cover-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:12px}
+      .cover-btn,.primary-btn,.ghost-btn,.mini-btn{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 14px;border:0;border-radius:9px;font:inherit;font-weight:900;cursor:pointer;text-decoration:none}
+      .cover-btn,.ghost-btn,.mini-btn{background:#fff;color:var(--copy);box-shadow:0 3px 0 rgba(175,184,198,.7);border:1px solid #d6deeb}
+      .primary-btn{background:linear-gradient(180deg,var(--teal) 0%,var(--teal-deep) 100%);color:#fff;box-shadow:0 5px 0 rgba(8,148,170,.55)}
+      .primary-btn[disabled]{opacity:.55;cursor:not-allowed;box-shadow:none}
+      .primary-btn.create{min-width:168px;background:linear-gradient(180deg,#dcdcdc 0%,#bfbfbf 100%);box-shadow:0 4px 0 rgba(161,161,161,.68)}
+      .primary-btn.create.ready{background:linear-gradient(180deg,var(--teal) 0%,var(--teal-deep) 100%);box-shadow:0 5px 0 rgba(8,148,170,.55)}
+      .cover-url-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:12px}
+      .gallery{margin-top:12px;padding:10px;border:1px solid var(--line);border-radius:12px;background:#fbfcff}
+      .gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:10px}
+      .gallery-item{padding:4px;border:2px solid transparent;border-radius:12px;background:#fff;cursor:pointer}
+      .gallery-item.is-active{border-color:var(--teal)}
+      .gallery-item img{width:100%;aspect-ratio:1/1;display:block;object-fit:cover;border-radius:8px}
+      .notice{margin-top:12px;padding:10px 12px;border-radius:10px;background:#ecf6ff;color:#2d587f;font-weight:800}
+      .notice.good{background:#e9fbef;color:#207747}.notice.bad{background:#fff0f0;color:#af3333}
+      .create-actions{display:flex;align-items:center;gap:12px;margin-top:18px}
+      .builder-section{margin-top:22px;padding:18px;border:1px solid var(--line);border-radius:16px;background:#f9fbff;box-shadow:0 14px 28px rgba(116,131,165,.12)}
+      .builder-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}
+      .builder-head h2{margin:0 0 4px;font-family:"Baloo 2","Nunito",sans-serif;font-size:2rem;line-height:.95}
+      .builder-head p{margin:0;color:var(--copy-soft);font-weight:700}
+      .builder-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:14px}
+      .builder-list{display:grid;gap:14px}
+      .builder-card{padding:14px;border:1px solid #d8dfec;border-radius:14px;background:#fff;box-shadow:0 8px 18px rgba(134,148,176,.1)}
+      .builder-card-top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}
+      .builder-card-top strong{font-size:1.1rem}
+      .builder-grid{display:grid;gap:10px}
+      .builder-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+      .builder-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+      .foot-note{margin-top:10px;color:var(--copy-soft);font-weight:700}
+      @media (max-width:1050px){.stage{grid-template-columns:1fr}.builder-meta,.builder-options{grid-template-columns:1fr}}
+      @media (max-width:900px){.shell{grid-template-columns:1fr}.sidebar{position:static;height:auto}}
+      @media (max-width:640px){.main{padding:12px 12px 24px}.topbar{flex-wrap:wrap;justify-content:flex-start}.create-actions,.builder-head{flex-direction:column;align-items:flex-start}}
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <a class="brand" href="/student-login">Blooket</a>
+        <a class="play-cta" href="/play">▶ Play</a>
+        <nav class="nav" aria-label="Student navigation">
+          <a class="nav-link" href="/student-login#studentStatsBoard"><span class="nav-icon" aria-hidden="true"></span><span>Stats</span></a>
+          <a class="nav-link" href="/student-login#studentBlooksBoard"><span class="nav-icon" aria-hidden="true"></span><span>Blooks</span></a>
+          <a class="nav-link" href="/student-market"><span class="nav-icon" aria-hidden="true"></span><span>Market</span></a>
+          <a class="nav-link" href="/student-discover"><span class="nav-icon" aria-hidden="true"></span><span>Discover</span></a>
+          <a class="nav-link is-active" href="/student-set-creator"><span class="nav-icon" aria-hidden="true"></span><span>Set Creator</span></a>
+          <a class="nav-link" href="/student-my-sets"><span class="nav-icon" aria-hidden="true"></span><span>My Sets</span></a>
+          <a class="nav-link" href="/student-favorites"><span class="nav-icon" aria-hidden="true"></span><span>Favorites</span></a>
+        </nav>
+        <div class="side-footer">
+          <div id="studentCreatorRoomCode" class="side-pill">Room: none</div>
+          <a class="side-link" href="/student-settings">Settings</a>
+          <a class="side-link" href="/student-login">Back to Dashboard</a>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="page">
+          <div class="topbar">
+            <div id="studentCreatorCoins" class="coins">0</div>
+            <div class="account">
+              <div id="studentCreatorAvatar" class="avatar"></div>
+              <div>
+                <strong id="studentCreatorName">Student</strong>
+                <span id="studentCreatorStatus">Question set creator</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="title-row">
+            <h1>Question Set Creator</h1>
+            <p>Choose how you want to start, then build or import your set with the same local quiz system the repo already uses.</p>
+          </div>
+
+          <section class="creator-wrap">
+            <div class="intro">
+              <strong>Choose a Creation Method</strong>
+              <span>Your selection decides how you will start adding questions to your set.</span>
+            </div>
+
+            <div id="studentCreatorMethods" class="method-row">
+              <button class="method-btn is-active" type="button" data-method="manual"><span class="method-icon manual">✎</span><span>Manual (Default)</span></button>
+              <button class="method-btn" type="button" data-method="quizlet"><span class="method-icon quizlet">Q</span><span>Quizlet Import</span></button>
+              <button class="method-btn" type="button" data-method="csv"><span class="method-icon csv">▦</span><span>CSV Upload</span></button>
+            </div>
+
+            <div class="stage">
+              <section>
+                <div class="field">
+                  <label for="studentCreatorTitleInput">Title (required)</label>
+                  <input id="studentCreatorTitleInput" class="input" maxlength="64" placeholder="Add a descriptive title" />
+                </div>
+
+                <div class="field">
+                  <label for="studentCreatorDescriptionInput">Description</label>
+                  <textarea id="studentCreatorDescriptionInput" class="textarea" maxlength="320" placeholder="Tell users about your question set"></textarea>
+                </div>
+
+                <div class="field">
+                  <label>Privacy Setting</label>
+                  <span class="sub">This decides who can find and play your question set.</span>
+                  <div class="toggle-row">
+                    <input id="studentCreatorPublicToggle" class="toggle" type="checkbox" checked />
+                    <span id="studentCreatorPrivacyLabel" class="toggle-copy">Public (Playable by everyone)</span>
+                  </div>
+                </div>
+
+                <div id="studentCreatorManualPanel" class="mode-panel">
+                  <strong>Manual Builder</strong>
+                  <p>Start with a blank set and add your own multiple-choice questions below.</p>
+                </div>
+
+                <div id="studentCreatorQuizletPanel" class="mode-panel hidden">
+                  <strong>Quizlet Import</strong>
+                  <p>Paste Quizlet-style term/definition pairs. Use tabs between each term and definition, one card per line.</p>
+                  <div class="quizlet-area">
+                    <textarea id="studentCreatorQuizletInput" class="textarea" placeholder="Term<TAB>Definition&#10;Planet<TAB>Earth&#10;Star<TAB>Sun"></textarea>
+                  </div>
+                </div>
+
+                <div id="studentCreatorCsvPanel" class="mode-panel hidden">
+                  <strong>CSV / Excel / JSON Upload</strong>
+                  <p>Import a finished file with the existing local upload pipeline.</p>
+                  <div class="csv-upload-row" id="studentCreatorCsvRow">
+                    <input id="studentCreatorFileInput" class="input" type="file" accept=".csv,.xlsx,.xls,.json" />
+                  </div>
+                </div>
+
+                <div class="create-actions">
+                  <button id="studentCreatorCreateBtn" class="primary-btn create" type="button" disabled>Create Set</button>
+                  <a class="ghost-btn" href="/student-discover">Browse Sets</a>
+                </div>
+
+                <div id="studentCreatorNotice" class="notice hidden"></div>
+              </section>
+
+              <aside>
+                <div class="cover-card">
+                  <div id="studentCreatorCoverStage" class="cover-stage">
+                    <div class="cover-copy">
+                      <strong>Cover Image</strong>
+                      <span>Drag and drop is optional here. Use a URL, file preview, or gallery image.</span>
+                    </div>
+                  </div>
+
+                  <div class="cover-actions">
+                    <button id="studentCreatorCoverUrlBtn" class="cover-btn" type="button">Upload by URL</button>
+                    <button id="studentCreatorCoverFileBtn" class="cover-btn" type="button">Upload a File</button>
+                    <button id="studentCreatorCoverGalleryBtn" class="cover-btn" type="button">Image Gallery</button>
+                  </div>
+
+                  <div id="studentCreatorCoverUrlRow" class="cover-url-row hidden">
+                    <input id="studentCreatorCoverUrlInput" class="input" placeholder="https://... or /assets/..." />
+                    <button id="studentCreatorCoverApplyBtn" class="mini-btn" type="button">Apply</button>
+                  </div>
+
+                  <input id="studentCreatorCoverFileInput" type="file" accept="image/*" hidden />
+
+                  <div id="studentCreatorGallery" class="gallery hidden">
+                    <div id="studentCreatorGalleryGrid" class="gallery-grid"></div>
+                  </div>
+                </div>
+              </aside>
+            </div>
+
+            <section id="studentCreatorBuilderSection" class="builder-section hidden">
+              <div class="builder-head">
+                <div>
+                  <h2 id="studentCreatorBuilderTitle">Build Questions</h2>
+                  <p id="studentCreatorBuilderCopy">Add at least 5 questions, then save the set into the local quiz library.</p>
+                </div>
+                <div class="builder-actions">
+                  <button id="studentCreatorAddQuestionBtn" class="ghost-btn" type="button">Add Question</button>
+                  <button id="studentCreatorSaveBtn" class="primary-btn" type="button">Save Set</button>
+                </div>
+              </div>
+
+              <div class="builder-meta">
+                <input id="studentCreatorCategoryInput" class="input" maxlength="40" placeholder="Category (optional)" />
+                <input id="studentCreatorTagsInput" class="input" maxlength="120" placeholder="Tags (comma separated)" />
+              </div>
+
+              <div id="studentCreatorQuestions" class="builder-list"></div>
+              <div class="foot-note">Each question needs a prompt, 4 answer choices, and one correct answer. Optional image URLs and explanations are supported.</div>
+            </section>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script src="/student-set-creator.js"></script>
+  </body>
+</html>

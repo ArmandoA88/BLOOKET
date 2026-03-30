@@ -1,29 +1,29 @@
 {
-  "savedAt": "2026-03-24T19:52:32.002Z",
+  "savedAt": "2026-03-30T02:47:40.974Z",
   "stats": {
     "foosball_frenzy": {
-      "sessions": 81,
-      "playerEntries": 158,
-      "completions": 79,
-      "totalBonus": 133456
+      "sessions": 89,
+      "playerEntries": 173,
+      "completions": 85,
+      "totalBonus": 142427
     },
     "soccer_shootout": {
-      "sessions": 60,
-      "playerEntries": 118,
-      "completions": 100,
-      "totalBonus": 36858
+      "sessions": 63,
+      "playerEntries": 124,
+      "completions": 106,
+      "totalBonus": 39042
     },
     "goalie_rush": {
-      "sessions": 5,
-      "playerEntries": 7,
-      "completions": 5,
-      "totalBonus": 1837
+      "sessions": 8,
+      "playerEntries": 13,
+      "completions": 11,
+      "totalBonus": 3917
     },
     "space_invaders": {
-      "sessions": 40,
-      "playerEntries": 79,
-      "completions": 79,
-      "totalBonus": 40685
+      "sessions": 43,
+      "playerEntries": 85,
+      "completions": 85,
+      "totalBonus": 43775
     },
     "snake": {
       "sessions": 0,
@@ -32,10 +32,10 @@
       "totalBonus": 0
     },
     "tower_stacker": {
-      "sessions": 22,
-      "playerEntries": 42,
-      "completions": 41,
-      "totalBonus": 14017
+      "sessions": 25,
+      "playerEntries": 48,
+      "completions": 47,
+      "totalBonus": 16175
     },
     "tap_rush": {
       "sessions": 8,
@@ -74,34 +74,34 @@
       "totalBonus": 1440
     },
     "hallway_dash": {
-      "sessions": 10,
-      "playerEntries": 18,
-      "completions": 17,
-      "totalBonus": 6964
+      "sessions": 13,
+      "playerEntries": 24,
+      "completions": 23,
+      "totalBonus": 10639
     },
     "dino_dig": {
-      "sessions": 12,
-      "playerEntries": 21,
-      "completions": 19,
-      "totalBonus": 7391
+      "sessions": 15,
+      "playerEntries": 27,
+      "completions": 25,
+      "totalBonus": 9488
     },
     "shadow_match": {
-      "sessions": 5,
-      "playerEntries": 9,
-      "completions": 6,
-      "totalBonus": 990
+      "sessions": 8,
+      "playerEntries": 15,
+      "completions": 12,
+      "totalBonus": 1817
     },
     "classroom_cleanup": {
-      "sessions": 6,
-      "playerEntries": 10,
-      "completions": 9,
-      "totalBonus": 990
+      "sessions": 9,
+      "playerEntries": 16,
+      "completions": 15,
+      "totalBonus": 1650
     },
     "battle_royale": {
-      "sessions": 7,
-      "playerEntries": 12,
-      "completions": 10,
-      "totalBonus": 5470
+      "sessions": 10,
+      "playerEntries": 18,
+      "completions": 16,
+      "totalBonus": 8824
     }
   }
 }

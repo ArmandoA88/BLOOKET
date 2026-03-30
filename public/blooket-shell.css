@@ -886,11 +886,420 @@ body.dashboard-body {
 }
 
 .market-reward {
-  padding: 12px 14px;
-  border-radius: 16px;
-  background: rgba(45, 204, 112, 0.12);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(45, 204, 112, 0.12), rgba(122, 215, 255, 0.12));
   color: #1a7c45;
   font-weight: 800;
+  border: 1px solid rgba(45, 204, 112, 0.18);
+  box-shadow: 0 16px 32px rgba(14, 38, 61, 0.12);
+}
+
+.market-reward.rarity-rare {
+  background: linear-gradient(135deg, rgba(87, 156, 255, 0.14), rgba(111, 225, 255, 0.14));
+  border-color: rgba(87, 156, 255, 0.22);
+  color: #175a9a;
+}
+
+.market-reward.rarity-epic {
+  background: linear-gradient(135deg, rgba(199, 99, 255, 0.16), rgba(255, 123, 195, 0.14));
+  border-color: rgba(199, 99, 255, 0.24);
+  color: #74319a;
+}
+
+.market-reward.rarity-legendary,
+.market-reward.rarity-chroma {
+  background: linear-gradient(135deg, rgba(255, 212, 71, 0.18), rgba(255, 152, 73, 0.14));
+  border-color: rgba(255, 181, 56, 0.26);
+  color: #8f5800;
+}
+
+.market-reward-thumb {
+  flex: 0 0 auto;
+}
+
+.market-reward-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.market-reward-copy strong {
+  display: block;
+  font-size: 1.08rem;
+}
+
+.market-reward-copy span {
+  color: inherit;
+  opacity: 0.78;
+  font-size: 0.9rem;
+}
+
+.market-reward-action {
+  margin-left: auto;
+}
+
+.market-reward-blook-inline {
+  width: 72px;
+  height: 72px;
+}
+
+body.market-reveal-open {
+  overflow: hidden;
+}
+
+.market-reveal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  padding: 20px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(91, 171, 255, 0.2), transparent 28%),
+    radial-gradient(circle at 82% 18%, rgba(255, 199, 83, 0.2), transparent 24%),
+    linear-gradient(180deg, rgba(5, 10, 20, 0.74), rgba(5, 10, 20, 0.88));
+  opacity: 0;
+  transition: opacity 0.24s ease;
+  backdrop-filter: blur(10px);
+}
+
+.market-reveal-overlay.is-visible {
+  opacity: 1;
+}
+
+.market-reveal-scene {
+  position: relative;
+  width: min(980px, 100%);
+  min-height: min(720px, calc(100vh - 40px));
+  display: grid;
+  place-items: center;
+}
+
+.market-reveal-fireworks {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.market-reveal-burst,
+.market-reveal-spark {
+  position: absolute;
+  pointer-events: none;
+}
+
+.market-reveal-burst {
+  left: var(--burst-left);
+  top: var(--burst-top);
+  width: var(--burst-size);
+  height: var(--burst-size);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0.16);
+  opacity: 0;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.96) 0 10%, transparent 12% 100%),
+    repeating-conic-gradient(from 0deg, var(--burst-color) 0 12deg, transparent 12deg 22deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 24%, #000 26% 54%, transparent 57%);
+  mask: radial-gradient(circle, transparent 0 24%, #000 26% 54%, transparent 57%);
+  filter: drop-shadow(0 0 16px var(--burst-color));
+  animation: market-firework-burst var(--burst-duration) ease-out infinite;
+  animation-delay: var(--burst-delay);
+}
+
+.market-reveal-spark {
+  left: var(--spark-left);
+  top: var(--spark-top);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--spark-color);
+  box-shadow: 0 0 14px var(--spark-color);
+  animation: market-firework-spark 1.4s ease-in-out infinite;
+  animation-delay: var(--spark-delay);
+}
+
+.market-reveal-card {
+  position: relative;
+  z-index: 1;
+  width: min(720px, 100%);
+  overflow: hidden;
+  border-radius: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 28px 70px rgba(7, 18, 40, 0.42);
+  padding: 28px 28px 22px;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.18), transparent 32%),
+    linear-gradient(160deg, rgba(10, 21, 45, 0.98), rgba(18, 34, 67, 0.95));
+  color: #f7fbff;
+  opacity: 0;
+  transform: translateY(22px) scale(0.94);
+  transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease;
+}
+
+.market-reveal-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.1), transparent 38%, transparent 64%, rgba(255, 255, 255, 0.08));
+  pointer-events: none;
+}
+
+.market-reveal-card.rarity-common {
+  background:
+    radial-gradient(circle at top, rgba(105, 227, 170, 0.2), transparent 30%),
+    linear-gradient(160deg, rgba(10, 24, 34, 0.98), rgba(14, 42, 45, 0.95));
+}
+
+.market-reveal-card.rarity-rare {
+  background:
+    radial-gradient(circle at top, rgba(108, 186, 255, 0.22), transparent 32%),
+    linear-gradient(160deg, rgba(8, 24, 47, 0.98), rgba(13, 45, 76, 0.95));
+}
+
+.market-reveal-card.rarity-epic {
+  background:
+    radial-gradient(circle at top, rgba(212, 124, 255, 0.22), transparent 32%),
+    linear-gradient(160deg, rgba(31, 12, 48, 0.98), rgba(62, 20, 77, 0.95));
+}
+
+.market-reveal-card.rarity-legendary {
+  background:
+    radial-gradient(circle at top, rgba(255, 212, 71, 0.24), transparent 32%),
+    linear-gradient(160deg, rgba(46, 21, 8, 0.98), rgba(92, 43, 14, 0.95));
+}
+
+.market-reveal-card.rarity-chroma {
+  background:
+    radial-gradient(circle at 20% 15%, rgba(255, 124, 139, 0.22), transparent 26%),
+    radial-gradient(circle at 80% 18%, rgba(87, 156, 255, 0.22), transparent 24%),
+    radial-gradient(circle at 48% 0%, rgba(255, 212, 71, 0.22), transparent 28%),
+    linear-gradient(160deg, rgba(23, 15, 47, 0.98), rgba(33, 49, 90, 0.95));
+}
+
+.market-reveal-overlay.is-visible .market-reveal-card {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.market-reveal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 14px;
+  color: rgba(247, 251, 255, 0.86);
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.market-reveal-close:hover {
+  filter: brightness(1.06);
+}
+
+.market-reveal-pack-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.market-reveal-pack-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(247, 251, 255, 0.88);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.market-reveal-stage {
+  position: relative;
+  min-height: 310px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 8px;
+}
+
+.market-reveal-seal-wrap,
+.market-reveal-blook-wrap {
+  grid-area: 1 / 1;
+  transition: transform 0.46s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.34s ease;
+}
+
+.market-reveal-seal-wrap {
+  opacity: 1;
+  transform: scale(1) rotate(-4deg);
+}
+
+.market-reveal-overlay.is-revealed .market-reveal-seal-wrap {
+  opacity: 0;
+  transform: scale(0.12) rotate(18deg);
+}
+
+.market-reveal-seal {
+  width: 188px;
+  height: 244px;
+  border-radius: 28px;
+  border: 2px solid rgba(255, 241, 163, 0.5);
+  background:
+    linear-gradient(180deg, rgba(255, 228, 138, 0.16), rgba(255, 212, 71, 0.42)),
+    linear-gradient(150deg, rgba(255, 255, 255, 0.12), transparent 60%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 20px 44px rgba(8, 16, 27, 0.34);
+  display: grid;
+  place-items: center;
+}
+
+.market-reveal-seal span {
+  font-family: 'Bungee', 'Space Grotesk', sans-serif;
+  font-size: 2rem;
+  letter-spacing: 0.08em;
+  color: #fff0ab;
+}
+
+.market-reveal-blook-wrap {
+  position: relative;
+  opacity: 0;
+  transform: translateY(24px) scale(0.82);
+}
+
+.market-reveal-overlay.is-revealed .market-reveal-blook-wrap {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.market-reveal-halo {
+  position: absolute;
+  inset: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.34), transparent 64%);
+  filter: blur(16px);
+}
+
+.market-reveal-blook-hero {
+  width: 228px;
+  height: 228px;
+}
+
+.market-reveal-image {
+  border-radius: 24px;
+  padding: 10px;
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.24), rgba(5, 10, 20, 0.82));
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 24px 40px rgba(6, 12, 24, 0.34);
+}
+
+.market-reveal-emoji {
+  font-size: 5rem;
+}
+
+.market-reveal-copy {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 10px;
+  text-align: center;
+}
+
+.market-reveal-kicker {
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.market-reveal-copy h2 {
+  margin: 0;
+  font-size: clamp(2.2rem, 6vw, 3.4rem);
+  line-height: 0.95;
+}
+
+.market-reveal-rarity {
+  justify-self: center;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.market-reveal-copy p {
+  margin: 0;
+  color: rgba(247, 251, 255, 0.82);
+  font-size: 1.02rem;
+  line-height: 1.55;
+}
+
+.market-reveal-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.market-reveal-meta span {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(247, 251, 255, 0.88);
+  font-weight: 800;
+}
+
+.market-reveal-actions {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.market-reveal-hint {
+  color: rgba(247, 251, 255, 0.62);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+@keyframes market-firework-burst {
+  0% {
+    transform: translate(-50%, -50%) scale(0.14);
+    opacity: 0;
+  }
+  14% {
+    opacity: 1;
+  }
+  58% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.92;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.3);
+    opacity: 0;
+  }
+}
+
+@keyframes market-firework-spark {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(0.3);
+    opacity: 0.18;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 1;
+  }
+}
 }
 
 .settings-list,

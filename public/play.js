@@ -6507,7 +6507,7 @@ socket.on("question:result", (payload) => {
   } else {
     playMiniGameSfx(mine.correct ? "correct" : "miss");
     setNotice(
-      `${mine.correct ? "Correct" : "Incorrect"}. ${mine.correct ? `+${mine.delta} points.` : "No points."}${isAsteroidsMode() && mine.correct ? ` ${asteroidBlastCount} asteroids blasted.${streakCoins > 0 ? ` +${streakCoins} streak coins.` : ""}` : ""}${explanation}`,
+      `${mine.correct ? "Correct. You qualified for the mini-game." : "Incorrect. You will wait for the next checkpoint."} ${mine.correct ? `+${mine.delta} points.` : "No points."}${isAsteroidsMode() && mine.correct ? ` ${asteroidBlastCount} asteroids blasted.${streakCoins > 0 ? ` +${streakCoins} streak coins.` : ""}` : ""}${explanation}`,
       mine.correct ? "good" : "bad"
     );
   }
@@ -6522,20 +6522,25 @@ socket.on("minigame:start", ({ eligiblePlayerIds, eventName, feedTitle: nextFeed
   if (nextFeedTitle) {
     feedTitle.textContent = nextFeedTitle;
   }
-  const isEligible = eligiblePlayerIds.includes(socket.id);
+  const activeRoundPlayers = Array.isArray(eligiblePlayerIds) ? eligiblePlayerIds : [];
+  const isEligible = activeRoundPlayers.includes(socket.id);
 
   if (!isEligible) {
     hideMiniTutorialOverlay();
     applyMiniTutorialButtonVisibility("");
     stopMiniTickers();
     showSection(resultSection);
-    resultText.textContent = `Only students who answered correctly are in ${activeEventName}.`;
-    setNotice(roomSettings.showInstructions === false ? "Mini-game in progress." : "Answer correctly to enter the next mini-game round.");
+    resultText.textContent = `Only students who answered correctly continue into ${activeEventName}.`;
+    setNotice(
+      roomSettings.showInstructions === false
+        ? "Mini-game in progress."
+        : "You did not qualify for this checkpoint. Wait for the next question to get back in."
+    );
   }
 });
 
 socket.on("minigame:yourData", ({ type, endsAt, eventName, actionLabel, data }) => {
-  setPhase("minigame", `${miniGameTypeLabel(type)} live. Play for bonus points.`);
+  setPhase("minigame", `${miniGameTypeLabel(type)} live. Keep playing until the next checkpoint.`);
   showSection(chestSection);
   activeEventName = eventName || "Mini-game";
   activeActionLabel = actionLabel || "Play";
@@ -6545,7 +6550,7 @@ socket.on("minigame:yourData", ({ type, endsAt, eventName, actionLabel, data }) 
   startTicker(chestTimer, endsAt, "Mini-game ends in");
   openMiniTutorial(type);
   playMiniGameSfx("start");
-  setNotice(roomSettings.showInstructions === false ? "Mini-game started." : "Play the mini-game for bonus points.");
+  setNotice(roomSettings.showInstructions === false ? "Mini-game started." : "You answered correctly. Keep playing until the next question checkpoint.");
 });
 
 socket.on("minigame:state", (payload) => {

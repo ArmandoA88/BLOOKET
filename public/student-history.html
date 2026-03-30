@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student History</title>
+    <link rel="stylesheet" href="/style.css" />
+    <style>
+      :root{--side:#9d42bf;--side-deep:#8030a3;--teal:#18c3d6;--teal-deep:#0fb3ca;--copy:#2b3958;--copy-soft:#657590;--line:#d9e1ef}
+      *{box-sizing:border-box}
+      body{margin:0;min-height:100vh;font-family:"Nunito","Segoe UI",sans-serif;background:linear-gradient(135deg,#21cfe3 0%,#18c3d6 52%,#12b3ca 100%)}
+      .shell{display:grid;grid-template-columns:136px minmax(0,1fr);min-height:100vh}
+      .sidebar{position:sticky;top:0;display:flex;flex-direction:column;gap:16px;height:100vh;padding:14px 12px 16px;background:linear-gradient(180deg,var(--side) 0%,var(--side-deep) 100%);box-shadow:16px 0 34px rgba(72,18,95,.22)}
+      .brand{display:inline-block;color:#fff;text-decoration:none;font-family:"Baloo 2","Nunito",sans-serif;font-size:2.6rem;line-height:.92}
+      .play-cta{display:flex;align-items:center;justify-content:center;min-height:38px;border-radius:8px;background:linear-gradient(180deg,#1ad0df 0%,#10b7d2 100%);box-shadow:0 5px 0 rgba(4,131,161,.72);color:#fff;text-decoration:none;font-weight:900;font-size:1.1rem}
+      .nav{display:grid;gap:6px}
+      .nav-link{display:flex;align-items:center;gap:10px;min-height:38px;padding:0 12px;border-radius:8px;color:rgba(255,255,255,.96);text-decoration:none;font-weight:800;transition:transform .18s ease,background .18s ease,color .18s ease}
+      .nav-link:hover{background:rgba(255,255,255,.94);color:#9a42bc;transform:translateX(2px)}
+      .nav-icon{width:12px;height:12px;flex:0 0 12px;border-radius:3px;background:currentColor}
+      .side-footer{margin-top:auto;display:grid;gap:10px}
+      .side-pill,.side-link{display:flex;align-items:center;justify-content:center;min-height:34px;padding:0 12px;border-radius:999px;text-decoration:none;font-weight:800}
+      .side-pill{background:rgba(255,255,255,.14);color:#fff}
+      .side-link{background:rgba(0,0,0,.14);color:#fff}
+      .main{min-width:0;min-height:100vh;padding:12px 18px 28px;background:rgba(255,255,255,.97);color:var(--copy)}
+      .page{width:min(1460px,100%);margin:0 auto}
+      .topbar{display:flex;justify-content:flex-end;align-items:center;gap:12px}
+      .coins{display:inline-flex;align-items:center;justify-content:center;min-width:84px;min-height:40px;padding:0 14px;border-radius:12px;background:#fff;color:#cc9500;font-family:"Baloo 2","Nunito",sans-serif;font-size:1.1rem;font-weight:800;box-shadow:0 5px 0 rgba(184,197,214,.6)}
+      .account{display:inline-flex;align-items:center;gap:10px;padding:6px 10px 6px 6px;min-width:180px;border-radius:10px;background:linear-gradient(180deg,#9e4cc2 0%,#8532aa 100%);box-shadow:0 5px 0 rgba(94,31,121,.62);color:#fff}
+      .avatar{width:34px;height:34px;overflow:hidden;flex:0 0 34px;border-radius:9px;background:linear-gradient(180deg,#7feea4 0%,#51bc72 100%);border:2px solid rgba(255,255,255,.28)}
+      .avatar img{width:100%;height:100%;display:block;object-fit:cover}
+      .avatar-fallback{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#fff;font-family:"Baloo 2","Nunito",sans-serif;font-weight:800;text-transform:uppercase}
+      .account strong,.account span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .account strong{font-size:1.05rem;line-height:1.1}
+      .account span{color:rgba(232,243,255,.84);font-size:.76rem;font-weight:800}
+      .head{padding-bottom:16px;border-bottom:1px solid rgba(129,149,185,.28)}
+      .head-title{display:flex;align-items:center;gap:10px}
+      h1{margin:10px 0 0;font-family:"Baloo 2","Nunito",sans-serif;font-size:clamp(2.4rem,4vw,3.4rem);line-height:.95}
+      .help-badge{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-top:14px;border-radius:999px;border:2px solid #7b86a0;color:#50607e;font-size:.82rem;font-weight:900}
+      .subtitle{margin:6px 0 0;color:var(--copy-soft);font-weight:700}
+      .meta{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+      .meta-pill{display:inline-flex;align-items:center;min-height:34px;padding:0 14px;border-radius:999px;background:#eef4ff;color:#5a6b89;font-size:.92rem;font-weight:800}
+      .empty-shell{display:grid;place-items:center;min-height:calc(100vh - 230px)}
+      .empty-card{display:grid;justify-items:center;gap:12px}
+      .empty-graphic{position:relative;width:240px;height:160px}
+      .chart-board{position:absolute;left:0;top:18px;width:170px;height:130px;border-radius:18px;background:#fff;border:6px solid #e9edf4;box-shadow:0 8px 20px rgba(122,141,176,.18)}
+      .chart-grid{position:absolute;inset:12px;border-radius:12px;background:
+        linear-gradient(rgba(212,220,235,.55) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(212,220,235,.55) 1px, transparent 1px);
+        background-size:16px 16px}
+      .chart-axis{position:absolute;left:22px;bottom:18px;width:100px;height:100px;border-left:8px solid #a44dc9;border-bottom:8px solid #a44dc9;border-radius:0 0 0 10px}
+      .chart-bar{position:absolute;bottom:26px;width:34px;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#22d0db 0%,#0fb9cc 100%)}
+      .bar-a{left:40px;height:52px}.bar-b{left:80px;height:98px}.bar-c{left:120px;height:78px}
+      .history-blook{position:absolute;right:0;bottom:0;width:96px;height:118px;border-radius:26px 26px 20px 20px;background:linear-gradient(180deg,#f7d26b 0%,#d48a2a 100%);box-shadow:0 8px 18px rgba(115,84,44,.22)}
+      .history-blook:before,.history-blook:after{content:"";position:absolute;top:2px;width:24px;height:28px;border-radius:10px 10px 0 0;background:#b96e2e}
+      .history-blook:before{left:8px;transform:rotate(-16deg)}.history-blook:after{right:8px;transform:rotate(16deg)}
+      .history-face{position:absolute;inset:0}
+      .history-face:before,.history-face:after{content:"";position:absolute;top:46px;width:18px;height:24px;border-radius:50%;background:#fff;border:3px solid #9a5626}
+      .history-face:before{left:18px}.history-face:after{right:18px}
+      .history-nose{position:absolute;left:50%;top:54px;width:22px;height:32px;border-radius:12px;background:#8f5529;transform:translateX(-50%)}
+      .history-copy{font-size:2rem;text-align:center;line-height:1.15}
+      .action{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:10px;color:#fff;text-decoration:none;font-weight:900;box-shadow:0 5px 0 rgba(0,0,0,.18)}
+      .action.teal{background:linear-gradient(180deg,var(--teal) 0%,var(--teal-deep) 100%);box-shadow:0 5px 0 rgba(8,148,170,.55)}
+      .tutorial{color:#8e4eb2;font-size:.98rem;font-weight:800;text-decoration:none}
+      .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}
+      .summary-card{padding:16px;border-radius:16px;background:#fff;border:1px solid var(--line);box-shadow:0 12px 24px rgba(87,112,155,.12)}
+      .summary-card span{display:block;color:var(--copy-soft);font-size:.88rem;font-weight:800}
+      .summary-card strong{display:block;margin-top:6px;font-size:2rem;line-height:1}
+      .section{margin-top:20px;padding:18px;border-radius:18px;background:#f9fbff;border:1px solid var(--line)}
+      .section h2{margin:0 0 14px;font-family:"Baloo 2","Nunito",sans-serif;font-size:2rem;line-height:.95}
+      .mini-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+      .mini-card{padding:14px;border-radius:14px;background:#fff;border:1px solid #dbe3f0}
+      .mini-card strong{display:block;font-size:1.08rem}
+      .mini-card span{display:block;margin-top:4px;color:var(--copy-soft);font-weight:700}
+      .mini-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+      .chip{display:inline-flex;align-items:center;min-height:28px;padding:0 10px;border-radius:999px;background:#eef4ff;color:#586a88;font-size:.82rem;font-weight:900}
+      @media (max-width:900px){.shell{grid-template-columns:1fr}.sidebar{position:static;height:auto}}
+      @media (max-width:640px){.main{padding:12px 12px 24px}.topbar{flex-wrap:wrap;justify-content:flex-start}.empty-graphic{transform:scale(.9)}}
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <a class="brand" href="/student-login">Blooket</a>
+        <a class="play-cta" href="/play">Play</a>
+        <nav class="nav" aria-label="Student navigation">
+          <a class="nav-link" href="/student-login#studentStatsBoard"><span class="nav-icon" aria-hidden="true"></span><span>Stats</span></a>
+          <a class="nav-link" href="/student-login#studentBlooksBoard"><span class="nav-icon" aria-hidden="true"></span><span>Blooks</span></a>
+          <a class="nav-link" href="/student-market"><span class="nav-icon" aria-hidden="true"></span><span>Market</span></a>
+          <a class="nav-link" href="/student-discover"><span class="nav-icon" aria-hidden="true"></span><span>Discover</span></a>
+          <a class="nav-link" href="/student-set-creator"><span class="nav-icon" aria-hidden="true"></span><span>Set Creator</span></a>
+          <a class="nav-link" href="/student-my-sets"><span class="nav-icon" aria-hidden="true"></span><span>My Sets</span></a>
+          <a class="nav-link" href="/student-favorites"><span class="nav-icon" aria-hidden="true"></span><span>Favorites</span></a>
+        </nav>
+        <div class="side-footer">
+          <div id="studentHistoryRoomCode" class="side-pill">Room: none</div>
+          <a class="side-link" href="/student-settings">Settings</a>
+          <a class="side-link" href="/student-login">Back to Dashboard</a>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="page">
+          <div class="topbar">
+            <div id="studentHistoryCoins" class="coins">0</div>
+            <div class="account">
+              <div id="studentHistoryAvatar" class="avatar"></div>
+              <div>
+                <strong id="studentHistoryName">Student</strong>
+                <span id="studentHistoryStatus">History</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="head">
+            <div class="head-title">
+              <h1>History</h1>
+              <span class="help-badge" aria-hidden="true">?</span>
+            </div>
+            <p class="subtitle">See your classroom activity, correct answers, and strongest mini-games.</p>
+          </div>
+
+          <div id="studentHistoryMeta" class="meta"></div>
+          <div id="studentHistoryContent"></div>
+        </div>
+      </main>
+    </div>
+
+    <script src="/student-history.js"></script>
+  </body>
+</html>

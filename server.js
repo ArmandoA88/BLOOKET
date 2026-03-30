@@ -1232,6 +1232,8 @@ function publicAccountSummary(account) {
     id: account.id,
     coins: account.coins,
     freePackOpensRemaining: account.freePackOpensRemaining,
+    createdAt: account.createdAt || nowIso(),
+    updatedAt: account.updatedAt || nowIso(),
     selectedBlookId,
     packs: packRows,
     inventory,
@@ -1301,13 +1303,14 @@ function openPackForAccount(account, packId) {
     reward: {
       id: reward.id,
       name: reward.name,
+      image: reward.image || null,
       icon: reward.icon,
       rarity: reward.rarity,
-      packId: reward.packId,
-      packName: reward.packName,
+      packId: pack.id,
+      packName: pack.name,
       duplicate: previousCount >= 1,
       count: nextCount,
-      sellValueEach: duplicateSellValueForPack(reward.packId),
+      sellValueEach: duplicateSellValueForPack(pack.id),
       openCost: cost,
       freeOpen: isFree
     }
@@ -2864,6 +2867,14 @@ const DASHBOARD_ALIAS_PATHS = [
 
 const PLAYER_ALIAS_PATHS = ["/play"];
 const STUDENT_LOGIN_ALIAS_PATHS = ["/student-login"];
+const STUDENT_MARKET_ALIAS_PATHS = ["/student-market"];
+const STUDENT_DISCOVER_ALIAS_PATHS = ["/student-discover"];
+const STUDENT_SET_CREATOR_ALIAS_PATHS = ["/student-set-creator"];
+const STUDENT_MY_SETS_ALIAS_PATHS = ["/student-my-sets"];
+const STUDENT_FAVORITES_ALIAS_PATHS = ["/student-favorites"];
+const STUDENT_HISTORY_ALIAS_PATHS = ["/student-history"];
+const STUDENT_HOMEWORK_ALIAS_PATHS = ["/student-homework"];
+const STUDENT_SETTINGS_ALIAS_PATHS = ["/student-settings"];
 
 function pathRequiresLogin(pathname) {
   if (!GOOGLE_AUTH_ENABLED) {
@@ -3153,6 +3164,54 @@ for (const route of STUDENT_LOGIN_ALIAS_PATHS) {
   });
 }
 
+for (const route of STUDENT_MARKET_ALIAS_PATHS) {
+  app.get(route, (_req, res) => {
+    res.sendFile(path.join(__dirname, "public", "student-market.html"));
+  });
+}
+
+for (const route of STUDENT_DISCOVER_ALIAS_PATHS) {
+  app.get(route, (_req, res) => {
+    res.sendFile(path.join(__dirname, "public", "student-discover.html"));
+  });
+}
+
+for (const route of STUDENT_SET_CREATOR_ALIAS_PATHS) {
+  app.get(route, (_req, res) => {
+    res.sendFile(path.join(__dirname, "public", "student-set-creator.html"));
+  });
+}
+
+for (const route of STUDENT_MY_SETS_ALIAS_PATHS) {
+  app.get(route, (_req, res) => {
+    res.sendFile(path.join(__dirname, "public", "student-my-sets.html"));
+  });
+}
+
+for (const route of STUDENT_FAVORITES_ALIAS_PATHS) {
+  app.get(route, (_req, res) => {
+    res.sendFile(path.join(__dirname, "public", "student-favorites.html"));
+  });
+}
+
+for (const route of STUDENT_HISTORY_ALIAS_PATHS) {
+  app.get(route, (_req, res) => {
+    res.sendFile(path.join(__dirname, "public", "student-history.html"));
+  });
+}
+
+for (const route of STUDENT_HOMEWORK_ALIAS_PATHS) {
+  app.get(route, (_req, res) => {
+    res.sendFile(path.join(__dirname, "public", "student-homework.html"));
+  });
+}
+
+for (const route of STUDENT_SETTINGS_ALIAS_PATHS) {
+  app.get(route, (_req, res) => {
+    res.sendFile(path.join(__dirname, "public", "student-settings.html"));
+  });
+}
+
 app.get("/health", (_req, res) => {
   res.json({ ok: true, games: games.size, googleAuthEnabled: GOOGLE_AUTH_ENABLED });
 });
@@ -3182,6 +3241,10 @@ app.get("/api/quizzes/export", (_req, res) => {
 app.post("/api/quizzes/upload", quizUpload.single("file"), (req, res) => {
   const titleRaw = String(req.body?.title || "").trim();
   const uploadedBy = sanitizeName(req.body?.uploadedBy || req.user?.name || "User");
+  const description = sanitizeQuizDescription(req.body?.description || "");
+  const coverImage = sanitizeQuestionImage(req.body?.coverImage || "");
+  const visibility = sanitizeQuizVisibility(req.body?.visibility ?? req.body?.isPublic);
+  const creationMethod = sanitizeQuizCreationMethod(req.body?.creationMethod || "csv");
   const category = sanitizeQuizCategory(req.body?.category || "");
   const tags = sanitizeQuizTags(req.body?.tags || "");
   const file = req.file;
@@ -3228,6 +3291,10 @@ app.post("/api/quizzes/upload", quizUpload.single("file"), (req, res) => {
         questions: entry.questions,
         uploadedBy: entry.uploadedBy || uploadedBy,
         uploadedAt: entry.uploadedAt,
+        description: entry.description || description,
+        coverImage: entry.coverImage || coverImage,
+        visibility: entry.visibility || visibility,
+        creationMethod: entry.creationMethod || creationMethod,
         category: entry.category || category,
         tags: Array.isArray(entry.tags) && entry.tags.length > 0 ? entry.tags : tags
       });
@@ -3283,6 +3350,10 @@ app.post("/api/quizzes/upload", quizUpload.single("file"), (req, res) => {
     questions: rows,
     uploadedBy,
     uploadedAt: nowIso(),
+    description,
+    coverImage,
+    visibility,
+    creationMethod,
     category,
     tags
   });
@@ -3324,6 +3395,14 @@ app.post("/api/quizzes/custom/save", (req, res) => {
   const requestedId = String(req.body?.id || "").trim();
   const uploadedBy = sanitizeName(req.body?.uploadedBy || req.user?.name || "User");
   const titleRaw = String(req.body?.title || req.body?.label || "").trim();
+  const descriptionProvided = "description" in (req.body || {});
+  const coverImageProvided = "coverImage" in (req.body || {});
+  const visibilityProvided = "visibility" in (req.body || {}) || "isPublic" in (req.body || {});
+  const creationMethodProvided = "creationMethod" in (req.body || {});
+  const description = sanitizeQuizDescription(req.body?.description || "");
+  const coverImage = sanitizeQuestionImage(req.body?.coverImage || "");
+  const visibility = sanitizeQuizVisibility(req.body?.visibility ?? req.body?.isPublic);
+  const creationMethod = sanitizeQuizCreationMethod(req.body?.creationMethod || "manual");
   const categoryProvided = "category" in (req.body || {});
   const tagsProvided = "tags" in (req.body || {});
   const category = sanitizeQuizCategory(req.body?.category || "");
@@ -3365,6 +3444,10 @@ app.post("/api/quizzes/custom/save", (req, res) => {
     questionCount: parsedQuestions.length,
     uploadedBy: uploadedBy || existing?.uploadedBy || "",
     uploadedAt: existing?.uploadedAt || now,
+    description: descriptionProvided ? description : existing?.description || "",
+    coverImage: coverImageProvided ? coverImage : existing?.coverImage || "",
+    visibility: visibilityProvided ? visibility : existing?.visibility || "public",
+    creationMethod: creationMethodProvided ? creationMethod : existing?.creationMethod || "manual",
     category: categoryProvided ? category : existing?.category || "",
     tags: tagsProvided ? tags : Array.isArray(existing?.tags) ? existing.tags : []
   };
@@ -4475,6 +4558,23 @@ function sanitizeQuizTags(value) {
   return tags;
 }
 
+function sanitizeQuizDescription(value) {
+  return String(value || "").replace(/\s+/g, " ").trim().slice(0, 320);
+}
+
+function sanitizeQuizVisibility(value) {
+  const lowered = String(value || "").trim().toLowerCase();
+  return lowered === "private" || lowered === "false" ? "private" : "public";
+}
+
+function sanitizeQuizCreationMethod(value) {
+  const lowered = String(value || "").trim().toLowerCase();
+  if (lowered === "quizlet" || lowered === "csv") {
+    return lowered;
+  }
+  return "manual";
+}
+
 function normalizeQuizColumnKey(value) {
   return String(value || "")
     .toLowerCase()
@@ -4735,6 +4835,10 @@ function extractQuizImportEntriesFromJson(payload, fallbackLabel = "Uploaded Qui
       questions: Array.isArray(source.questions) ? source.questions : Array.isArray(source.rows) ? source.rows : [],
       uploadedBy: sanitizeName(source.uploadedBy || ""),
       uploadedAt: typeof source.uploadedAt === "string" ? source.uploadedAt : "",
+      description: sanitizeQuizDescription(source.description || source.summary || ""),
+      coverImage: sanitizeQuestionImage(source.coverImage || source.cover || source.image || ""),
+      visibility: sanitizeQuizVisibility(source.visibility ?? source.isPublic),
+      creationMethod: sanitizeQuizCreationMethod(source.creationMethod || source.method || ""),
       category: sanitizeQuizCategory(source.category || ""),
       tags: sanitizeQuizTags(source.tags || "")
     };
@@ -4752,6 +4856,10 @@ function extractQuizImportEntriesFromJson(payload, fallbackLabel = "Uploaded Qui
           questions: payload,
           uploadedBy: "",
           uploadedAt: "",
+          description: "",
+          coverImage: "",
+          visibility: "public",
+          creationMethod: "manual",
           category: "",
           tags: []
         }
@@ -4784,7 +4892,7 @@ function extractQuizImportEntriesFromJson(payload, fallbackLabel = "Uploaded Qui
   return [];
 }
 
-function saveImportedQuestionSet({ label, questions, uploadedBy, uploadedAt, category, tags }) {
+function saveImportedQuestionSet({ label, questions, uploadedBy, uploadedAt, description, coverImage, visibility, creationMethod, category, tags }) {
   const safeLabel = sanitizeQuestionPrompt(label || "Uploaded Quiz").slice(0, 64) || "Uploaded Quiz";
   const parsedQuestions = parseQuizRows(Array.isArray(questions) ? questions : []);
   if (parsedQuestions.length < 5) {
@@ -4801,6 +4909,10 @@ function saveImportedQuestionSet({ label, questions, uploadedBy, uploadedAt, cat
     questionCount: parsedQuestions.length,
     uploadedBy: sanitizeName(uploadedBy || ""),
     uploadedAt: typeof uploadedAt === "string" && uploadedAt.trim() ? uploadedAt : now,
+    description: sanitizeQuizDescription(description || ""),
+    coverImage: sanitizeQuestionImage(coverImage || ""),
+    visibility: sanitizeQuizVisibility(visibility),
+    creationMethod: sanitizeQuizCreationMethod(creationMethod || "csv"),
     category: sanitizeQuizCategory(category || ""),
     tags: sanitizeQuizTags(tags || "")
   };
@@ -4815,6 +4927,10 @@ function publicImportedQuestionSetSummary(quiz) {
     questionCount: quiz.questionCount || (Array.isArray(quiz.questions) ? quiz.questions.length : 0),
     uploadedBy: quiz.uploadedBy || "",
     uploadedAt: quiz.uploadedAt || nowIso(),
+    description: sanitizeQuizDescription(quiz.description || ""),
+    coverImage: sanitizeQuestionImage(quiz.coverImage || ""),
+    visibility: sanitizeQuizVisibility(quiz.visibility),
+    creationMethod: sanitizeQuizCreationMethod(quiz.creationMethod || quiz.source || ""),
     category: sanitizeQuizCategory(quiz.category || ""),
     tags: sanitizeQuizTags(quiz.tags || "")
   };
@@ -4844,6 +4960,10 @@ function publicCustomQuestionSetDetail(quiz) {
     source: "uploaded",
     uploadedBy: quiz?.uploadedBy || "",
     uploadedAt: quiz?.uploadedAt || nowIso(),
+    description: sanitizeQuizDescription(quiz?.description || ""),
+    coverImage: sanitizeQuestionImage(quiz?.coverImage || ""),
+    visibility: sanitizeQuizVisibility(quiz?.visibility),
+    creationMethod: sanitizeQuizCreationMethod(quiz?.creationMethod || quiz?.source || ""),
     category: sanitizeQuizCategory(quiz?.category || ""),
     tags: sanitizeQuizTags(quiz?.tags || ""),
     questionCount: safeQuestions.length,
@@ -4859,6 +4979,10 @@ function buildCustomQuestionSetsPayload(timestampKey = "savedAt") {
       label: quiz.label,
       uploadedBy: quiz.uploadedBy || "",
       uploadedAt: quiz.uploadedAt || nowIso(),
+      description: sanitizeQuizDescription(quiz.description || ""),
+      coverImage: sanitizeQuestionImage(quiz.coverImage || ""),
+      visibility: sanitizeQuizVisibility(quiz.visibility),
+      creationMethod: sanitizeQuizCreationMethod(quiz.creationMethod || quiz.source || ""),
       category: sanitizeQuizCategory(quiz.category || ""),
       tags: sanitizeQuizTags(quiz.tags || ""),
       questions: quiz.questions
@@ -4897,6 +5021,10 @@ function loadCustomQuestionSetsFromDisk() {
         questionCount: questions.length,
         uploadedBy: sanitizeName(quiz?.uploadedBy || ""),
         uploadedAt: typeof quiz?.uploadedAt === "string" ? quiz.uploadedAt : nowIso(),
+        description: sanitizeQuizDescription(quiz?.description || ""),
+        coverImage: sanitizeQuestionImage(quiz?.coverImage || ""),
+        visibility: sanitizeQuizVisibility(quiz?.visibility),
+        creationMethod: sanitizeQuizCreationMethod(quiz?.creationMethod || quiz?.source || ""),
         category: sanitizeQuizCategory(quiz?.category || ""),
         tags: sanitizeQuizTags(quiz?.tags || "")
       });
@@ -4922,6 +5050,11 @@ function publicQuestionSets() {
     label: entry.label,
     source: entry.source || "built_in",
     questionCount: entry.questionCount || (entry.id === "multiplication_1_digit" ? 81 : QUESTION_BANK.length),
+    description: sanitizeQuizDescription(entry.description || ""),
+    coverImage: sanitizeQuestionImage(entry.coverImage || ""),
+    visibility: sanitizeQuizVisibility(entry.visibility),
+    creationMethod: sanitizeQuizCreationMethod(entry.creationMethod || entry.source || ""),
+    uploadedBy: sanitizeName(entry.uploadedBy || ""),
     category: sanitizeQuizCategory(entry.category || ""),
     tags: sanitizeQuizTags(entry.tags || "")
   }));
@@ -9092,8 +9225,15 @@ function startMiniGamePhase(game, eligiblePlayerIds, options = {}) {
   const settingsDurationMs = clamp(Number(game.settings?.miniGameDurationSec) || 10, 5, 30) * 1000;
   const durationMs = clamp(Number(options.durationMs) || settingsDurationMs, 5000, 30000);
   const allowEmpty = options.allowEmpty === true;
+  const participantIds = Array.from(
+    new Set(
+      (Array.isArray(eligiblePlayerIds) ? eligiblePlayerIds : [])
+        .map((playerId) => String(playerId || ""))
+        .filter((playerId) => playerId && game?.players?.has(playerId))
+    )
+  );
 
-  if (!miniGameType || !meta || !Array.isArray(eligiblePlayerIds) || (eligiblePlayerIds.length === 0 && !allowEmpty)) {
+  if (!miniGameType || !meta || (participantIds.length === 0 && !allowEmpty)) {
     if (returnPhase === "lobby") {
       game.phase = "lobby";
       game.updatedAt = Date.now();
@@ -9120,16 +9260,16 @@ function startMiniGamePhase(game, eligiblePlayerIds, options = {}) {
   const globalBucket = ensureMiniGameStatsBucket(miniGameType);
   if (globalBucket) {
     globalBucket.sessions += 1;
-    globalBucket.playerEntries += Math.max(0, eligiblePlayerIds.length);
+    globalBucket.playerEntries += Math.max(0, participantIds.length);
     saveMiniGameStatsToDisk();
   }
 
   if (miniGameType === "soccer_shootout") {
-    game.soccerMatch = createSoccerMatchForPlayers(game, eligiblePlayerIds);
+    game.soccerMatch = createSoccerMatchForPlayers(game, participantIds);
   }
 
   const activePlayerIds = [];
-  for (const playerId of eligiblePlayerIds) {
+  for (const playerId of participantIds) {
     const state =
       miniGameType === "tower_stacker"
         ? getTowerStackerSessionState(game, playerId, difficulty)
@@ -9167,7 +9307,7 @@ function startMiniGamePhase(game, eligiblePlayerIds, options = {}) {
   }
 
   io.to(game.code).emit("minigame:start", {
-    eligiblePlayerIds,
+    eligiblePlayerIds: participantIds,
     type: miniGameType,
     endsAt: game.minigameEndsAt,
     eventName: meta.name,
@@ -9966,6 +10106,26 @@ function maybeFinishGameByWeight(game) {
   return true;
 }
 
+function correctMiniGamePlayerIds(game) {
+  if (!game || !(game.players instanceof Map)) {
+    return [];
+  }
+
+  const eligiblePlayers =
+    game.questionEligiblePlayerIds instanceof Set && game.questionEligiblePlayerIds.size > 0
+      ? game.questionEligiblePlayerIds
+      : new Set(game.players.keys());
+
+  return Array.from(
+    new Set(
+      Array.from(game.submissions.values())
+        .filter((entry) => entry?.correct === true && eligiblePlayers.has(entry.playerId))
+        .map((entry) => String(entry.playerId || ""))
+        .filter((playerId) => playerId && game.players.has(playerId))
+    )
+  );
+}
+
 function advanceAfterQuestionResult(game) {
   if (!game || !games.has(game.code) || game.phase !== "question_result") {
     return;
@@ -9974,11 +10134,7 @@ function advanceAfterQuestionResult(game) {
   game.lastQuestionResultPayload = null;
 
   if (game.players.size > 0) {
-    const submissions = Array.from(game.submissions.values());
-    const eligible = submissions
-      .filter((entry) => entry.correct === true)
-      .map((entry) => entry.playerId)
-      .filter((playerId, index, source) => source.indexOf(playerId) === index);
+    const eligible = correctMiniGamePlayerIds(game);
     const started = startMiniGamePhase(game, eligible, {
       durationMs: 10000
     });
@@ -10002,7 +10158,6 @@ function closeQuestion(game) {
 
   const question = game.questions[game.currentQuestionIndex];
   const submissions = Array.from(game.submissions.values());
-  game.questionEligiblePlayerIds = new Set();
   recordQuestionReportEntry(game, question, submissions);
   game.phase = "question_result";
   const resultPayload = buildQuestionResultPayload(game, question, submissions);

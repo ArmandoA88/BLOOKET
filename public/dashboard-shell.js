@@ -55,31 +55,10 @@
       title: "Settings",
       copy: "Authentication status, server URLs, and local repo storage details used by this project.",
       pill: "Settings"
-    },
-    "/stats": {
-      nav: "stats",
-      pane: "pane-stats",
-      title: "Stats",
-      copy: "Mini-game performance metrics and account progress pulled from the existing server APIs.",
-      pill: "Stats"
-    },
-    "/blooks": {
-      nav: "blooks",
-      pane: "pane-blooks",
-      title: "Blooks",
-      copy: "All local blook packs bundled in this repository, with hidden pack contents and live unlock totals.",
-      pill: "Blooks"
-    },
-    "/market": {
-      nav: "market",
-      pane: "pane-market",
-      title: "Market",
-      copy: "Open hidden blook packs with the classroom coin economy and live inventory data from this repo.",
-      pill: "Market"
     }
   };
 
-  const currentPath = routeConfig[window.location.pathname] ? window.location.pathname : "/host.html";
+  const currentPath = routeConfig[window.location.pathname] ? window.location.pathname : "/my-sets";
   const currentRoute = routeConfig[currentPath];
   const pageParams = new URLSearchParams(window.location.search);
   const state = {
@@ -117,12 +96,18 @@
   const marketCoinsEl = document.getElementById("marketCoins");
   const marketFreeOpensEl = document.getElementById("marketFreeOpens");
   const marketRewardEl = document.getElementById("marketReward");
+  const marketRevealOverlayEl = document.getElementById("marketRevealOverlay");
+  const marketRevealFireworksEl = document.getElementById("marketRevealFireworks");
+  const marketRevealCardEl = document.getElementById("marketRevealCard");
+  const marketRevealBodyEl = document.getElementById("marketRevealBody");
   const createBuilderLinkEl = document.getElementById("createBuilderLink");
   const createImportLinkEl = document.getElementById("createImportLink");
   const createHostLinkEl = document.getElementById("createHostLink");
   const createSetCountEl = document.getElementById("createSetCount");
   const createPackCountEl = document.getElementById("createPackCount");
   const createMiniCountEl = document.getElementById("createMiniCount");
+  let marketRevealTimer = 0;
+  let marketRevealHideTimer = 0;
 
   function escapeHtml(value) {
     return String(value ?? "")
@@ -153,6 +138,199 @@
       "rgba(255, 154, 61, 0.16)"
     ];
     return accents[index % accents.length];
+  }
+
+  function dashboardHandleBlookImageError(img) {
+    if (!img) {
+      return;
+    }
+    img.classList.add("hidden");
+    const fallback = img.parentElement?.querySelector(".blook-emoji");
+    if (fallback) {
+      fallback.classList.remove("hidden");
+    }
+  }
+
+  function dashboardHandleBlookImageLoad(img) {
+    if (!img) {
+      return;
+    }
+    img.classList.remove("hidden");
+    const fallback = img.parentElement?.querySelector(".blook-emoji");
+    if (fallback) {
+      fallback.classList.add("hidden");
+    }
+  }
+
+  window.dashboardHandleBlookImageError = dashboardHandleBlookImageError;
+  window.dashboardHandleBlookImageLoad = dashboardHandleBlookImageLoad;
+
+  function raritySlug(value) {
+    return String(value || "common")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "common";
+  }
+
+  function rewardPalette(rarity) {
+    const key = raritySlug(rarity);
+    const palettes = {
+      common: {
+        fireworks: ["#69e3aa", "#7ad7ff", "#ffe07a"],
+        glow: "rgba(90, 227, 171, 0.28)"
+      },
+      rare: {
+        fireworks: ["#6cbaff", "#7af2ff", "#f8ff8d"],
+        glow: "rgba(108, 186, 255, 0.3)"
+      },
+      epic: {
+        fireworks: ["#d47cff", "#ff7cc8", "#7ee7ff"],
+        glow: "rgba(212, 124, 255, 0.32)"
+      },
+      legendary: {
+        fireworks: ["#ffd447", "#ff9d42", "#fff1a1"],
+        glow: "rgba(255, 212, 71, 0.34)"
+      },
+      chroma: {
+        fireworks: ["#ff7c8b", "#ffd447", "#55f0d8", "#7b95ff"],
+        glow: "rgba(255, 124, 139, 0.28)"
+      }
+    };
+    return palettes[key] || palettes.common;
+  }
+
+  function buildStyleVars(styleMap) {
+    return escapeHtml(
+      Object.entries(styleMap)
+        .map(([key, value]) => `${key}:${value}`)
+        .join(";")
+    );
+  }
+
+  function renderRewardBlook(reward, variant = "hero") {
+    if (!reward) {
+      return `<span class="blook-emoji">?</span>`;
+    }
+    const variantClass = variant === "inline" ? " market-reward-blook-inline" : " market-reveal-blook-hero";
+    const content = reward.image
+      ? `<img src="${escapeHtml(reward.image)}" class="blook-image market-reveal-image" alt="${escapeHtml(reward.name || "Unlocked blook")}" onload="window.dashboardHandleBlookImageLoad(this)" onerror="window.dashboardHandleBlookImageError(this)" /><span class="blook-emoji hidden">${escapeHtml(reward.icon || "?")}</span>`
+      : `<span class="blook-emoji market-reveal-emoji">${escapeHtml(reward.icon || "?")}</span>`;
+
+    return `<div class="blook-container${variantClass}">${content}</div>`;
+  }
+
+  function buildMarketRevealFireworks(reward) {
+    const palette = rewardPalette(reward?.rarity);
+    const bursts = Array.from({ length: 18 }, (_, index) => {
+      const left = 9 + Math.random() * 82;
+      const top = index < 6 ? 8 + Math.random() * 18 : 14 + Math.random() * 56;
+      const size = 84 + Math.round(Math.random() * 86);
+      const delay = Math.round(Math.random() * 1100);
+      const duration = `${(1.4 + Math.random() * 0.9).toFixed(2)}s`;
+      const color = palette.fireworks[index % palette.fireworks.length];
+      return `<span class="market-reveal-burst" style="${buildStyleVars({
+        "--burst-left": `${left}%`,
+        "--burst-top": `${top}%`,
+        "--burst-size": `${size}px`,
+        "--burst-delay": `${delay}ms`,
+        "--burst-duration": duration,
+        "--burst-color": color
+      })}"></span>`;
+    });
+    const sparkles = Array.from({ length: 24 }, (_, index) => {
+      const left = 6 + Math.random() * 88;
+      const top = 10 + Math.random() * 78;
+      const delay = Math.round(Math.random() * 1200);
+      const color = palette.fireworks[index % palette.fireworks.length];
+      return `<span class="market-reveal-spark" style="${buildStyleVars({
+        "--spark-left": `${left}%`,
+        "--spark-top": `${top}%`,
+        "--spark-delay": `${delay}ms`,
+        "--spark-color": color
+      })}"></span>`;
+    });
+    return bursts.concat(sparkles).join("");
+  }
+
+  function renderMarketRevealBody(reward) {
+    const rarity = String(reward?.rarity || "Common");
+    const duplicate = reward?.duplicate === true;
+    const ownedCount = Math.max(1, Number(reward?.count || 1));
+    const sellValue = Math.max(0, Number(reward?.sellValueEach || 0));
+    const openNote = reward?.freeOpen ? "Free open used" : `${formatNumber(reward?.openCost || 0)} coins spent`;
+    const summary = duplicate
+      ? `Duplicate pull. ${escapeHtml(reward.name || "This blook")} is now stacked ${ownedCount} deep in your collection.`
+      : `Fresh unlock. ${escapeHtml(reward.name || "This blook")} is now live in your collection and selected for your account.`;
+
+    return `
+      <div class="market-reveal-pack-line">
+        <span class="market-reveal-pack-pill">${escapeHtml(reward?.packName || "Mystery Pack")}</span>
+        <span class="market-reveal-pack-pill">${escapeHtml(rarity)}</span>
+      </div>
+      <div class="market-reveal-stage">
+        <div class="market-reveal-seal-wrap" aria-hidden="true">
+          <div class="market-reveal-seal">
+            <span>PACK</span>
+          </div>
+        </div>
+        <div class="market-reveal-blook-wrap">
+          <div class="market-reveal-halo"></div>
+          ${renderRewardBlook(reward)}
+        </div>
+      </div>
+      <div class="market-reveal-copy">
+        <span class="market-reveal-kicker">${duplicate ? "Unlocked Again" : "New Unlock"}</span>
+        <h2 id="marketRevealTitle">${escapeHtml(reward?.name || "Mystery Blook")}</h2>
+        <div class="market-reveal-rarity">${escapeHtml(rarity)}</div>
+        <p>${summary}</p>
+        <div class="market-reveal-meta">
+          <span>${escapeHtml(`${ownedCount} owned`)}</span>
+          <span>${escapeHtml(`${sellValue} sell value`)}</span>
+          <span>${escapeHtml(openNote)}</span>
+        </div>
+      </div>
+      <div class="market-reveal-actions">
+        <button class="dashboard-action" type="button" data-close-market-reveal>Back to Market</button>
+        <div class="market-reveal-hint">Press Esc or click outside the card to continue</div>
+      </div>
+    `;
+  }
+
+  function hideMarketReveal() {
+    if (!marketRevealOverlayEl) {
+      return;
+    }
+    window.clearTimeout(marketRevealTimer);
+    window.clearTimeout(marketRevealHideTimer);
+    marketRevealOverlayEl.classList.remove("is-visible", "is-revealed");
+    marketRevealOverlayEl.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("market-reveal-open");
+    marketRevealHideTimer = window.setTimeout(() => {
+      marketRevealOverlayEl.hidden = true;
+    }, 260);
+  }
+
+  function showMarketReveal(reward) {
+    if (!marketRevealOverlayEl || !marketRevealFireworksEl || !marketRevealBodyEl || !reward?.id) {
+      return;
+    }
+    window.clearTimeout(marketRevealTimer);
+    window.clearTimeout(marketRevealHideTimer);
+    marketRevealFireworksEl.innerHTML = buildMarketRevealFireworks(reward);
+    marketRevealBodyEl.innerHTML = renderMarketRevealBody(reward);
+    if (marketRevealCardEl) {
+      marketRevealCardEl.className = `market-reveal-card rarity-${escapeHtml(raritySlug(reward.rarity))}`;
+    }
+    marketRevealOverlayEl.hidden = false;
+    marketRevealOverlayEl.setAttribute("aria-hidden", "false");
+    document.body.classList.add("market-reveal-open");
+    window.requestAnimationFrame(() => {
+      marketRevealOverlayEl.classList.add("is-visible");
+      marketRevealTimer = window.setTimeout(() => {
+        marketRevealOverlayEl.classList.add("is-revealed");
+      }, 180);
+    });
   }
 
   function renderHiddenPackPreview(pack, ownedCount = 0) {
@@ -346,10 +524,10 @@
     if (!activeRoom?.code) {
       activeRoomCalloutEl.innerHTML = `
         <strong>No live room is open right now.</strong>
-        <div class="muted-copy">Use <a class="dashboard-nav-link" href="/host.html">Host Live Game</a> to launch the classroom flow.</div>
+        <div class="muted-copy">Use <a class="dashboard-nav-link" href="/my-sets">My Sets</a>, <a class="dashboard-nav-link" href="/discover">Discover</a>, or <a class="dashboard-nav-link" href="/create">Create</a> to launch the classroom flow.</div>
       `;
       activeRoomLinksEl.innerHTML = `
-        <a class="dashboard-action" href="/host.html">Open Host Workspace</a>
+        <a class="dashboard-action" href="/my-sets">Open My Sets</a>
         <a class="dashboard-action ghost" href="/play">Open Join Page</a>
       `;
       return;
@@ -590,7 +768,7 @@
       },
       {
         title: "Dashboard Routes",
-        detail: "/my-sets | /discover | /create | /market | /blooks | /stats"
+        detail: "/create | /discover | /my-sets | /favorites | /history | /homeworks | /play | /settings"
       }
     ];
 
@@ -690,7 +868,21 @@
       marketFreeOpensEl.textContent = formatNumber(state.account?.freePackOpensRemaining || 0);
     }
     if (marketRewardEl) {
-      if (state.reward) {
+      if (state.reward?.id) {
+        marketRewardEl.hidden = false;
+        marketRewardEl.innerHTML = `
+          <div class="market-reward rarity-${escapeHtml(raritySlug(state.reward.rarity))}">
+            <div class="market-reward-thumb">
+              ${renderRewardBlook(state.reward, "inline")}
+            </div>
+            <div class="market-reward-copy">
+              <strong>${escapeHtml(`${state.reward.name} unlocked${state.reward.duplicate ? " again" : ""}`)}</strong>
+              <span>${escapeHtml(`${state.reward.packName} | ${state.reward.rarity} | ${state.reward.count} owned`)}</span>
+            </div>
+            <button class="dashboard-action ghost market-reward-action" type="button" data-show-market-reveal>View Reveal</button>
+          </div>
+        `;
+      } else if (state.reward) {
         marketRewardEl.hidden = false;
         marketRewardEl.innerHTML = `
           <div class="market-reward">
@@ -839,6 +1031,7 @@
       state.reward = payload.reward || null;
       renderMarket();
       renderBlooks();
+      showMarketReveal(state.reward);
     } catch (error) {
       state.reward = {
         name: error?.message || "Pack open failed",
@@ -861,6 +1054,36 @@
         openPack(button.getAttribute("data-open-pack"));
       });
     }
+
+    if (marketRewardEl) {
+      marketRewardEl.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-show-market-reveal]");
+        if (!button || !state.reward?.id) {
+          return;
+        }
+        event.preventDefault();
+        showMarketReveal(state.reward);
+      });
+    }
+
+    if (marketRevealOverlayEl) {
+      marketRevealOverlayEl.addEventListener("click", (event) => {
+        if (event.target === marketRevealOverlayEl || event.target.closest("[data-close-market-reveal]")) {
+          event.preventDefault();
+          hideMarketReveal();
+        }
+      });
+    }
+
+    window.addEventListener("keydown", (event) => {
+      if (!marketRevealOverlayEl || marketRevealOverlayEl.hidden) {
+        return;
+      }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        hideMarketReveal();
+      }
+    });
   }
 
   async function loadData() {

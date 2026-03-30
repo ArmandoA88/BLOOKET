@@ -25,7 +25,6 @@
         <div class="dashboard-logo-sub">Exact same flow, local repo data</div>
 
         <nav class="dashboard-nav" aria-label="Dashboard">
-          <a class="dashboard-nav-link" data-route="host" href="/host.html"><span>Host Live</span><span class="route-pill">Live</span></a>
           <a class="dashboard-nav-link" data-route="create" href="/create"><span>Create</span><span class="route-pill">Build</span></a>
           <a class="dashboard-nav-link" data-route="discover" href="/discover"><span>Discover</span><span class="route-pill">Browse</span></a>
           <a class="dashboard-nav-link" data-route="my-sets" href="/my-sets"><span>My Sets</span><span class="route-pill">Local</span></a>
@@ -34,14 +33,7 @@
           <a class="dashboard-nav-link" data-route="homeworks" href="/homeworks"><span>Homework</span><span class="route-pill">Ready</span></a>
           <a class="dashboard-nav-link" href="/play"><span>Play</span><span class="route-pill">Join</span></a>
           <a class="dashboard-nav-link" data-route="settings" href="/settings"><span>Settings</span><span class="route-pill">Server</span></a>
-          <a class="dashboard-nav-link" data-route="stats" href="/stats"><span>Stats</span><span class="route-pill">Data</span></a>
-          <a class="dashboard-nav-link" data-route="blooks" href="/blooks"><span>Blooks</span><span class="route-pill">Catalog</span></a>
-          <a class="dashboard-nav-link" data-route="market" href="/market"><span>Market</span><span class="route-pill">Coins</span></a>
         </nav>
-
-        <div class="dashboard-sidebar-foot">
-          <a class="dashboard-action secondary" href="/play">Student Join Page</a>
-        </div>
       </aside>
 
       <section class="dashboard-main">
@@ -666,6 +658,16 @@
         </section>
       </section>
     </main>
+
+    <div id="marketRevealOverlay" class="market-reveal-overlay" hidden aria-hidden="true">
+      <div class="market-reveal-scene">
+        <div id="marketRevealFireworks" class="market-reveal-fireworks" aria-hidden="true"></div>
+        <article id="marketRevealCard" class="market-reveal-card" role="dialog" aria-modal="true" aria-labelledby="marketRevealTitle">
+          <button id="marketRevealCloseBtn" class="market-reveal-close" type="button" aria-label="Close unlock reveal" data-close-market-reveal>Close</button>
+          <div id="marketRevealBody"></div>
+        </article>
+      </div>
+    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="/host.js"></script>

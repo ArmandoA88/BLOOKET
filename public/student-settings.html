@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Settings</title>
+    <link rel="stylesheet" href="/style.css" />
+    <style>
+      :root{--side:#9d42bf;--side-deep:#8030a3;--copy:#2b3958;--copy-soft:#657590;--line:#d9e1ef;--panel:#ffffff;--surface:#f7f9ff;--accent:#18c3d6;--accent-deep:#0fb3ca;--orange:#ff8b2a;--orange-deep:#e66f12}
+      *{box-sizing:border-box}
+      html{scroll-behavior:smooth}
+      body{margin:0;min-height:100vh;font-family:"Nunito","Segoe UI",sans-serif;background:linear-gradient(135deg,#21cfe3 0%,#18c3d6 52%,#12b3ca 100%)}
+      .shell{display:grid;grid-template-columns:136px minmax(0,1fr);min-height:100vh}
+      .sidebar{position:sticky;top:0;display:flex;flex-direction:column;gap:16px;height:100vh;padding:14px 12px 16px;background:linear-gradient(180deg,var(--side) 0%,var(--side-deep) 100%);box-shadow:16px 0 34px rgba(72,18,95,.22)}
+      .brand{display:inline-block;color:#fff;text-decoration:none;font-family:"Baloo 2","Nunito",sans-serif;font-size:2.6rem;line-height:.92}
+      .play-cta{display:flex;align-items:center;justify-content:center;min-height:38px;border-radius:8px;background:linear-gradient(180deg,#1ad0df 0%,#10b7d2 100%);box-shadow:0 5px 0 rgba(4,131,161,.72);color:#fff;text-decoration:none;font-weight:900;font-size:1.1rem}
+      .nav{display:grid;gap:6px}
+      .nav-link{display:flex;align-items:center;gap:10px;min-height:38px;padding:0 12px;border-radius:8px;color:rgba(255,255,255,.96);text-decoration:none;font-weight:800;transition:transform .18s ease,background .18s ease,color .18s ease}
+      .nav-link:hover{background:rgba(255,255,255,.94);color:#9a42bc;transform:translateX(2px)}
+      .nav-icon{width:12px;height:12px;flex:0 0 12px;border-radius:3px;background:currentColor}
+      .side-footer{margin-top:auto;display:grid;gap:10px}
+      .side-pill,.side-link{display:flex;align-items:center;justify-content:center;min-height:34px;padding:0 12px;border-radius:999px;text-decoration:none;font-weight:800}
+      .side-pill{background:rgba(255,255,255,.14);color:#fff}
+      .side-link{background:rgba(0,0,0,.14);color:#fff}
+      .main{min-width:0;min-height:100vh;padding:12px 18px 28px;background:rgba(255,255,255,.97);color:var(--copy)}
+      .page{width:min(1500px,100%);margin:0 auto}
+      .topbar{display:flex;justify-content:flex-end;align-items:center;gap:12px}
+      .coins{display:inline-flex;align-items:center;justify-content:center;min-width:84px;min-height:40px;padding:0 14px;border-radius:12px;background:#fff;color:#cc9500;font-family:"Baloo 2","Nunito",sans-serif;font-size:1.1rem;font-weight:800;box-shadow:0 5px 0 rgba(184,197,214,.6)}
+      .account{display:inline-flex;align-items:center;gap:10px;padding:6px 10px 6px 6px;min-width:180px;border-radius:10px;background:linear-gradient(180deg,#9e4cc2 0%,#8532aa 100%);box-shadow:0 5px 0 rgba(94,31,121,.62);color:#fff}
+      .avatar{width:34px;height:34px;overflow:hidden;flex:0 0 34px;border-radius:9px;background:linear-gradient(180deg,#7feea4 0%,#51bc72 100%);border:2px solid rgba(255,255,255,.28)}
+      .avatar img{width:100%;height:100%;display:block;object-fit:cover}
+      .avatar-fallback{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#fff;font-family:"Baloo 2","Nunito",sans-serif;font-weight:800;text-transform:uppercase}
+      .account strong,.account span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .account strong{font-size:1.05rem;line-height:1.1}
+      .account span{color:rgba(232,243,255,.84);font-size:.76rem;font-weight:800}
+      .head{padding-bottom:14px;border-bottom:1px solid rgba(129,149,185,.28)}
+      .head-title{display:flex;align-items:center;gap:10px}
+      h1{margin:10px 0 0;font-family:"Baloo 2","Nunito",sans-serif;font-size:clamp(2.4rem,4vw,3.4rem);line-height:.95}
+      .help-badge{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-top:14px;border-radius:999px;border:2px solid #7b86a0;color:#50607e;font-size:.82rem;font-weight:900}
+      .settings-layout{display:grid;grid-template-columns:138px minmax(0,1fr);gap:14px;margin-top:16px}
+      .settings-nav{align-self:start;padding:12px 10px 12px 0;border-right:1px solid rgba(167,181,206,.55)}
+      .settings-nav a{display:flex;align-items:center;gap:8px;min-height:34px;padding:0 12px 0 10px;border-radius:8px;color:var(--copy);text-decoration:none;font-weight:800}
+      .settings-nav a:hover,.settings-nav a.is-active{background:#eef4ff;color:#3d54aa}
+      .settings-nav-icon{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:4px;background:#384257;color:#fff;font-size:.7rem;font-weight:900}
+      .settings-stack{display:grid;gap:14px}
+      .panel{padding:14px 16px 16px;border:1px solid rgba(188,199,219,.72);border-radius:12px;background:var(--panel);box-shadow:0 1px 0 rgba(255,255,255,.88)}
+      .panel h2{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:1.9rem;line-height:1.05;font-family:"Baloo 2","Nunito",sans-serif}
+      .panel-icon{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:#384257;color:#fff;font-size:.8rem;font-weight:900}
+      .profile-lines{display:grid;gap:4px}
+      .profile-lines p{margin:0;font-size:1rem}
+      .profile-lines strong{font-weight:900}
+      .muted{color:var(--copy-soft)}
+      .plan-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+      .plan-name{font-size:1.15rem;font-weight:900}
+      .plan-name em{font-style:normal;color:var(--accent-deep)}
+      .cta{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 18px;border-radius:8px;background:linear-gradient(180deg,var(--orange) 0%,var(--orange-deep) 100%);box-shadow:0 4px 0 rgba(181,95,20,.7);color:#fff;text-decoration:none;font-weight:900}
+      .link-list{display:grid;gap:6px}
+      .link-list a{color:#12b2d3;text-decoration:underline;font-weight:800}
+      .support-line{margin-top:6px}
+      .support-line a{color:#12b2d3}
+      @media (max-width:980px){.shell{grid-template-columns:1fr}.sidebar{position:static;height:auto}.settings-layout{grid-template-columns:1fr}.settings-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:0 0 8px;border-right:0;border-bottom:1px solid rgba(167,181,206,.55)}}
+      @media (max-width:720px){.settings-nav{grid-template-columns:repeat(2,minmax(0,1fr))}}
+      @media (max-width:640px){.main{padding:12px 12px 24px}.topbar{flex-wrap:wrap;justify-content:flex-start}}
+      @media (max-width:520px){.settings-nav{grid-template-columns:1fr}}
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <a class="brand" href="/student-login">Blooket</a>
+        <a class="play-cta" href="/play">Play</a>
+        <nav class="nav" aria-label="Student navigation">
+          <a class="nav-link" href="/student-login#studentStatsBoard"><span class="nav-icon" aria-hidden="true"></span><span>Stats</span></a>
+          <a class="nav-link" href="/student-login#studentBlooksBoard"><span class="nav-icon" aria-hidden="true"></span><span>Blooks</span></a>
+          <a class="nav-link" href="/student-market"><span class="nav-icon" aria-hidden="true"></span><span>Market</span></a>
+          <a class="nav-link" href="/student-discover"><span class="nav-icon" aria-hidden="true"></span><span>Discover</span></a>
+          <a class="nav-link" href="/student-set-creator"><span class="nav-icon" aria-hidden="true"></span><span>Set Creator</span></a>
+          <a class="nav-link" href="/student-my-sets"><span class="nav-icon" aria-hidden="true"></span><span>My Sets</span></a>
+          <a class="nav-link" href="/student-favorites"><span class="nav-icon" aria-hidden="true"></span><span>Favorites</span></a>
+        </nav>
+        <div class="side-footer">
+          <div id="studentSettingsRoomCode" class="side-pill">Room: none</div>
+          <a class="side-link" href="/student-settings">Settings</a>
+          <a class="side-link" href="/student-login">Back to Dashboard</a>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="page">
+          <div class="topbar">
+            <div id="studentSettingsCoins" class="coins">0</div>
+            <div class="account">
+              <div id="studentSettingsAvatar" class="avatar"></div>
+              <div>
+                <strong id="studentSettingsName">Student</strong>
+                <span id="studentSettingsStatus">Settings</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="head">
+            <div class="head-title">
+              <h1>Settings</h1>
+              <span class="help-badge" aria-hidden="true">?</span>
+            </div>
+          </div>
+
+          <div class="settings-layout">
+            <nav class="settings-nav" aria-label="Settings sections">
+              <a class="is-active" href="#profileSection"><span class="settings-nav-icon">P</span><span>Profile</span></a>
+              <a href="#planSection"><span class="settings-nav-icon">P</span><span>Plan</span></a>
+              <a href="#editSection"><span class="settings-nav-icon">E</span><span>Edit Info</span></a>
+              <a href="#socialSection"><span class="settings-nav-icon">S</span><span>Social</span></a>
+              <a href="#supportSection"><span class="settings-nav-icon">?</span><span>Support</span></a>
+              <a href="#privacySection"><span class="settings-nav-icon">L</span><span>Privacy</span></a>
+            </nav>
+
+            <div class="settings-stack">
+              <section id="profileSection" class="panel">
+                <h2><span class="panel-icon">P</span><span>Profile</span></h2>
+                <div class="profile-lines">
+                  <p><strong>Username:</strong> <span id="studentSettingsUsername">guest</span></p>
+                  <p><strong>Email:</strong> <span id="studentSettingsEmail" class="muted">Not available for student accounts</span></p>
+                  <p><strong>Dashboard Layout:</strong> <span id="studentSettingsLayout">Student</span></p>
+                  <p><strong>Joined:</strong> <span id="studentSettingsJoined">Not available</span></p>
+                </div>
+              </section>
+
+              <section id="planSection" class="panel">
+                <h2><span class="panel-icon">P</span><span>Plan</span></h2>
+                <div class="plan-row">
+                  <div class="plan-name"><span id="studentSettingsPlan">Blooket</span> <em id="studentSettingsPlanTier">Starter</em></div>
+                  <a class="cta" href="/student-market">Upgrade Now!</a>
+                </div>
+              </section>
+
+              <section id="editSection" class="panel">
+                <h2><span class="panel-icon">E</span><span>Edit Info</span></h2>
+                <div class="link-list">
+                  <a href="mailto:contact-us@blooket.com?subject=Change%20Name">Change Name</a>
+                  <a href="/settings">Switch to Teacher Layout</a>
+                  <a href="mailto:contact-us@blooket.com?subject=Request%20Password%20Reset">Request Password Reset</a>
+                  <a href="mailto:contact-us@blooket.com?subject=Change%20Email">Change Email</a>
+                  <a href="mailto:contact-us@blooket.com?subject=Permanently%20Delete%20Account">Permanently Delete Account</a>
+                </div>
+              </section>
+
+              <section id="socialSection" class="panel">
+                <h2><span class="panel-icon">S</span><span>Social</span></h2>
+                <div class="link-list">
+                  <a href="https://twitter.com/PlayBlooket" target="_blank" rel="noreferrer">Twitter (@PlayBlooket)</a>
+                  <a href="https://www.instagram.com/playblooket/" target="_blank" rel="noreferrer">Instagram (@PlayBlooket)</a>
+                  <a href="https://www.facebook.com/playblooket" target="_blank" rel="noreferrer">Facebook (@PlayBlooket)</a>
+                </div>
+              </section>
+
+              <section id="supportSection" class="panel">
+                <h2><span class="panel-icon">?</span><span>Support</span></h2>
+                <div class="link-list">
+                  <a href="https://help.blooket.com/hc/en-us" target="_blank" rel="noreferrer">View Our Help Center</a>
+                  <a href="https://help.blooket.com/hc/en-us/categories/4411046972055-Frequently-Asked-Questions" target="_blank" rel="noreferrer">Frequently Asked Questions</a>
+                </div>
+                <p class="support-line">Contact us at: <a href="mailto:contact-us@blooket.com">contact-us@blooket.com</a></p>
+              </section>
+
+              <section id="privacySection" class="panel">
+                <h2><span class="panel-icon">L</span><span>Privacy</span></h2>
+                <div class="link-list">
+                  <a href="https://www.blooket.com/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>
+                  <a href="https://www.blooket.com/terms" target="_blank" rel="noreferrer">Terms of Service</a>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="/student-settings.js"></script>
+  </body>
+</html>

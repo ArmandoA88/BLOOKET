@@ -1,0 +1,23 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="wandGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(64 64) rotate(90) scale(54)">
+      <stop stop-color="#FFD8F3" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#FFD8F3" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="wandStick" x1="41" y1="96" x2="93" y2="48" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7E59D9"/>
+      <stop offset="1" stop-color="#D782FF"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="52" fill="url(#wandGlow)"/>
+  <path d="M40 97L89 48" stroke="url(#wandStick)" stroke-width="10" stroke-linecap="round"/>
+  <path d="M94 28L98 40L111 40L100 47L104 59L94 51L84 59L88 47L77 40L90 40L94 28Z" fill="#FFE27A"/>
+  <path d="M94 28L98 40L111 40L100 47L104 59L94 51L84 59L88 47L77 40L90 40L94 28Z" stroke="#FFD15C" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M36 102C44 100 49 102 54 109" stroke="#FF89C4" stroke-width="6" stroke-linecap="round"/>
+  <path d="M32 110C40 107 46 110 50 116" stroke="#7BE0FF" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="56" cy="54" r="6" fill="#FFF4AE"/>
+  <circle cx="44" cy="67" r="4" fill="#8EE3FF"/>
+  <circle cx="68" cy="74" r="5" fill="#FF9BD8"/>
+  <circle cx="83" cy="66" r="3.5" fill="#A7F1B8"/>
+  <circle cx="103" cy="72" r="4" fill="#FFE78D"/>
+</svg>

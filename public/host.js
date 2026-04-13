@@ -13,25 +13,15 @@ const MODE_LABELS = {
   asteroids: "Asteroids",
   brawl: "Space Invaders"
 };
+const SHARED_MINI_GAME_VISUAL_ORDER = Array.isArray(window.MINI_GAME_VISUAL_ORDER) ? window.MINI_GAME_VISUAL_ORDER.slice() : [];
+const SHARED_MINI_GAME_VISUALS = window.MINI_GAME_VISUALS || {};
+const SHARED_MINI_GAME_IMAGE_MAP = window.MINI_GAME_IMAGE_MAP || {};
+const SHARED_MINI_GAME_FALLBACK_CATALOG = Array.isArray(window.MINI_GAME_FALLBACK_CATALOG)
+  ? window.MINI_GAME_FALLBACK_CATALOG
+  : [];
 const GAME_IMAGE_MAP = {
   question: "/assets/minigames/shared/question.svg",
-  asteroids: "/assets/minigames/asteroids/asteroids.svg",
-  battle_royale: "/assets/minigames/battle_royale/battle-royale.svg",
-  classroom_cleanup: "/assets/minigames/classroom_cleanup/classroom-cleanup.svg",
-  shadow_match: "/assets/minigames/shadow_match/shadow-match.svg",
-  foosball_frenzy: "/assets/minigames/soccer_shootout/soccer.svg",
-  soccer_shootout: "/assets/minigames/soccer_shootout/soccer.svg",
-  goalie_rush: "/assets/minigames/goalie_rush/goalie-rush.svg",
-  snake: "/assets/minigames/snake/snake.svg",
-  tower_stacker: "/assets/minigames/tower_stacker/tower.svg",
-  tap_rush: "/assets/minigames/tap_rush/tap.svg",
-  reaction_duel: "/assets/minigames/reaction_duel/tap.svg",
-  sequence_memory: "/assets/minigames/sequence_memory/sequence.svg",
-  obstacle_dodge: "/assets/minigames/obstacle_dodge/sequence.svg",
-  precision_stop: "/assets/minigames/precision_stop/precision.svg",
-  word_scramble: "/assets/minigames/word_scramble/question.svg",
-  hallway_dash: "/assets/minigames/hallway_dash/hallway.svg",
-  dino_dig: "/assets/dinos/dino-tyrannosaurus.png"
+  ...SHARED_MINI_GAME_IMAGE_MAP
 };
 const QUESTION_SET_LABELS = new Map([
   ["multiplication_1_digit", "Multiplication 1-Digit"],
@@ -105,286 +95,46 @@ const PHASE_CLASS_CANDIDATES = [
   "phase-ended",
   "phase-kicked"
 ];
-const MINI_GAME_LABELS = {
-  foosball_frenzy: "Foosball Frenzy",
-  soccer_shootout: "Soccer Shootout",
-  goalie_rush: "Goalie Rush",
-  snake: "Snake Strategy",
-  tower_stacker: "Tower Stacker",
-  space_invaders: "Space Invaders",
-  tap_rush: "Tap Rush",
-  reaction_duel: "Reaction Duel",
-  sequence_memory: "Sequence Memory",
-  obstacle_dodge: "Obstacle Dodge",
-  precision_stop: "Precision Stop",
-  word_scramble: "Word Scramble",
-  hallway_dash: "Hallway Dash",
-  dino_dig: "Dino Dig",
-  shadow_match: "Shadow Match",
-  classroom_cleanup: "Classroom Cleanup",
-  battle_royale: "Battle Royale"
-};
-const MINI_GAME_PREVIEW_COPY = {
-  foosball_frenzy: {
-    title: "Foosball Frenzy",
-    tagline: "Fast classroom table soccer with clear student action.",
-    difficulty: "Simple",
-    skills: "Timing",
-    idealTime: "5 min",
-    questions: "Fast rounds",
-    players: "2 - 300"
-  },
-  soccer_shootout: {
-    title: "Soccer Shootout",
-    tagline: "Quick penalty rounds where the class races to score the most goals.",
-    difficulty: "Simple",
-    skills: "Timing",
-    idealTime: "5 min",
-    questions: "Goal races",
-    players: "2 - 300"
-  },
-  goalie_rush: {
-    title: "Goalie Rush",
-    tagline: "Students guard the goal, block faster shots each round, and chase boss-save coin bonuses.",
-    difficulty: "Simple",
-    skills: "Reflexes",
-    idealTime: "4 min",
-    questions: "Mini-game only",
-    players: "2 - 300"
-  },
-  tower_stacker: {
-    title: "Tower Stacker",
-    tagline: "Cute classroom stacking with one rewarded drop at a time.",
-    difficulty: "Simple",
-    skills: "Timing",
-    idealTime: "5 min",
-    questions: "Reward drops",
-    players: "2 - 300"
-  },
-  space_invaders: {
-    title: "Space Invaders",
-    tagline: "Arcade shooting with live classroom pressure.",
-    difficulty: "Medium",
-    skills: "Focus",
-    idealTime: "6 min",
-    questions: "Wave-based",
-    players: "2 - 300"
-  },
-  snake: {
-    title: "Snake Strategy",
-    tagline: "Clean controls, careful route planning, and class competition for the highest score.",
-    difficulty: "Medium",
-    skills: "Planning",
-    idealTime: "5 min",
-    questions: "Score races",
-    players: "2 - 300"
-  },
-  tap_rush: {
-    title: "Tap Rush",
-    tagline: "Fast classroom tapping where everyone races the leaderboard together.",
-    difficulty: "Simple",
-    skills: "Speed",
-    idealTime: "3 min",
-    questions: "Mini-game only",
-    players: "2 - 300"
-  },
-  reaction_duel: {
-    title: "Reaction Duel",
-    tagline: "Wait for the signal, then react faster than the rest of the class.",
-    difficulty: "Simple",
-    skills: "Reflexes",
-    idealTime: "3 min",
-    questions: "Mini-game only",
-    players: "2 - 300"
-  },
-  sequence_memory: {
-    title: "Sequence Memory",
-    tagline: "Students memorize a pattern and race to finish it cleanly.",
-    difficulty: "Medium",
-    skills: "Memory",
-    idealTime: "4 min",
-    questions: "Mini-game only",
-    players: "2 - 300"
-  },
-  obstacle_dodge: {
-    title: "Obstacle Dodge",
-    tagline: "Pick safe lanes fast and survive more turns than the class.",
-    difficulty: "Simple",
-    skills: "Timing",
-    idealTime: "4 min",
-    questions: "Mini-game only",
-    players: "2 - 300"
-  },
-  precision_stop: {
-    title: "Precision Stop",
-    tagline: "A short accuracy challenge where the closest stop wins.",
-    difficulty: "Simple",
-    skills: "Precision",
-    idealTime: "3 min",
-    questions: "Mini-game only",
-    players: "2 - 300"
-  },
-  word_scramble: {
-    title: "Word Scramble",
-    tagline: "Solve the scrambled word before your classmates do.",
-    difficulty: "Medium",
-    skills: "Wordplay",
-    idealTime: "4 min",
-    questions: "Mini-game only",
-    players: "2 - 300"
-  },
-  hallway_dash: {
-    title: "Hallway Dash",
-    tagline: "A school-themed runner with hallway clutter, jumping, lane swaps, and coin pickups.",
-    difficulty: "Simple",
-    skills: "Timing",
-    idealTime: "4 min",
-    questions: "Mini-game only",
-    players: "2 - 300"
-  },
-  dino_dig: {
-    title: "Dino Dig",
-    tagline: "Fast classroom digging with fossils, coin finds, and a shot at a rare dinosaur blook.",
-    difficulty: "Simple",
-    skills: "Discovery",
-    idealTime: "4 min",
-    questions: "Mini-game only",
-    players: "2 - 300"
-  },
-  shadow_match: {
-    title: "Shadow Match",
-    tagline: "A fast classroom memory game where matching streaks unlock better bonus packs.",
-    difficulty: "Medium",
-    skills: "Memory",
-    idealTime: "4 min",
-    questions: "Mini-game only",
-    players: "2 - 300"
-  },
-  classroom_cleanup: {
-    title: "Classroom Cleanup",
-    tagline: "Students race around a messy classroom sorting books, pencils, and trash before the floor piles up.",
-    difficulty: "Simple",
-    skills: "Sorting",
-    idealTime: "4 min",
-    questions: "Mini-game only",
-    players: "2 - 300"
-  },
-  battle_royale: {
-    title: "Battle Royale",
-    tagline: "Quick 1v1 blook battles where each selected blook brings its own special power.",
-    difficulty: "Simple",
-    skills: "Strategy",
-    idealTime: "4 min",
-    questions: "Mini-game only",
-    players: "2 - 300"
-  }
-};
-const MINI_GAME_TILE_MEDIA = {
-  foosball_frenzy: {
-    image: "/assets/minigames/soccer_shootout/soccer.svg",
-    accentClass: "theme-foosball",
-    hud: "GOALS"
-  },
-  soccer_shootout: {
-    image: "/assets/minigames/soccer_shootout/fussball-field.svg",
-    accentClass: "theme-soccer",
-    hud: "SHOTS"
-  },
-  goalie_rush: {
-    image: "/assets/minigames/goalie_rush/goalie-rush.svg",
-    accentClass: "theme-cloud",
-    hud: "SAVE"
-  },
-  tower_stacker: {
-    image: "/assets/minigames/tower_stacker/tower.svg",
-    accentClass: "theme-stacker",
-    hud: "HEIGHT"
-  },
-  space_invaders: {
-    image: "/assets/minigames/shared/question.svg",
-    accentClass: "theme-space",
-    hud: "WAVE"
-  },
-  snake: {
-    image: "/assets/minigames/snake/snake.svg",
-    accentClass: "theme-snake",
-    hud: "SCORE"
-  },
-  tap_rush: {
-    image: "/assets/minigames/tap_rush/tap.svg",
-    accentClass: "theme-space",
-    hud: "TAPS"
-  },
-  reaction_duel: {
-    image: "/assets/minigames/reaction_duel/tap.svg",
-    accentClass: "theme-cloud",
-    hud: "GO"
-  },
-  sequence_memory: {
-    image: "/assets/minigames/sequence_memory/sequence.svg",
-    accentClass: "theme-stacker",
-    hud: "MEM"
-  },
-  obstacle_dodge: {
-    image: "/assets/minigames/obstacle_dodge/sequence.svg",
-    accentClass: "theme-soccer",
-    hud: "SAFE"
-  },
-  precision_stop: {
-    image: "/assets/minigames/precision_stop/precision.svg",
-    accentClass: "theme-cloud",
-    hud: "STOP"
-  },
-  word_scramble: {
-    image: "/assets/minigames/word_scramble/question.svg",
-    accentClass: "theme-foosball",
-    hud: "WORD"
-  },
-  hallway_dash: {
-    image: "/assets/minigames/hallway_dash/hallway.svg",
-    accentClass: "theme-cloud",
-    hud: "DASH"
-  },
-  dino_dig: {
-    image: "/assets/dinos/dino-tyrannosaurus.png",
-    accentClass: "theme-stacker",
-    hud: "DIG"
-  },
-  shadow_match: {
-    image: "/assets/minigames/shadow_match/shadow-match.svg",
-    accentClass: "theme-pink",
-    hud: "MATCH"
-  },
-  classroom_cleanup: {
-    image: "/assets/minigames/classroom_cleanup/classroom-cleanup.svg",
-    accentClass: "theme-cloud",
-    hud: "SORT"
-  },
-  battle_royale: {
-    image: "/assets/minigames/battle_royale/battle-royale.svg",
-    accentClass: "theme-pink",
-    hud: "DUEL"
-  }
-};
-const HOST_VISIBLE_MINI_GAME_IDS = new Set([
-  "foosball_frenzy",
-  "soccer_shootout",
-  "goalie_rush",
-  "tower_stacker",
-  "space_invaders",
-  "snake",
-  "tap_rush",
-  "reaction_duel",
-  "sequence_memory",
-  "obstacle_dodge",
-  "precision_stop",
-  "word_scramble",
-  "hallway_dash",
-  "dino_dig",
-  "shadow_match",
-  "classroom_cleanup",
-  "battle_royale"
-]);
+const MINI_GAME_LABELS = Object.fromEntries(
+  SHARED_MINI_GAME_VISUAL_ORDER.map((id) => {
+    const visual = SHARED_MINI_GAME_VISUALS[id] || {};
+    return [id, String(visual.label || visual.title || id)];
+  })
+);
+const MINI_GAME_PREVIEW_COPY = Object.fromEntries(
+  SHARED_MINI_GAME_VISUAL_ORDER.map((id) => {
+    const visual = SHARED_MINI_GAME_VISUALS[id] || {};
+    const title = String(visual.title || visual.label || id);
+    return [
+      id,
+      {
+        title,
+        tagline: String(visual.tagline || visual.description || title),
+        difficulty: String(visual.difficulty || "Simple"),
+        skills: String(visual.skills || "Timing"),
+        idealTime: String(visual.idealTime || "4 min"),
+        questions: String(visual.questions || "Mini-game only"),
+        players: String(visual.players || "2 - 300"),
+        heroImage: String(visual.heroImage || visual.image || ""),
+        heroAlt: String(visual.heroAlt || `${title} preview art.`)
+      }
+    ];
+  })
+);
+const MINI_GAME_TILE_MEDIA = Object.fromEntries(
+  SHARED_MINI_GAME_VISUAL_ORDER.map((id) => {
+    const visual = SHARED_MINI_GAME_VISUALS[id] || {};
+    return [
+      id,
+      {
+        image: String(visual.image || visual.heroImage || ""),
+        accentClass: String(visual.accentClass || ""),
+        hud: String(visual.hud || "PLAY")
+      }
+    ];
+  })
+);
+const HOST_VISIBLE_MINI_GAME_IDS = new Set(SHARED_MINI_GAME_VISUAL_ORDER);
 
 const setupCard = document.getElementById("setupCard");
 const gameCard = document.getElementById("gameCard");
@@ -395,6 +145,8 @@ const modeInput = document.getElementById("mode");
 const modePickerGrid = document.getElementById("modePickerGrid");
 const modePreviewTitle = document.getElementById("modePreviewTitle");
 const modePreviewTagline = document.getElementById("modePreviewTagline");
+const modePreviewHero = document.getElementById("modePreviewHero");
+const modePreviewHeroImage = document.getElementById("modePreviewHeroImage");
 const modePreviewDifficulty = document.getElementById("modePreviewDifficulty");
 const modePreviewSkills = document.getElementById("modePreviewSkills");
 const modePreviewTime = document.getElementById("modePreviewTime");
@@ -532,25 +284,14 @@ const requestedMiniGameType = String(hostPageParams.get("mini") || "")
   .toLowerCase();
 const requestedQuestionSetId = String(hostPageParams.get("set") || "").trim();
 const requestedHostName = String(hostPageParams.get("hostName") || "").trim();
-const FALLBACK_MINI_GAMES = [
-  { id: "foosball_frenzy", name: "Foosball Frenzy", description: "Foosball bars stay in formation. Slide laterally, score fast, and race the class leaderboard." },
-  { id: "soccer_shootout", name: "Soccer Shootout", description: "Quick penalty kicks where students compete to score the most goals." },
-  { id: "goalie_rush", name: "Goalie Rush", description: "Guard the goal, block faster shots each round, and survive boss rounds for extra coins." },
-  { id: "snake", name: "Snake Strategy", description: "Simple controls, careful turns, and growing path strategy." },
-  { id: "tower_stacker", name: "Tower Stacker", description: "Stack themed critters into the tallest tower you can keep standing." },
-  { id: "space_invaders", name: "Space Invaders", description: "Arcade survival shooter with classroom-friendly pacing." },
-  { id: "tap_rush", name: "Tap Rush", description: "Tap fast for bonus points." },
-  { id: "reaction_duel", name: "Reaction Duel", description: "Wait for GO and react fast." },
-  { id: "sequence_memory", name: "Sequence Memory", description: "Repeat the color order to score." },
-  { id: "obstacle_dodge", name: "Obstacle Dodge", description: "Pick safe lanes across turns." },
-  { id: "precision_stop", name: "Precision Stop", description: "Stop the marker near the target zone." },
-  { id: "word_scramble", name: "Word Scramble", description: "Unscramble words before attempts run out." },
-  { id: "hallway_dash", name: "Hallway Dash", description: "Race down the school hallway, dodge clutter, jump hazards, and collect coins." },
-  { id: "dino_dig", name: "Dino Dig", description: "Dig tiles to uncover fossils, bones, coin caches, and a rare dinosaur blook." },
-  { id: "shadow_match", name: "Shadow Match", description: "Flip hidden blooks, match the pairs, and unlock better reward packs with streaks." },
-  { id: "classroom_cleanup", name: "Classroom Cleanup", description: "Move between classroom rows and sort books, pencils, and trash before time runs out." },
-  { id: "battle_royale", name: "Battle Royale", description: "Simple 1v1 blook battles where every selected blook gets a small power." }
-];
+const FALLBACK_MINI_GAMES =
+  SHARED_MINI_GAME_FALLBACK_CATALOG.length > 0
+    ? SHARED_MINI_GAME_FALLBACK_CATALOG.map((item) => ({ ...item }))
+    : Array.from(HOST_VISIBLE_MINI_GAME_IDS).map((id) => ({
+        id,
+        name: miniGameTypeLabel(id),
+        description: String(MINI_GAME_PREVIEW_COPY[id]?.tagline || miniGameTypeLabel(id))
+      }));
 let setupMiniGameCatalog = FALLBACK_MINI_GAMES.slice();
 
 function normalizePhase(value) {
@@ -775,6 +516,18 @@ function sessionLabelText(rotationMode, questionSetId, questionSetText = "") {
 
 function renderModePreview(mode) {
   const info = modePreviewById(mode);
+  if (modePreviewHero && modePreviewHeroImage) {
+    const heroImage = String(info.heroImage || "");
+    if (heroImage) {
+      modePreviewHeroImage.src = heroImage;
+      modePreviewHeroImage.alt = String(info.heroAlt || info.title || "Mini-game preview");
+      modePreviewHero.hidden = false;
+    } else {
+      modePreviewHeroImage.removeAttribute("src");
+      modePreviewHeroImage.alt = "";
+      modePreviewHero.hidden = true;
+    }
+  }
   if (modePreviewTitle) {
     modePreviewTitle.textContent = info.title;
   }

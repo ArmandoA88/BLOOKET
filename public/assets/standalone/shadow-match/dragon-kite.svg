@@ -1,0 +1,28 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="kiteGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(64 64) rotate(90) scale(52)">
+      <stop stop-color="#C8FFF0" stop-opacity="0.72"/>
+      <stop offset="1" stop-color="#C8FFF0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="kiteBody" x1="64" y1="24" x2="64" y2="92" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#73E7C5"/>
+      <stop offset="1" stop-color="#2FAF8D"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="52" fill="url(#kiteGlow)"/>
+  <path d="M64 22L93 51L64 94L35 51L64 22Z" fill="url(#kiteBody)"/>
+  <path d="M64 33L82 51L64 78L46 51L64 33Z" fill="#B4FFF1"/>
+  <path d="M47 48L33 36" stroke="#4EBE99" stroke-width="6" stroke-linecap="round"/>
+  <path d="M81 48L95 36" stroke="#4EBE99" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="56" cy="52" r="5" fill="#14343A"/>
+  <circle cx="72" cy="52" r="5" fill="#14343A"/>
+  <circle cx="57.5" cy="50.5" r="1.5" fill="#F8FFFF"/>
+  <circle cx="73.5" cy="50.5" r="1.5" fill="#F8FFFF"/>
+  <path d="M58 64C61 67 67 67 70 64" stroke="#27695C" stroke-width="4" stroke-linecap="round"/>
+  <path d="M64 94L64 106" stroke="#F8FBFF" stroke-width="4" stroke-linecap="round"/>
+  <path d="M64 106C71 111 73 117 72 122" stroke="#FF9B6B" stroke-width="5" stroke-linecap="round"/>
+  <path d="M64 106C57 111 55 117 56 122" stroke="#FFCF62" stroke-width="5" stroke-linecap="round"/>
+  <path d="M64 112C69 116 69 120 67 124" stroke="#6BE3C8" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="33" cy="76" r="3" fill="#FFF4A4"/>
+  <circle cx="98" cy="82" r="2.5" fill="#CFF9FF"/>
+</svg>

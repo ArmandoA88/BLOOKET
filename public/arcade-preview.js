@@ -3,6 +3,8 @@ const previewSubtitle = document.getElementById("previewSubtitle");
 const previewStatus = document.getElementById("previewStatus");
 const previewRoom = document.getElementById("previewRoom");
 const previewNote = document.getElementById("previewNote");
+const previewHero = document.getElementById("previewHero");
+const previewHeroImage = document.getElementById("previewHeroImage");
 const previewLoading = document.getElementById("previewLoading");
 const previewLoadingTitle = document.getElementById("previewLoadingTitle");
 const previewLoadingCopy = document.getElementById("previewLoadingCopy");
@@ -15,67 +17,7 @@ const requestedGameId = String(previewParams.get("game") || "").trim().toLowerCa
 const PREVIEW_HOST_NAME = "Arcade Suite";
 const PREVIEW_PLAYER_NAME = "Arcade Player";
 const PREVIEW_QUESTION_SET = "general_knowledge";
-
-const PREVIEW_CONFIGS = {
-  asteroids: {
-    id: "asteroids",
-    label: "Asteroids",
-    type: "mode",
-    mode: "asteroids",
-    description: "Answer fast to blast asteroid waves and build streak coins in a quick classroom preview.",
-    note: "Click inside the player frame, answer questions, and blast asteroids. This preview uses a short guest room with no student login required.",
-    questionCount: 5,
-    timerSeconds: 12
-  },
-  goalie_rush: {
-    id: "goalie_rush",
-    label: "Goalie Rush",
-    type: "minigame",
-    description: "Block shots across the goal mouth in a one-player preview room.",
-    note: "Click inside the player frame first, then use Left and Right to block shots.",
-    miniGameDurationSec: 14
-  },
-  hallway_dash: {
-    id: "hallway_dash",
-    label: "Hallway Dash",
-    type: "minigame",
-    description: "Sprint down the hallway, dodge hazards, and collect coins in a direct arcade preview.",
-    note: "Click inside the player frame first, then use Left and Right to move and Space to jump.",
-    miniGameDurationSec: 14
-  },
-  dino_dig: {
-    id: "dino_dig",
-    label: "Dino Dig",
-    type: "minigame",
-    description: "Dig for fossils, coins, and rare dinosaur blooks in a fast single-player preview.",
-    note: "Click inside the frame and dig tiles directly from the player board.",
-    miniGameDurationSec: 14
-  },
-  shadow_match: {
-    id: "shadow_match",
-    label: "Shadow Match",
-    type: "minigame",
-    description: "Match hidden blooks and build streaks in a short preview run.",
-    note: "Click inside the player frame and flip matching pairs before time runs out.",
-    miniGameDurationSec: 16
-  },
-  classroom_cleanup: {
-    id: "classroom_cleanup",
-    label: "Classroom Cleanup",
-    type: "minigame",
-    description: "Sort books, pencils, and trash before the classroom gets out of control.",
-    note: "Click inside the player frame, move across rows, and use the matching sort keys.",
-    miniGameDurationSec: 14
-  },
-  battle_royale: {
-    id: "battle_royale",
-    label: "Battle Royale",
-    type: "minigame",
-    description: "Jump into a quick blook battle preview straight from the arcade suite.",
-    note: "Click inside the player frame and choose battle actions when the duel starts.",
-    miniGameDurationSec: 16
-  }
-};
+const PREVIEW_CONFIGS = window.ARCADE_PREVIEW_CONFIGS || {};
 
 const config = PREVIEW_CONFIGS[requestedGameId] || null;
 const socket = typeof io === "function" ? io({ autoConnect: false }) : null;
@@ -247,6 +189,18 @@ if (previewNote) {
   previewNote.textContent = config
     ? config.note
     : "Return to the arcade suite and launch a valid game preview.";
+}
+if (previewHero && previewHeroImage) {
+  const heroImage = config ? String(config.heroImage || "") : "";
+  if (heroImage) {
+    previewHeroImage.src = heroImage;
+    previewHeroImage.alt = String(config.heroAlt || config.label || "Game preview hero");
+    previewHero.hidden = false;
+  } else {
+    previewHeroImage.removeAttribute("src");
+    previewHeroImage.alt = "";
+    previewHero.hidden = true;
+  }
 }
 
 if (!config || !socket) {

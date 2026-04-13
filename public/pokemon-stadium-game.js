@@ -51,6 +51,8 @@ window.createPokemonStadiumGameModule = function createPokemonStadiumGameModule(
     Normal: { Ghost: 0.5, Steel: 0.5 }
   };
   const TEAM_KEY = "solo-arcade-pokemon-stadium-team";
+  const CUSTOM_TEAM_KEY = "solo-arcade-pokemon-stadium-custom";
+  const CUSTOM_TEAM_ID = "custom-draft";
   const roster = [
     makePokemon("pikachu", "Pikachu", sprites.pokemonPikachu, "#ffd447", ["Electric"], 110, 112, [
       move("Quick Spark", "Electric", 24, 0.98, 1),
@@ -169,34 +171,16 @@ window.createPokemonStadiumGameModule = function createPokemonStadiumGameModule(
     id: "pokemon_stadium",
     type: "board",
     name: "Pokemon Stadium",
-    description: "A colorful 3v3 stadium cup where two teams of Pokemon trade type-based attacks, switch bench members, and race for cup wins.",
-    controls: "Use the battle buttons for moves and potions. During your turn, click one of your bench Pokemon to switch it into the active slot.",
+    description: "A colorful 3v3 stadium cup where players draft or quick-pick Pokemon, trade type-based attacks, switch bench members, and race for cup wins.",
+    controls: "Draft any three Pokemon or quick-pick a preset team, then use the command deck for moves and potions. During your turn, click one of your bench Pokemon to switch it into the active slot.",
     note: "This local Pokemon Stadium run uses the project sprite pack, adds a bright retro stadium backdrop, and keeps the full 3v3 battle solo with no room code or second player required.",
     stageTitle: "Pokemon Stadium Cup",
-    stageHelp: "Pick a team card to restart as that trio, then outplay the rival coach in a turn-based 3v3 battle with switching, potions, and type matchups.",
+    stageHelp: "Pick a preset squad or build a custom trio from the roster, then use the in-board command deck to battle through a turn-based 3v3 cup with switching, potions, and type matchups.",
     createState() {
-      return createState(getStoredTeamId());
+      return createState(getStoredTeamId(), null, getStoredDraftLineup());
     },
     getActions(state) {
-      if (state.done) {
-        return [{ id: "restart", label: "Battle Again", className: "good" }];
-      }
-      const attacker = activePokemon(state.playerTeam);
-      const defender = activePokemon(state.enemyTeam);
-      return [
-        ...attacker.moves.map((entry, index) => ({
-          id: `move:${index}`,
-          label: `${entry.name}${effectiveness(entry.type, defender.types) >= 1.75 ? " x2" : ""}`,
-          className: effectiveness(entry.type, defender.types) >= 1.75 ? "good" : "",
-          disabled: state.turn !== "player"
-        })),
-        {
-          id: "potion",
-          label: `Potion (${state.playerPotions})`,
-          className: state.playerPotions > 0 ? "good" : "",
-          disabled: state.turn !== "player" || state.playerPotions <= 0
-        }
-      ];
+      return getBattleActions(state);
     },
     act(state, id) {
       if (id === "restart") {
@@ -231,9 +215,10 @@ window.createPokemonStadiumGameModule = function createPokemonStadiumGameModule(
       }
     },
     render(state, container) {
-      const selectedTeam = getTeam(state.selectedTeamId);
+      const selectedTeam = getSelectedTeamSummary(state);
       const playerLead = activePokemon(state.playerTeam);
       const enemyLead = activePokemon(state.enemyTeam);
+      const battleActions = getBattleActions(state);
       container.innerHTML = `
         <div class="battle-stage pokemon-stadium-stage">
           <div class="pokemon-hero">
@@ -241,14 +226,16 @@ window.createPokemonStadiumGameModule = function createPokemonStadiumGameModule(
             <div class="pokemon-hero-copy">
               <div class="eyebrow">Pick Your Squad</div>
               <h3>Retro 3v3 Stadium Cup</h3>
-              <p>Choose a trio, trade attacks with the rival coach, and tap a bench teammate on your side whenever you want to switch.</p>
+              <p>Draft any three Pokemon or use a preset trio, then trade attacks with the rival coach and tap your bench whenever you want to switch.</p>
             </div>
             <div class="pokemon-hero-pills">
               <div class="solo-pill">Team: ${escapeHtml(selectedTeam.name)}</div>
               <div class="solo-pill">Rival: ${escapeHtml(state.enemyTeam.name)}</div>
+              <div class="solo-pill">Draft: ${escapeHtml(getDraftLabel(state.draftLineup))}</div>
             </div>
           </div>
           <div class="pokemon-team-select">${teams.map((team) => renderTeamCard(team, state.selectedTeamId)).join("")}</div>
+          ${renderDraftPanel(state)}
           <div class="solo-board-head">
             <div class="solo-pill">Cup Wins: ${state.score}</div>
             <div class="solo-pill">Round: ${state.round}</div>
@@ -267,6 +254,7 @@ window.createPokemonStadiumGameModule = function createPokemonStadiumGameModule(
                   <span>Usable: ${livingCount(state.playerTeam)}</span>
                   <span>Rival: ${livingCount(state.enemyTeam)}</span>
                 </div>
+                ${renderCommandPanel(state, battleActions)}
               </div>
               ${renderActiveCard(state.playerTeam, "player")}
             </div>
@@ -279,6 +267,37 @@ window.createPokemonStadiumGameModule = function createPokemonStadiumGameModule(
       container.querySelectorAll("[data-team-pick]").forEach((button) => {
         button.addEventListener("click", () => {
           resetState(state, button.getAttribute("data-team-pick"));
+          refresh();
+        });
+      });
+      container.querySelectorAll("[data-draft-pick]").forEach((button) => {
+        button.addEventListener("click", () => {
+          toggleDraftPokemon(state, button.getAttribute("data-draft-pick"));
+          refresh();
+        });
+      });
+      container.querySelectorAll("[data-draft-action]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const action = button.getAttribute("data-draft-action");
+          if (action === "random") {
+            randomizeDraft(state);
+          } else if (action === "clear") {
+            clearDraft(state);
+          } else if (action === "start") {
+            if (state.draftLineup.length === 3) {
+              resetState(state, CUSTOM_TEAM_ID, state.draftLineup, state.draftLineup);
+            }
+          }
+          refresh();
+        });
+      });
+      container.querySelectorAll("[data-command-action]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const actionId = button.getAttribute("data-command-action");
+          if (!actionId) {
+            return;
+          }
+          this.act(state, actionId);
           refresh();
         });
       });
@@ -337,12 +356,90 @@ window.createPokemonStadiumGameModule = function createPokemonStadiumGameModule(
     }
   }
 
+  function getStoredDraftLineup() {
+    try {
+      return normalizeLineup(JSON.parse(window.localStorage.getItem(CUSTOM_TEAM_KEY) || "[]"));
+    } catch {
+      return [];
+    }
+  }
+
+  function setStoredDraftLineup(lineup) {
+    try {
+      window.localStorage.setItem(CUSTOM_TEAM_KEY, JSON.stringify(normalizeLineup(lineup)));
+    } catch {
+      // Ignore storage failures.
+    }
+  }
+
   function getTeam(id) {
     return teamsById.get(id) || teams[0];
   }
 
   function getPokemon(id) {
     return rosterById.get(id) || roster[0];
+  }
+
+  function normalizeLineup(lineup) {
+    const normalized = [];
+    for (const rawId of Array.isArray(lineup) ? lineup : []) {
+      const id = String(rawId || "");
+      if (!rosterById.has(id) || normalized.includes(id)) {
+        continue;
+      }
+      normalized.push(id);
+      if (normalized.length >= 3) {
+        break;
+      }
+    }
+    return normalized;
+  }
+
+  function defaultDraftLineup() {
+    return teams[0].lineup.slice(0, 3);
+  }
+
+  function createCustomTeam(lineup) {
+    const normalized = normalizeLineup(lineup);
+    const accent = normalized.length ? getPokemon(normalized[0]).accent : "#ffd447";
+    const names = normalized.map((id) => getPokemon(id).name);
+    return {
+      id: CUSTOM_TEAM_ID,
+      name: "Custom Squad",
+      accent,
+      tagline: names.length === 3 ? `${names.join(", ")} ready for the arena.` : "Pick three Pokemon for a custom trio.",
+      lineup: normalized
+    };
+  }
+
+  function resolveSelectedTeam(teamId, lineup) {
+    const normalized = normalizeLineup(lineup);
+    if (teamId === CUSTOM_TEAM_ID && normalized.length === 3) {
+      return createCustomTeam(normalized);
+    }
+    const preset = getTeam(teamId === CUSTOM_TEAM_ID ? teams[0].id : teamId);
+    return {
+      ...preset,
+      lineup: preset.lineup.slice()
+    };
+  }
+
+  function getSelectedTeamSummary(state) {
+    return resolveSelectedTeam(state.selectedTeamId, state.selectedLineup);
+  }
+
+  function getDraftLabel(lineup) {
+    const normalized = normalizeLineup(lineup);
+    if (!normalized.length) {
+      return "Choose 3 Pokemon";
+    }
+    return normalized.map((id) => getPokemon(id).name).join(", ");
+  }
+
+  function sameLineup(left, right) {
+    const a = normalizeLineup(left);
+    const b = normalizeLineup(right);
+    return a.length === b.length && a.every((id, index) => id === b[index]);
   }
 
   function createPokemonState(id, boost = 0) {
@@ -373,14 +470,20 @@ window.createPokemonStadiumGameModule = function createPokemonStadiumGameModule(
     };
   }
 
-  function createState(teamId) {
-    const selectedTeam = getTeam(teamId);
+  function createState(teamId, lineup, draftLineup) {
+    const normalizedDraft = normalizeLineup(draftLineup);
+    const storedDraft = normalizedDraft.length === 3 ? normalizedDraft : getStoredDraftLineup();
+    const safeDraft = storedDraft.length === 3 ? storedDraft : defaultDraftLineup();
+    const selectedTeam = resolveSelectedTeam(teamId, teamId === CUSTOM_TEAM_ID ? lineup || safeDraft : null);
     const playerTeam = buildTeam(selectedTeam, 1, "player");
     const enemyTeam = nextEnemyTeam(1, selectedTeam.id);
     const lead = activePokemon(playerTeam);
     setStoredTeamId(selectedTeam.id);
+    setStoredDraftLineup(teamId === CUSTOM_TEAM_ID ? selectedTeam.lineup : safeDraft);
     return {
       selectedTeamId: selectedTeam.id,
+      selectedLineup: selectedTeam.lineup.slice(),
+      draftLineup: (teamId === CUSTOM_TEAM_ID ? selectedTeam.lineup : safeDraft).slice(),
       playerTeam,
       enemyTeam,
       round: 1,
@@ -396,8 +499,8 @@ window.createPokemonStadiumGameModule = function createPokemonStadiumGameModule(
     };
   }
 
-  function resetState(state, teamId) {
-    Object.assign(state, createState(teamId));
+  function resetState(state, teamId, lineup, draftLineup = state.draftLineup) {
+    Object.assign(state, createState(teamId, lineup, draftLineup));
   }
 
   function nextEnemyTeam(round, selectedTeamId) {
@@ -407,6 +510,31 @@ window.createPokemonStadiumGameModule = function createPokemonStadiumGameModule(
 
   function activePokemon(team) {
     return team?.roster?.[team.activeIndex] || null;
+  }
+
+  function getBattleActions(state) {
+    if (state.done) {
+      return [{ id: "restart", label: "Battle Again", className: "good" }];
+    }
+    const attacker = activePokemon(state.playerTeam);
+    const defender = activePokemon(state.enemyTeam);
+    if (!attacker || !defender) {
+      return [];
+    }
+    return [
+      ...attacker.moves.map((entry, index) => ({
+        id: `move:${index}`,
+        label: `${entry.name}${effectiveness(entry.type, defender.types) >= 1.75 ? " x2" : ""}`,
+        className: effectiveness(entry.type, defender.types) >= 1.75 ? "good" : "",
+        disabled: state.turn !== "player"
+      })),
+      {
+        id: "potion",
+        label: `Potion (${state.playerPotions})`,
+        className: state.playerPotions > 0 ? "good" : "",
+        disabled: state.turn !== "player" || state.playerPotions <= 0
+      }
+    ];
   }
 
   function livingCount(team) {
@@ -545,7 +673,7 @@ window.createPokemonStadiumGameModule = function createPokemonStadiumGameModule(
   function startNextCup(state) {
     state.score += 1;
     state.round += 1;
-    state.playerTeam = buildTeam(getTeam(state.selectedTeamId), 1, "player");
+    state.playerTeam = buildTeam(resolveSelectedTeam(state.selectedTeamId, state.selectedLineup), 1, "player");
     state.enemyTeam = nextEnemyTeam(state.round, state.selectedTeamId);
     state.playerPotions = 2;
     state.enemyPotions = Math.min(2, 1 + Math.floor((state.round - 1) / 2));
@@ -639,6 +767,42 @@ window.createPokemonStadiumGameModule = function createPokemonStadiumGameModule(
     queueCpuTurn(state, 520);
   }
 
+  function toggleDraftPokemon(state, id) {
+    const normalized = normalizeLineup(state.draftLineup);
+    const targetId = String(id || "");
+    if (!rosterById.has(targetId)) {
+      return;
+    }
+    const existingIndex = normalized.indexOf(targetId);
+    if (existingIndex >= 0) {
+      normalized.splice(existingIndex, 1);
+    } else if (normalized.length < 3) {
+      normalized.push(targetId);
+    } else {
+      return;
+    }
+    state.draftLineup = normalized;
+    setStoredDraftLineup(state.draftLineup);
+    state.dirty = true;
+  }
+
+  function randomizeDraft(state) {
+    const pool = roster.map((pokemon) => pokemon.id);
+    for (let index = pool.length - 1; index > 0; index -= 1) {
+      const swapIndex = randInt(0, index);
+      [pool[index], pool[swapIndex]] = [pool[swapIndex], pool[index]];
+    }
+    state.draftLineup = pool.slice(0, 3);
+    setStoredDraftLineup(state.draftLineup);
+    state.dirty = true;
+  }
+
+  function clearDraft(state) {
+    state.draftLineup = [];
+    setStoredDraftLineup(state.draftLineup);
+    state.dirty = true;
+  }
+
   function renderTypeChips(types) {
     return types
       .map((type) => `<span class="pokemon-type-chip" style="--type-accent:${typeColors[type] || "#d7e8ff"};">${escapeHtml(type)}</span>`)
@@ -649,6 +813,89 @@ window.createPokemonStadiumGameModule = function createPokemonStadiumGameModule(
     return moves
       .map((entry) => `<span class="pokemon-move-chip" style="--type-accent:${typeColors[entry.type] || "#d7e8ff"};">${escapeHtml(entry.name)}</span>`)
       .join("");
+  }
+
+  function renderDraftPanel(state) {
+    const customTeamActive = state.selectedTeamId === CUSTOM_TEAM_ID && sameLineup(state.selectedLineup, state.draftLineup);
+    return `
+      <section class="pokemon-draft-panel">
+        <div class="pokemon-draft-head">
+          <div>
+            <div class="eyebrow">Custom Draft</div>
+            <h3>Build Your Own Trio</h3>
+            <p>Pick any three Pokemon from the roster, then start a fresh stadium cup with your custom squad.</p>
+          </div>
+          <div class="pokemon-draft-actions">
+            <button type="button" class="pokemon-draft-btn" data-draft-action="random">Random Trio</button>
+            <button type="button" class="pokemon-draft-btn" data-draft-action="clear">Clear</button>
+            <button type="button" class="pokemon-draft-btn primary ${customTeamActive ? "live" : ""}" data-draft-action="start"${state.draftLineup.length === 3 ? "" : " disabled"}>${customTeamActive ? "Custom Squad Live" : "Start Custom Cup"}</button>
+          </div>
+        </div>
+        <div class="pokemon-draft-slots">
+          ${Array.from({ length: 3 }, (_, index) => renderDraftSlot(state.draftLineup[index], index)).join("")}
+        </div>
+        <div class="pokemon-roster-grid">
+          ${roster.map((pokemon) => renderRosterPick(pokemon, state.draftLineup)).join("")}
+        </div>
+      </section>
+    `;
+  }
+
+  function renderDraftSlot(id, index) {
+    if (!id) {
+      return `
+        <div class="pokemon-draft-slot empty">
+          <span class="pokemon-draft-slot-index">${index + 1}</span>
+          <strong>Open Slot</strong>
+          <span>Pick any Pokemon below.</span>
+        </div>
+      `;
+    }
+    const pokemon = getPokemon(id);
+    return `
+      <div class="pokemon-draft-slot" style="--slot-accent:${pokemon.accent};">
+        <span class="pokemon-draft-slot-index">${index + 1}</span>
+        <img src="${pokemon.sprite.src}" alt="${escapeHtml(pokemon.name)}" />
+        <strong>${escapeHtml(pokemon.name)}</strong>
+        <span>${renderTypeText(pokemon.types)}</span>
+      </div>
+    `;
+  }
+
+  function renderRosterPick(pokemon, draftLineup) {
+    const selected = normalizeLineup(draftLineup);
+    const isSelected = selected.includes(pokemon.id);
+    const locked = selected.length >= 3 && !isSelected;
+    return `
+      <button type="button" class="pokemon-roster-pick ${isSelected ? "selected" : ""} ${locked ? "locked" : ""}" data-draft-pick="${pokemon.id}"${locked ? " disabled" : ""} style="--pick-accent:${pokemon.accent};">
+        <img src="${pokemon.sprite.src}" alt="${escapeHtml(pokemon.name)}" />
+        <strong>${escapeHtml(pokemon.name)}</strong>
+        <span>${renderTypeText(pokemon.types)}</span>
+      </button>
+    `;
+  }
+
+  function renderCommandPanel(state, actions) {
+    const note = state.done
+      ? "Restart the cup or build a new trio."
+      : state.turn === "cpu"
+        ? "Rival coach is choosing a response."
+        : "Pick a move below or tap one of your bench Pokemon to switch.";
+    return `
+      <div class="pokemon-command-panel">
+        <div class="pokemon-command-head">
+          <strong>Command Deck</strong>
+          <span>${escapeHtml(note)}</span>
+        </div>
+        <div class="pokemon-command-grid">
+          ${actions.map((action) => `<button type="button" class="pokemon-command-btn ${action.className || ""}" data-command-action="${action.id}"${action.disabled ? " disabled" : ""}>${escapeHtml(action.label)}</button>`).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderTypeText(types) {
+    return types.map((type) => escapeHtml(type)).join(" / ");
   }
 
   function renderTeamCard(team, selectedId) {
@@ -676,7 +923,7 @@ window.createPokemonStadiumGameModule = function createPokemonStadiumGameModule(
         <div class="pokemon-bench-meta">
           <strong>${escapeHtml(pokemon.name)}</strong>
           <div class="pokemon-mini-bar"><span style="width:${hpPercent(pokemon)}%;"></span></div>
-          <span>${pokemon.fainted ? "Fainted" : `${pokemon.hp}/${pokemon.maxHp} HP`}</span>
+          <span>${pokemon.fainted ? "Fainted" : canSwitch ? `${pokemon.hp}/${pokemon.maxHp} HP | Tap to switch` : `${pokemon.hp}/${pokemon.maxHp} HP`}</span>
         </div>
       </${tag}>
     `;
@@ -722,6 +969,28 @@ function injectPokemonStadiumStyles() {
     .pokemon-hero-copy p{margin:0;color:rgba(244,251,255,.86);line-height:1.45}
     .pokemon-hero-pills{display:grid;gap:10px;justify-items:end}
     .pokemon-team-select{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+    .pokemon-draft-panel{display:grid;gap:14px;margin-top:14px;padding:16px;border-radius:26px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(9,14,24,.78));border:1px solid rgba(255,255,255,.08)}
+    .pokemon-draft-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+    .pokemon-draft-head h3{font-size:1.08rem}
+    .pokemon-draft-head p{margin:6px 0 0;color:rgba(244,251,255,.78);line-height:1.45}
+    .pokemon-draft-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .pokemon-draft-btn,.pokemon-command-btn{padding:11px 12px;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.06);color:var(--text);font-family:"Orbitron",monospace;font-size:.72rem}
+    .pokemon-draft-btn.primary,.pokemon-command-btn.good{border-color:rgba(125,237,176,.28);background:rgba(125,237,176,.14)}
+    .pokemon-draft-btn.live{border-color:rgba(255,212,71,.28);background:rgba(255,212,71,.14);color:#ffe692}
+    .pokemon-draft-slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .pokemon-draft-slot{position:relative;min-height:118px;padding:14px;border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(7,11,19,.74));border:1px solid color-mix(in srgb,var(--slot-accent,#ffd447) 35%, rgba(255,255,255,.08));display:grid;justify-items:center;align-content:center;gap:6px;text-align:center}
+    .pokemon-draft-slot.empty{border-style:dashed;border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.04)}
+    .pokemon-draft-slot img{width:64px;height:64px;object-fit:contain;image-rendering:pixelated;image-rendering:crisp-edges;filter:drop-shadow(0 12px 18px rgba(0,0,0,.3))}
+    .pokemon-draft-slot strong{font-family:"Orbitron",monospace;font-size:.8rem}
+    .pokemon-draft-slot span{color:rgba(244,251,255,.7);font-size:.78rem}
+    .pokemon-draft-slot-index{position:absolute;left:10px;top:10px;width:28px;height:28px;border-radius:999px;display:grid;place-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08);font-family:"Orbitron",monospace;font-size:.72rem}
+    .pokemon-roster-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+    .pokemon-roster-pick{padding:12px;border-radius:20px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);display:grid;justify-items:center;gap:8px;color:var(--text);text-align:center}
+    .pokemon-roster-pick.selected{border-color:var(--pick-accent);background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(10,16,27,.82));box-shadow:0 0 0 2px rgba(255,255,255,.03)}
+    .pokemon-roster-pick.locked{opacity:.5}
+    .pokemon-roster-pick img{width:60px;height:60px;object-fit:contain;image-rendering:pixelated;image-rendering:crisp-edges;filter:drop-shadow(0 12px 18px rgba(0,0,0,.3))}
+    .pokemon-roster-pick strong{font-family:"Orbitron",monospace;font-size:.76rem}
+    .pokemon-roster-pick span{color:rgba(244,251,255,.68);font-size:.76rem}
     .pokemon-team-card{padding:12px 12px 14px;border-radius:22px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:var(--text);display:grid;gap:10px;text-align:left}
     .pokemon-team-card.active{border-color:var(--team-accent);box-shadow:0 0 0 2px rgba(255,255,255,.04);background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(12,18,28,.78))}
     .pokemon-team-card-top strong{display:block;font-family:"Orbitron",monospace;font-size:.86rem;margin-bottom:4px}
@@ -746,6 +1015,12 @@ function injectPokemonStadiumStyles() {
     .pokemon-vs-panel h3{font-size:1.18rem}
     .pokemon-vs-panel p{margin:0;color:rgba(244,251,255,.82);line-height:1.45}
     .pokemon-vs-stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;color:#ffd447;font-family:"Orbitron",monospace;font-size:.76rem}
+    .pokemon-command-panel{display:grid;gap:10px;margin-top:4px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08)}
+    .pokemon-command-head{display:grid;gap:4px}
+    .pokemon-command-head strong{font-family:"Orbitron",monospace;font-size:.78rem}
+    .pokemon-command-head span{color:rgba(244,251,255,.7);font-size:.84rem;line-height:1.35}
+    .pokemon-command-grid{display:grid;gap:10px}
+    .pokemon-command-btn{width:100%}
     .pokemon-active-card{padding:18px;border-radius:26px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(7,11,19,.44));border:1px solid rgba(255,255,255,.08);display:grid;gap:12px}
     .pokemon-active-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
     .pokemon-active-role{color:var(--card-accent);font-family:"Orbitron",monospace;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase}
@@ -759,8 +1034,9 @@ function injectPokemonStadiumStyles() {
     .pokemon-active-sprite.enemy{transform:scaleX(-1)}
     .pokemon-hp-bar{height:14px}
     .pokemon-log{background:rgba(12,17,27,.78);border-color:rgba(255,255,255,.08)}
-    @media (max-width:720px){.pokemon-hero{min-height:260px;align-items:flex-start;flex-direction:column}.pokemon-hero-pills{width:100%;justify-items:stretch}.pokemon-team-select{grid-template-columns:repeat(2,minmax(0,1fr))}.pokemon-battlefield{grid-template-columns:1fr}.pokemon-team-strip{grid-template-columns:1fr}}
-    @media (max-width:560px){.pokemon-team-select{grid-template-columns:1fr}}
+    @media (max-width:920px){.pokemon-roster-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.pokemon-draft-head{flex-direction:column}.pokemon-draft-actions{justify-content:flex-start}}
+    @media (max-width:720px){.pokemon-hero{min-height:260px;align-items:flex-start;flex-direction:column}.pokemon-hero-pills{width:100%;justify-items:stretch}.pokemon-team-select,.pokemon-draft-slots{grid-template-columns:repeat(2,minmax(0,1fr))}.pokemon-roster-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.pokemon-battlefield{grid-template-columns:1fr}.pokemon-team-strip{grid-template-columns:1fr}}
+    @media (max-width:560px){.pokemon-team-select,.pokemon-draft-slots,.pokemon-roster-grid{grid-template-columns:1fr}}
   `;
   document.head.appendChild(style);
 }

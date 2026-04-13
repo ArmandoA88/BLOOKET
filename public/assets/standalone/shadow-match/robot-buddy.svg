@@ -1,0 +1,29 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="robotGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(64 62) rotate(90) scale(52)">
+      <stop stop-color="#C8F1FF" stop-opacity="0.76"/>
+      <stop offset="1" stop-color="#C8F1FF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="robotBody" x1="39" y1="36" x2="89" y2="98" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D8E9FF"/>
+      <stop offset="1" stop-color="#8EBEFF"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="52" fill="url(#robotGlow)"/>
+  <path d="M64 24V36" stroke="#6D96FF" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="64" cy="20" r="6" fill="#FF7D79"/>
+  <rect x="39" y="36" width="50" height="40" rx="14" fill="url(#robotBody)"/>
+  <rect x="34" y="79" width="60" height="30" rx="14" fill="#72B3FF"/>
+  <circle cx="54" cy="56" r="8" fill="#14314F"/>
+  <circle cx="74" cy="56" r="8" fill="#14314F"/>
+  <circle cx="56" cy="53" r="2" fill="#F7FFFF"/>
+  <circle cx="76" cy="53" r="2" fill="#F7FFFF"/>
+  <path d="M53 68C58 72 70 72 75 68" stroke="#335C8C" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="64" cy="94" r="6" fill="#FFF0A0"/>
+  <path d="M39 86L24 73" stroke="#6AA8FF" stroke-width="6" stroke-linecap="round"/>
+  <path d="M89 86L104 73" stroke="#6AA8FF" stroke-width="6" stroke-linecap="round"/>
+  <path d="M49 109L44 118" stroke="#4F7DCC" stroke-width="6" stroke-linecap="round"/>
+  <path d="M79 109L84 118" stroke="#4F7DCC" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="25" cy="74" r="6" fill="#FFB854"/>
+  <circle cx="103" cy="74" r="6" fill="#7DE3B3"/>
+</svg>

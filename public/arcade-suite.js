@@ -17,6 +17,7 @@ const suiteExtras = document.getElementById("suiteExtras");
 const suiteExtrasTitle = document.getElementById("suiteExtrasTitle");
 const suiteExtrasBody = document.getElementById("suiteExtrasBody");
 const embeddedStage = document.getElementById("embeddedStage");
+let embeddedStageResizeObserver = null;
 
 const W = canvas.width;
 const H = canvas.height;
@@ -554,9 +555,50 @@ function syncStageSurface(forceReload = false) {
 
   canvas.hidden = false;
   embeddedStage.hidden = true;
+  disconnectEmbeddedStageResize();
   if (embeddedStage.dataset.baseSrc) {
     embeddedStage.removeAttribute("src");
     embeddedStage.dataset.baseSrc = "";
+  }
+}
+
+function disconnectEmbeddedStageResize() {
+  if (embeddedStageResizeObserver) {
+    embeddedStageResizeObserver.disconnect();
+    embeddedStageResizeObserver = null;
+  }
+}
+
+function syncEmbeddedStageHeight() {
+  if (!embeddedStage || embeddedStage.hidden) {
+    return;
+  }
+  try {
+    const doc = embeddedStage.contentDocument;
+    if (!doc) {
+      return;
+    }
+    const measure = () => {
+      const rootHeight = doc.documentElement?.scrollHeight || 0;
+      const bodyHeight = doc.body?.scrollHeight || 0;
+      const nextHeight = Math.max(620, Math.min(1400, Math.ceil(Math.max(rootHeight, bodyHeight))));
+      embeddedStage.style.height = `${nextHeight}px`;
+    };
+    measure();
+    disconnectEmbeddedStageResize();
+    if ("ResizeObserver" in window) {
+      embeddedStageResizeObserver = new ResizeObserver(() => measure());
+      if (doc.documentElement) {
+        embeddedStageResizeObserver.observe(doc.documentElement);
+      }
+      if (doc.body) {
+        embeddedStageResizeObserver.observe(doc.body);
+      }
+    }
+    window.setTimeout(measure, 80);
+    window.setTimeout(measure, 240);
+  } catch {
+    // Ignore resize sync failures for embedded stages.
   }
 }
 
@@ -565,6 +607,7 @@ if (embeddedStage) {
     if (!isEmbeddedGame() || !currentState) {
       return;
     }
+    syncEmbeddedStageHeight();
     currentState.status = `${currentGame.name} ready`;
     updateHud();
   });
@@ -573,6 +616,7 @@ if (embeddedStage) {
     if (!isEmbeddedGame() || !currentState) {
       return;
     }
+    disconnectEmbeddedStageResize();
     currentState.status = `Could not load ${currentGame.name}`;
     updateHud();
   });
@@ -3168,6 +3212,8 @@ const basketballGame = (() => {
     resetBall(state);
     state.charging = false;
     state.charge = 0;
+    state.chargeDir = 1;
+    state.chargeInput = "idle";
     if (!madeShot) {
       state.streak = 0;
       queueRandomPowerup(state, "Try this");
@@ -3180,20 +3226,97 @@ const basketballGame = (() => {
     state.status = "Set for next shot";
   }
 
+  function drawHoopArena(state, time) {
+    const wallGradient = ctx.createLinearGradient(0, 0, 0, H);
+    wallGradient.addColorStop(0, "#08111d");
+    wallGradient.addColorStop(0.44, "#12243d");
+    wallGradient.addColorStop(0.82, "#1c4873");
+    wallGradient.addColorStop(1, "#254f73");
+    ctx.fillStyle = wallGradient;
+    ctx.fillRect(0, 0, W, H);
+
+    const lightPools = [
+      { x: 220, y: 132, radius: 194, color: "rgba(255,236,185,0.12)" },
+      { x: 832, y: 182, radius: 156, color: "rgba(151,207,255,0.12)" },
+      { x: 1038, y: 142, radius: 172, color: "rgba(255,214,153,0.1)" }
+    ];
+    for (const light of lightPools) {
+      const glow = ctx.createRadialGradient(light.x, light.y, 10, light.x, light.y, light.radius);
+      glow.addColorStop(0, light.color);
+      glow.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(light.x, light.y, light.radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = "rgba(255,255,255,0.05)";
+    for (let i = 0; i < 14; i += 1) {
+      const x = 54 + i * 86 + Math.sin(time * 0.16 + i) * 8;
+      ctx.fillRect(x, 34, 42, 6);
+      ctx.beginPath();
+      ctx.arc(x + 21, 48, 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    drawRoundedRect(24, 24, 236, 62, 22, "rgba(10,16,28,0.34)", "rgba(255,255,255,0.08)");
+    drawRoundedRect(W - 254, 24, 230, 62, 22, "rgba(10,16,28,0.34)", "rgba(255,255,255,0.08)");
+    drawLabel("HOOP ZONE", 142, 64, 18, "#dbeafe", "center");
+    drawLabel(`STREAK ${Math.max(0, Number(state.streak || 0))}`, W - 140, 64, 18, "#fef3c7", "center");
+
+    const floorTop = H - 156;
+    const floorGradient = ctx.createLinearGradient(0, floorTop, 0, H);
+    floorGradient.addColorStop(0, "#ffb11a");
+    floorGradient.addColorStop(0.48, "#f59e0b");
+    floorGradient.addColorStop(1, "#c96f00");
+    ctx.fillStyle = floorGradient;
+    ctx.fillRect(0, floorTop, W, H - floorTop);
+
+    for (let x = -18; x < W + 40; x += 64) {
+      ctx.fillStyle = x % 128 === 0 ? "rgba(255,244,214,0.12)" : "rgba(157,90,0,0.09)";
+      ctx.fillRect(x, floorTop, 36, H - floorTop);
+    }
+
+    ctx.fillStyle = "rgba(255,255,255,0.12)";
+    ctx.fillRect(0, floorTop + 8, W, 4);
+    ctx.strokeStyle = "rgba(255,245,220,0.32)";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(shootX, floorTop + 6, 172, -0.42, 0.42);
+    ctx.stroke();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "rgba(255,255,255,0.1)";
+    ctx.beginPath();
+    ctx.arc(shootX, floorTop + 6, 88, -0.5, 0.5);
+    ctx.stroke();
+
+    drawRoundedRect(100, H - 214, 212, 88, 36, "rgba(255,255,255,0.07)");
+    ctx.fillStyle = "rgba(255,255,255,0.08)";
+    ctx.fillRect(0, H - 132, W, 6);
+  }
+
   function drawPowerupBadge(powerup, x, y, title, active = false) {
-    drawRoundedRect(x, y, 214, 62, 18, "rgba(15,23,42,0.4)", powerup?.color || "rgba(255,255,255,0.12)");
+    const panelGradient = ctx.createLinearGradient(x, y, x, y + 66);
+    panelGradient.addColorStop(0, active ? "rgba(17,24,39,0.74)" : "rgba(15,23,42,0.54)");
+    panelGradient.addColorStop(1, active ? "rgba(30,41,59,0.92)" : "rgba(15,23,42,0.78)");
+    ctx.save();
+    ctx.shadowColor = powerup?.color || "rgba(59,130,246,0.22)";
+    ctx.shadowBlur = active ? 20 : 10;
+    drawRoundedRect(x, y, 226, 66, 20, panelGradient, powerup?.color || "rgba(255,255,255,0.12)");
+    ctx.restore();
+    drawRoundedRect(x + 8, y + 8, 50, 50, 15, "rgba(255,255,255,0.06)");
     if (powerup?.sprite && powerup.sprite.complete && powerup.sprite.naturalWidth) {
-      drawSprite(powerup.sprite, x + 12, y + 10, 42, 42);
+      drawSprite(powerup.sprite, x + 12, y + 12, 42, 42);
     } else {
       drawRoundedRect(x + 12, y + 10, 42, 42, 12, powerup?.color || "#38bdf8");
     }
-    ctx.fillStyle = "#eff6ff";
+    ctx.fillStyle = "rgba(226,232,240,0.88)";
     ctx.font = "800 12px Orbitron, monospace";
     ctx.textAlign = "left";
-    ctx.fillText(title, x + 64, y + 24);
+    ctx.fillText(title, x + 70, y + 24);
     ctx.fillStyle = active ? (powerup?.color || "#bfdbfe") : "rgba(239,246,255,0.78)";
     ctx.font = "800 16px Orbitron, monospace";
-    ctx.fillText(powerup?.name || "None", x + 64, y + 46);
+    ctx.fillText(powerup?.name || "None", x + 70, y + 47);
   }
 
   function drawShotPreview(state) {
@@ -3204,17 +3327,23 @@ const basketballGame = (() => {
       ...getLaunchVelocity(state.angle, power)
     };
     ctx.save();
-    for (let i = 0; i < 18; i += 1) {
+    for (let i = 0; i < 20; i += 1) {
       simulated.vy += gravity * 0.07;
       simulated.x += simulated.vx * 0.07;
       simulated.y += simulated.vy * 0.07;
       if (state.nextPowerup === "magnet" && simulated.vy > 0 && simulated.y < rimY + 110 && Math.abs(simulated.x - state.hoopX) < 120) {
         simulated.vx += (state.hoopX - simulated.x) * 0.18;
       }
-      const alpha = 0.14 + i * 0.035;
-      ctx.fillStyle = `rgba(191,219,254,${Math.min(alpha, 0.82)})`;
+      const alpha = 0.16 + i * 0.03;
+      const color =
+        state.nextPowerup === "wide"
+          ? `rgba(253,224,71,${Math.min(alpha, 0.84)})`
+          : state.nextPowerup === "magnet"
+            ? `rgba(96,165,250,${Math.min(alpha, 0.84)})`
+            : `rgba(191,219,254,${Math.min(alpha, 0.82)})`;
+      ctx.fillStyle = color;
       ctx.beginPath();
-      ctx.arc(simulated.x, simulated.y, 4 + i * 0.12, 0, Math.PI * 2);
+      ctx.arc(simulated.x, simulated.y, 4 + i * 0.16, 0, Math.PI * 2);
       ctx.fill();
       if (simulated.y > H - 80) {
         break;
@@ -3226,13 +3355,15 @@ const basketballGame = (() => {
   return {
     name: "Hoop Shot",
     description: "A friendlier arcade shooter with sprite art, a dotted shot guide, and helpful powerups that make every miss teachable instead of punishing.",
-    controls: "Aim with Arrow keys or the pointer. Hold Space or press-and-hold to build power, hold ArrowDown or S to wind it back down, then release to shoot.",
+    controls: "Aim with Arrow keys or the pointer. Hold Space to build power, or hold left click to cycle the meter up and down, then release to shoot. ArrowDown or S still winds the charge down manually.",
     stageTitle: "Hoop Shot",
-    stageHelp: "Misses now earn a helpful powerup. Wide Rim, Magnet Ball, and Slow Time help, and ArrowDown or S lets you wind the shot down before release.",
+    stageHelp: "Misses now earn a helpful powerup. Wide Rim, Magnet Ball, and Slow Time help, the mouse charge meter now cycles up and down while you hold left click, and ArrowDown or S still winds it down before release.",
     createState() {
       const state = {
         angle: -0.94,
         charge: 0,
+        chargeDir: 1,
+        chargeInput: "idle",
         charging: false,
         hoopX: 940,
         hoopDir: 1,
@@ -3270,6 +3401,8 @@ const basketballGame = (() => {
       state.shots += 1;
       state.charging = false;
       state.charge = 0;
+      state.chargeDir = 1;
+      state.chargeInput = "idle";
       const activePower = getPowerup(state.activePowerup);
       state.status = activePower ? `${activePower.name} shot` : "Shot away";
     },
@@ -3278,6 +3411,8 @@ const basketballGame = (() => {
         if (state.ball.active) {
           return;
         }
+        state.chargeInput = "keyboard";
+        state.chargeDir = 1;
         state.charging = true;
       }
     },
@@ -3292,11 +3427,17 @@ const basketballGame = (() => {
       }
       state.angle = clampAimFromPoint(point);
     },
-    pointerdown(state, point) {
+    pointerdown(state, point, event) {
+      if (event && typeof event.button === "number" && event.button !== 0) {
+        return;
+      }
       if (state.ball.active) {
         return;
       }
       state.angle = clampAimFromPoint(point);
+      state.charge = Math.max(state.charge, 0.48);
+      state.chargeDir = state.charge >= 1 ? -1 : 1;
+      state.chargeInput = "pointer";
       state.charging = true;
     },
     pointerup(state) {
@@ -3313,11 +3454,23 @@ const basketballGame = (() => {
 
       if (state.charging && !state.ball.active) {
         const windingDown = input.keys.has("arrowdown") || input.keys.has("s");
+        const pointerCycling = state.chargeInput === "pointer" && input.pointer.down;
         if (windingDown) {
           state.charge = Math.max(0.18, state.charge - dt * 1.2);
+          state.chargeDir = 1;
           if (state.charge > 0.2) {
             state.status = "Winding down";
           }
+        } else if (pointerCycling) {
+          state.charge += state.chargeDir * dt * 1.08;
+          if (state.charge >= 1) {
+            state.charge = 1;
+            state.chargeDir = -1;
+          } else if (state.charge <= 0.48) {
+            state.charge = 0.48;
+            state.chargeDir = 1;
+          }
+          state.status = state.chargeDir < 0 ? "Power falling" : "Power rising";
         } else {
           state.charge = Math.min(1, state.charge + dt * 0.78);
         }
@@ -3392,28 +3545,19 @@ const basketballGame = (() => {
       }
     },
     draw(state, time) {
-      drawBackground("#0a1a2c", "#20446e", time, "rgba(251,146,60,0.72)");
-
-      ctx.fillStyle = "#f59e0b";
-      ctx.fillRect(0, H - 154, W, 154);
-      ctx.strokeStyle = "rgba(255,255,255,0.18)";
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.arc(shootX, H - 154, 168, -0.44, 0.44);
-      ctx.stroke();
-      drawRoundedRect(116, H - 218, 192, 82, 34, "rgba(255,255,255,0.08)");
-
-      ctx.strokeStyle = "rgba(255,255,255,0.1)";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(shootX, H - 154, 84, -0.52, 0.52);
-      ctx.stroke();
-      ctx.fillStyle = "rgba(255,255,255,0.08)";
-      ctx.fillRect(0, H - 132, W, 6);
+      drawHoopArena(state, time);
 
       if (!state.ball.active) {
         drawShotPreview(state);
       }
+
+      ctx.save();
+      ctx.globalAlpha = 0.2;
+      ctx.fillStyle = "#08111d";
+      ctx.beginPath();
+      ctx.ellipse(state.hoopX + 18, 248, 72, 26, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
 
       const hoopGlowAlpha = state.bucketFlash > 0 ? 0.36 + state.bucketFlash * 0.7 : 0.16;
       ctx.save();
@@ -3440,10 +3584,17 @@ const basketballGame = (() => {
       ctx.moveTo(shootX, shootY);
       ctx.lineTo(shootX + Math.cos(state.angle) * aimLength, shootY + Math.sin(state.angle) * aimLength);
       ctx.stroke();
+      ctx.fillStyle = "rgba(191,219,254,0.94)";
+      ctx.beginPath();
+      ctx.arc(shootX + Math.cos(state.angle) * aimLength, shootY + Math.sin(state.angle) * aimLength, 7, 0, Math.PI * 2);
+      ctx.fill();
 
-      drawRoundedRect(122, H - 120, 176, 18, 10, "rgba(15,23,42,0.42)", "rgba(255,255,255,0.14)");
-      drawRoundedRect(126, H - 116, 168 * getPreviewPower(state), 10, 8, state.charging ? "#60a5fa" : "#f59e0b");
-      drawLabel("Power Meter", 210, H - 130, 14, "rgba(239,246,255,0.86)", "center");
+      const meterGradient = ctx.createLinearGradient(126, 0, 294, 0);
+      meterGradient.addColorStop(0, state.charging ? "#60a5fa" : "#facc15");
+      meterGradient.addColorStop(1, state.charging ? "#3b82f6" : "#f97316");
+      drawRoundedRect(118, H - 122, 186, 22, 12, "rgba(15,23,42,0.5)", "rgba(255,255,255,0.16)");
+      drawRoundedRect(124, H - 118, 174 * getPreviewPower(state), 14, 9, meterGradient);
+      drawLabel("Power Meter", 210, H - 132, 14, "rgba(239,246,255,0.9)", "center");
 
       const nextPower = getPowerup(state.nextPowerup);
       const activePower = getPowerup(state.activePowerup);
@@ -3462,8 +3613,16 @@ const basketballGame = (() => {
       }
 
       const ball = state.ball.active ? state.ball : { x: shootX, y: shootY, spin: 0 };
+      const shadowScale = clamp(1 - (shootY - Math.min(ball.y, shootY)) / 280, 0.46, 1);
+      ctx.save();
+      ctx.globalAlpha = 0.22;
+      ctx.fillStyle = "#08111d";
+      ctx.beginPath();
+      ctx.ellipse(ball.x + 8, H - 138, 22 * shadowScale, 9 * shadowScale, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
       if (sprites.ball.complete && sprites.ball.naturalWidth) {
-        drawRotatedSprite(sprites.ball, ball.x, ball.y, 46, 46, { angle: ball.spin || 0 });
+        drawRotatedSprite(sprites.ball, ball.x, ball.y, 50, 50, { angle: ball.spin || 0 });
       } else {
         ctx.fillStyle = "#f97316";
         ctx.beginPath();
@@ -3472,6 +3631,10 @@ const basketballGame = (() => {
       }
 
       drawLabel("Guided Arc + Shot Powerups", 862, 58, 18, "rgba(239,246,255,0.9)", "center");
+      ctx.font = '600 15px "Baloo 2", system-ui, sans-serif';
+      ctx.fillStyle = "rgba(219,234,254,0.8)";
+      ctx.textAlign = "center";
+      ctx.fillText("Score clean buckets, recover from misses, and use helper shots to keep the run alive.", 862, 82);
     },
     hud(state) {
       return {
@@ -4813,7 +4976,7 @@ const arcadeSpotlightGames = {
   shadow_match: createSpotlightGame({
     name: "Shadow Match",
     badge: "Classroom Mini-Game",
-    description: "Flip hidden blooks, match the pairs, and build streaks to unlock rarer reward packs.",
+    description: "Kids can pick Storybook Match or Name + Face Match inside Memory Vault, then build streaks to unlock rarer reward packs.",
     icon: "/assets/minigames/shadow_match/shadow-match.svg",
     launchLabel: "Open Host Test",
     launchCopy: "Shadow Match host test opened in a new tab.",
@@ -4826,7 +4989,7 @@ const arcadeSpotlightGames = {
     launchSteps:
       "Open the host test panel, create a room, and Shadow Match will already be selected for a quick memory-game preview.",
     hudValue: "Match",
-    hudCopy: "Arcade suite spotlight for Shadow Match.",
+    hudCopy: "Arcade suite spotlight for Memory Vault with pickable storybook and name-to-face match modes.",
     topColor: "#17122f",
     bottomColor: "#090812",
     accentColor: "rgba(169, 123, 255, 0.24)",
@@ -4944,9 +5107,10 @@ const arcadeStandaloneGames = {
   shadow_match: createArcadeStandaloneEmbeddedGame({
     id: "shadow_match",
     name: "Shadow Match",
-    description: "Match hidden blooks and build streaks to unlock rarer rewards.",
-    controls: "Click inside the stage, then flip cards and match pairs before time runs out.",
-    hudCopy: "Standalone Shadow Match memory run with no login."
+    description: "Pick either colorful storybook cards or a name-and-face learning deck, then match pairs before time runs out.",
+    controls: "Click inside the stage, pick Storybook Match or Name + Face Match, then flip cards and match each pair before time runs out.",
+    stageHelp: "This launches a fully local Memory Vault board inside the suite with a mode picker for storybook art or classroom-style name-and-face matching.",
+    hudCopy: "Standalone Shadow Match Memory Vault run with pickable storybook and name-face modes and no login."
   }),
   classroom_cleanup: createArcadeStandaloneEmbeddedGame({
     id: "classroom_cleanup",
@@ -4966,10 +5130,10 @@ const arcadeStandaloneGames = {
   pokemon_stadium: createArcadeStandaloneEmbeddedGame({
     id: "pokemon_stadium",
     name: "Pokemon Stadium",
-    description: "A bright 3v3 turn-based stadium cup with Pokemon sprites, bench switching, potions, and type-based attacks.",
-    controls: "Click inside the stage, use the move buttons below the board, and tap your bench Pokemon during your turn if you want to switch.",
-    stageHelp: "This launches a fully local Pokemon Stadium solo page inside the suite with team picks, sprite-based battles, and a retro stadium backdrop.",
-    hudCopy: "Standalone Pokemon Stadium 3v3 cup loaded directly in the suite."
+    description: "A bright 3v3 turn-based stadium cup with custom Pokemon drafting, visible command controls, bench switching, potions, and type-based attacks.",
+    controls: "Click inside the stage, draft a trio or pick a preset team, use the in-board command deck for attacks and potions, and tap your bench Pokemon during your turn to switch.",
+    stageHelp: "This launches a fully local Pokemon Stadium solo page inside the suite with custom Pokemon picks, sprite-based battles, and a retro stadium backdrop.",
+    hudCopy: "Standalone Pokemon Stadium 3v3 cup with custom drafting and live battle controls loaded directly in the suite."
   })
 };
 

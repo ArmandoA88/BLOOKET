@@ -1,0 +1,25 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="treasureGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(64 62) rotate(90) scale(52)">
+      <stop stop-color="#FFE592" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#FFE592" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="woodBox" x1="31" y1="56" x2="95" y2="106" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B66A2E"/>
+      <stop offset="1" stop-color="#7A421A"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="52" fill="url(#treasureGlow)"/>
+  <path d="M32 55C34 38 47 28 64 28C81 28 94 38 96 55L88 61H40L32 55Z" fill="#A05625"/>
+  <path d="M36 61H92V99C92 103.418 88.418 107 84 107H44C39.582 107 36 103.418 36 99V61Z" fill="url(#woodBox)"/>
+  <path d="M42 61H86V75C86 77.209 84.209 79 82 79H46C43.791 79 42 77.209 42 75V61Z" fill="#D78C42"/>
+  <rect x="58" y="55" width="12" height="52" rx="4" fill="#FFD34F"/>
+  <rect x="36" y="77" width="56" height="10" rx="5" fill="#E7B641"/>
+  <circle cx="64" cy="84" r="9" fill="#FFF0A8"/>
+  <circle cx="64" cy="84" r="4" fill="#A56A1F"/>
+  <path d="M45 57L53 44L61 57L53 61L45 57Z" fill="#FF6EA9"/>
+  <path d="M58 48L67 37L75 48L67 53L58 48Z" fill="#57D0FF"/>
+  <path d="M71 57L81 46L89 57L81 63L71 57Z" fill="#8AE38E"/>
+  <circle cx="39" cy="47" r="3" fill="#FFF2A8"/>
+  <circle cx="96" cy="41" r="2.5" fill="#FFF2A8"/>
+</svg>

@@ -154,6 +154,11 @@ const sprites = {
   studentFaceA: loadSprite("/assets/student-sprites/students1_face_12.png"),
   studentFaceB: loadSprite("/assets/student-sprites/students1_face_20.png"),
   studentFaceC: loadSprite("/assets/student-sprites/students2_face_04.png"),
+  studentFaceD: loadSprite("/assets/student-sprites/students1_face_03.png"),
+  studentFaceE: loadSprite("/assets/student-sprites/students1_face_08.png"),
+  studentFaceF: loadSprite("/assets/student-sprites/students1_face_17.png"),
+  studentFaceG: loadSprite("/assets/student-sprites/students2_face_02.png"),
+  studentFaceH: loadSprite("/assets/student-sprites/students2_face_09.png"),
   digSiteScene: loadSprite("/assets/standalone/dino-dig/dig-site-scene.svg"),
   digFossilSkull: loadSprite("/assets/standalone/dino-dig/fossil-skull.svg"),
   digFossilRibs: loadSprite("/assets/standalone/dino-dig/fossil-ribs.svg"),
@@ -161,6 +166,14 @@ const sprites = {
   digCoinCache: loadSprite("/assets/standalone/dino-dig/coin-cache.svg"),
   digDust: loadSprite("/assets/standalone/dino-dig/dust-cloud.svg"),
   digMarker: loadSprite("/assets/standalone/dino-dig/dig-marker.svg"),
+  matchRainbowRocket: loadSprite("/assets/standalone/shadow-match/rainbow-rocket.svg"),
+  matchTreasureChest: loadSprite("/assets/standalone/shadow-match/treasure-chest.svg"),
+  matchDinoEgg: loadSprite("/assets/standalone/shadow-match/dino-egg.svg"),
+  matchRobotBuddy: loadSprite("/assets/standalone/shadow-match/robot-buddy.svg"),
+  matchOctopusPal: loadSprite("/assets/standalone/shadow-match/octopus-pal.svg"),
+  matchMagicWand: loadSprite("/assets/standalone/shadow-match/magic-wand.svg"),
+  matchDragonKite: loadSprite("/assets/standalone/shadow-match/dragon-kite.svg"),
+  matchCupcakeCastle: loadSprite("/assets/standalone/shadow-match/cupcake-castle.svg"),
   battleArenaStadium: loadSprite("/assets/standalone/battle-royale/arena-stadium.svg"),
   pokemonBulbasaur: loadSprite("/assets/pokemon/pokemon-bulbasaur.png"),
   pokemonCharmander: loadSprite("/assets/pokemon/pokemon-charmander.png"),
@@ -2218,16 +2231,60 @@ function createDinoDigGame() {
 }
 
 function createShadowMatchGame() {
+  const MODE_KEY = "solo-arcade-memory-vault-mode";
   const iconPool = [
-    { id: "heroBlue", label: "Hero Blue", sprite: sprites.heroBlue },
-    { id: "heroBrown", label: "Hero Brown", sprite: sprites.heroBrown },
-    { id: "robot", label: "Robot", sprite: sprites.robot },
-    { id: "survivor", label: "Explorer", sprite: sprites.survivor },
-    { id: "playerBlue", label: "Striker", sprite: sprites.playerBlue },
-    { id: "playerRed", label: "Rival", sprite: sprites.playerRed },
-    { id: "trex", label: "T. rex", sprite: sprites.trex },
-    { id: "triceratops", label: "Triceratops", sprite: sprites.triceratops }
+    { id: "rainbow-rocket", label: "Rainbow Rocket", family: "Space", note: "Blast through the clouds.", accent: "#ff8d6b", sprite: sprites.matchRainbowRocket },
+    { id: "treasure-chest", label: "Treasure Chest", family: "Adventure", note: "Packed with bright gems.", accent: "#f7c356", sprite: sprites.matchTreasureChest },
+    { id: "dino-egg", label: "Dino Egg", family: "Dino", note: "A tiny friend is hatching.", accent: "#82dd8f", sprite: sprites.matchDinoEgg },
+    { id: "robot-buddy", label: "Robot Buddy", family: "STEM", note: "Built for friendly beeps.", accent: "#79c8ff", sprite: sprites.matchRobotBuddy },
+    { id: "octopus-pal", label: "Octopus Pal", family: "Ocean", note: "Eight arms, big smile.", accent: "#8f8aff", sprite: sprites.matchOctopusPal },
+    { id: "magic-wand", label: "Magic Wand", family: "Magic", note: "Sprinkles a trail of stars.", accent: "#f49fe7", sprite: sprites.matchMagicWand },
+    { id: "dragon-kite", label: "Dragon Kite", family: "Sky", note: "Swoops high in the breeze.", accent: "#6be3c8", sprite: sprites.matchDragonKite },
+    { id: "cupcake-castle", label: "Cupcake Castle", family: "Sweet City", note: "A castle made of frosting.", accent: "#ffb56d", sprite: sprites.matchCupcakeCastle }
   ];
+  const facePool = [
+    { id: "ava", label: "Ava", family: "Classroom Friends", note: "Match Ava's face to her name.", accent: "#ff8fb4", sprite: sprites.studentFaceA },
+    { id: "liam", label: "Liam", family: "Classroom Friends", note: "Find Liam's matching name card.", accent: "#6db8ff", sprite: sprites.studentFaceB },
+    { id: "maya", label: "Maya", family: "Classroom Friends", note: "Remember Maya's smile.", accent: "#89dd87", sprite: sprites.studentFaceC },
+    { id: "noah", label: "Noah", family: "Classroom Friends", note: "Pair Noah's picture and name.", accent: "#ffd36a", sprite: sprites.studentFaceD },
+    { id: "zoe", label: "Zoe", family: "Classroom Friends", note: "Match Zoe's face tile fast.", accent: "#b091ff", sprite: sprites.studentFaceE },
+    { id: "leo", label: "Leo", family: "Classroom Friends", note: "Find Leo's name before time runs out.", accent: "#ff9a62", sprite: sprites.studentFaceF },
+    { id: "ivy", label: "Ivy", family: "Classroom Friends", note: "Ivy is hiding in the vault.", accent: "#58d6c4", sprite: sprites.studentFaceG },
+    { id: "ezra", label: "Ezra", family: "Classroom Friends", note: "Tap Ezra's picture, then his name.", accent: "#f29de3", sprite: sprites.studentFaceH }
+  ];
+  const modePool = [
+    {
+      id: "storybook",
+      label: "Storybook Match",
+      eyebrow: "Storybook Match Quest",
+      title: "Color-Packed Memory Vault",
+      description: "Flip adventure cards hiding space, ocean, dino, magic, and sweet-city surprises. Fast streaks raise your reward tier.",
+      pillLabel: "Themes",
+      preview: () => [...new Set(iconPool.map((card) => card.family))].slice(0, 4).join(" | "),
+      intro: "Pick a vault card and reveal the first picture.",
+      complete: "Vault complete! Every adventure card is matched.",
+      miss: "No match. The vault lights flickered. Try to remember the pictures.",
+      matchText(card) {
+        return `Match streak __STREAK__! You found ${card.label}.`;
+      }
+    },
+    {
+      id: "name_face",
+      label: "Name + Face Match",
+      eyebrow: "Classroom Friend Match",
+      title: "Match Every Name To A Face",
+      description: "Kids flip a face card and a name card, then match each classroom friend correctly before the timer runs out.",
+      pillLabel: "Skill",
+      preview: () => "Name recall | Face recognition",
+      intro: "Choose a card to start matching names and faces.",
+      complete: "Classroom match complete! Every friend is paired correctly.",
+      miss: "Not a match yet. Try to remember which face belongs to each name.",
+      matchText(card) {
+        return `Match streak __STREAK__! You matched ${card.label}.`;
+      }
+    }
+  ];
+  const modeById = new Map(modePool.map((mode) => [mode.id, mode]));
 
   function rewardTier(bestStreak) {
     if (bestStreak >= 6) {
@@ -2242,36 +2299,117 @@ function createShadowMatchGame() {
     return "Common";
   }
 
+  function getMode(id) {
+    return modeById.get(id) || modePool[0];
+  }
+
+  function getStoredMode() {
+    try {
+      return window.localStorage.getItem(MODE_KEY) || modePool[0].id;
+    } catch {
+      return modePool[0].id;
+    }
+  }
+
+  function setStoredMode(id) {
+    try {
+      window.localStorage.setItem(MODE_KEY, getMode(id).id);
+    } catch {
+      // Ignore storage failures.
+    }
+  }
+
+  function buildDeck(modeId) {
+    if (modeId === "name_face") {
+      return shuffle(facePool.flatMap((entry) => [
+        {
+          pairId: entry.id,
+          uid: `${entry.id}:face`,
+          matched: false,
+          label: entry.label,
+          family: "Face",
+          note: `This is ${entry.label}.`,
+          accent: entry.accent,
+          sprite: entry.sprite,
+          cardKind: "face"
+        },
+        {
+          pairId: entry.id,
+          uid: `${entry.id}:name`,
+          matched: false,
+          label: entry.label,
+          family: "Name",
+          note: `Match ${entry.label} to the correct face.`,
+          accent: entry.accent,
+          sprite: null,
+          cardKind: "name"
+        }
+      ])).map((card, index) => ({ ...card, index }));
+    }
+
+    return shuffle(iconPool.flatMap((icon) => [
+      { ...icon, pairId: icon.id, uid: `${icon.id}:a`, matched: false, cardKind: "art" },
+      { ...icon, pairId: icon.id, uid: `${icon.id}:b`, matched: false, cardKind: "art" }
+    ])).map((card, index) => ({ ...card, index }));
+  }
+
+  function createState(modeId = getStoredMode()) {
+    const mode = getMode(modeId);
+    setStoredMode(mode.id);
+    return {
+      mode: mode.id,
+      score: 0,
+      moves: 0,
+      streak: 0,
+      bestStreak: 0,
+      timeLeft: 60,
+      message: mode.intro,
+      cards: buildDeck(mode.id),
+      flipped: [],
+      lockedUntil: 0,
+      done: false,
+      dirty: true
+    };
+  }
+
+  function resetState(state, modeId = state.mode) {
+    Object.assign(state, createState(modeId));
+  }
+
   function flipCard(state, index) {
     if (state.done || state.lockedUntil || state.flipped.includes(index)) {
       return;
     }
     const card = state.cards[index];
+    const mode = getMode(state.mode);
     if (!card || card.matched) {
       return;
     }
     state.flipped.push(index);
-    state.message = `Flipped ${card.label}.`;
+    state.message = state.mode === "name_face"
+      ? (card.cardKind === "name" ? `Flipped the name ${card.label}.` : "Flipped a face card.")
+      : `Flipped ${card.label}.`;
     if (state.flipped.length === 2) {
       state.moves += 1;
       const [firstIndex, secondIndex] = state.flipped;
       const first = state.cards[firstIndex];
       const second = state.cards[secondIndex];
-      if (first.iconId === second.iconId) {
+      if (first.pairId === second.pairId) {
         first.matched = true;
         second.matched = true;
         state.flipped = [];
         state.streak += 1;
         state.bestStreak = Math.max(state.bestStreak, state.streak);
         state.score += 120 + state.streak * 35;
-        state.message = `Match streak ${state.streak}!`;
+        state.message = mode.matchText(first).replace("__STREAK__", String(state.streak));
         if (state.cards.every((entry) => entry.matched)) {
           state.done = true;
+          state.message = mode.complete;
         }
       } else {
         state.streak = 0;
         state.lockedUntil = performance.now() + 700;
-        state.message = "No match. Try to remember the shadows.";
+        state.message = mode.miss;
       }
     }
     markDirty();
@@ -2281,29 +2419,13 @@ function createShadowMatchGame() {
     id: "shadow_match",
     type: "board",
     name: "Shadow Match",
-    description: "Flip hidden sprites, match pairs, and build streaks for better reward tiers.",
-    controls: "Click cards to flip two at a time. Remember their positions before the timer runs out.",
-    note: "This local version turns Shadow Match into a quick solo memory challenge, with rare-tier bragging rights stored as your best score.",
+    description: "Pick a Memory Vault mode, then match either storybook cards or face-and-name pairs before the timer runs out.",
+    controls: "Choose a vault mode, then click cards to flip two at a time. In Name + Face Match, pair each face tile with the correct name tile.",
+    note: "This local version turns Shadow Match into a colorful Memory Vault with both storybook art and a classroom-style name-and-face learning mode.",
     stageTitle: "Memory Vault",
-    stageHelp: "Longer streaks push your reward tier from Common to Legendary. Match all eight pairs before time expires.",
+    stageHelp: "Kids can pick Storybook Match or Name + Face Match. Longer streaks push the reward tier from Common to Legendary before time expires.",
     createState() {
-      const deck = shuffle(iconPool.flatMap((icon) => [
-        { ...icon, uid: `${icon.id}:a`, matched: false },
-        { ...icon, uid: `${icon.id}:b`, matched: false }
-      ])).map((card, index) => ({ ...card, index }));
-      return {
-        score: 0,
-        moves: 0,
-        streak: 0,
-        bestStreak: 0,
-        timeLeft: 60,
-        message: "Find the first pair.",
-        cards: deck,
-        flipped: [],
-        lockedUntil: 0,
-        done: false,
-        dirty: true
-      };
+      return createState();
     },
     getActions(state) {
       return state.done
@@ -2312,10 +2434,14 @@ function createShadowMatchGame() {
     },
     act(state, id) {
       if (id === "restart") {
-        startGame(currentId);
+        resetState(state, state.mode);
+        renderStats();
+        renderActions();
+        renderBoard(true);
       }
     },
     update(state, dt) {
+      const mode = getMode(state.mode);
       if (state.done) {
         return;
       }
@@ -2332,43 +2458,87 @@ function createShadowMatchGame() {
       if (state.timeLeft === 0) {
         state.done = true;
         state.flipped = [];
-        state.message = "Time is up.";
+        state.message = mode.id === "name_face" ? "Time is up. Try another round of matching names and faces." : "Time is up.";
         state.dirty = true;
       }
     },
     render(state, container) {
+      const mode = getMode(state.mode);
       const tier = rewardTier(state.bestStreak);
+      const preview = mode.preview();
+      const modeButtons = modePool.map((entry) => `
+        <button type="button" class="memory-mode-btn ${entry.id === state.mode ? "active" : ""}" data-memory-mode="${entry.id}">
+          <strong>${escapeHtml(entry.label)}</strong>
+          <span>${escapeHtml(entry.id === "name_face" ? "Match names with real face tiles." : "Match bright picture pairs.")}</span>
+        </button>
+      `).join("");
       const cards = state.cards.map((card, index) => {
         const visible = card.matched || state.flipped.includes(index);
         const classes = [
           "match-card",
+          "memory-vault-card",
+          card.cardKind === "name" ? "memory-name-card" : "",
+          card.cardKind === "face" ? "memory-face-card" : "",
           visible ? "flipped" : "hidden-card",
           card.matched ? "matched" : ""
         ].filter(Boolean).join(" ");
         if (!visible) {
-          return `<button class="${classes}" type="button" data-match-index="${index}" aria-label="Flip card ${index + 1}"></button>`;
+          return `
+            <button class="${classes}" type="button" data-match-index="${index}" aria-label="Flip card ${index + 1}">
+              <span class="memory-card-shine"></span>
+              <span class="memory-card-glyph"></span>
+              <strong>Vault Card</strong>
+              <span class="memory-card-note">Tap to peek</span>
+            </button>
+          `;
         }
         return `
-          <button class="${classes}" type="button" data-match-index="${index}">
-            <img src="${card.sprite.src}" alt="${escapeHtml(card.label)}" />
-            <strong>${escapeHtml(card.label)}</strong>
+          <button class="${classes}" type="button" data-match-index="${index}" style="--memory-accent:${card.accent};">
+            <span class="memory-card-badge">${escapeHtml(card.family)}</span>
+            ${card.cardKind === "name"
+              ? `<span class="memory-name-chip">${escapeHtml(card.label)}</span>`
+              : `<img class="memory-card-art" src="${card.sprite.src}" alt="${escapeHtml(card.label)}" />`}
+            <strong>${escapeHtml(card.cardKind === "face" && !card.matched ? "Face Card" : card.label)}</strong>
+            <span class="memory-card-note">${escapeHtml(card.cardKind === "face" && !card.matched ? "Remember this face, then find the matching name." : card.note)}</span>
           </button>
         `;
       }).join("");
 
       container.innerHTML = `
-        <div class="solo-grid">
+        <div class="solo-grid memory-vault-stage">
+          <div class="memory-vault-hero">
+            <div class="memory-vault-copy">
+              <div class="eyebrow">${escapeHtml(mode.eyebrow)}</div>
+              <h3>${escapeHtml(mode.title)}</h3>
+              <p>${escapeHtml(mode.description)}</p>
+            </div>
+            <div class="memory-vault-pills">
+              <div class="solo-pill">${escapeHtml(mode.pillLabel)}: ${escapeHtml(preview)}</div>
+              <div class="solo-pill">Pairs: ${state.cards.length / 2}</div>
+            </div>
+          </div>
+          <div class="memory-mode-row">${modeButtons}</div>
           <div class="solo-board-head">
             <div class="solo-pill">Time: ${Math.ceil(state.timeLeft)}s</div>
             <div class="solo-pill">Moves: ${state.moves}</div>
             <div class="solo-pill">Streak: ${state.streak}</div>
             <div class="solo-pill">Reward Tier: ${tier}</div>
           </div>
-          <div class="match-grid">${cards}</div>
-          <div class="battle-log"><strong>Shadow Match</strong><br />${escapeHtml(state.message)}</div>
+          <div class="memory-vault-grid-shell">
+            <div class="match-grid memory-vault-grid">${cards}</div>
+          </div>
+          <div class="battle-log memory-vault-log"><strong>Vault Guide</strong><br />${escapeHtml(state.message)}</div>
         </div>
       `;
 
+      container.querySelectorAll("[data-memory-mode]").forEach((button) => {
+        button.addEventListener("click", () => {
+          resetState(state, button.getAttribute("data-memory-mode"));
+          renderStats();
+          renderActions();
+          renderBoard(true);
+        });
+      });
       container.querySelectorAll("[data-match-index]").forEach((button) => {
         button.addEventListener("click", () => {
           flipCard(state, Number(button.getAttribute("data-match-index")));
@@ -2379,12 +2549,13 @@ function createShadowMatchGame() {
       });
     },
     getStats(state) {
+      const mode = getMode(state.mode);
       return {
-        primaryLabel: "Matches",
+        primaryLabel: "Pairs",
         primaryValue: state.cards.filter((card) => card.matched).length / 2,
         secondaryLabel: "Tier",
         secondaryValue: rewardTier(state.bestStreak),
-        status: state.done ? `Final score ${state.score}` : `${Math.ceil(state.timeLeft)}s left | ${state.moves} moves`
+        status: state.done ? `${mode.label} | Final score ${state.score}` : `${mode.label} | ${Math.ceil(state.timeLeft)}s left | ${state.moves} moves`
       };
     },
     getBestValue(state) {

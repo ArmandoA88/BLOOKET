@@ -27,25 +27,11 @@ const MODE_LABELS = {
   asteroids: "Asteroids",
   brawl: "Space Invaders"
 };
+const SHARED_MINI_GAME_VISUALS = window.MINI_GAME_VISUALS || {};
+const SHARED_MINI_GAME_IMAGE_MAP = window.MINI_GAME_IMAGE_MAP || {};
 const GAME_IMAGE_MAP = {
   question: "/assets/minigames/shared/question.svg",
-  asteroids: "/assets/minigames/asteroids/asteroids.svg",
-  battle_royale: "/assets/minigames/battle_royale/battle-royale.svg",
-  classroom_cleanup: "/assets/minigames/classroom_cleanup/classroom-cleanup.svg",
-  shadow_match: "/assets/minigames/shadow_match/shadow-match.svg",
-  foosball_frenzy: "/assets/minigames/soccer_shootout/soccer.svg",
-  soccer_shootout: "/assets/minigames/soccer_shootout/soccer.svg",
-  goalie_rush: "/assets/minigames/goalie_rush/goalie-rush.svg",
-  snake: "/assets/minigames/snake/snake.svg",
-  tower_stacker: "/assets/minigames/tower_stacker/tower.svg",
-  tap_rush: "/assets/minigames/tap_rush/tap.svg",
-  reaction_duel: "/assets/minigames/reaction_duel/tap.svg",
-  sequence_memory: "/assets/minigames/sequence_memory/sequence.svg",
-  obstacle_dodge: "/assets/minigames/obstacle_dodge/sequence.svg",
-  precision_stop: "/assets/minigames/precision_stop/precision.svg",
-  word_scramble: "/assets/minigames/word_scramble/question.svg",
-  hallway_dash: "/assets/minigames/hallway_dash/hallway.svg",
-  dino_dig: "/assets/dinos/dino-tyrannosaurus.png"
+  ...SHARED_MINI_GAME_IMAGE_MAP
 };
 const SOUND_PREF_STORAGE_KEY = "quizArenaSoundEnabled";
 const MINI_TUTORIAL_STORAGE_KEY = "quizArenaMiniTutorialSeen";
@@ -1652,22 +1638,10 @@ function stopMiniTickers() {
 }
 
 function miniGameTypeLabel(type) {
-  if (type === "tower_stacker") return "Tower Stacker";
-  if (type === "foosball_frenzy") return "Foosball Frenzy";
-  if (type === "soccer_shootout") return "Soccer Shootout";
-  if (type === "goalie_rush") return "Goalie Rush";
-  if (type === "snake") return "Snake Strategy";
-  if (type === "tap_rush") return "Tap Rush";
-  if (type === "reaction_duel") return "Reaction Duel";
-  if (type === "sequence_memory") return "Sequence Memory";
-  if (type === "obstacle_dodge") return "Obstacle Dodge";
-  if (type === "precision_stop") return "Precision Stop";
-  if (type === "word_scramble") return "Word Scramble";
-  if (type === "hallway_dash") return "Hallway Dash";
-  if (type === "dino_dig") return "Dino Dig";
-  if (type === "shadow_match") return "Shadow Match";
-  if (type === "classroom_cleanup") return "Classroom Cleanup";
-  if (type === "battle_royale") return "Battle Royale";
+  const visual = SHARED_MINI_GAME_VISUALS[String(type || "")] || null;
+  if (visual?.label || visual?.title) {
+    return String(visual.label || visual.title);
+  }
   return "Mini-game";
 }
 

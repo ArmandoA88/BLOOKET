@@ -1,0 +1,30 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="rocketGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(64 64) rotate(90) scale(54)">
+      <stop stop-color="#FFF4B8" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#FFF4B8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rocketBody" x1="48" y1="22" x2="84" y2="86" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFCFF"/>
+      <stop offset="1" stop-color="#D6E8FF"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="52" fill="url(#rocketGlow)"/>
+  <path d="M37 95C29 95 21 100 18 110" stroke="#FF7A59" stroke-width="6" stroke-linecap="round"/>
+  <path d="M44 96C36 96 29 101 27 111" stroke="#FFCB57" stroke-width="6" stroke-linecap="round"/>
+  <path d="M52 98C45 98 38 103 37 113" stroke="#6DE1A5" stroke-width="6" stroke-linecap="round"/>
+  <path d="M60 101C54 101 48 106 49 116" stroke="#6BC8FF" stroke-width="6" stroke-linecap="round"/>
+  <path d="M68 104C63 104 58 109 60 118" stroke="#B586FF" stroke-width="6" stroke-linecap="round"/>
+  <g transform="rotate(22 67 58)">
+    <path d="M64 18C83 28 92 54 78 86L53 83C48 56 53 31 64 18Z" fill="url(#rocketBody)"/>
+    <path d="M60 28C72 34 79 49 74 69L58 67C55 49 56 36 60 28Z" fill="#FF6B57"/>
+    <circle cx="66" cy="51" r="10" fill="#83D5FF"/>
+    <circle cx="66" cy="51" r="5" fill="#DFF7FF"/>
+    <path d="M53 72L42 88L55 85L59 74Z" fill="#FFB24B"/>
+    <path d="M77 73L91 85L78 85L71 76Z" fill="#FF8D62"/>
+    <path d="M61 83L68 95L76 85L53 83Z" fill="#FFE066"/>
+  </g>
+  <circle cx="27" cy="36" r="4" fill="#FFF2A8"/>
+  <circle cx="96" cy="28" r="3" fill="#E7F8FF"/>
+  <circle cx="99" cy="47" r="2.5" fill="#FFD7F6"/>
+</svg>

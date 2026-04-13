@@ -1337,6 +1337,12 @@ label {
     linear-gradient(180deg, #1b462f, #16311f 58%, #0d2215);
 }
 
+.mode-tile-thumb.theme-hallway {
+  background:
+    radial-gradient(circle at 20% 22%, rgba(255, 255, 255, 0.16), transparent 34%),
+    linear-gradient(180deg, #75def2, #4ebee1 42%, #31527c);
+}
+
 .mode-tile-hud {
   position: absolute;
   left: 8px;
@@ -1387,6 +1393,14 @@ label {
   height: 52px;
 }
 
+.mode-tile-thumb.theme-hallway .mode-tile-thumb-image {
+  width: 112px;
+  height: 68px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 10px;
+}
+
 .mode-tile-thumb-fallback {
   font-size: 1.6rem;
   font-weight: 900;
@@ -1409,6 +1423,24 @@ label {
   display: grid;
   align-content: start;
   gap: 10px;
+}
+
+.mode-preview-hero {
+  aspect-ratio: 16 / 9;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.18), transparent 34%),
+    rgba(18, 50, 86, 0.28);
+  box-shadow: 0 16px 34px rgba(15, 56, 78, 0.22);
+}
+
+.mode-preview-hero img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .mode-preview-card h3 {

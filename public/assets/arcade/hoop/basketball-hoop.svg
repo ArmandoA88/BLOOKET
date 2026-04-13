@@ -1,20 +1,44 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="220" height="180" viewBox="0 0 220 180">
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="220" viewBox="0 0 320 220">
   <defs>
-    <linearGradient id="boardGlow" x1="0" x2="1">
-      <stop offset="0%" stop-color="#f8fbff"/>
-      <stop offset="100%" stop-color="#dbeafe"/>
+    <linearGradient id="support" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#f6fbff"/>
+      <stop offset="100%" stop-color="#aab9cc"/>
     </linearGradient>
+    <linearGradient id="board" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#eff7ff" stop-opacity="0.94"/>
+      <stop offset="100%" stop-color="#dbe7f5" stop-opacity="0.82"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#ff744f"/>
+      <stop offset="100%" stop-color="#d92d20"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#091522" flood-opacity="0.28"/>
+    </filter>
   </defs>
-  <rect x="154" y="16" width="24" height="132" rx="6" fill="url(#boardGlow)" stroke="#94a3b8" stroke-width="3"/>
-  <rect x="144" y="72" width="44" height="10" rx="3" fill="#ef4444" opacity="0.92"/>
-  <rect x="52" y="106" width="116" height="12" rx="6" fill="#ef4444" stroke="#7f1d1d" stroke-width="2"/>
-  <g stroke="#f8fafc" stroke-width="3" stroke-linecap="round">
-    <line x1="58" y1="118" x2="70" y2="154"/>
-    <line x1="76" y1="118" x2="84" y2="156"/>
-    <line x1="94" y1="118" x2="98" y2="158"/>
-    <line x1="112" y1="118" x2="112" y2="158"/>
-    <line x1="130" y1="118" x2="126" y2="158"/>
-    <line x1="148" y1="118" x2="140" y2="156"/>
-    <line x1="164" y1="118" x2="152" y2="154"/>
+
+  <g filter="url(#shadow)">
+    <path d="M218 18h18c10 0 18 8 18 18v128c0 10-8 18-18 18h-18z" fill="url(#support)"/>
+    <path d="M142 56h102v18H142z" fill="#ff6c4e" opacity="0.92"/>
+    <rect x="88" y="20" width="136" height="118" rx="16" fill="url(#board)" stroke="#9cb0c6" stroke-width="5"/>
+    <path d="M150 60h48v34h-48z" fill="none" stroke="#ff6c4e" stroke-width="5" opacity="0.96"/>
+    <rect x="72" y="122" width="128" height="14" rx="7" fill="url(#rim)" stroke="#8f1d14" stroke-width="3"/>
+    <ellipse cx="136" cy="129" rx="64" ry="10" fill="#ff9b76" opacity="0.3"/>
+    <g stroke="#f8fbff" stroke-width="4" stroke-linecap="round">
+      <line x1="80" y1="136" x2="90" y2="182"/>
+      <line x1="96" y1="136" x2="102" y2="184"/>
+      <line x1="112" y1="136" x2="114" y2="186"/>
+      <line x1="128" y1="136" x2="128" y2="188"/>
+      <line x1="144" y1="136" x2="142" y2="186"/>
+      <line x1="160" y1="136" x2="154" y2="184"/>
+      <line x1="176" y1="136" x2="166" y2="182"/>
+      <line x1="88" y1="162" x2="102" y2="184"/>
+      <line x1="108" y1="164" x2="120" y2="186"/>
+      <line x1="128" y1="166" x2="128" y2="188"/>
+      <line x1="148" y1="164" x2="136" y2="186"/>
+      <line x1="168" y1="162" x2="154" y2="184"/>
+    </g>
+    <path d="M244 32h16c14 0 26 12 26 26v88h-18V62c0-7-5-12-12-12h-12z" fill="#7d8ea7" opacity="0.85"/>
+    <ellipse cx="188" cy="104" rx="22" ry="54" fill="#ffffff" opacity="0.12"/>
   </g>
 </svg>

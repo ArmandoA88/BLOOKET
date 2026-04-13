@@ -9,3 +9,4 @@ Hoop Shot sprite assets
 Notes
 
 - These arcade sprite assets were created locally for `Hoop Shot` so the game can use reusable ball, hoop, and powerup art instead of plain canvas-only shapes.
+- The current set was redrawn as a higher-detail local vector pass for a stronger arcade presentation without introducing external dependencies.
